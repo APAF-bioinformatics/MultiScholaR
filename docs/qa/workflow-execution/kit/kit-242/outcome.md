@@ -221,3 +221,34 @@ Purpose: list every stored expectation that fails on the fix, then classify each
 and whether it already failed on runners (R2a-2's tables for Part A's moves and the files' base failures; the staging
 train runs where they cover a file; otherwise stated as not known before R2). No prediction of the list is made (P0 is
 the measurement); an instrument failure (a shard that does not complete) is reported, not counted.
+
+### P0 (run 45723354055, 0c8778d9; 539.2 job-minutes, 35.94 core-hours; ceiling 840): observed
+
+186 files: 152 ok, 34 failed, none timed out or crashed. Full list, one row per failing expectation with its class:
+`p0-45723354055/moved.tsv`. Classes (observed by matching each failure to the runner tables named):
+
+| Class | Expectations | Files |
+|---|---|---|
+| Moved by Part B (new) | 16 | `test-workflow-omics-worker.R:25-31` (7 each for lipid_ruv, metab_ruv): the RUV step on the raw fixture now stops; `test-module-ci-metab-norm.R:202`, `:204` (MCI-015.3): a failed Manual search now stops |
+| Defect in the fix (Part B) | 1 | `test-workflow-operation-registry.R:257` (KIT-025 scan): the text "every sample (%s)" in `omicsRuvSearchOutcomes` matches `sample\s*\(` |
+| Moved by Part A (R2a-2's list) | 79 | `test-omic-norm-module.R` 56 (call sites `:1560`-`:1585`), `test-kit172-downstream.R` 14, `test-metab-02w-…:226-240` 3, the two declarations files 3 each (`:47`, `:138`, `:188`) |
+| Already failing on staging train heads | 950 | proteomics, enrichment, summary, DA modules, KIT-073/094 fixtures, GUI-entry lanes (lipid 16, metab 48, proteomics 101), others (`moved.tsv`) |
+| Transcriptomics corpus-manifest digest | 22 | `test-kit129-run-path.R`, `test-kit224-…`, `test-module-ci-trx-norm.R`, `test-trx-da-without-ruv.R`, `test-trx-ruv-designs.R`, `test-workflow-trx-declarations.R`: fail on R2a-2's base 17d1ecc4 too, pass on trains 15/16 (environment, not a KIT-242 rule) |
+| Runner library | 2 errors | `test-tech-reps-limma.R` (devtools), `test-workflow-checkpoint-harness.R` (lobstr) |
+
+Inferred, not observed: inside expectations that already fail, `ruv_fallback` also moves the RUV step's `fixed` list
+(KIT-073 dump, KIT-094 snapshot, the GUI-entry lanes' RUV steps) and the provenance of `test-omic-norm-module.R`'s manual
+and automatic sessions; P0 cannot separate these (the expectation fails either way). The worker's message ("the control
+features ... must be feature ids, positions or a logical vector") is inferred to come from the Manual search returning
+no per-assay control set on the raw fixture (the optimiser then hands the whole list); the message names the wrong cause.
+
+## Not checked (Part B so far)
+
+- R2 and R3 (owner's answer on the stored values first); the declared design through the tab; KIT-188/KIT-262 journeys.
+- Whether any expectation already failing on staging hides a numeric move by Part B (R2 base-against-head decides).
+
+## For the change report (Part B)
+
+Legacy lipid/metab RUV-III-C dropped an assay it could not correct (and returned the input when every assay failed)
+while recording `ruv_applied` TRUE; on main since 2025-05-06 (metab) and 2026-01-18 (lipid). Now by cause (VAL-242,
+VAL-290), with marker `ruv_fallback`; evidence R1b-B 45714743051, R1d 45721168959, P0 45723354055.
