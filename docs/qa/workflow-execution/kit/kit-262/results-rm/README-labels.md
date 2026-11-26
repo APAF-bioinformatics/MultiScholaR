@@ -1,0 +1,1 @@
+`m2-verdict.tsv` and `m2-stress.tsv` in this directory are the scorer's output on the 80-cell abundance-dependent subset (cells with n >= 6 that are AD). They are **not a decision**: the M3 skip rule and the stress-cell selection are defined over the 180-cell family and were decided on M2's data (`../results/`); neither depends on this run (VAL-381).
