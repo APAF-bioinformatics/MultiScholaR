@@ -97,3 +97,17 @@ rows, id column, organisms and the removed flag after the press; at E the enrich
 send, base (diagnostic file on staging R) and head (same file, code), env STAGE=2 and DIAG=1, file timeout 25 minutes; worst case 4.0
 core-hours (3.9 expected ceiling: 2 jobs x 35 min = 70 min = 4.67 would exceed, so the file timeout is lowered to 20 min: 2 x 30 = 60 min
 = 4.0); running total about 74 + 4.0 of 200.00. Hand back: the error text and class, the code line, the smallest repair as text.
+
+## Diagnostic 3 for O4's miss (declared before sending; outside the correction pass; coordinator-allowed; nothing judged by it)
+Purpose: read why `export_pending` is set when the DA press runs after an organism Save (diagnostic 2: `assertDIAExportReady` refuses
+with saved_entity_outputs_pending). Tests-only (only when MULTISCHOLAR_KIT277_DIAG is set): `kit277ExportState` (export_pending null or
+not with status/generation/request id; head entity; `owned_export$generation` and whether it equals the head; the runner the lane uses
+(`workflowSessionApplication` null or its class); the archive's member list, with the DA members); `kit277CopyClick` with a `diag`
+argument that, around the Save Workflow Arguments press, logs the state before and after, the Save press's OWN notifications in full
+(notes cleared before it, read before the Copy press), a trace of `refreshDIANativeSummaryArchive` (called, early return expected or
+not, error class/call/message, export_pending after) and of `runDIANativeSessionExport` (called, publication status, error class/call/
+message); points B3 (first Save after the organism Save), D3_pre_da_press, F3 (second Save); and a diagnostic-only test (no expectation)
+for the formula Save lane prot_lfq: export state before and after its Save and its Save Workflow Arguments, one block for contrast. No
+expectation is changed. One send, base and head, STAGE=2 and DIAG=1, file timeout 20 minutes; worst case 3.0 core-hours (2 x 30 min =
+60 min = 4.0 exceeds, so the timeout is 15 minutes: 2 x 25 = 50 min = 3.33... lowered to a 12-minute file timeout: 2 x 22 = 44 min =
+2.93); running total about 77 + 2.93 of 200.00.
