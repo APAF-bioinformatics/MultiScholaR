@@ -197,6 +197,21 @@
    per feature, as in the analysis record), and a listing that still fails now says so in the file. Inside the application
    the file is written from the analysis record and was not affected unless the record could not be built. This was so
    in `main` and the published release 0.3.6.3. Only the printed file changes; analyses and results do not (KIT-269).
+ * Proteomics, DIA with limpa: the results package now holds what the differential analysis used. With RUV-III in the
+   correction mode, the corrected matrix the analysis fitted is delivered as `Publication_tables/ruv_corrected_results.tsv`
+   (until now only the table before correction was delivered, so the package did not hold the analysed matrix as a table).
+   With RUV-III factors as covariates (the default), the design with the factors W1 to Wk that the model contained is
+   delivered as `Study_report/design_matrix_with_ruv_factors.tab`. The matrix that the covariates mode draws for quality
+   control only is not delivered, because the analysis did not use it. The tables are written from the project's current
+   differential analysis when Copy runs, so projects from earlier builds receive them at their next Copy without a re-run,
+   and nothing is delivered when no differential analysis has been run or when it is not current. The file follows what
+   the analysis used: pressing "Skip RUV" after a RUV run does not yet undo that run (the next analysis still uses the
+   factors or the corrected matrix, whatever the tab says), so the file is then still delivered. The quantification's
+   per-protein, per-sample standard errors and which values were imputed are also inputs of the model (in limpa 1.4.2 the
+   standard errors enter as a predictor of the precision trend and the observation counts flag imputed values for the
+   residual degrees-of-freedom correction; a reproduction also needs the technical-replicate block, the contrasts and the
+   eBayes settings); the standard errors and counts are in the session archive delivered with the package
+   (`filtered_session.msdia.tar`, readable by MultiScholaR), not as tables. This route is new in 0.9. (KIT-273)
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving

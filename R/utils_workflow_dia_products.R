@@ -1831,6 +1831,46 @@ publishDIAReferenceRuvCovariates <- function(manager, settings, run, workflow, n
     accepted
 }
 
+#' KIT-273 (VAL-317 (2), VAL-332): what the differential analysis used, delivered with the results package on DIA with
+#' limpa. Decided by the store's DA record (`manifest$model`: its model, `ruv_mode` and `w_terms`), and only when that
+#' analysis is current (`workflowDaResultStatus`); the tables are read from the record's source state, so a file left in the
+#' protein QC folder by an earlier run is never delivered. RUV-III correction: the source's protein table (the corrected
+#' matrix the model fitted) as `Publication_tables/ruv_corrected_results.tsv`. RUV-III factors as covariates: the source's
+#' whole design (study columns and W1..Wk) as `Study_report/design_matrix_with_ruv_factors.tab`. No analysis, a stale
+#' analysis, a skipped RUV step or a design that applied no RUV: nothing. The names are drafts for the wording pass.
+#' @param manager The reference-state owner (Copy reads it from the active scope).
+#' @param directory The results summary folder; its `Publication_tables` and `Study_report` folders exist.
+#' @return NULL when nothing is delivered; else `list(name, display_name, console)` and, when the table could not be
+#'   decided or written, the failure's text as `error` (nothing escapes: Copy records it as a failed copy).
+#' @noRd
+writeDIARuvDeliveryTables <- function(manager, directory) {
+    entry <- list(name = "ruv_delivery", display_name = "RUV-III delivery table")
+    tryCatch(withDIAStateScope(manager, function() {
+        if (!identical(workflowDaResultStatus(manager), "current")) return(NULL)
+        context <- manager$.context
+        manifest <- resolveWorkflowStateValue(context, context$snapshot$da_results)
+        model <- manifest$model
+        if (!identical(model$model, "dpcDE")) return(NULL)
+        if (identical(model$ruv_mode, "correction")) {
+            entry <<- list(name = "Publication_tables/ruv_corrected_results.tsv", display_name = "RUV-III Corrected Results TSV",
+                field = "protein_quant_table", console = paste0("COPY: DIA with limpa, RUV-III correction: the corrected matrix ",
+                "the analysis used is delivered as Publication_tables/ruv_corrected_results.tsv"))
+        } else if (length(model$w_terms) > 0L) {
+            entry <<- list(name = "Study_report/design_matrix_with_ruv_factors.tab", display_name = "Design Matrix with RUV-III Factors",
+                field = "design_matrix", console = paste0("COPY: DIA with limpa, RUV-III factors as covariates: the design with ",
+                "the factors the analysis used is delivered as Study_report/design_matrix_with_ruv_factors.tab"))
+        } else {
+            return(NULL)
+        }
+        components <- readDIAStateMetadata(manager, manifest$source)$data$components
+        writeDIADesignTable(manager, components[[entry$field]], file.path(directory, entry$name), vroom::vroom_write)
+        entry
+    }), error = function(error) {
+        logger::log_warn(logger::skip_formatter(paste("The RUV-III delivery table could not be written:", conditionMessage(error))))
+        c(entry, list(error = conditionMessage(error)))
+    })
+}
+
 #' Apply, skip or reapply Pearson filtering from the original saved population.
 #' @param workflow,norm_data,paths Existing module owners and publication paths.
 #' @param threshold,skipped User filtering decision.

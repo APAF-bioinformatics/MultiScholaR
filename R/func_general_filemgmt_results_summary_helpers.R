@@ -424,6 +424,18 @@ copyToResultsSummary <- function(omic_type,
             copyDIANativeSessionArtifact(current_paths$source_dir,
                 file.path(current_paths$results_summary_dir, "Publication_tables", "filtered_session.msdia.tar"))
         }
+        # KIT-273 (VAL-317 (2), VAL-332): on DIA with limpa the matrix (RUV-III correction) or the design with the factors
+        # (RUV-III covariates) the current differential analysis used, written from the store by that analysis's own record.
+        if (identical(getDIAActiveManager()$workflow_type, "DIA_LIMPA")) {
+            delivery <- writeDIARuvDeliveryTables(getDIAActiveManager(), current_paths$results_summary_dir)
+            if (!is.null(delivery) && is.null(delivery$error)) {
+                cat(delivery$console, "\n", sep = "")
+            } else if (!is.null(delivery)) {
+                failed_copies[[length(failed_copies) + 1]] <- list(type = "ruv_delivery", source = delivery$name,
+                    destination = file.path(current_paths$results_summary_dir, dirname(delivery$name)),
+                    display_name = delivery$display_name, error = delivery$error)
+            }
+        }
     } else if (omic_type == "metabolomics") {
         cat("COPY: Adding metabolomics-specific files\n")
 
