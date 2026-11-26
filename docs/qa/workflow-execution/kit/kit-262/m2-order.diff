@@ -1,0 +1,124 @@
+diff --git a/docs/qa/workflow-execution/kit/kit-262/m2-k262.R b/docs/qa/workflow-execution/kit/kit-262/m2-k262.R
+index c1e03a532..456b6337f 100644
+--- a/docs/qa/workflow-execution/kit/kit-262/m2-k262.R
++++ b/docs/qa/workflow-execution/kit/kit-262/m2-k262.R
+@@ -86,7 +86,7 @@ m2Design <- function(n, g) {
+     tech_rep_group = runs, stringsAsFactors = FALSE)
+ }
+ 
+-m2Values <- function(seed, n, g, n_features, mech, rate) {  # [A]
++m2Values <- function(seed, n, g, n_features, mech, rate, floor_order = "before") {  # [A] [G] the order option
+   set.seed(seed, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")  # [F] the RNG kinds named
+   design <- m2Design(n, g)                                                                                    # [A]
+   groups <- design$group
+@@ -102,10 +102,13 @@ m2Values <- function(seed, n, g, n_features, mech, rate) {  # [A]
+   pattern <- (w - mean(w)) / stats::sd(w) * sqrt(n / (n - 1))                                                  # [C]
+   logs <- logs + outer(loadings, pattern)
+   values <- 2^logs
+-  ones <- e2PickCells(!is.na(values), groups, 2L, round(0.02 * sum(!is.na(values))))
+-  values[ones] <- 1
++  ones_first <- function() {  # [G]
++    ones <- e2PickCells(!is.na(values), groups, 2L, round(0.02 * sum(!is.na(values))))  # [G]
++    values[ones] <<- 1  # [G]
++  }  # [G]
++  if (identical(floor_order, "before")) ones_first()  # [G] M2's order: floor values first, then the mask
+   expected_share <- 0  # [D]
+-  if (identical(mech, "MCAR")) {                                                                               # [D]
++  if (identical(mech, "MCAR")) {  # [D]
+     values[sample.int(length(values), floor(rate * length(values)))] <- NA_real_  # [D]
+     expected_share <- floor(rate * length(values)) / length(values)  # [D]
+   } else if (identical(mech, "AD")) {  # [D]
+@@ -114,7 +117,8 @@ m2Values <- function(seed, n, g, n_features, mech, rate) {  # [A]
+     expected_share <- mean(stats::plogis(lod - y))  # [D]
+     u <- matrix(stats::runif(length(values)), n_features)  # [D]
+     values[u < stats::plogis(lod - y)] <- NA_real_  # [D]
+-  }
++  }  # [D]
++  if (identical(floor_order, "after")) ones_first()  # [G] KIT-172's order: the mask first, then 2 % of the observed values set to 1
+   ids <- sprintf("F%04d", seq_len(n_features))                                                                 # [E]
+   dimnames(values) <- list(ids, design$Run)  # [E]
+   list(values = values, design = design, effects = stats::setNames(effects, ids), expected_share = expected_share)  # [E]
+@@ -155,7 +159,7 @@ m2Sweep <- function(prepared) {
+   suppressWarnings(suppressMessages(prepared$binding$optimise_ruv(prepared$object, "automatic", M2_RUV_PARAMS)))
+ }
+ 
+-M2_SUMMARY_COLUMNS <- c("cell", "r", "seed", "omic", "n", "g", "f", "missing_id", "report_only", "cap", "error",
++M2_SUMMARY_COLUMNS <- c("cell", "r", "seed", "floor_order", "omic", "n", "g", "f", "missing_id", "report_only", "cap", "error",
+   "features_after_filter", "complete_features", "share_complete", "realised_missing_share", "expected_missing_share",
+   "min_values_per_feature", "n_ok", "n_r3", "n_r4", "n_r5", "n_r6", "n_error_status", "n_r5_cap_side", "n_r5_completeness",
+   "p_ruv", "p_percentage", "p_k_sweep", "p_k_used", "p_resid_df", "c1_ruv", "c1_percentage", "c1_k_used", "c1_resid_df",
+@@ -164,7 +168,7 @@ M2_SUMMARY_COLUMNS <- c("cell", "r", "seed", "omic", "n", "g", "f", "missing_id"
+ 
+ m2EmptyRow <- function(task) {
+   row <- stats::setNames(rep(list(NA), length(M2_SUMMARY_COLUMNS)), M2_SUMMARY_COLUMNS)
+-  row[c("cell", "r", "seed", "omic", "n", "g", "f", "missing_id", "report_only")] <- list(task$cell, task$r, task$seed, task$omic,
++  row[c("cell", "r", "seed", "floor_order", "omic", "n", "g", "f", "missing_id", "report_only")] <- list(task$cell, task$r, task$seed, task$floor_order, task$omic,
+     task$n, task$g, task$f, task$missing_id, task$report_only)
+   row$error <- ""
+   row
+@@ -175,7 +179,7 @@ m2Dataset <- function(task) {
+   row <- m2EmptyRow(task)
+   rows <- NULL
+   outcome <- tryCatch({
+-    sim <- m2Values(task$seed, task$n, task$g, task$f, task$mech, task$rate)
++    sim <- m2Values(task$seed, task$n, task$g, task$f, task$mech, task$rate, task$floor_order)
+     if (identical(Sys.getenv("K262_FAULT"), "1") && isTRUE(task$fault)) stop("K262 injected fault (the lifecycle's failure check)")
+     realised <- mean(is.na(sim$values))
+     row$realised_missing_share <- realised
+@@ -281,6 +285,11 @@ e1p <- parseSet(Sys.getenv("K262_E1P", ""), c(7L, 27L))
+ workers <- as.integer(Sys.getenv("K262_WORKERS", "4"))
+ use_e8 <- !identical(Sys.getenv("K262_E8", "1"), "0")
+ stopifnot(all(cells %in% grid$cell))
++# KIT-262 re-measurement (VAL-381): the order of the 2 % floor values and the seed base are parameters; the defaults
++# reproduce M2 exactly (floor values first; seeds 262100000 + 100 x cell + r).
++floor_order <- Sys.getenv("K262_FLOOR_ORDER", "before")
++stopifnot(floor_order %in% c("before", "after"))
++seed_base <- as.numeric(Sys.getenv("K262_SEED_BASE", "262100000"))
+ 
+ # The lifecycle (K262_LIFECYCLE=1) keeps its row files under tempdir(): no share, rate, k distribution leaves it (VAL-11).
+ data_dir <- if (identical(Sys.getenv("K262_LIFECYCLE"), "1")) tempdir() else out
+@@ -295,7 +304,7 @@ batches <- split(cells, ceiling(seq_along(cells) / cells_per_batch))
+ for (batch in batches) {
+   tasks <- unlist(lapply(batch, function(cell) {
+     g <- grid[grid$cell == cell, ]
+-    lapply(reps, function(r) list(cell = cell, r = r, seed = 262100000 + 100 * cell + r, omic = "lipid", n = g$n, g = g$g,
++    lapply(reps, function(r) list(cell = cell, r = r, seed = seed_base + 100 * cell + r, floor_order = floor_order, omic = "lipid", n = g$n, g = g$g,
+       f = g$f, missing_id = g$missing_id, mech = g$mech, rate = g$rate, report_only = g$report_only,
+       e8 = use_e8 && cell %in% E8_CELLS && r <= e8_max, e1p = e1p, fault = FALSE))
+   }), recursive = FALSE)
+@@ -350,6 +359,35 @@ if (identical(Sys.getenv("K262_LIFECYCLE"), "1")) {
+   checks <- rbind(checks, data.frame(check = "E6", units = length(files), passed = as.integer(same_files) * length(files),
+     failed = as.integer(!same_files), stringsAsFactors = FALSE))
+ }
++# re-measurement checks: the seeds follow the declared formula; the order column equals the order requested
++seed_ok <- sum(final$seed == seed_base + 100 * final$cell + final$r)
++checks <- rbind(checks, data.frame(check = "SEEDS", units = nrow(final), passed = seed_ok, failed = nrow(final) - seed_ok, stringsAsFactors = FALSE))
++order_ok <- sum(final$floor_order %in% floor_order)
++checks <- rbind(checks, data.frame(check = "ORDERCOL", units = nrow(final), passed = order_ok, failed = nrow(final) - order_ok, stringsAsFactors = FALSE))
++# K262_REPRO=1 (with the default order and seed base): the rows reproduce M2's committed summary rows, field by field
++if (identical(Sys.getenv("K262_REPRO"), "1")) {
++  committed <- do.call(rbind, lapply(Sys.glob("docs/qa/workflow-execution/kit/kit-262/m2/*/summary.tsv"), function(p)
++    utils::read.delim(p, stringsAsFactors = FALSE, colClasses = "character")))
++  mine <- utils::read.delim(summary_file, stringsAsFactors = FALSE, colClasses = "character")
++  skip <- c("seconds_sweep", "seconds_total", "floor_order")
++  compared <- 0L; same <- 0L
++  for (i in seq_len(nrow(mine))) {
++    j <- which(committed$cell == mine$cell[[i]] & committed$r == mine$r[[i]])
++    if (length(j) != 1L) next
++    cols <- setdiff(names(committed), skip)
++    compared <- compared + 1L
++    same <- same + as.integer(identical(as.character(unlist(mine[i, cols])), as.character(unlist(committed[j, cols]))))
++  }
++  checks <- rbind(checks, data.frame(check = "REPRO", units = nrow(mine), passed = same, failed = nrow(mine) - same, stringsAsFactors = FALSE))
++}
++# K262_LIFECYCLE: the two orders give different data at one AD seed (the option does something)
++if (identical(Sys.getenv("K262_LIFECYCLE"), "1") && identical(Sys.getenv("K262_FAULT"), "")) {
++  g1 <- grid[grid$cell == cells[[1L]], ]
++  a <- m2Values(seed_base + 100 * cells[[1L]] + reps[[1L]], g1$n, g1$g, g1$f, g1$mech, g1$rate, "before")$values
++  b <- m2Values(seed_base + 100 * cells[[1L]] + reps[[1L]], g1$n, g1$g, g1$f, g1$mech, g1$rate, "after")$values
++  differs <- !isTRUE(all.equal(a, b)) && identical(dim(a), dim(b))
++  checks <- rbind(checks, data.frame(check = "ORDER_DIFFERS", units = 1L, passed = as.integer(differs), failed = as.integer(!differs), stringsAsFactors = FALSE))
++}
+ checks$status <- ifelse(checks$failed == 0L, "pass", "FAIL")
+ utils::write.table(checks, file.path(out, "checks.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
+ timing <- stats::aggregate(cbind(seconds_sweep, seconds_total) ~ n + f, data = final[!nzchar(final$error), ], FUN = mean)
