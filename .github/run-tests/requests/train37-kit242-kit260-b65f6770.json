@@ -1,0 +1,29 @@
+{
+  "requested_by": "Merge train 37 (checkpoint after trains 35 and 36): KIT-242 then KIT-260, full suite on the merge b65f6770 against staging 91817473, check both sides; ceiling 2,800 job-minutes, expected about 1,725",
+  "label": "train 37 KIT-242 + KIT-260 full suite b65f6770 vs 91817473",
+  "package_commit": "b65f67706ed6041f21510aa2d6f333fa1dd206d4",
+  "base_commit": "918174732cb2adf0d490919adbb8ec061443cb03",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120,
+    "test-workflow-saved-da.R": 90,
+    "test-kit247-design-resave.R": 120,
+    "test-kit266-limpa-combined-qc-figure.R": 90
+  },
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
