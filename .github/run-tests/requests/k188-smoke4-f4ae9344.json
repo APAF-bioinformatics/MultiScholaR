@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-188 smoke series send 4 (allowed for parse and E16 only; no simulation unit; nothing judged): after script audit 2; charged to L1r's line",
+  "label": "KIT-188 smoke4 f4ae9344",
+  "package_commit": "f4ae9344ae26a68f87d6e20b56acf41d01d42bd3",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/e16/run-e16.R",
+      "args": [],
+      "env": {},
+      "out": "k188-smoke-e16",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
