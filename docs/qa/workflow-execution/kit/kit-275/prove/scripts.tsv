@@ -1,0 +1,7 @@
+index	path	exit	seconds	status
+1	docs/qa/workflow-execution/kit/kit-275/selftest/run-selftest.R	0	111	ok
+2	docs/qa/workflow-execution/kit/kit-275/sim-k275.R	124	120	timeout
+3	docs/qa/workflow-execution/kit/kit-275/sim-k275.R	0	127	ok
+4	docs/qa/workflow-execution/kit/kit-275/score-k275.R	0	6	ok
+5	docs/qa/workflow-execution/kit/kit-275/sim-k275.R	0	121	ok
+6	docs/qa/workflow-execution/kit/kit-275/score-k275.R	1	0	failed

@@ -1,0 +1,57 @@
+item	value
+outcome	Stop (F1)
+interrupted data sets	S|D3|9201|a; S|D3|9202|a; T|D3|9201|a; T|D3|9202|a
+A D3 GA	not determined (coverage)
+A D3 GK2	not determined (coverage)
+A D3 LA	not determined (coverage)
+A D3 LM2	not determined (coverage)
+A D4 GA	not determined (coverage)
+A D4 GK2	not determined (coverage)
+A D4 LA	not determined (coverage)
+A D4 LM2	not determined (coverage)
+A D6 GA	not determined (coverage)
+A D6 GK2	not determined (coverage)
+A D6 LA	not determined (coverage)
+A D6 LM2	not determined (coverage)
+B D3 GK2	not determined (coverage)
+B D3 LM2	not determined (coverage)
+B D4 GK2	not determined (coverage)
+B D4 LM2	not determined (coverage)
+B D6 GK2	not determined (coverage)
+B D6 LM2	not determined (coverage)
+B' D3	not determined (coverage)
+B' D4	not determined (coverage)
+B' D6	not determined (coverage)
+C D3 GK2	not determined (coverage)
+C D3 LM2	not determined (coverage)
+C D4 GK2	not determined (coverage)
+C D4 LM2	not determined (coverage)
+C D6 GK2	not determined (coverage)
+C D6 LM2	not determined (coverage)
+C' D3 GK2	not determined (coverage)
+C' D3 LM2	not determined (coverage)
+C' D4 GK2	not determined (coverage)
+C' D4 LM2	not determined (coverage)
+C' D6 GK2	not determined (coverage)
+C' D6 LM2	not determined (coverage)
+pi D3 GK2	not determined (coverage)
+pi D3 LG2	not determined (coverage)
+pi D3 LM2	not determined (coverage)
+pi D3 LX	not determined (coverage)
+pi D4 GK2	not determined (coverage)
+pi D4 LG2	not determined (coverage)
+pi D4 LM2	not determined (coverage)
+pi D4 LX	not determined (coverage)
+pi D6 GK2	not determined (coverage)
+pi D6 LG2	not determined (coverage)
+pi D6 LM2	not determined (coverage)
+pi D6 LX	not determined (coverage)
+F1	TRUE
+F2	TRUE
+F3	FALSE
+F4	FALSE
+E5 failing rows	0
+E1/E2 failing checks	0
+E12 failing checks	0
+E8	0 compared, 0 equal, max deviation 0
+crossNO	0 compared, 0 differ

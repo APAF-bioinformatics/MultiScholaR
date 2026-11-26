@@ -334,3 +334,18 @@ Total remaining: 4,555 + 822 + 41 + 40 + 30 + 150 + 230 = **5,868 job-minutes = 
 - **Minors:** `budget-replan-l1-r15.py` (broken leftover) deleted; the draft's sentence on timeouts above 120 minutes now names every job concerned (D, K, M, T D4 124 and T D6 138, F+S at D6 107 does not); tier V's expected cost is about 585 job-minutes.
 - **Self-test:** 46 cases, 3,128 predictions. Against the 44 cases of 82d7d5f8, by key (stdlib comparison of both expected files): no prediction removed, added or changed in any earlier case except `tier_v` (H04: 2 keys removed, 4 added: the reason cells and the declared-arm share); two new cases (`controls_ok`, `controls_f1`). `crossno_*` and `e8score` changed their inputs' layout only (H01), not a prediction. E0: 41 hunks, 0 unmarked (local).
 - **The owner's figure** with the proving send at 49 job-minutes: remaining 5,868 + 49 = 5,917 job-minutes = 394.47 core-hours; with 12.43 used: **406.90** (406.03 without step C and scorer 2). Confirmed by my own arithmetic (5,917 x 4 / 60 = 394.47). **Decided by the owner: VAL-382, 406.90 core-hours.**
+
+## 20. Proving send (run 45785308371, package ddc40523, VAL-382; declared in `declarations/proving-declaration.md`; files in `prove/`)
+
+Scripts at the audited hashes of d6b95a05 (empty diff). Seeds 9201 and 9202 (outside every counted range); no `cells.tsv` uploaded or opened; timings not used for any timeout or ceiling. The run's overall status is "failure", by prediction (step 2 timeout, step 6 failed). Scripts total 485 s of compute plus set-up: about 24 job-minutes = 1.6 core-hours against the 3.27 ceiling.
+
+| Step | Prediction | Observed |
+|---|---|---|
+| 1 self-test, E0 | 46 cases, 3,128 predictions, 0 differ; E0 41 hunks, 0 unmarked | met (`selftest: 3128 predictions, 0 differ`; E0 line in `prove/1/console.log`) |
+| 2 A (counted, timeout 2) | verdict timeout, exit 124; `checks-k275-prove-start.tsv` (E3 lipid TRUE), provenance `final: false`, four part files, no gz, no `checks-k275-prove.tsv`, no timing file; T parts 1 to 5 data lines, S parts 1 to 4 | met: exit 124 after 120 s; exactly those files; `final: false`; T-9201 and T-9202 4 data lines each, S-9201 and S-9202 3 each (all four incomplete) |
+| 3 B (`K275_ONLY_UNITS=T-D3-9201,T-D3-9202`) | exit 0; "k275-prove-cont: 2 units"; `T-D3-9201-9202.tsv.gz` with 12 rows; no part files; timing with exactly the two tags, no error; `final: true` | met (exit 0, 2.1 min, 12 rows, two tags without error, `final: true`) |
+| 4 scorer 1 (`K275_SCORE_R=200,9202,20`, 5 files) | exit 0; interrupted = T 9201, T 9202 plus S groups with 1 to 3 rows; outcome `Stop (F1)`; rows = 12 + 4 x (complete S) from N + 1 files | met: exit 0; `interrupted data sets` = `S|D3|9201|a; S|D3|9202|a; T|D3|9201|a; T|D3|9202|a`; `outcome Stop (F1)`; `rows = 12 from 5 files` (4 part files + 1 gz; no S complete) |
+| 5 C (`K275_ONLY_UNITS=T-D3-9201`) | exit 0; 6 rows | met (exit 0, 6 rows, one tag, `final: true`) |
+| 6 scorer 2 | exit non-zero; stderr "two sources" | met: exit 1, verbatim `Error: K275 scoring stops: a data set is complete in two sources (a double run)` |
+
+The alternative branch (a T unit finishing in A) did not occur. Uploaded in full: A, B and C; scorer 1 only `decision.tsv` and `settings.txt`; scorer 2 wrote no file. The continuation paths are shown on real directories: counted mode and the timeout kill, part files, `K275_ONLY_UNITS` and `-cont`, source tagging, the interrupted-data-set path and the double-source stop. No counted request, interim read or L1-V was sent.

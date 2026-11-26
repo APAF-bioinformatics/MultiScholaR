@@ -1,0 +1,43 @@
+{
+  "job": "k275-prove-cont",
+  "tiers": ["S", "T"],
+  "designs": "D3",
+  "data_sets": [9201, 9202],
+  "lifecycle": false,
+  "smoke": false,
+  "fault": false,
+  "workers": 4,
+  "units": 1,
+  "final": true,
+  "commit": "ddc40523ddd774cb4141f3107f5c459f706a84f4",
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "omp_threads": "1",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "processor": "AMD EPYC 9V74 80-Core Processor",
+  "cores": 4,
+  "seed_rule": "set.seed(275000000 + 100000 c + 10000 s + r, kind = 'Mersenne-Twister', normal.kind = 'Inversion', sample.kind = 'Rejection'); planting 276000000 + 100000 c + r; bootstrap 277000000 + 100 c + t",
+  "key_packages": {
+    "MultiScholaR": "0.9.0",
+    "RUVIIIC": "1.0.19",
+    "ruv": "0.9.7.1",
+    "limma": "3.68.4",
+    "qvalue": "2.44.0",
+    "duckdb": "1.5.5",
+    "dplyr": "1.2.1"
+  },
+  "script_sha256": "2cc87ea569eef7fdd31e6b8f225538397799e1ae8edbd5717baf636498007d10",
+  "scorer_sha256": "a43a2c10c9a41ec297a0d075b4baf783dbdcf3a537adc8583bc7d38b7a74267c",
+  "declaration_file": "",
+  "declaration_sha256": null,
+  "started": "2026-11-26T08:57:27+0000",
+  "finished": "2026-11-26T08:59:28+0000",
+  "tables_sha256": {
+    "checks-k275-prove-cont-start.tsv": "337a47eb681c21ec2e1bc9a390cfa0f21760b868fea1f2c80bbfd44c7f6edd36",
+    "checks-k275-prove-cont.tsv": "337a47eb681c21ec2e1bc9a390cfa0f21760b868fea1f2c80bbfd44c7f6edd36",
+    "provenance-k275-prove-cont.json": "bd53b9f64562e031538b85cda893e3fe5d2df3fca86841b8fb474d1987febf1f",
+    "rows/T-D3-9201-9202.tsv.gz": "b70d9af397dba65bc431cd52791c2cb8f80a9f34c65ac298dc993455e8c61abe",
+    "timing-units-k275-prove-cont.tsv": "4f3b6e07891351db775e829008d4a57e0878f6fbd1fe1a1730001ab2012a0086"
+  }
+}
