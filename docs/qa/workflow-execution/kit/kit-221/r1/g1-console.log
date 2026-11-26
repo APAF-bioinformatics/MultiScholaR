@@ -1,0 +1,4 @@
+Error in h(simpleError(msg, call)) : 
+  error in evaluating the argument 'theObject' in selecting a method for function 'differentialAbundanceAnalysis': could not find function "ProteinQuantitativeData"
+Calls: digests_of ... with_plots -> <Anonymous> -> quiet -> <Anonymous> -> withVisible
+Execution halted
