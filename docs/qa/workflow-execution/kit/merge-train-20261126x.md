@@ -78,6 +78,7 @@ packages; `blas: reference`; `shards: 1`; `file_timeout_minutes: 45`; `file_time
 
 **Render request.** One scripts job in the manner of train 23's (`train23-render-460253ba.json`): no tests, no check,
 `blas: reference`, `NOT_CRAN=true`, `out` `kit259-render`, `out_pattern` `\.(txt|tsv)$`, script timeout 55 minutes.
+Binding: the scripts job reads its script from the `package_commit` tree, and the script copy is in the declaration commit, so the render binds `ed941465d70537595a0da606d285a08d41e622bc` (the declaration commit: f211b6675's code and templates plus docs and NEWS only); the comparison binds `f211b6675` as above.
 Script: `docs/qa/workflow-execution/kit/kit-272/render-train31.R`, a copy of `kit-259/render3.R` that differs in one
 line: `BASE <- "ec27f69e0"` (was `82a5df02d`), which only changes the commit whose templates the V0 base side renders.
 What it covers: the four proteomics lanes (`prot_lfq`, `prot_tmt`, `prot_dia`, `prot_dia_limpa`) run through
