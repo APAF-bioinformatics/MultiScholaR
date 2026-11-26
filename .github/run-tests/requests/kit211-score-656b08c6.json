@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-211 scoring (SC): the ten counted jobs' rows joined and scored by the declared score-k211.R; no environment variables (B = 10000); expected 15 job-min, timeout 30, ceiling 40; a result is never re-run",
+  "label": "KIT-211 SC scoring at 656b08c6",
+  "package_commit": "656b08c65cd3cac19af0aab3725178b7b9ffb7fd",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-211/score-k211.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-211/rows",
+        "docs/qa/workflow-execution/kit/kit-211/results"
+      ],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-211/results",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
