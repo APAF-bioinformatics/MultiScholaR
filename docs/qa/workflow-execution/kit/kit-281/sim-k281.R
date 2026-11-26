@@ -605,6 +605,13 @@ replicates <- seq.int(first, last)
 out <- args[[1L]]
 dir.create(file.path(out, "parts"), recursive = TRUE, showWarnings = FALSE)
 out <- normalizePath(out)
+# Last net (the guard is a LOCAL calling handler, partialGuard, which writes instrument-stop.txt itself; no global handler is used): an error that escaped every handler
+# records itself in the job directory, which the scorer refuses, before the non-zero exit. Package calls run under the options KIT-211 ran them under (P05).
+options(error = function() {
+    stop_file <- file.path(out, "instrument-stop.txt")
+    if (!file.exists(stop_file)) try(writeLines(paste("uncaught error:", substr(geterrmessage(), 1L, 500L)), stop_file), silent = TRUE)
+    quit(save = "no", status = 1L)
+})
 cells <- strsplit(Sys.getenv("K211_CELLS", "A,B,C,D"), ",", fixed = TRUE)[[1L]]
 if (!length(cells) || !all(cells %in% names(CELLS))) k211Abort("k211_usage", "K211_CELLS names an unknown cell")
 cells <- names(CELLS)[names(CELLS) %in% cells]

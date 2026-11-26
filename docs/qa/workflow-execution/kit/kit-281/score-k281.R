@@ -25,6 +25,18 @@
 # progress file are written before the first unit; the scorer stops on rows outside the declared range and on any smoke flag.
 
 options(warnPartialMatchDollar = TRUE)
+# Last net only (the guard itself is a LOCAL calling handler inside the tryCatch of the driver below, so its stop() is caught and recorded by stopRecord): an error that
+# escaped every handler writes the Stop outcome before the non-zero exit. No global calling handler is used.
+options(error = function() {
+    try({
+        if (!is.na(ctx[["out"]])) {
+            kind_text <- paste("uncaught error:", substr(geterrmessage(), 1L, 300L))
+            writeLines(c("outcome\tkind\treason\tcounted", paste("Stop", "instrument", gsub("[\t\n]", " ", kind_text), as.character(ctx[["counted"]]), sep = "\t")),
+                file.path(ctx[["out"]], "outcome.tsv"))
+        }
+    }, silent = TRUE)
+    quit(save = "no", status = 1L)
+})
 
 CELLS_DECIDING <- c("A", "B", "C", "D")
 CELLS_ALL <- CELLS_DECIDING # KIT-281: no Av, no Ag

@@ -25,6 +25,18 @@
 # E0 (the verbatim blocks) is local: e0-k281.py, l1/e0.txt.
 
 options(warnPartialMatchDollar = TRUE) # script lesson 2; this script loads no package code
+# The global handler is only the LAST NET: R runs a global calling handler with every local handler disabled, so its stop() reaches no tryCatch and ends the process at
+# top level. The error option below therefore writes the record (the checks so far and the message) before the non-zero exit, so a guard stop is an instrument stop WITH a
+# record, never a silent end. (L1 is sequential top-level code: its units are not wrapped in local handlers.)
+options(error = function() {
+    note <- geterrmessage()
+    try({
+        done <- if (exists("checks", envir = globalenv()) && is.list(checks) && !is.data.frame(checks) && length(checks)) do.call(rbind, checks) else NULL
+        if (!is.null(done)) utils::write.table(done, file.path(public, "checks.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
+        writeLines(c("instrument stop (L1 ended at top level)", substr(note, 1L, 500L)), file.path(public, "l1-stop.txt"))
+    }, silent = TRUE)
+    quit(save = "no", status = 1L)
+})
 globalCallingHandlers(warning = function(w) {
     if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
 })

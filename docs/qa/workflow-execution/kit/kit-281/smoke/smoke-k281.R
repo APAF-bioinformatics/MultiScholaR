@@ -8,6 +8,16 @@
 # nothing else), into tempdir() and uploads only checks-sim.tsv and the start provenance; (4) runs the scorer on that directory and expects it to refuse (smoke flag).
 # Nothing simulated leaves the runner except those two files. The smoke-flagged rows can never be scored as a result.
 options(warnPartialMatchDollar = TRUE)
+# The global handler is only the last net (its stop() reaches no tryCatch); the error option records the stop and the results so far before the non-zero exit.
+options(error = function() {
+    note <- geterrmessage()
+    try({
+        done <- if (exists("results", envir = globalenv()) && is.list(results) && !is.data.frame(results) && length(results)) do.call(rbind, results) else NULL
+        if (!is.null(done)) utils::write.table(done, file.path(public, "smoke-checks.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
+        writeLines(c("instrument stop (driver ended at top level)", substr(note, 1L, 500L)), file.path(public, "smoke-stop.txt"))
+    }, silent = TRUE)
+    quit(save = "no", status = 1L)
+})
 globalCallingHandlers(warning = function(w) {
     if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
 })

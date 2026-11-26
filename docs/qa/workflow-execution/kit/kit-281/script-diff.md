@@ -6,7 +6,7 @@ carries a `KIT-281` comment or is in the header. **Verbatim parts are located by
 
 ## `sim-k281.R` against `sim-k211.R` (complete)
 
-SHA-256 of `sim-k281.R`: `16d67e46e65ccbbd606c25cfbe4f7f59f0f0f4aaefec8aaada42ee2e545d6b27`
+SHA-256 of `sim-k281.R`: `10fa5bfda5cb05c3ee84def2fd528b64a2bb84b4c51ce242731f5eb0b8b4a236`
 
 | old lines | new lines | ticket item or status | what |
 |---|---|---|---|
@@ -33,20 +33,21 @@ SHA-256 of `sim-k281.R`: `16d67e46e65ccbbd606c25cfbe4f7f59f0f0f4aaefec8aaada42ee
 | 525-526 | 519-520 | ticket :516-527 | lifecycle: the `e9_pass`, `e9_warnings` columns removed |
 | (none; inserted after 570) | 565-590 | new code (ticket "Added" (c); K281-P05; section 8; section 3 commit rule) | `partialGuard()` (scoped partial-match guard), `G3_TABLE`, `COUNTED_FIRST`, `COUNTED_CAP`, `KIT280_MARKER` |
 | 573 | 593 | ticket :573 | usage message names sim-k281.R |
-| (none; inserted after 590) | 611-625 | new code (task item 2; ticket section 8) | the refusal of a counted job whose range lies outside rule G3's table (g3-rule.tsv) |
-| 600-601 | 635-647 | ticket :600; "Added" (a), (b) | console line names KIT-281; `progress.tsv` header and `provenance-sim-start.json` written before the first task |
-| (none; inserted after 603) | 650-653 | new code (ticket section 3 commit rule) | the assertion on the replay marker table: `threshold_values_in_filter` must be absent |
-| 609 | 659-661 | ticket "Added" (b) | one line per completed task (cell, r, seconds) appended to progress.tsv |
-| 625 | 677 | ticket :625 | console line names KIT-281 |
-| 629-630 | 681-683 | ticket :629-647; "Added" (c) | the lifecycle gathering runs under `partialGuard` |
-| 634-641 | 687-693 | ticket :634-645 | the lifecycle summary has four checks E2, E3, E7, E10 (E9 row dropped); its E2, E3 details and F1 text restated; `[[ ]]` reads |
-| 645 | (none; inserted after 696) | ticket :634-645 | `e9-warnings.tsv` dropped |
-| 647 | 698 | ticket :634-645 | end of the guarded lifecycle block |
-| 649 | 700 | ticket "Added" (c) | `assemble(...)` runs under `partialGuard` |
-| 660 | 711 | ticket "Added" (c) | the determinism comparison (own table handling only; not the re-run of the tasks) runs under `partialGuard` |
-| 670 | 721 | ticket "Added" (c) | end of the guarded determinism comparison |
-| 677-678 | 728-732 | ticket :678; "Added" (a) | the final provenance says KIT-281 and the script path; adds status, smoke, counted, marker names, G3 table hash, the guard's scope; `seconds_s` read under `partialGuard` |
-| 694 | 748 | ticket :694 | console line names KIT-281 |
+| (none; inserted after 587) | 608-614 | new code (guard repair, coordinator's check) | the last-net `options(error = )` writer: records `instrument-stop.txt` (the scorer refuses it) before the non-zero exit |
+| (none; inserted after 590) | 618-632 | new code (task item 2; ticket section 8) | the refusal of a counted job whose range lies outside rule G3's table (g3-rule.tsv) |
+| 600-601 | 642-654 | ticket :600; "Added" (a), (b) | console line names KIT-281; `progress.tsv` header and `provenance-sim-start.json` written before the first task |
+| (none; inserted after 603) | 657-660 | new code (ticket section 3 commit rule) | the assertion on the replay marker table: `threshold_values_in_filter` must be absent |
+| 609 | 666-668 | ticket "Added" (b) | one line per completed task (cell, r, seconds) appended to progress.tsv |
+| 625 | 684 | ticket :625 | console line names KIT-281 |
+| 629-630 | 688-690 | ticket :629-647; "Added" (c) | the lifecycle gathering runs under `partialGuard` |
+| 634-641 | 694-700 | ticket :634-645 | the lifecycle summary has four checks E2, E3, E7, E10 (E9 row dropped); its E2, E3 details and F1 text restated; `[[ ]]` reads |
+| 645 | (none; inserted after 703) | ticket :634-645 | `e9-warnings.tsv` dropped |
+| 647 | 705 | ticket :634-645 | end of the guarded lifecycle block |
+| 649 | 707 | ticket "Added" (c) | `assemble(...)` runs under `partialGuard` |
+| 660 | 718 | ticket "Added" (c) | the determinism comparison (own table handling only; not the re-run of the tasks) runs under `partialGuard` |
+| 670 | 728 | ticket "Added" (c) | end of the guarded determinism comparison |
+| 677-678 | 735-739 | ticket :678; "Added" (a) | the final provenance says KIT-281 and the script path; adds status, smoke, counted, marker names, G3 table hash, the guard's scope; `seconds_s` read under `partialGuard` |
+| 694 | 755 | ticket :694 | console line names KIT-281 |
 
 Everything not in the table is byte-identical to `sim-k211.R`, including: the verbatim block (KIT-211 :24-239, :241-279: KIT-197's lines plus
 KIT-211's two guarded lines), `OLD_RULE` (:291-292, Av and Ag entries harmless), `bFilterKept`, `packageBKept`, `lfcDeviation`,
@@ -59,24 +60,24 @@ ticket requires the scorer to stop on a smoke flag, which needs a producer).
 
 ## `score-k281.R` against `score-k211.R`
 
-SHA-256 of `score-k281.R`: `4e543a78318f6f65e7d9fae50bb8c72301bfd029a87e76ba4bc3a49f08730898`
+SHA-256 of `score-k281.R`: `0f838f47e3eb21bf4fe389e6e776c0639fba751f73880d0e589e4b3ddf6d8628`
 
 Identical ranges (3 lines or more; KIT-211 line to KIT-281 line). Everything else in KIT-281's file is adapted or new (list below).
 
 | old lines | new lines | content |
 |---|---|---|
-| 42-66 | 59-83 | constants STRATA, VD (unchanged lines among the adapted constants), `k211Abort`, the verbatim blocks (num/writeTsv, jackSe, quant) |
-| 71-73 | 147-149 | readInput's first lines (adapted function; E0 does not assert them) |
-| 78-80 | 150-152 | readInput's accumulators |
-| 91-168 | 217-294 | `armAtoms` up to `n0t_kept_both` (the new atoms are inserted before `calls <- ...`)  |
-| 169-187 | 305-323 | `armAtoms` end |
-| 188-219 | 327-358 | `armStats` (new entries inserted at the head of `out`) |
-| 220-231 | 362-373 | `computeStats` head |
-| 234-239 | 374-379 | `computeStats` (the Phi block) |
-| 246-248 | 386-388 | `computeStats` end |
-| 252-299 | 393-440 | `bootstrapWeights`, `resampleStats`, `summariseStats`, `q1`, `limitsOf` (E0: identical by name) |
-| 327-335 | 441-449 | `fmt`, `mdTable` (E0: identical by name) |
-| 433-435 | 496-498 | falsifier's interval arithmetic lines |
+| 42-66 | 71-95 | constants STRATA, VD (unchanged lines among the adapted constants), `k211Abort`, the verbatim blocks (num/writeTsv, jackSe, quant) |
+| 71-73 | 159-161 | readInput's first lines (adapted function; E0 does not assert them) |
+| 78-80 | 162-164 | readInput's accumulators |
+| 91-168 | 229-306 | `armAtoms` up to `n0t_kept_both` (the new atoms are inserted before `calls <- ...`)  |
+| 169-187 | 317-335 | `armAtoms` end |
+| 188-219 | 339-370 | `armStats` (new entries inserted at the head of `out`) |
+| 220-231 | 374-385 | `computeStats` head |
+| 234-239 | 386-391 | `computeStats` (the Phi block) |
+| 246-248 | 398-400 | `computeStats` end |
+| 252-299 | 405-452 | `bootstrapWeights`, `resampleStats`, `summariseStats`, `q1`, `limitsOf` (E0: identical by name) |
+| 327-335 | 453-461 | `fmt`, `mdTable` (E0: identical by name) |
+| 433-435 | 508-510 | falsifier's interval arithmetic lines |
 
 Adapted (ticket section 6 list) or new, by KIT-281 line:
 
@@ -98,7 +99,7 @@ Adapted (ticket section 6 list) or new, by KIT-281 line:
 
 ## `l1-k281.R` against `l1-k211.R`
 
-SHA-256 of `l1-k281.R`: `9a899c6112bb91d463ca935ed2b6012444135d568c609ed1e0d3aec200979251`
+SHA-256 of `l1-k281.R`: `47a065cfce6e0239e326e38b3c092d5b458a8f1fc1bb3cfa098f54d89c6df2e3`
 
 Verbatim (E0, markers): `run` (l1-k197.R:34-37) and `sha` (l1-k197.R:38-38). Adapted: the header; the partial-match guard (global); provenance and progress before the
 first unit; G0 as a check; E2, E3, E7, E10 (E9 dropped); E8; **E1'** in place of E1 (S and B against KIT-211's committed rows); **E4** is the scorer self-test (`selftest/`)
@@ -107,19 +108,19 @@ in place of KIT-211's e4 tables; E5 (scorer twice, mechanics env); E6 (three mas
 
 | old lines | new lines |
 |---|---|
-| 21-32 | 31-42 |
-| 37-40 | 54-57 |
-| 46-48 | 63-65 |
-| 52-57 | 89-94 |
-| 62-65 | 103-106 |
-| 71-76 | 112-117 |
-| 88-90 | 124-126 |
-| 114-116 | 155-157 |
-| 132-134 | 179-181 |
-| 208-211 | 202-205 |
-| 217-220 | 211-214 |
-| 224-231 | 218-225 |
-| 238-240 | 232-234 |
-| 242-246 | 236-240 |
-| 249-251 | 243-245 |
-| 275-278 | 301-304 |
+| 21-32 | 43-54 |
+| 37-40 | 66-69 |
+| 46-48 | 75-77 |
+| 52-57 | 101-106 |
+| 62-65 | 115-118 |
+| 71-76 | 124-129 |
+| 88-90 | 136-138 |
+| 114-116 | 167-169 |
+| 132-134 | 191-193 |
+| 208-211 | 214-217 |
+| 217-220 | 223-226 |
+| 224-231 | 230-237 |
+| 238-240 | 244-246 |
+| 242-246 | 248-252 |
+| 249-251 | 255-257 |
+| 275-278 | 313-316 |

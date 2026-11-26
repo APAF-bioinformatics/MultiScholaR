@@ -42,6 +42,7 @@ SIM = {  # old start line -> (class, what)
     525: ('ticket :516-527', 'lifecycle: the `e9_pass`, `e9_warnings` columns removed'),
     571: ('new code (ticket "Added" (c); K281-P05; section 8; section 3 commit rule)', '`partialGuard()` (scoped partial-match guard), `G3_TABLE`, `COUNTED_FIRST`, `COUNTED_CAP`, `KIT280_MARKER`'),
     573: ('ticket :573', 'usage message names sim-k281.R'),
+    588: ('new code (guard repair, coordinator\'s check)', 'the last-net `options(error = )` writer: records `instrument-stop.txt` (the scorer refuses it) before the non-zero exit'),
     591: ('new code (task item 2; ticket section 8)', 'the refusal of a counted job whose range lies outside rule G3\'s table (g3-rule.tsv)'),
     600: ('ticket :600; "Added" (a), (b)', 'console line names KIT-281; `progress.tsv` header and `provenance-sim-start.json` written before the first task'),
     604: ('new code (ticket section 3 commit rule)', 'the assertion on the replay marker table: `threshold_values_in_filter` must be absent'),
