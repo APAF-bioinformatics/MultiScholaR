@@ -654,13 +654,41 @@ trxRuviiiExportOperation <- function(binding) {
         })
 }
 
+#' Whether the head lineage's RUVs state applied no correction for unwanted variation (KIT-274): the integration's own
+#' condition (`trxIntegrationRuvState`), so the refusal of the RUVIII export and the integration input never disagree. A
+#' lineage with no RUVs state passes (the export's own read refuses it).
+#' @param manager The session's owner, inside its state scope.
+#' @return The state (`trxIntegrationRuvState`) when RUV was not applied, else NULL.
+#' @noRd
+trxRuvNotApplied <- function(manager) {
+    state <- trxIntegrationRuvState(manager)
+    if (is.null(state) || state$applied) NULL else state
+}
+
+#' Refuse the RUVIII export when the head's RUVs state applied no RUV (KIT-274, VAL-318, VAL-332): with k = 0 RUVIII would
+#' return the TMM logCPM unchanged, which is also what the integration then uses.
+#' @param manager The session's owner, inside its state scope.
+#' @return Invisibly NULL; an error of class `trx_ruviii_no_ruv` when no RUV was applied.
+#' @noRd
+trxAssertRuviiiExportApplied <- function(manager) {
+    state <- trxRuvNotApplied(manager)
+    if (is.null(state)) return(invisible(NULL))
+    reason <- state$ruvs$outcomes$ruv_not_applied_reason
+    if (!checkmate::test_string(reason, min.chars = 1L)) reason <- "no reason was recorded"
+    trxAbort(sprintf(paste0("no RUVIII export is made: this analysis applied no correction for unwanted variation (k = 0; %s), ",
+        "so RUVIII would return the TMM logCPM unchanged; the integration uses the TMM logCPM."), reason),
+        c("trx_ruviii_no_ruv", "trx_error"))
+}
+
 #' Accept a RUVIII export on the head (the worker's or the wrapper's run): the product rooted, the step's provenance cleared
-#' (it commits no state) and the export recorded under `snapshot$exports`, which the analysis record lists.
+#' (it commits no state) and the export recorded under `snapshot$exports`, which the analysis record lists. KIT-274: a head
+#' that applied no RUV refuses it (the backstop every route ends in).
 #' @param run The operation's run (`reference`, `value`).
 #' @noRd
 acceptTrxRuviiiExport <- function(manager, source, run) {
     if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the RUVIII export needs the session's state owner", class = "saved_entity_scope")
     withWorkflowStateScope(manager, function() {
+        trxAssertRuviiiExportApplied(manager)
         context <- manager$.context
         clearWorkflowStepProvenance(manager)
         if (is.null(context$snapshot$products[[run$reference$entity_id]])) rootWorkflowProduct(manager, run$reference, list(source))
@@ -1332,6 +1360,7 @@ runTrxReferenceDaAnalysis <- function(manager, source, settings, contrasts) {
 runTrxReferenceRuviiiExport <- function(manager, m_source = "group") {
     if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the RUVIII export needs the session's state owner", class = "saved_entity_scope")
     withWorkflowStateScope(manager, function() {
+        trxAssertRuviiiExportApplied(manager)
         source <- getWorkflowStateReference(manager)
         ruvs <- trxStateRuvs(manager, source)
         run <- runSavedOperation(manager, workflowOperationEntry("trx_ruviii_export")$declaration, source,
