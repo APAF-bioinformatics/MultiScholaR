@@ -133,6 +133,8 @@ runOmicDaServer <- function(input, output, session, workflowData, experimentPath
     registerOmicDaTableOutputs(output, input, tab, da, binding)
     # KIT-212 (VAL-172 (4); E-8): the tab follows the head, as proteomics' does.
     shiny::observeEvent(workflowData$state_update_trigger, omicDaFollowHead(workflowData, tab, da))
+    # KIT-277 (R01): a formula-only design Save sets the box of a tab whose box is its own.
+    if (isTRUE(da$model$editable)) registerOmicDaDesignFormula(session, workflowData)
     invisible(tab)
 }
 

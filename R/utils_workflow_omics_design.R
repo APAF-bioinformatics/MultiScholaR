@@ -400,9 +400,39 @@ compareOmicsDesignResult <- function(manager, results, stateName, current) {
 #' the session owner, so that a save that failed after replacing the bus cannot make the next save of the same design
 #' look unchanged.
 #' @noRd
-rememberOmicsDesignCommit <- function(manager, design, data) {
-    if (inherits(manager, "DIAStateAdapter")) manager$.context$kit247_design_compared <- list(design_matrix = design, data = data)
+rememberOmicsDesignCommit <- function(manager, design, data, config = NULL) {
+    # KIT-277 (C03): the record also holds the saved formula, so that a later save of the same design is compared with it.
+    if (inherits(manager, "DIAStateAdapter")) {
+        manager$.context$kit247_design_compared <- list(design_matrix = design, data = data,
+            formula = if (!is.null(config)) resolveOmicsDesignFormula(config))
+    }
     invisible(NULL)
+}
+
+#' KIT-277 (C03). After a limited Save: the remembered record keeps its design and data and takes the saved formula.
+#' @noRd
+rememberOmicsDesignFormula <- function(manager, formulaString) {
+    if (inherits(manager, "DIAStateAdapter")) {
+        remembered <- manager$.context$kit247_design_compared
+        if (!is.null(remembered)) {
+            remembered$formula <- formulaString
+            manager$.context$kit247_design_compared <- remembered
+        }
+    }
+    invisible(NULL)
+}
+
+#' KIT-277. The model formula a design save would change: the saved configuration's formula against the remembered
+#' record's (else the bus's), spaces removed.
+#' @param manager,workflowData The session owner and the bus, before the save hydrates the bus.
+#' @param config The save's configuration.
+#' @return `c(from =, to =)`, or NULL when the formula is the same.
+#' @noRd
+omicsDesignFormulaChange <- function(manager, workflowData, config) {
+    from <- omicsDesignCompared(manager, workflowData)$formula %||% resolveOmicsDesignFormula(workflowData$config_list)
+    to <- resolveOmicsDesignFormula(config)
+    if (identical(gsub("[[:space:]]", "", from), gsub("[[:space:]]", "", to))) return(NULL)
+    c(from = from, to = to)
 }
 
 #' KIT-247 (VAL-277). What a design save is compared with: the last successful commit's record, else the bus (a session
@@ -460,7 +490,8 @@ removeOmicIntegrationInput <- function(integrationDir, omicType) {
 #' @param experimentPaths The project paths (`integration_dir`, `base_dir`).
 #' @param notify `shiny::showNotification`'s contract.
 #' @noRd
-completeOmicsDesignCut <- function(workflowData, omicType, experimentPaths, notify = shiny::showNotification) {
+completeOmicsDesignCut <- function(workflowData, omicType, experimentPaths, notify = shiny::showNotification,
+                                   cutText = omicsDesignCutText) {
     status <- workflowData$tab_status
     names_status <- names(status)
     at <- match("quality_control", names_status)
@@ -475,7 +506,7 @@ completeOmicsDesignCut <- function(workflowData, omicType, experimentPaths, noti
         notify(cli::ansi_strip(conditionMessage(e)), type = "warning", duration = NULL)
         FALSE
     })
-    notify(omicsDesignCutText(removed), type = "warning", duration = NULL)
+    notify(cutText(removed), type = "warning", duration = NULL)
     invisible(TRUE)
 }
 
@@ -527,7 +558,8 @@ omicsDesignContrastsChanged <- function(new, old) {
 #' analysis until the DA is run again); the pending design provenance, if any, is cleared.
 #' @param daStatusKey The DA tab's status name (`differential_expression`, `differential_analysis`).
 #' @noRd
-applyOmicsDesignUnchanged <- function(workflowData, results, daStatusKey, notify = shiny::showNotification) {
+applyOmicsDesignUnchanged <- function(workflowData, results, daStatusKey, notify = shiny::showNotification,
+                                      quiet = FALSE) {
     changed <- omicsDesignContrastsChanged(results$contrasts_tbl, workflowData$contrasts_tbl)
     workflowData$contrasts_tbl <- results$contrasts_tbl
     workflowData$config_list <- results$config_list
@@ -538,7 +570,8 @@ applyOmicsDesignUnchanged <- function(workflowData, results, daStatusKey, notify
         status[[daStatusKey]] <- "pending"
         workflowData$tab_status <- status
     }
-    notify(omicsDesignUnchangedText(changed), type = "message")
+    # KIT-277 (C04): a save that carries a limited change through says what it did, not that nothing changed.
+    if (!isTRUE(quiet)) notify(omicsDesignUnchangedText(changed), type = "message")
     invisible(changed)
 }
 
@@ -551,15 +584,32 @@ applyOmicsDesignUnchanged <- function(workflowData, results, daStatusKey, notify
 #' @return The verdict, invisibly.
 #' @noRd
 runOmicsDesignResaveGate <- function(session, verdict, later, commit, unchanged,
-                                     showModal = shiny::showModal) {
+                                     showModal = shiny::showModal, limited = character()) {
     # A first save, or a save with nothing after the design state, is committed as before (G1, G2).
     if (!isTRUE(later) || !verdict %in% c("unchanged", "changed")) {
         commit(cut = FALSE)
         return(invisible(verdict))
     }
-    if (identical(verdict, "unchanged")) {
+    if (identical(verdict, "unchanged") && !length(limited)) {
         unchanged()
         return(invisible(verdict))
+    }
+    # KIT-277: a save whose design and data are unchanged but which changes the model formula, the organism or the FASTA
+    # file after Accession Cleanup asks once; Save runs `unchanged()`, which carries the change through; Cancel changes
+    # nothing.
+    if (identical(verdict, "unchanged")) {
+        if (is.null(session) || !is.function(session$ns)) {
+            rlang::abort(omicsDesignLimitedUnconfirmedText(),
+                class = c("omics_design_resave_unconfirmed", "omics_design_refused"))
+        }
+        registerOmicsDesignResaveConfirmation(session)
+        assign(omicsDesignResaveKey(session), function() unchanged(), envir = session$userData)
+        showModal(shiny::modalDialog(title = "Save the changed settings?",
+            shiny::p(omicsDesignLimitedText(limited)),
+            footer = shiny::tagList(shiny::modalButton("Cancel"),
+                shiny::actionButton(session$ns("confirm_design_resave"), "Save", class = "btn-warning")),
+            easyClose = FALSE))
+        return(invisible("limited"))
     }
     # No session to ask (a scripted call): a changed design over later results cannot be confirmed, so it is refused and
     # nothing is committed (coordinator's ruling; ticket r1.4 section 19).
@@ -593,5 +643,157 @@ registerOmicsDesignResaveConfirmation <- function(session) {
         shiny::removeModal()
         if (is.function(pending)) pending()
     }, ignoreInit = TRUE)
+    invisible(NULL)
+}
+
+# ------------------------------------------------------------------------------------------------
+# KIT-277 (VAL-331, VAL-345, VAL-353): a design saved again with only the model formula, the organism or the FASTA file
+# changed asks first, and Save carries the change through to every consumer. All texts are DRAFTS (VAL-41).
+# ------------------------------------------------------------------------------------------------
+
+#' KIT-277. The sentence of each kind of limited change, in the order formula, organism, FASTA.
+#' @param limited A named list: `formula = c(from, to)`, `organism = c(from, to)` (labels), `fasta = list(from, to, steps)`.
+#' @noRd
+omicsDesignLimitedText <- function(limited) {
+    kinds <- intersect(c("formula", "organism", "fasta"), names(limited))
+    what <- vapply(kinds, function(kind) switch(kind,
+        formula = sprintf("the model formula (from `%s` to `%s`)", limited$formula[["from"]], limited$formula[["to"]]),
+        organism = sprintf("the organism (from %s to %s)", limited$organism[["from"]], limited$organism[["to"]]),
+        fasta = sprintf("the FASTA file (from `%s` to `%s`)", limited$fasta$from, limited$fasta$to)), "")
+    effects <- vapply(kinds, function(kind) switch(kind,
+        formula = paste("Saving the formula keeps Quality Control and normalisation, replaces the formula on the",
+            "Differential analysis tab (a formula typed there is replaced) and sets the differential analysis back:",
+            "Copy and the Report wait until you run it again."),
+        organism = paste("Saving the organism keeps Quality Control and normalisation, sets the differential analysis",
+            "and enrichment back and removes this omic's earlier integration input. The protein annotation for the new",
+            "organism is fetched when you next run the differential analysis or enrichment."),
+        fasta = paste0("Accession Cleanup used the earlier file, so Accession Cleanup and every later step are set ",
+            "aside: ", paste(limited$fasta$steps, collapse = ", "), ". Saving sets them aside and removes this omic's ",
+            "earlier integration input; you apply them again.")), "")
+    paste("This save changes", paste(what, collapse = ", "), "only.", paste(effects, collapse = " "))
+}
+
+#' @noRd
+omicsDesignLimitedUnconfirmedText <- function() {
+    paste0("The settings were not saved: the model formula, the organism or the FASTA file differs from the saved ",
+        "design and later results exist, and there is no application session to ask whether to set them aside. ",
+        "Save the design in the application, which asks.")
+}
+
+#' KIT-277. The notice of a limited Save, one sentence per kind.
+#' @noRd
+omicsDesignLimitedNotice <- function(kind, omicType = NULL, detail = NULL) {
+    switch(kind,
+        formula = if (identical(omicType, "transcriptomics")) {
+            paste("Formula saved. The transcriptomics differential analysis models the groups and the RUV factors from",
+                "the design, so this formula does not change it.")
+        } else {
+            "Formula saved. Quality Control and normalisation are kept; run the differential analysis again."
+        },
+        organism = "Organism saved. Run the differential analysis, then enrichment, again.",
+        fasta_used = sprintf(paste("FASTA file saved (from `%s` to `%s`). Accession Cleanup will use it."),
+            detail$from, detail$to),
+        fasta_cut = sprintf(paste("FASTA file saved (from `%s` to `%s`). The history went back to the step before",
+            "Accession Cleanup; apply Accession Cleanup and the later steps again."), detail$from, detail$to))
+}
+
+#' KIT-277 (4.5). One set-back for every consumer: the head's DA reference and enrichment marker are cleared and the head
+#' is published once (the earlier entities stay in the store); the DA and enrichment tabs go to pending and the state
+#' trigger runs the tabs' observers. `design_formula` records, for lipidomics and metabolomics, the formula the DA tab's
+#' box takes until the next DA run (R01).
+#' @param workflowData The bus.
+#' @param daStatusKey,enrichmentStatusKey The tabs' status names (`enrichment` NULL when the omic has none).
+#' @param designFormula NULL, or the formula to record on the head.
+#' @noRd
+setOmicsDaBack <- function(workflowData, daStatusKey, enrichmentStatusKey = NULL, designFormula = NULL) {
+    manager <- workflowData$state_manager
+    if (inherits(manager, "DIAStateAdapter")) {
+        withWorkflowStateScope(manager, function() {
+            snapshot <- manager$.context$snapshot
+            snapshot$da_results <- NULL
+            snapshot$enrichment_results <- NULL
+            if (!is.null(designFormula)) snapshot$design_formula <- designFormula
+            publishWorkflowStateHead(manager$.context, snapshot)
+        })
+    }
+    status <- workflowData$tab_status
+    for (key in c(daStatusKey, enrichmentStatusKey)) {
+        if (!is.null(status[[key]]) && !identical(status[[key]], "disabled")) status[[key]] <- "pending"
+    }
+    workflowData$tab_status <- status
+    workflowData$state_update_trigger <- Sys.time()
+    invisible(NULL)
+}
+
+#' KIT-277 (4.1). On Save, a formula-only change carried through: proteomics records the formula on the head's settings
+#' (the DA tab reads them whenever it is opened); lipidomics and metabolomics send the DA tab's box a bus event and keep
+#' the formula on the head until the next DA run; transcriptomics does nothing the DA reads (a notice says so). The DA is
+#' set back for every consumer except transcriptomics. The remembered record takes the formula (C03).
+#' @return The notice's text.
+#' @noRd
+carryOmicsDesignFormula <- function(workflowData, omicType, formulaString, daStatusKey) {
+    manager <- workflowData$state_manager
+    if (!identical(omicType, "transcriptomics")) {
+        if (identical(omicType, "proteomics")) {
+            commitDIADesignFormula(manager, formulaString)
+            setOmicsDaBack(workflowData, daStatusKey, "enrichment_analysis")
+        } else {
+            setOmicsDaBack(workflowData, daStatusKey, designFormula = formulaString)
+            saved <- workflowData$design_formula_saved
+            workflowData$design_formula_saved <- list(formula = formulaString, counter = (saved$counter %||% 0L) + 1L)
+        }
+    }
+    rememberOmicsDesignFormula(manager, formulaString)
+    omicsDesignLimitedNotice("formula", omicType)
+}
+
+#' KIT-277 (R01). The formula a design Save placed for a DA tab whose box is its own (lipidomics, metabolomics): the head's
+#' `design_formula`, only while the store holds no DA (a DA run ends it; after it the box is the user's).
+#' @noRd
+omicDaDesignFormula <- function(workflowData) {
+    manager <- workflowData$state_manager
+    if (!inherits(manager, "DIAStateAdapter")) return(NULL)
+    snapshot <- manager$.context$snapshot
+    if (!is.null(snapshot$da_results)) return(NULL)
+    snapshot$design_formula
+}
+
+#' KIT-277 (R01). One observer per DA tab: it writes the box with the formula once per Save (the bus event's counter), and
+#' when the tab's server starts (a project reopened before the DA was run); never as a standing rule, so a formula typed
+#' on the tab is not overwritten by a later head change.
+#' @param session The DA tab's session.
+#' @param workflowData The bus.
+#' @noRd
+registerOmicDaDesignFormula <- function(session, workflowData) {
+    applied <- shiny::reactiveVal(NULL)
+    shiny::observe({
+        counter <- workflowData$design_formula_saved$counter
+        formula <- shiny::isolate(omicDaDesignFormula(workflowData))
+        key <- paste(counter %||% 0L, formula)
+        if (is.null(formula) || identical(shiny::isolate(applied()), key)) return(invisible(NULL))
+        applied(key)
+        shiny::updateTextAreaInput(session, "formula_string", value = formula)
+    })
+    invisible(NULL)
+}
+
+#' KIT-277. The shared omic design's `unchanged()`: the comparisons and configuration written as KIT-247 does, and, when the
+#' formula changed, the formula carried through (a failure is shown as a design save error) with its own notice.
+#' @param results `contrasts_tbl` and `config_list`.
+#' @param config The omic's GUI configuration.
+#' @param formula `omicsDesignFormulaChange()`'s value.
+#' @noRd
+runOmicsDesignUnchangedSave <- function(workflowData, results, config, formula = NULL,
+                                        notify = shiny::showNotification) {
+    daKey <- config$da$status_key %||% "differential_analysis"
+    applyOmicsDesignUnchanged(workflowData, results, daKey, notify, quiet = !is.null(formula))
+    if (!is.null(formula)) {
+        tryCatch(notify(carryOmicsDesignFormula(workflowData, config$shell$omic_type, formula[["to"]], daKey),
+            type = "message"), error = function(e) {
+                msg <- paste("Error saving design matrix results:", conditionMessage(e))
+                logger::log_error(msg)
+                notify(msg, type = "error", duration = 15)
+            })
+    }
     invisible(NULL)
 }

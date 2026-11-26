@@ -82,7 +82,10 @@ hydrateProtDesignImportedFastaSidecar <- function(
   fastaMetadataFileImport <- file.path(importPath, "fasta_metadata.RDS")
   fastaMetadataFileScripts <- file.path(sourceDir, "fasta_metadata.RDS")
 
-  if (file.exists(aaSeqFileImport)) {
+  # KIT-277 (stage 3): which table this import applies is decided once, by the pure function the record also uses.
+  fastaSource <- protDesignFastaSource(workflowData, importPath, sourceDir, fastaPath)$source
+
+  if (identical(fastaSource, "folder_rds")) {
     logger::log_info("Loading aa_seq_tbl_final from import directory.")
     aaSeqTblFinal <- readRDS(aaSeqFileImport)
     workflowData$aa_seq_tbl_final <- aaSeqTblFinal
@@ -95,7 +98,7 @@ hydrateProtDesignImportedFastaSidecar <- function(
       saveRDS(workflowData$fasta_metadata, fastaMetadataFileScripts)
       logger::log_info("Loaded and copied FASTA metadata from import directory.")
     }
-  } else if (file.exists(aaSeqFileScripts)) {
+  } else if (identical(fastaSource, "project_table")) {
     logger::log_info("Loading existing aa_seq_tbl_final from scripts directory.")
     aaSeqTblFinal <- readRDS(aaSeqFileScripts)
     workflowData$aa_seq_tbl_final <- aaSeqTblFinal
@@ -104,13 +107,15 @@ hydrateProtDesignImportedFastaSidecar <- function(
       workflowData$fasta_metadata <- readRDS(fastaMetadataFileScripts)
       logger::log_info("Loaded FASTA metadata from scripts directory.")
     }
-  } else {
+  } else if (!identical(fastaSource, "fasta_new")) {
     logger::log_warn("No aa_seq_tbl_final found. Protein accession cleanup will be skipped.")
     workflowData$aa_seq_tbl_final <- NULL
     workflowData$fasta_metadata <- NULL
   }
 
-  if (is.null(workflowData$aa_seq_tbl_final) && !is.null(fastaPath)) {
+  # KIT-277: a FASTA file that is new to the project replaces the project's earlier table (and a failure is an error: the
+  # earlier table stays and the Save is refused, instead of the file being recorded without being applied).
+  if (identical(fastaSource, "fasta_new") || (is.null(workflowData$aa_seq_tbl_final) && !is.null(fastaPath))) {
     logger::log_info("Processing FASTA file for accession cleanup...")
 
     tryCatch({
@@ -149,6 +154,9 @@ hydrateProtDesignImportedFastaSidecar <- function(
         duration = 5
       )
     }, error = function(e) {
+      if (identical(fastaSource, "fasta_new")) {
+        rlang::abort(paste("The new FASTA file could not be processed:", conditionMessage(e)))
+      }
       logger::log_warn(paste("Error processing FASTA file:", e$message))
       logger::log_warn("Continuing without FASTA - accession cleanup will be skipped")
       workflowData$aa_seq_tbl_final <- NULL
@@ -360,6 +368,11 @@ runProtDesignImportConfirmationFlow <- function(
       omicsDesignCompared(manager, workflowData)) else "first"
     if (later && verdict %in% c("unchanged", "changed")) {
       importedConfig <- workflowData$config_list
+      # KIT-277: the formula, the organism and the FASTA file of a save whose design and data are unchanged.
+      detected <- if (identical(verdict, "unchanged")) protDesignLimitedChanges(workflowData, importArtifacts,
+        experimentPaths, importedConfig, taxonId, organismName) else list()
+      asking <- detected[intersect(names(detected), c("formula", "organism"))]
+      if (!is.null(detected$fasta$steps)) asking$fasta <- detected$fasta
       # AUDIT I01 (VAL-277): the confirmed import runs inside the import's error handling, as the unconfirmed one does
       # in the shell: an error after Save is shown as "Error during import: ...", and the bus is put back as it was.
       flow <- function(cut) {
@@ -367,6 +380,8 @@ runProtDesignImportConfirmationFlow <- function(
         fields <- c("design_matrix", "data_cln", "contrasts_tbl", "config_list", "taxon_id", "organism_name",
           "aa_seq_tbl_final", "fasta_metadata", "uniprot_dat_cln")
         kept <- lapply(stats::setNames(fields, fields), function(field) shiny::isolate(workflowData[[field]]))
+        # KIT-277 (C05): and the project's copies the hydrate writes, with the recorded `fasta` input.
+        keptFiles <- readProtDesignProjectCopies(experimentPaths, manager)
         tryCatch({
           workflowData$config_list <- importedConfig
           runProtDesignImportConfirmationFlowNow(workflowData, experimentPaths, importArtifacts,
@@ -375,6 +390,7 @@ runProtDesignImportConfirmationFlow <- function(
           completePostCheckpointFn, cut = cut)
         }, error = function(e) {
           for (field in fields) workflowData[[field]] <- kept[[field]]
+          restoreProtDesignProjectCopies(keptFiles, manager)
           msg <- paste("Error during import:", conditionMessage(e))
           logger::log_error(msg)
           shiny::removeModal()
@@ -384,12 +400,17 @@ runProtDesignImportConfirmationFlow <- function(
         })
       }
       # AUDIT I01 (b): the working notice is closed before the question (Cancel then leaves nothing behind).
-      if (identical(verdict, "changed")) shiny::removeNotification(successNotificationId)
+      if (identical(verdict, "changed") || length(asking)) shiny::removeNotification(successNotificationId)
       return(invisible(runOmicsDesignResaveGate(session, verdict, later, commit = flow, unchanged = function() {
         shiny::removeNotification(successNotificationId)
+        workflowData$config_list <- importedConfig
         applyOmicsDesignUnchanged(workflowData, list(contrasts_tbl = importedArtifacts$importedContrasts,
-          config_list = workflowData$config_list), "differential_expression")
-      })))
+          config_list = workflowData$config_list), "differential_expression", quiet = length(detected) > 0L)
+        if (length(detected)) {
+          carryProtDesignLimited(workflowData, experimentPaths, importArtifacts, taxonId, organismName, detected,
+            hydrateFastaSidecar)
+        }
+      }, limited = asking)))
     }
   }
   runProtDesignImportConfirmationFlowNow(workflowData, experimentPaths, importArtifacts, importedArtifacts, taxonId,
@@ -403,6 +424,9 @@ runProtDesignImportConfirmationFlow <- function(
 runProtDesignImportConfirmationFlowNow <- function(workflowData, experimentPaths, importArtifacts, importedArtifacts,
     taxonId, organismName, session, qcTrigger, successMessage, successNotificationId, hydrateFastaSidecar,
     hydrateUniprotSidecar, initializeWorkflowState, buildStateCheckpointFn, completePostCheckpointFn, cut = FALSE) {
+  # KIT-277 (AUDIT Q03): the file the hydrate applies (decided on the state before it), recorded as the project's input.
+  appliedFasta <- protDesignFastaSource(workflowData, importArtifacts$importPath, experimentPaths$source_dir,
+    importArtifacts$fastaPath)$file
   hydrateFastaSidecar(
     workflowData = workflowData,
     importPath = importArtifacts$importPath,
@@ -437,8 +461,9 @@ runProtDesignImportConfirmationFlowNow <- function(workflowData, experimentPaths
   # KIT-026: the directory import reads its design (and FASTA, when one is found) from files. KIT-247 (AUDIT C05): recorded
   # after the checkpoint, so an import refused there is never named as the project's input.
   recordDIAWorkflowInputs(workflowData$state_manager, c(design_file = importArtifacts$designFile,
-    fasta = importArtifacts$fastaPath))
-  rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln)
+    fasta = appliedFasta))
+  rememberOmicsDesignCommit(workflowData$state_manager, workflowData$design_matrix, workflowData$data_cln,
+    workflowData$config_list)
   didCut <- isTRUE(cut) && cutOmicsDesignHistory(workflowData$state_manager, stateName)
   # KIT-177: the values the design step set to missing, named and counted.
   notifyProtDesignLog2Counts(workflowData)
@@ -517,7 +542,9 @@ runProtDesignImportObserverShell <- function(
       session = session,
       qcTrigger = qcTrigger
     )
-    if (identical(flowResult, "changed")) workflowData$config_list <- previousConfig
+    if (is.character(flowResult) && length(flowResult) == 1L && flowResult %in% c("changed", "limited")) {
+      workflowData$config_list <- previousConfig
+    }
 
     invisible(list(
       ok = TRUE,
@@ -729,4 +756,204 @@ initializeProtDesignImportBootstrap <- function(
     resolvedVolumes = resolvedVolumes,
     importFastaPath = reactiveValFn(NULL)
   )
+}
+
+# ------------------------------------------------------------------------------------------------
+# KIT-277 (VAL-331, VAL-345, VAL-353): an Import Existing Design that changes only the model formula, the organism or the
+# FASTA file asks first, and Save carries the change through. All texts are DRAFTS (VAL-41).
+# ------------------------------------------------------------------------------------------------
+
+#' KIT-277 (4.3, AUDIT Q03). Which table an Import Existing Design applies: one pure decision, used by the hydrate and by
+#' the record of the `fasta` input. (1) the folder's `aa_seq_tbl_final.RDS`; (2) a `.fasta` file that is new to a project
+#' that already holds a table (its hash is not the recorded `fasta` input's; read only when the session owner is a
+#' reference-state owner and the file exists); (3) the project's `source_dir` table; (4) the `.fasta` file; else none.
+#' @return `list(source = "folder_rds"|"fasta_new"|"project_table"|"fasta"|"none", file)`: `file` is the file that is
+#'   applied (NULL for the project's own table and for none).
+#' @noRd
+protDesignFastaSource <- function(workflowData, importPath, sourceDir, fastaPath = NULL) {
+  folderTable <- if (length(importPath)) file.path(importPath, "aa_seq_tbl_final.RDS") else character()
+  if (length(folderTable) == 1L && file.exists(folderTable)) return(list(source = "folder_rds", file = folderTable))
+  projectTable <- if (length(sourceDir)) file.path(sourceDir, "aa_seq_tbl_final.RDS") else character()
+  heldInFile <- length(projectTable) == 1L && file.exists(projectTable)
+  manager <- workflowData$state_manager
+  if (!is.null(fastaPath) && inherits(manager, "DIAStateAdapter") && file.exists(fastaPath) &&
+      (heldInFile || !is.null(workflowData$aa_seq_tbl_final))) {
+    recorded <- manager$.context$snapshot$file_dependencies$fasta$sha256
+    if (!identical(hashWorkflowFile(fastaPath), recorded)) return(list(source = "fasta_new", file = fastaPath))
+  }
+  if (heldInFile) return(list(source = "project_table", file = NULL))
+  if (!is.null(fastaPath)) return(list(source = "fasta", file = fastaPath))
+  list(source = "none", file = NULL)
+}
+
+#' KIT-277. The first Accession Cleanup state of the active history, or NULL when none has run.
+#' @noRd
+protDesignCleanupState <- function(manager) {
+  history <- diaStateHistory(manager)
+  hit <- history[history %in% c("protein_accession_cleaned", "peptide_accession_cleaned")]
+  if (length(hit)) hit[[1L]] else NULL
+}
+
+#' KIT-277 (VAL-345 Q1, route table). The steps a FASTA change after Accession Cleanup sets aside, by route (draft).
+#' @noRd
+protDesignFastaSteps <- function(manager) {
+  switch(shiny::isolate(manager$workflow_type) %||% "",
+    DIA = c("Accession Cleanup", "Protein Intensity Filter", "Duplicate Removal", "Protein Replicate Filter",
+      "normalisation", "correlation", "the differential analysis", "enrichment"),
+    DIA_LIMPA = c("Peptide Accession Cleanup", "DPC Quantification", "Between-Sample Normalisation",
+      "Peptide Count Filter", "Run Normalization & RUV", "correlation", "RUV", "the differential analysis", "enrichment"),
+    c("the four protein Quality Control steps (Accession Cleanup first)", "normalisation", "correlation",
+      "the differential analysis", "enrichment"))
+}
+
+#' KIT-277. The organism of an import form against the bus's.
+#' @return `c(from =, to =)` labels, or NULL when the organism and taxonomy id are the bus's (nothing to compare when the
+#'   bus holds neither).
+#' @noRd
+protDesignOrganismChange <- function(workflowData, taxonId, organismName) {
+  oldTaxon <- workflowData$taxon_id
+  oldName <- workflowData$organism_name
+  if (is.null(oldTaxon) && is.null(oldName)) return(NULL)
+  # The taxonomy id decides when the bus holds one; the name only when it does not (a textual difference of the name
+  # with the same taxonomy id is not a change of organism).
+  same <- if (!is.null(oldTaxon)) identical(as.character(oldTaxon), as.character(taxonId)) else
+    is.null(oldName) || identical(trimws(as.character(oldName)), trimws(as.character(organismName)))
+  if (same) return(NULL)
+  label <- function(name, taxon) sprintf("%s (%s)", name %||% "unnamed organism", taxon %||% "no taxonomy id")
+  c(from = label(oldName, oldTaxon), to = label(organismName, taxonId))
+}
+
+#' KIT-277. The FASTA change of an import whose design is unchanged: a `.fasta` new to the project, or a folder table that
+#' is not the table in force.
+#' @return `list(from, to, file, steps)` (`steps` NULL before Accession Cleanup: no question), or NULL.
+#' @noRd
+protDesignFastaChange <- function(workflowData, importArtifacts, experimentPaths) {
+  choice <- protDesignFastaSource(workflowData, importArtifacts$importPath, experimentPaths$source_dir,
+    importArtifacts$fastaPath)
+  if (!choice$source %in% c("fasta_new", "folder_rds")) return(NULL)
+  manager <- workflowData$state_manager
+  if (identical(choice$source, "folder_rds")) {
+    projectTable <- file.path(experimentPaths$source_dir, "aa_seq_tbl_final.RDS")
+    inForce <- workflowData$aa_seq_tbl_final %||% if (file.exists(projectTable)) readRDS(projectTable)
+    if (!is.null(inForce) && identical(readRDS(choice$file), inForce)) return(NULL)
+  }
+  recorded <- manager$.context$snapshot$file_dependencies$fasta$name
+  list(from = recorded %||% "none recorded", to = basename(choice$file), file = choice$file,
+    steps = if (!is.null(protDesignCleanupState(manager))) protDesignFastaSteps(manager))
+}
+
+#' KIT-277. Every limited change of an import whose design and data are unchanged.
+#' @return A named list of `formula`, `organism`, `fasta` (those that apply).
+#' @noRd
+protDesignLimitedChanges <- function(workflowData, importArtifacts, experimentPaths, config, taxonId, organismName) {
+  manager <- workflowData$state_manager
+  detected <- list(formula = omicsDesignFormulaChange(manager, workflowData, config),
+    organism = protDesignOrganismChange(workflowData, taxonId, organismName),
+    fasta = protDesignFastaChange(workflowData, importArtifacts, experimentPaths))
+  Filter(Negate(is.null), detected)
+}
+
+#' KIT-277 (E-8, C05). The project files a limited Save or a confirmed import writes, read before the first write (bytes;
+#' an absent file is recorded as absent), with the recorded `fasta` input.
+#' @noRd
+readProtDesignProjectCopies <- function(experimentPaths, manager) {
+  cache <- if (length(experimentPaths$results_dir)) file.path(experimentPaths$results_dir, "cache", "uniprot_annotations")
+  paths <- c(
+    if (length(experimentPaths$source_dir)) file.path(experimentPaths$source_dir,
+      c("aa_seq_tbl_final.RDS", "fasta_metadata.RDS", "uniprot_dat_cln.RDS")),
+    if (length(cache)) file.path(cache, c("uniprot_annotations.RDS", "uniprot_results.tsv")))
+  files <- lapply(stats::setNames(paths, paths), function(path) {
+    if (file.exists(path)) readBin(path, "raw", file.size(path))
+  })
+  list(files = files, fasta_input = if (inherits(manager, "DIAStateAdapter")) manager$.context$snapshot$file_dependencies$fasta)
+}
+
+#' KIT-277. Puts `readProtDesignProjectCopies()`'s files and recorded `fasta` input back.
+#' @noRd
+restoreProtDesignProjectCopies <- function(kept, manager) {
+  for (path in names(kept$files)) {
+    bytes <- kept$files[[path]]
+    if (is.null(bytes)) {
+      if (file.exists(path)) unlink(path)
+    } else {
+      dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+      writeBin(bytes, path)
+    }
+  }
+  if (inherits(manager, "DIAStateAdapter")) {
+    snapshot <- manager$.context$snapshot
+    snapshot$file_dependencies$fasta <- kept$fasta_input
+    publishDIAStateHead(manager$.context, snapshot)
+  }
+  invisible(NULL)
+}
+
+#' KIT-277. Save of a limited import: the changes carried through in the order FASTA, organism, formula, inside the import's
+#' error handling (a failure puts the bus fields, the project files and the recorded input back and is shown as an import
+#' error).
+#' @param detected `protDesignLimitedChanges()`'s value.
+#' @noRd
+carryProtDesignLimited <- function(workflowData, experimentPaths, importArtifacts, taxonId, organismName, detected,
+                                   hydrateFastaSidecar, notify = shiny::showNotification) {
+  manager <- workflowData$state_manager
+  fields <- c("config_list", "taxon_id", "organism_name", "aa_seq_tbl_final", "fasta_metadata", "uniprot_dat_cln",
+    "uniprot_annotation_removed")
+  keptBus <- lapply(stats::setNames(fields, fields), function(field) shiny::isolate(workflowData[[field]]))
+  keptFiles <- readProtDesignProjectCopies(experimentPaths, manager)
+  tryCatch({
+    if (!is.null(detected$fasta)) {
+      fasta <- detected$fasta
+      hydrateFastaSidecar(workflowData = workflowData, importPath = importArtifacts$importPath,
+        sourceDir = experimentPaths$source_dir, resultsDir = experimentPaths$results_dir,
+        fastaPath = importArtifacts$fastaPath, organismName = organismName)
+      recordDIAWorkflowInputs(manager, c(fasta = fasta$file))
+      if (!is.null(fasta$steps)) {
+        target <- shiny::isolate(diaStateHistory(manager))
+        cleanup <- protDesignCleanupState(manager)
+        target <- target[[match(cleanup, target) - 1L]]
+        cutOmicsDesignHistory(manager, target)
+        completeOmicsDesignCut(workflowData, "proteomics", experimentPaths, notify, cutText = function(removed) {
+          paste0(omicsDesignLimitedNotice("fasta_cut", detail = fasta),
+            if (isTRUE(removed)) " The earlier integration input of this omic was removed." else "")
+        })
+      } else {
+        notify(omicsDesignLimitedNotice("fasta_used", detail = fasta), type = "message")
+      }
+    }
+    if (!is.null(detected$organism)) {
+      carryProtDesignOrganism(workflowData, experimentPaths, taxonId, organismName)
+      notify(omicsDesignLimitedNotice("organism"), type = "message")
+    }
+    if (!is.null(detected$formula)) {
+      notify(carryOmicsDesignFormula(workflowData, "proteomics", detected$formula[["to"]], "differential_expression"),
+        type = "message")
+    }
+    invisible(TRUE)
+  }, error = function(e) {
+    for (field in fields) workflowData[[field]] <- keptBus[[field]]
+    restoreProtDesignProjectCopies(keptFiles, manager)
+    msg <- paste("Error during import:", conditionMessage(e))
+    logger::log_error(msg)
+    shiny::removeModal()
+    notify(msg, type = "error", duration = 15)
+    invisible(FALSE)
+  })
+}
+
+#' KIT-277 (stage 2). On Save of an organism-only change: the bus takes the organism, the annotation is invalidated
+#' everywhere it survives, the DA and the enrichment are set back, and the omic's earlier integration input is removed
+#' (VAL-353 (2)). No network call here: the next DA or enrichment run fetches the annotation.
+#' @noRd
+carryProtDesignOrganism <- function(workflowData, experimentPaths, taxonId, organismName,
+                                    notify = shiny::showNotification) {
+  workflowData$taxon_id <- taxonId
+  workflowData$organism_name <- organismName
+  invalidateProtAnnotations(workflowData, experimentPaths)
+  setOmicsDaBack(workflowData, "differential_expression", "enrichment_analysis")
+  integrationDir <- experimentPaths$integration_dir %||%
+    if (!is.null(experimentPaths$base_dir)) file.path(experimentPaths$base_dir, "integration")
+  tryCatch(removeOmicIntegrationInput(integrationDir, "proteomics"), error = function(e) {
+    notify(cli::ansi_strip(conditionMessage(e)), type = "warning", duration = NULL)
+  })
+  invisible(NULL)
 }

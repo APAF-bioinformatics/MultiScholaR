@@ -83,6 +83,20 @@
 
 ### Fixes
 
+ * Saving a design again with only the model formula changed now asks first and carries the change through: the
+   differential analysis tab shows the new formula whenever it is opened, the earlier differential analysis is no
+   longer offered by Copy, the Report or the Summary until it is run again, and the next run fits the new formula
+   (proteomics, lipidomics, metabolomics; the transcriptomics analysis models the groups and the RUV factors from the
+   design and does not use this formula, and says so). On the proteomics Import Existing Design, a change of the
+   organism or its taxonomy id alone asks first, applies the new organism, sets the differential analysis and enrichment
+   back, removes the earlier integration input, and the next differential analysis or enrichment fetches the protein
+   annotation for the new organism; before this, enrichment kept using the earlier organism's annotation. A changed
+   FASTA file is now noticed, whether the folder holds an ordinary FASTA file or a saved FASTA table, and replaces the
+   earlier one; this also applies to every Import Existing Design into a project that already holds a FASTA table
+   (before, the older table was used while the new file was recorded as the project's input). Where Accession Cleanup
+   had been applied with the earlier file, the Save asks and goes back to the step before it (DIA: the IQ protein
+   rollup; label-free and TMT: the design; DIA with limpa: Log2 Matrix), and the cleanup and the later steps are applied
+   again. (KIT-277)
  * Proteomics reports: the description of panels d to f of Figure 1 (QC metrics across normalisation stages) was
    wrong. The panels are not distributions of protein intensities per sample: they are box plots of the samples' scores
    on principal components 1 and 2 by group, the same scores that the principal component analysis panels plot as

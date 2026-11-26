@@ -2351,6 +2351,8 @@ acceptWorkflowOmicsDaManifest <- function(binding, manager, source, settings, co
     reference <- saveWorkflowStateValue(context, manifest, "da-result-references", codec = "rds")
     snapshot <- context$snapshot
     snapshot$da_results <- reference
+    # KIT-277 (R01): the formula a design Save placed on the head is the DA tab's box until a DA is run; the run ends it.
+    snapshot$design_formula <- NULL
     snapshot$da_dependencies[[reference$entity_id]] <- collectWorkflowNativeReferences(list(source, results))
     publishWorkflowStateHead(context, snapshot)
     list(manifest = manifest, results = if (read_results) readWorkflowOmicsDaResults(binding, manager, manifest), reference = reference)

@@ -580,3 +580,62 @@ resolveProtEnrichAnnotationMatching <- function(uniprotDatCln,
     warning = warningMessage
   )
 }
+
+# KIT-277 (stage 2, VAL-345 Q3, AUDIT Q04): an organism Save invalidates the earlier organism's annotation in every place
+# the application keeps it, and the DA run fetches the new organism's through the enrichment's own resolver.
+
+#' The project's own copies of the protein annotation, for the organism Save to remove: the bus table, the project's
+#' `uniprot_dat_cln.RDS`, and the retrieval cache file with its raw results (`getUniprotAnnotations` returns the cache for
+#' ANY taxon). The bus flag `uniprot_annotation_removed` tells the DA run to fetch.
+#' @param workflowData The bus.
+#' @param experimentPaths The project paths (`source_dir`, `results_dir`).
+#' @return The removed files, invisibly.
+#' @noRd
+invalidateProtAnnotations <- function(workflowData, experimentPaths) {
+  workflowData$uniprot_dat_cln <- NULL
+  workflowData$uniprot_annotation_removed <- TRUE
+  cache <- if (length(experimentPaths$results_dir)) file.path(experimentPaths$results_dir, "cache", "uniprot_annotations")
+  files <- c(
+    if (length(experimentPaths$source_dir)) file.path(experimentPaths$source_dir, "uniprot_dat_cln.RDS"),
+    if (length(cache)) file.path(cache, c("uniprot_annotations.RDS", "uniprot_results.tsv")))
+  files <- files[file.exists(files)]
+  if (length(files) && !all(file.remove(files))) {
+    rlang::abort(sprintf("the earlier annotation %s could not be removed", paste(basename(files), collapse = ", ")))
+  }
+  invisible(files)
+}
+
+#' KIT-277. The annotation of a DA run: the bus's, except after an organism Save removed it (the bus flag): then the
+#' enrichment's resolver fetches it for the bus taxon and the head's protein ids (the resolver stores it on the bus; under
+#' test mode it returns the deterministic table). A failure is tolerated as the first import tolerates it: the run goes on
+#' with accessions and a warning.
+#' @param workflowData The bus.
+#' @param daData The DA tab's holder (its `current_s4_object` is the head reference).
+#' @param experimentPaths The project paths.
+#' @return The annotation table or NULL.
+#' @noRd
+fetchProtDaAnnotations <- function(workflowData, daData, experimentPaths) {
+  annotations <- workflowData$uniprot_dat_cln
+  if (!is.null(annotations) || !isTRUE(workflowData$uniprot_annotation_removed)) return(annotations)
+  tryCatch({
+    manager <- workflowData$state_manager
+    source <- daData$current_s4_object
+    idColumn <- readDIAStateMetadata(manager, source)$data$slots$protein_id_column
+    object <- readDIAExecutionComponents(manager, source, fields = "protein_quant_table",
+      columns = list(protein_quant_table = idColumn))
+    if (!"Protein.Ids" %in% names(object@protein_quant_table)) {
+      table <- object@protein_quant_table
+      table$Protein.Ids <- table[[idColumn]]
+      object@protein_quant_table <- table
+    }
+    resolveProtEnrichUniprotAnnotations(workflowData, experimentPaths, currentS4Object = object,
+      organismTaxid = workflowData$taxon_id)
+    if (!is.null(workflowData$uniprot_dat_cln)) workflowData$uniprot_annotation_removed <- NULL
+    workflowData$uniprot_dat_cln
+  }, error = function(e) {
+    shiny::showNotification(paste("The protein annotation for the new organism could not be fetched:",
+      conditionMessage(e), "The differential analysis runs with accessions instead of gene names."),
+      type = "warning", duration = 10)
+    NULL
+  })
+}

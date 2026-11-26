@@ -47,6 +47,8 @@ invalidateDIAVisibleResults <- function(da_data, workflow) {
     valid_state <- manager$current_state %in% c("ruv_covariates", "normalized", "ruv_corrected", "correlation_filtered")
     result <- da_data$da_results_list
     changed <- !valid_state
+    # KIT-277 (R04): shown results whose DA the store no longer holds (a design Save set it back) are cleared.
+    if (!changed && isDIAResultManifest(result) && is.null(manager$.context$snapshot$da_results)) changed <- TRUE
     if (!changed && isDIAResultManifest(result)) {
         changed <- !identical(result$source$owner, manager$.context$store$identity)
         if (!changed) {
@@ -660,6 +662,25 @@ diaDaRequest <- function(manager, settings, da_data, workflow, contrasts, annota
             name = contrasts$contrasts[[i]], comparison = contrasts$friendly_names[[i]])))
     list(source = source, spec = spec, contrasts = contrasts, annotations = annotations, manifest = manifest,
         steps = steps)
+}
+
+#' KIT-277 (4.1, AUDIT Q01): a formula-only design Save records the formula on the head's settings, as
+#' `commitDIADaArguments` records the DA's: the DA tab refills its box from the head every time it is opened, so the box
+#' shows the saved formula and the next run fits it. When the head already holds a `daAnalysisUI` block its formula is
+#' replaced too (no partial block is created); the head is re-committed with its table components unchanged.
+#' @param manager Session owner.
+#' @param formula_string The saved formula.
+#' @return The head's reference, invisibly.
+#' @noRd
+commitDIADesignFormula <- function(manager, formula_string) {
+    withWorkflowStateScope(manager, function() {
+        state_record <- readDIAStateMetadata(manager)
+        checkpoint <- state_record$data
+        checkpoint$slots$args$deAnalysisParameters$formula_string <- formula_string
+        if (!is.null(checkpoint$slots$args$daAnalysisUI)) checkpoint$slots$args$daAnalysisUI$formula_string <- formula_string
+        commitDIAReferenceState(manager, manager$current_state, checkpoint, state_record$config, state_record$description)
+        invisible(getDIAStateReference(manager))
+    })
 }
 
 #' KIT-022: the DA UI arguments are committed onto the current state before the contrasts, so the manifest's source

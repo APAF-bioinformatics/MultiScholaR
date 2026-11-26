@@ -68,7 +68,8 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
     tryCatch(
       {
         contrasts <- workflow_data$contrasts_tbl
-        annotations <- workflow_data$uniprot_dat_cln
+        # KIT-277: after an organism Save removed the annotation, the new organism's is fetched here.
+        annotations <- fetchProtDaAnnotations(workflow_data, da_data, experiment_paths)
         settings <- list(formula_string = input$formula_string, da_q_val_thresh = input$da_q_val_thresh,
           treat_lfc_cutoff = input$treat_lfc_cutoff)
         managed <- !is.null(workflowSessionApplication(session))
