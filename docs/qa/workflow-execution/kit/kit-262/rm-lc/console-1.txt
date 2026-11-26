@@ -1,0 +1,24 @@
+cells 14 to 194 done: 12 data sets, 0 errors, 149.4 s of sweeps
+           check units passed failed status
+1             E1    12     12      0   pass
+2        E1PRIME    12     12      0   pass
+3             E2    12     12      0   pass
+4             E3    12     12      0   pass
+5             E4    12     12      0   pass
+6             E7    12     12      0   pass
+7             E8     4      4      0   pass
+8     COMPLETION    12     12      0   pass
+9             E6     6      6      0   pass
+10         SEEDS    12     12      0   pass
+11      ORDERCOL    12     12      0   pass
+12 ORDER_DIFFERS     1      1      0   pass
+   n    f seconds_sweep seconds_total
+1  6  300      7.902000      16.24200
+2 12  300      8.358000      17.34500
+3 24  300      8.535500      24.05600
+4 48  300      9.246333      26.78467
+5 96  300     11.659000      22.24550
+6  4 1000     17.188000      33.16100
+7  6 1000     23.560000      49.66400
+8 12 1000     24.229000      76.50600
+data sets: 12; errors: 0
