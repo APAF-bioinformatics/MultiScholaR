@@ -1,0 +1,89 @@
+{
+  "requested_by": "KIT-188 smoke check send 3 of 3 (the last), request A: instrument check, no expectation, nothing judged; charged to L1r's line",
+  "label": "KIT-188 smoke3a 27b0bbdd",
+  "package_commit": "27b0bbdd03543a47a986ae74af14f0166b6b9659",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/e16/run-e16.R",
+      "args": [],
+      "env": {},
+      "out": "k188-smoke-e16",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 25
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "M12,K172c",
+        "401",
+        "401",
+        "k188-smoke3-m"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_LIFECYCLE": "1",
+        "K188_SMOKE": "1",
+        "K188_JOBS": "lp,las,k172c",
+        "K188_JOB": "smoke3-m"
+      },
+      "out": "k188-smoke3-m",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "L12",
+        "401",
+        "401",
+        "k188-smoke3-c"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_LIFECYCLE": "1",
+        "K188_SMOKE": "1",
+        "K188_JOBS": "l1c",
+        "K188_JOB": "smoke3-c",
+        "K188_PREDICTIONS": "docs/qa/workflow-execution/kit/kit-188/predictions-smoke.tsv"
+      },
+      "out": "k188-smoke3-c",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 10
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "M12",
+        "401",
+        "401",
+        "k188-smoke3-r"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_SMOKE": "1",
+        "K188_JOBS": "deciding",
+        "K188_JOB": "smoke3-r"
+      },
+      "out": "k188-smoke3-r",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 2
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
