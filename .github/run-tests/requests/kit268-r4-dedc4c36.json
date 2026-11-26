@@ -1,0 +1,24 @@
+{
+  "requested_by": "KIT-268 R4 (VAL-351): the repaired A112-03 test, test-omic-da-module.R only, head dedc4c36 vs staging 91713498; ceiling 50 job-minutes",
+  "label": "KIT-268 R4 test-only repair dedc4c36 vs 91713498",
+  "package_commit": "dedc4c36781210516e10a1ed0c495f57cc0aa6fa",
+  "base_commit": "9171349894d7212b37c29281cb11447e22c8d59e",
+  "tools_ref": "",
+  "tests": [
+    "test-omic-da-module.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva",
+    "limpa",
+    "mixOmics"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
