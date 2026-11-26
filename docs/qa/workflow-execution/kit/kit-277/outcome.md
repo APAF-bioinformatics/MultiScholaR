@@ -1,4 +1,89 @@
-# KIT-277 outcome (implementer): STOPPED AT STOP RULE 3; not ready for the implementation audit
+# KIT-277 outcome (implementer): READY FOR THE IMPLEMENTATION AUDIT (current decision; the earlier stop record is kept below)
+
+Branch kit-277: code 53e4c745 (first code stage) and the one correction pass, spent: tests-only b1a67c44, code 174a62db (R/utils_workflow_dia_sessions.R,
+`refreshDIANativeSummaryArchive` only). Base trees: dfffaa0b (tests-only, R/ = staging 38443af8) on branch kit-277-diag-base.
+Core-hours used: about 144.0 of 200.00 (runs.tsv: 86.55 before R2 of the correction pass, 57.46 for it).
+
+## Acceptance criteria with evidence (ticket section 8)
+| # | Result | Evidence |
+|---|---|---|
+| A1 | met | tests-only runs on the old code: R1 45777669520, re-send 45789773919 (0 errors), R1c 45797066259, correction-pass R1 45837030184 (new file 88 passed 164 failed 1 skipped 0 errors; O5's four lines and P4's replaced line fail by value; O4's two lines pass; KIT-247 file 170/16; guards G2, G3, G4 pass). P4's head-rule line is evidence on the label-free lane only (prot_tmt, prot_dia, prot_dia_limpa pass it on the old code: their heads are at the cleanup state) |
+| A2 | met | SG1 45797086832 (S1 rows, G2, globals: held), correction-pass R2 45851275020: F1 to F7 and F2b pass on the head (new file 252 passed 0 failed 1 skipped) |
+| A3 | met | R2 45851275020: O1, O2, O2b, O3, O4, O5 pass on the head (the first R2 45804909404 had O4 x2 failing: the defect below, repaired) |
+| A4 | met | R2 45851275020: P1 to P9 pass on the head (P4 on four lanes, P5/P6 on two) |
+| A5 | met | R2 45851275020: F5, F6, R1 (C03, C04, C05) pass |
+| A6 | met | R2 45851275020: 135 files, 4 shards per side: 133 `same` (including test-gui-entry-proteomics.R 92 passed / 101 failed on both sides with identical messages, test-kit216-prot-session-after-enrichment.R, test-kit206-prot-norm-export-guard.R, test-workflow-native-session.R, test-omics-module-globals.R), `fixed` 2 (the new file 88/164 -> 252/0; test-kit247-design-resave.R 170/16 -> 186/0); no new failure, no message changed; R CMD check identical (0 ERRORs, 3 WARNINGs, 3 NOTEs on both sides, none only on one). No stored GUI-entry leaf moved. Tables: tables/cp-r1/, tables/cp-r2/ |
+| A7 | met | behaviours are VAL-345's; the texts are drafts for the wording pass (VAL-41). No wording.md exists for this ticket on the branch (none was created; the user-facing texts are in the code and quoted in the ticket section 5) |
+| A8 | met | NEWS.md (unchanged by the correction: its text still says what the code does; the defect fixed existed only on this branch), ledger row VAL-<merge> (the refresh fix added to the TEXT, run ids added), this file with "For the change report" below |
+
+## The defect found and closed by the correction pass
+After an organism Save (which removes the annotation and sets the DA back, publishing a new head), Save Workflow Arguments re-exported the
+session archive through `refreshDIANativeSummaryArchive`. That refresh re-used the earlier export's stored metadata, which still declared
+`source/uniprot_dat_cln.RDS` (and `aa_seq_tbl_final`); the file had been removed, so the export failed with "saved table changed during read"
+(`saved_entity_corrupt`, from `workflowTableFileIdentity`) and left `export_pending` set. The next DA run was then refused ("session outputs are
+pending; retry export before dependent actions"), and the retry path (Export Session State resuming the pending request with the stored
+metadata) would have written the earlier organism's annotation file back. The fix (174a62db): the refresh takes `aa_seq_tbl_final` and
+`uniprot_dat_cln` from the current bus into the metadata and writes them in its `prepare_outputs` as the user's export does
+(R/mod_prot_norm_session_helpers.R:256-261). Closed: row O5 and O4 pass on the head in R2 45851275020. On the base the refresh at that press
+DOES run and completes, because the annotation file is present (the head entity differs there too; diagnostic 3 base: `refresh returned`,
+publication complete, `export_pending` NULL, generation equals the head); this corrects the audit's and the earlier reading's "no refresh on the base".
+
+## The three diagnostics (outside the correction pass; nothing was judged by them; gated by MULTISCHOLAR_KIT277_DIAG, unset in R1 and R2 of the pass)
+1. 45825080961 (tables/diag): on the head `da_results` is `<none>` and the DA status "none" from point A to F; the head's DA arguments never changed;
+   on the base the DA is current and a new one is made at D.
+2. 45829015562 (tables/diag2): the head's DA press at D raised `saved_entity_outputs_pending` from `assertDIAExportReady`: "session outputs are
+   pending; retry export before dependent actions"; the request itself was right (385-row annotation of the new organism); on the base the press
+   completed with the earlier organism's 400-row annotation.
+3. 45832463890 (tables/diag3): at B3 on the head the Save's refresh was called (owned generation differs from the head), `runDIANativeSessionExport`
+   raised `saved_entity_corrupt` "saved table changed during read" (call `workflowTableFileIdentity`), the Save console printed "SESSION SUMMARY
+   ERROR: saved table changed during read", `export_pending` was set ("outputs_pending") and stayed set to F3; on the base the same press refreshed
+   and completed.
+
+## Corrected attribution
+Every Copy refusal in scenario O4 from point B to F (on the head, before the repair) carried the "files no differential analysis of this session
+made" text (`summary_da_files_unmade`), raised because the DA status was "none"; the "earlier table" (stale) text quoted in the first stop record
+belongs to the P4 prot_lfq Copy press after the FASTA cut, not to O4.
+
+## Ruling K (P4 prot_lfq): old and new text
+Old: `expect_false(out$record_da)` (the analysis record lists no DA after the FASTA cut). New: the digest of `source_dir/analysis_record.json` is
+unchanged across the Save Workflow Arguments press after the FASTA cut (`expect_identical(out$record_digest_after, out$record_digest_before)`): the
+press is refused by the head rule and writes no record. On the old code it fails by value (the Save writes a record: digest 00ef609e... against
+"<none>"); on the head it passes. The product is as built (the DA is stale after the cut, like KIT-247's design cut).
+
+## Earlier expectation edits (old and new text)
+W288a (prot_lfq, lipid_canonical), W288b and P8 as listed in "Expectation edits" below (unchanged by the correction pass). No test was removed,
+wrapped or weakened.
+
+## Departures
+4 shards per side (the 300-minute job limit; the register's 6 was for 80 minutes); instrument repair 1 of 3 used (the first R1's mechanics); the
+organism-rule defect (G4) was fixed before any code run; the P4 head-rule expectation is evidence on the label-free lane only; correction-pass
+R2 used a hand-built round-robin order from order4.json (test-gui-entry-proteomics.R into the lightest shard; test-kit247-resave-no-session.R
+moved to the last shard to keep round-robin sizes; no effect on results). Run mechanics for the correction pass R2: the manual dispatch I made
+first (45851245871) named the request by path and was refused by the plan job in 10 seconds; the push of the request file had already started
+run 45851275020 (the one judged); my second manual dispatch (45851825330) was cancelled in its plan stage before any test job (0 job-minutes). No
+result was discarded or re-run.
+
+## For the change report
+As in the earlier text below, plus: Save Workflow Arguments after an organism Save no longer fails to refresh the session file and no longer
+blocks the next differential analysis; the session file written after the organism Save holds no annotation and no differential analysis folder.
+
+## Not checked
+F2b (no real project reopen: the row asserts `omicDaDesignFormula` and the head marker); P5 (the worker path is not drivable under testServer;
+R/utils_workflow_execution.R:2842-2859 read); the Export Session State button press itself (its guard is the shared head rule); lipidomics and
+metabolomics session export with no DA; a session opened from a file cannot see an import's formula change; Windows; real data.
+
+## Overlap and candidates
+- kit-228: the integration input is removed at this ticket's organism Save (`carryProtDesignOrganism`).
+- kit-276: a pending line in the same function `refreshDIANativeSummaryArchive` (its I01 repair in the RUV branch, about 10 lines from this
+  ticket's hunk): a hand merge for whichever lands second.
+- Candidate outside this ticket: a session export at a DA-state head with a stale DA still packs the DA folder
+  (R/utils_workflow_dia_sessions.R:1782, `collectDIANativeGuiFiles`, condition `!is.null(snapshot$da_results)`).
+
+Records changed by the finishing step: runs.tsv (run ids, minutes, core-hours, total), tables/cp-r1/, tables/cp-r2/, predictions.md (the ceiling
+line), the ledger row VAL-<merge> (text only: the refresh fix, the run ids), this file. NEWS.md: not changed (still true).
+
+---- Earlier record (stop at stop rule 3, kept as written; superseded where stated above) ----
+
 
 Code commit 53e4c745 on branch kit-277 (tests-only trees 6aeb21e6, 55aab0cc, 5e4f86dc, f16edb13 before it).
 The one correction pass is UNUSED. Core-hours used: about 71 of 200.00 (R1 7.73, re-send 2.87, R1c about 3.0, SG1 about 1.9, R2
