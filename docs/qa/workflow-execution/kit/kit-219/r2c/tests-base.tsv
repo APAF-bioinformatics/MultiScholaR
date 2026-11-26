@@ -1,0 +1,9 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit212-da-current.R	309	0	0	0	0	590.3	ok
+test-kit243-summary-current-outputs.R	246	0	0	0	0	490.6	ok
+test-kit257-norm-own-files.R	133	0	0	0	8	449.3	ok
+test-kit271-limpa-table-name.R	78	0	0	0	0	266.5	ok
+test-kit259b-second-correction.R	90	0	0	0	4	479.4	ok
+test-kit207-summary-head-guard.R	292	0	0	0	0	340	ok
+test-kit219-enrichment-files-current.R	64	43	4	0	0	186.5	failed
+test-gui-entry-lipidomics.R	19	16	0	0	0	111.8	failed
