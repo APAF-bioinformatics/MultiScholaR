@@ -59,7 +59,7 @@ ticket requires the scorer to stop on a smoke flag, which needs a producer).
 
 ## `score-k281.R` against `score-k211.R`
 
-SHA-256 of `score-k281.R`: `cc710faea5d783c2de011d79635f618cb4b618096cc66760d09d1447e1f11000`
+SHA-256 of `score-k281.R`: `4e543a78318f6f65e7d9fae50bb8c72301bfd029a87e76ba4bc3a49f08730898`
 
 Identical ranges (3 lines or more; KIT-211 line to KIT-281 line). Everything else in KIT-281's file is adapted or new (list below).
 
@@ -93,30 +93,33 @@ Adapted (ticket section 6 list) or new, by KIT-281 line:
   control, per-design, per-setting and by-flag tables, the outcome rule, `decision-table.md`, `provenance-score.json`, `progress-score.tsv`, the driver with the
   instrument-stop handling (`stopRecord`). Not carried: `primaryState`, `costState`, `classOf`, `outcomeOf`, the A, B', C0, Av and Ag paths, the 24-setting pool,
   the mcar pool, the per-setting falsifier intervals.
+- After the script audit (S02, S03, S08): a non-finite ESTIMATE of rho_g or a guard is an instrument stop (`not_formed`); the q-method count is reported, not a stop
+  (`fallback_by`, `qmethod-fallback.tsv`, `n_qmethod_fallback` and `notes` in `outcome.tsv`); every `addCheck`, `stopRecord` and `progress` call names its arguments.
 
 ## `l1-k281.R` against `l1-k211.R`
 
-SHA-256 of `l1-k281.R`: `022bf5252d77f1432ffc5921d2279987046902ff92db19c3ef20683fa7fd896b`
+SHA-256 of `l1-k281.R`: `9a899c6112bb91d463ca935ed2b6012444135d568c609ed1e0d3aec200979251`
 
 Verbatim (E0, markers): `run` (l1-k197.R:34-37) and `sha` (l1-k197.R:38-38). Adapted: the header; the partial-match guard (global); provenance and progress before the
 first unit; G0 as a check; E2, E3, E7, E10 (E9 dropped); E8; **E1'** in place of E1 (S and B against KIT-211's committed rows); **E4** is the scorer self-test (`selftest/`)
 in place of KIT-211's e4 tables; E5 (scorer twice, mechanics env); E6 (three masks); G2 (75 minutes); **new G3** (the count, rule G3 as `g3Rule`, `g3-count.tsv`,
-`g3-rule.tsv`). Unchanged ranges (3 lines or more):
+`g3-rule.tsv`); after the script audit: E1''s missing-unit comparison (S04), G2 from set-up plus script with derived timeouts (S05, `g2-plan.tsv`), named arguments in every `addCheck`, `run` and `failureNote` call (S08), PATH for the self-test runner. Unchanged ranges (3 lines or more):
 
 | old lines | new lines |
 |---|---|
-| 21-32 | 30-41 |
-| 37-40 | 52-55 |
-| 46-48 | 61-63 |
-| 52-57 | 87-92 |
-| 62-76 | 101-115 |
-| 88-90 | 122-124 |
-| 114-116 | 153-155 |
-| 132-134 | 174-176 |
-| 208-212 | 197-201 |
-| 217-220 | 206-209 |
-| 224-231 | 213-220 |
-| 238-240 | 227-229 |
-| 242-246 | 231-235 |
-| 249-251 | 238-240 |
-| 275-278 | 287-290 |
+| 21-32 | 31-42 |
+| 37-40 | 54-57 |
+| 46-48 | 63-65 |
+| 52-57 | 89-94 |
+| 62-65 | 103-106 |
+| 71-76 | 112-117 |
+| 88-90 | 124-126 |
+| 114-116 | 155-157 |
+| 132-134 | 179-181 |
+| 208-211 | 202-205 |
+| 217-220 | 211-214 |
+| 224-231 | 218-225 |
+| 238-240 | 232-234 |
+| 242-246 | 236-240 |
+| 249-251 | 243-245 |
+| 275-278 | 301-304 |

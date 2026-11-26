@@ -5,7 +5,7 @@
 #   Rscript docs/qa/workflow-execution/kit/kit-281/l1-k281.R <public out dir>
 # Blind: the simulated rows and every score computed from them stay in a private work directory under tempdir(), which is not
 # uploaded; <public out dir> receives only checks.tsv (one row per check: id, units compared, units passed, pass, mechanics details), timing.tsv
-# (seconds per replicate-mask over all arms together, for G2, and E6's wall seconds), hashes.tsv, provenance-l1.json and progress-l1.tsv
+# (seconds per replicate-mask over all arms together, for G2, and E6's wall seconds), g2-plan.tsv, hashes.tsv, provenance-l1.json and progress-l1.tsv
 # (written before the first unit and appended after each check), and the two tables of rule G3: g3-count.tsv and g3-rule.tsv. ONE count leaves
 # the blind rows (ticket K281-P08; a declared departure from KIT-211's blind L1): per setting, the mean over L1's two replicates of the number of
 # tested null proteins that only the 1-group rule adds (subset g_added of arm B1, column n_tested); nothing derived from a p-value, a call or
@@ -19,7 +19,8 @@
 #   E6: cell A, r = 9201 to 9204 with one worker, killed (SIGKILL to the process tree) once one task is complete; continued from the list of
 #       missing tasks; the assembled rows equal an uninterrupted run (four workers).
 #   G0: the three protein filter files equal KIT-211's bound commit's (the replay marker of KIT-280 is asserted absent by every child).
-#   G2: the planned minutes of a counted job of 200 replicates from this run's seconds per replicate-mask; none may pass 75 minutes.
+#   G2: the planned job minutes (set-up plus script) of counted jobs of 200, 171 and 77 replicates from this run's seconds per replicate-mask, the
+#       timeouts derived from them (g2-plan.tsv); none may pass 75 minutes.
 #   G3: the count above, N-hat = 200 x its sum, R = rule G3 (the function g3Rule below, tested against Python's table selftest/g3-cases.tsv).
 # E0 (the verbatim blocks) is local: e0-k281.py, l1/e0.txt.
 
@@ -49,6 +50,7 @@ G3_THRESHOLD <- 276220 # tested added null proteins needed at R = 200 for P(cali
 G3_CAP <- 571
 G3_FIRST <- 401L
 MAX_JOB_MINUTES <- 75
+SETUP_MINUTES <- 10
 args <- commandArgs(TRUE)
 stopifnot(length(args) == 1L)
 public <- args[[1L]]
@@ -95,18 +97,18 @@ cat("KIT-281 L1: start", format(Sys.time(), "%H:%M:%S"), "\n")
 # ---- G0: the three filter files equal KIT-211's bound commit's ---------------------------------------------------------------
 g0 <- system2("git", c("diff", "--stat", KIT211_BOUND, "HEAD", "--", "R/func_prot_qc_filtering_helpers.R", "R/func_prot_s4_qc_filter_methods.R",
     "R/func_general_parameter_helpers.R"), stdout = TRUE)
-addCheck("G0", 1L, if (length(g0) == 0L) 1L else 0L, "git diff --stat of the three filter files between 894b9cc8 and the package commit is empty")
+addCheck(id = "G0", units = 1L, passed = if (length(g0) == 0L) 1L else 0L, detail = "git diff --stat of the three filter files between 894b9cc8 and the package commit is empty")
 
 # ---- the lifecycle simulation (E2, E3, E7, E10; two ranges per cell, joined by the scorer: E5) -----------------------------
 rows_root <- file.path(work, "rows")
 range_seconds <- numeric()
 status_sim <- vapply(RANGES, \(r) {
     started <- Sys.time()
-    status <- run(sim, c(file.path(rows_root, paste0("r", r)), r, r), c("K211_LIFECYCLE=1", paste0("K211_CELLS=", CELLS_L1)),
-        file.path(work, sprintf("sim-%d.log", r)))
+    status <- run(script = sim, arguments = c(file.path(rows_root, paste0("r", r)), r, r), env = c("K211_LIFECYCLE=1", paste0("K211_CELLS=", CELLS_L1)),
+        log = file.path(work, sprintf("sim-%d.log", r)))
     range_seconds[[as.character(r)]] <<- as.numeric(difftime(Sys.time(), started, units = "secs"))
-    if (status != 0L) failureNote(sprintf("simulation r = %d", r), file.path(work, sprintf("sim-%d.log", r)),
-        file.path(rows_root, paste0("r", r), "errors.txt"))
+    if (status != 0L) failureNote(id = sprintf("simulation r = %d", r), log = file.path(work, sprintf("sim-%d.log", r)),
+        errors = file.path(rows_root, paste0("r", r), "errors.txt"))
     status
 }, numeric(1L))
 sim_checks <- do.call(rbind, lapply(RANGES, \(r) {
@@ -116,24 +118,24 @@ sim_checks <- do.call(rbind, lapply(RANGES, \(r) {
 for (id in c("E2", "E3", "E7", "E10")) {
     sub <- if (is.null(sim_checks)) NULL else sim_checks[sim_checks[["check"]] == id, , drop = FALSE]
     ok <- all(status_sim == 0) && !is.null(sub) && nrow(sub) == length(RANGES)
-    addCheck(id, if (ok) sum(sub[["units"]]) else 0L, if (ok) sum(sub[["passed"]]) else 0L,
-        if (!ok) sprintf("no result (simulation exits %s)", paste(status_sim, collapse = ", ")) else if (id == "E10")
+    addCheck(id = id, units = if (ok) sum(sub[["units"]]) else 0L, passed = if (ok) sum(sub[["passed"]]) else 0L,
+        detail = if (!ok) sprintf("no result (simulation exits %s)", paste(status_sim, collapse = ", ")) else if (id == "E10")
             sprintf("replicate-masks over both ranges; maximum absolute deviation of logFC %s", num(max(sub[["max_abs_deviation"]]))) else
             "replicate-masks over both ranges")
 }
 
 # ---- E8: the determinism mechanics on cell A, r = 9201, 9202 -------------------------------------------------------------
 e8_dir <- file.path(work, "e8")
-status_e8 <- run(sim, c(e8_dir, "9201", "9202"), c("K211_CELLS=A", "K211_DETERMINISM=1"), file.path(work, "sim-e8.log"))
+status_e8 <- run(script = sim, arguments = c(e8_dir, "9201", "9202"), env = c("K211_CELLS=A", "K211_DETERMINISM=1"), log = file.path(work, "sim-e8.log"))
 det <- if (file.exists(file.path(e8_dir, "determinism.tsv"))) readText(file.path(e8_dir, "determinism.tsv"))
-if (status_e8 != 0L) failureNote("E8 simulation", file.path(work, "sim-e8.log"), file.path(e8_dir, "errors.txt"))
-addCheck("E8", if (is.null(det)) 0L else nrow(det), if (is.null(det)) 0L else sum(det[["rows_identical"]] == "TRUE" & det[["metrics_identical"]] == "TRUE"),
-    "K211_DETERMINISM=1 on cell A r = 9201, 9202 (rows and metrics, seconds excluded)")
+if (status_e8 != 0L) failureNote(id = "E8 simulation", log = file.path(work, "sim-e8.log"), errors = file.path(e8_dir, "errors.txt"))
+addCheck(id = "E8", units = if (is.null(det)) 0L else nrow(det), passed = if (is.null(det)) 0L else sum(det[["rows_identical"]] == "TRUE" & det[["metrics_identical"]] == "TRUE"),
+    detail = "K211_DETERMINISM=1 on cell A r = 9201, 9202 (rows and metrics, seconds excluded)")
 
 # ---- E1': S and B on KIT-211's r = 201 to 205 against its committed rows ----------------------------------------------------
 e1_dir <- file.path(work, "e1")
-status_e1 <- run(sim, c(e1_dir, "201", "205"), c("K211_CELLS=A,B,C,D", "K211_ARMS=S,B"), file.path(work, "sim-e1.log"))
-if (status_e1 != 0L) failureNote("E1' simulation", file.path(work, "sim-e1.log"), file.path(e1_dir, "errors.txt"))
+status_e1 <- run(script = sim, arguments = c(e1_dir, "201", "205"), env = c("K211_CELLS=A,B,C,D", "K211_ARMS=S,B"), log = file.path(work, "sim-e1.log"))
+if (status_e1 != 0L) failureNote(id = "E1' simulation", log = file.path(work, "sim-e1.log"), errors = file.path(e1_dir, "errors.txt"))
 e1 <- if (status_e1 == 0L) {
     key_columns <- c("cell", "mask", "r", "arm", "subset", "class", "stratum", "ell", "band", "ell0")
     da_columns <- c("n_tested", "n_p05", "n_call", "n_bh", "sum_err", "sum_s_err", "sum_sgn_err")
@@ -164,8 +166,11 @@ e1 <- if (status_e1 == 0L) {
             metrics_old[["mask"]] %in% VD, , drop = FALSE]
         m <- merge(metrics_new[c("cell", "mask", "r", "arm", "kept", "added", "threshold")], metrics_old[c("cell", "mask", "r", "arm", "kept", "added", "threshold")],
             by = c("cell", "mask", "r", "arm"), suffixes = c(".new", ".old"), all = TRUE)
-        unit_metric_bad <- is.na(m[["kept.new"]]) | is.na(m[["kept.old"]]) | m[["kept.new"]] != m[["kept.old"]] | m[["added.new"]] != m[["added.old"]] |
-            asNum(m[["threshold.new"]], "threshold") != asNum(m[["threshold.old"]], "threshold")
+        # S04: a unit present on one side only is a recorded failure (not a crash of asNum on NA): compare the rows present on both sides
+        both_sides <- !is.na(m[["kept.new"]]) & !is.na(m[["kept.old"]])
+        unit_metric_bad <- !both_sides
+        unit_metric_bad[both_sides] <- m[["kept.new"]][both_sides] != m[["kept.old"]][both_sides] | m[["added.new"]][both_sides] != m[["added.old"]][both_sides] |
+            asNum(m[["threshold.new"]][both_sides], "threshold") != asNum(m[["threshold.old"]][both_sides], "threshold")
         names(unit_metric_bad) <- paste(m[["cell"]], m[["mask"]], m[["r"]], m[["arm"]], sep = "|")
         unit_bad <- c(tapply(bad, unit_of, any), unit_metric_bad)
         all_bad <- c(all_bad, tapply(unit_bad, names(unit_bad), any))
@@ -174,7 +179,7 @@ e1 <- if (status_e1 == 0L) {
     }
     list(units = length(all_bad), passed = sum(!all_bad), da_equal = da_equal)
 } else list(units = 0L, passed = 0L, da_equal = NA)
-addCheck("E1'", e1[["units"]], e1[["passed"]], sprintf(paste("S's and B's filter-dependent columns (membership counts per subset, class, stratum, ell, band and ell0; kept and added",
+addCheck(id = "E1'", units = e1[["units"]], passed = e1[["passed"]], detail = sprintf(paste("S's and B's filter-dependent columns (membership counts per subset, class, stratum, ell, band and ell0; kept and added",
     "counts; threshold) against KIT-211's committed rows, cells A to D, r = 201 to 205, the three vd masks (120 replicate-masks expected: 4 cells x 3 masks",
     "x 5 replicates x 2 arms); G0 lists DA-file changes, so the DA-dependent columns are written as one flag: all equal %s"), e1[["da_equal"]]))
 
@@ -182,24 +187,24 @@ addCheck("E1'", e1[["units"]], e1[["passed"]], sprintf(paste("S's and B's filter
 st_dir <- file.path(here, "selftest")
 st_out <- file.path(work, "selftest-out")
 status_st <- system2("bash", c(shQuote(file.path(st_dir, "run-selftest.sh")), shQuote(normalizePath(st_dir)), shQuote(st_out)),
-    stdout = file.path(work, "selftest.log"), stderr = file.path(work, "selftest.log"))
+    env = paste0("PATH=", R.home("bin"), ":", Sys.getenv("PATH")), stdout = file.path(work, "selftest.log"), stderr = file.path(work, "selftest.log"))
 st_log <- if (file.exists(file.path(work, "selftest.log"))) readLines(file.path(work, "selftest.log"), warn = FALSE) else character()
 st_line <- grep("^SELFTEST: ", st_log, value = TRUE)
 st_counts <- if (length(st_line)) as.integer(regmatches(st_line[[length(st_line)]], gregexpr("[0-9]+", st_line[[length(st_line)]]))[[1L]]) else integer()
-addCheck("E4", if (length(st_counts) >= 2L) st_counts[[1L]] else 0L, if (length(st_counts) >= 2L) st_counts[[1L]] - st_counts[[2L]] else 0L,
-    if (length(st_line)) st_line[[length(st_line)]] else "no SELFTEST summary line (the runner failed before its check)")
+addCheck(id = "E4", units = if (length(st_counts) >= 2L) st_counts[[1L]] else 0L, passed = if (length(st_counts) >= 2L) st_counts[[1L]] - st_counts[[2L]] else 0L,
+    detail = if (length(st_line)) st_line[[length(st_line)]] else "no SELFTEST summary line (the runner failed before its check)")
 if (status_st != 0L) cat("E4: the self-test reports differences (constructed tables only); differing lines:\n",
     paste(grep("DIFFERS", st_log, value = TRUE)[seq_len(min(20L, sum(grepl("DIFFERS", st_log))))], collapse = "\n"), "\n")
 
 # ---- E5: the scoring twice on the lifecycle rows: every output file identical ------------------------------------------------------
 score_env <- c(paste0("K281_RANGE=", RANGES[[1L]], ",", RANGES[[2L]]), "K211_B_BOOT=1000")
-e5 <- lapply(c("e5a", "e5b"), \(name) run(score, c(rows_root, file.path(work, name)), env = score_env, log = file.path(work, paste0("score-", name, ".log"))))
+e5 <- lapply(c("e5a", "e5b"), \(name) run(script = score, arguments = c(rows_root, file.path(work, name)), env = score_env, log = file.path(work, paste0("score-", name, ".log"))))
 files_a <- sort(list.files(file.path(work, "e5a")))
 files_b <- sort(list.files(file.path(work, "e5b")))
 same <- identical(files_a, files_b) && length(files_a) > 0L && all(vapply(files_a, \(f) identical(sha(file.path(work, "e5a", f)),
     sha(file.path(work, "e5b", f))), logical(1L)))
-if (any(unlist(e5) != 0L)) failureNote("E5 scoring", file.path(work, "score-e5a.log"), "none")
-addCheck("E5", 2L, if (all(unlist(e5) == 0L) && same) 2L else 0L, sprintf("two scorer runs on the lifecycle rows (mechanics: K281_RANGE, B = 1000) exit %s; %d files each; all identical: %s",
+if (any(unlist(e5) != 0L)) failureNote(id = "E5 scoring", log = file.path(work, "score-e5a.log"), errors = "none")
+addCheck(id = "E5", units = 2L, passed = if (all(unlist(e5) == 0L) && same) 2L else 0L, detail = sprintf("two scorer runs on the lifecycle rows (mechanics: K281_RANGE, B = 1000) exit %s; %d files each; all identical: %s",
     paste(unlist(e5), collapse = ", "), length(files_a), same))
 
 # ---- E6: cell A, r = 9201 to 9204, killed once one task is complete, continued; equal to an uninterrupted run ----------------------
@@ -221,9 +226,9 @@ complete_after_kill <- done()
 missing <- setdiff(9201:9204, 9200L + which(file.exists(file.path(e6_cut, "parts", sprintf("A-%04d.metrics.tsv", 9201:9204)))))
 missing_file <- file.path(work, "e6-missing.txt")
 writeLines(sprintf("A %d", missing), missing_file)
-status_cont <- run(sim, c(e6_cut, "9201", "9204", missing_file), "K211_CELLS=A", file.path(work, "e6-cont.log"))
+status_cont <- run(script = sim, arguments = c(e6_cut, "9201", "9204", missing_file), env = "K211_CELLS=A", log = file.path(work, "e6-cont.log"))
 started <- Sys.time()
-status_full <- run(sim, c(e6_full, "9201", "9204"), "K211_CELLS=A", file.path(work, "e6-full.log"))
+status_full <- run(script = sim, arguments = c(e6_full, "9201", "9204"), env = "K211_CELLS=A", log = file.path(work, "e6-full.log"))
 full_seconds <- as.numeric(difftime(Sys.time(), started, units = "secs"))
 readGz <- function(dir) if (file.exists(file.path(dir, "A.tsv.gz"))) readLines(file.path(dir, "A.tsv.gz")) else NULL
 readMetrics <- function(dir) if (file.exists(file.path(dir, "metrics.tsv"))) {
@@ -239,7 +244,7 @@ replicate_counts <- if (is.null(rows_cut)) integer() else {
 e6_pass <- killed && complete_after_kill >= 1L && complete_after_kill < 4L && status_cont == 0L && status_full == 0L &&
     !is.null(rows_cut) && identical(rows_cut, rows_full) && identical(readMetrics(e6_cut), readMetrics(e6_full)) &&
     identical(as.integer(replicate_counts), rep(3L, 4L))
-addCheck("E6", 1L, if (e6_pass) 1L else 0L, sprintf(paste("killed while running: %s; complete tasks after the kill: %d of 4; continued",
+addCheck(id = "E6", units = 1L, passed = if (e6_pass) 1L else 0L, detail = sprintf(paste("killed while running: %s; complete tasks after the kill: %d of 4; continued",
     "with %d task(s), exit %d; uninterrupted exit %d; assembled rows identical: %s; metrics identical (seconds",
     "excluded): %s; each replicate once with three masks: %s"), killed, complete_after_kill, length(missing), status_cont,
     status_full, identical(rows_cut, rows_full), identical(readMetrics(e6_cut), readMetrics(e6_full)),
@@ -251,9 +256,18 @@ seconds_all <- do.call(rbind, lapply(RANGES, \(r) {
     if (file.exists(f)) readText(f)
 }))
 s_all <- if (is.null(seconds_all)) NA_real_ else asNum(seconds_all[["seconds"]][seconds_all[["arm"]] == "S"], "seconds")
-plan_minutes <- 600 * mean(s_all) / 4 / 60
-addCheck("G2", 1L, as.integer(isTRUE(plan_minutes <= MAX_JOB_MINUTES)), sprintf(paste("planned script minutes of a counted job of 200 replicates at this run's seconds per",
-    "replicate-mask (600 replicate-masks, 4 workers): %.1f; no counted job may pass %d minutes"), plan_minutes, MAX_JOB_MINUTES))
+# S05: G2 plans the counted jobs from this run's seconds: planned script minutes (n replicates x 3 masks x mean seconds / 4 workers), planned job minutes
+# (+ 10 minutes of set-up) and timeout_minutes = min(75, 5 x ceiling(1.5 x job / 5)); it passes when every planned job is at most 75 minutes. L1's seconds
+# include the lifecycle checks, so the plan errs long (safe). The counted requests use these timeouts and the running ceiling is recomputed from them.
+plan_n <- c(200L, 171L, 77L)
+plan_script <- plan_n * 3 * mean(s_all) / 4 / 60
+plan_job <- plan_script + SETUP_MINUTES
+plan_timeout <- pmin(MAX_JOB_MINUTES, 5 * ceiling(1.5 * plan_job / 5))
+utils::write.table(data.frame(replicates = plan_n, script_minutes = num(plan_script), job_minutes = num(plan_job), timeout_minutes = plan_timeout,
+    stringsAsFactors = FALSE), file.path(public, "g2-plan.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
+addCheck(id = "G2", units = length(plan_n), passed = sum(plan_job <= MAX_JOB_MINUTES, na.rm = TRUE), detail = sprintf(paste("planned job minutes (script + %d set-up) at this run's",
+    "seconds per replicate-mask for 200, 171 and 77 replicates: %s; timeouts %s; none may pass %d minutes (g2-plan.tsv)"), SETUP_MINUTES,
+    paste(sprintf("%.1f", plan_job), collapse = ", "), paste(plan_timeout, collapse = ", "), MAX_JOB_MINUTES))
 
 # ---- G3: the one count, rule G3 as code, its table ------------------------------------------------------------------------------------
 # Rule G3 (ticket section 8): N-hat = 200 x (m_1 + ... + m_12); R = 200 when N-hat >= 276,220, else min(571, max(200, ceiling(200 x 276,220 / N-hat))).
@@ -264,7 +278,7 @@ g3Rule <- function(n_hat) {
 g3_cases <- file.path(here, "selftest", "g3-cases.tsv")
 g3_expect <- readText(g3_cases)
 g3_got <- vapply(asNum(g3_expect[["n_hat"]], "g3-cases n_hat"), g3Rule, integer(1L))
-addCheck("G3rule", nrow(g3_expect), sum(g3_got == asNum(g3_expect[["r"]], "g3-cases r")), "rule G3's function against Python's table (Fractions): the examples of the ticket and both edges of every branch")
+addCheck(id = "G3rule", units = nrow(g3_expect), passed = sum(g3_got == asNum(g3_expect[["r"]], "g3-cases r")), detail = "rule G3's function against Python's table (Fractions): the examples of the ticket and both edges of every branch")
 g3_count <- do.call(rbind, lapply(CELLS, \(cellname) {
     totals <- stats::setNames(numeric(length(VD)), VD)
     for (r in RANGES) {
@@ -282,7 +296,7 @@ utils::write.table(data.frame(cell = g3_count[["cell"]], mask = g3_count[["mask"
     file.path(public, "g3-count.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
 utils::write.table(data.frame(cell = g3_rule[["cell"]], r_cell = g3_rule[["r_cell"]], first_r = g3_rule[["first_r"]], last_r = g3_rule[["last_r"]],
     n_hat = num(g3_rule[["n_hat"]]), branch = g3_rule[["branch"]], stringsAsFactors = FALSE), file.path(public, "g3-rule.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
-addCheck("G3", 1L, as.integer(is.finite(n_hat) && r_cell >= 200L && r_cell <= G3_CAP), sprintf("one count over 12 settings written (g3-count.tsv); rule G3's table written (g3-rule.tsv); R and seeds r = %d to %d are in the table, not here",
+addCheck(id = "G3", units = 1L, passed = as.integer(is.finite(n_hat) && r_cell >= 200L && r_cell <= G3_CAP), detail = sprintf("one count over 12 settings written (g3-count.tsv); rule G3's table written (g3-rule.tsv); R and seeds r = %d to %d are in the table, not here",
     G3_FIRST, G3_FIRST + r_cell - 1L))
 
 # ---- public records ------------------------------------------------------------------------------------------------------

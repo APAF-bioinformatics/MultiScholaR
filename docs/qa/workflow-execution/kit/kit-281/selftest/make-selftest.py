@@ -38,11 +38,11 @@ def default(cell, mask, r):
         planted=600, g_added_rows=True)
 
 
-def build_spec(over):
+def build_spec(over, reps=None):
     spec = {}
     for cell in CELLS:
         for mask in MASKS:
-            for r in REPS:
+            for r in (reps or REPS):
                 d = default(cell, mask, r)
                 over(d, cell, mask, r)
                 spec[(cell, mask, r)] = d
@@ -133,7 +133,8 @@ def write_case(case, spec, jobs=None, reps=REPS, over_metric=lambda m: None, row
             rng.append(dict(cell=cell, first=min(jreps), last=max(jreps), expected=len(jreps),
                             complete=len(have) if range_complete is None else range_complete))
         write_tsv(os.path.join(base, "range.tsv"), rng, ["cell", "first", "last", "expected", "complete"])
-        json.dump(provenance if provenance is not None else PROVENANCE_OK, open(os.path.join(base, "provenance-sim.json"), "w"), indent=2)
+        if provenance is not False:   # False: no final provenance (a killed job)
+            json.dump(provenance if provenance is not None else PROVENANCE_OK, open(os.path.join(base, "provenance-sim.json"), "w"), indent=2)
         if determinism:
             write_tsv(os.path.join(base, "determinism.tsv"), [dict(cell="A", r=r, rows_identical="TRUE", metrics_identical="TRUE") for r in jreps[:5]],
                       ["cell", "r", "rows_identical", "metrics_identical"])
@@ -146,21 +147,23 @@ def div(a, b):
     return a / b if b != 0 else NAN
 
 
-def agg(spec, keys):
-    """Sums of the planted counts over (cell, mask) in `keys` and all replicates (one replicate-mask per entry)."""
+def agg(spec, keys, mult=None):
+    """Sums of the planted counts over (cell, mask) in `keys` and all replicates (one replicate-mask per entry); `mult(cell, mask, r)` is the
+    multiplicity of a replicate (a bootstrap weight, or 0 for a jackknife deletion)."""
     s = dict(units=0, Bn=0, Bp=0, B_bhV=0, B_bhT=0, B1_bhV=0, B1_bhT=0, B1n=0, B1p=0, flag_n=0, flag_err=0, gAn=0, gAp=0, gA1n=0, gA1p=0, gA0n=0,
              gA0p=0, planted=0, add={a: [0, 0] for a in ARMS}, kb={a: [0, 0] for a in ARMS}, gadd_units=0)
     for (cell, mask, r), d in spec.items():
         if (cell, mask) not in keys:
             continue
-        s["units"] += 1
+        w = mult(cell, mask, r) if mult else 1
+        s["units"] += w
         for k in ("Bn", "Bp", "B_bhV", "B_bhT", "B1_bhV", "B1_bhT", "B1n", "B1p", "flag_n", "flag_err", "planted"):
-            s[k] += d[k]
+            s[k] += w * d[k]
         if d["g_added_rows"]:
-            s["gA0n"] += d["gA0n"]; s["gA0p"] += d["gA0p"]; s["gA1n"] += d["gA1n"]; s["gA1p"] += d["gA1p"]
+            s["gA0n"] += w * d["gA0n"]; s["gA0p"] += w * d["gA0p"]; s["gA1n"] += w * d["gA1n"]; s["gA1p"] += w * d["gA1p"]
         for a in ARMS:
-            s["add"][a][0] += d["add"][a][0]; s["add"][a][1] += d["add"][a][1]
-            s["kb"][a][0] += d["kb"][a][0]; s["kb"][a][1] += d["kb"][a][1]
+            s["add"][a][0] += w * d["add"][a][0]; s["add"][a][1] += w * d["add"][a][1]
+            s["kb"][a][0] += w * d["kb"][a][0]; s["kb"][a][1] += w * d["kb"][a][1]
     s["gAn"] = s["gA0n"] + s["gA1n"]
     s["gAp"] = s["gA0p"] + s["gA1p"]
     return s
@@ -322,17 +325,18 @@ rho_case("f5_fires_neg", 2000, 105, extra=lambda d: d.__setitem__("flag_err", -4
 rho_case("f5_zero", 2000, 105, extra=lambda d: d.__setitem__("flag_err", 0))           # 0: does not fire: Calibrated
 rho_case("f5_and_fail", 10000, 560, extra=lambda d: d.__setitem__("flag_err", 4))      # F5' fires and rho_g fails: Withheld (the first row that holds)
 
-# ---- a pool with no added protein (B1 adds nothing): the deciding quantity is not finite; unlabelled settings ----------------------------------------
+# ---- a pool with no added protein (B1 adds nothing): the estimate of rho_g is not finite: an instrument STOP (the coordinator's ruling, S02) ----------------
 def none_over(d, cell, mask, r):
     d["g_added_rows"] = False
 spec_none = build_spec(none_over)
 write_case("noadded", spec_none)
-add_case("noadded")
-predict_decision("noadded", spec_none, "Not calibrated", boot_nonfinite_pool=B_BOOT)
+add_case("noadded", expect_text="stop:could not be formed")
+expect("noadded", "outcome.tsv", "", "outcome", "Stop")
+expect("noadded", "outcome.tsv", "", "kind", "instrument")
+expect("noadded", "decision.tsv", "rho_g", "estimate", NAN)
+expect("noadded", "decision.tsv", "rho_g", "boot_nonfinite", B_BOOT)
 for cell in CELLS:
     for mask in MASKS:
-        expect("noadded", "labels-settings.tsv", "%s|%s" % (cell, mask), "label", "not determined")
-        expect("noadded", "labels-settings.tsv", "%s|%s" % (cell, mask), "estimate", NAN)
         expect("noadded", "settings.tsv", "setting|%s|%s|rhog.B1" % (cell, mask), "boot_nonfinite", B_BOOT)
         expect("noadded", "settings.tsv", "setting|%s|%s|rhog.B1" % (cell, mask), "estimate", NAN)
 
@@ -424,7 +428,7 @@ stop_case("miss_rep", "a replicate is absent", drop={("C", m, 404) for m in MASK
 stop_case("smoke", "smoke flag", provenance=dict(PROVENANCE_OK, smoke=True))
 stop_case("smoke_absent", "smoke flag", provenance={"ticket": "KIT-281", "status": "complete"})
 stop_case("range_out", "outside the declared range", env="K281_RANGE=401,403;K211_B_BOOT=%d" % B_BOOT)    # replicate 404 lies outside 401 to 403
-stop_case("qmethod_bh", "q-method other than qvalue", over_metric=lambda m: m.__setitem__("qmethod", "BH") if (m["cell"], m["mask"], m["r"], m["arm"]) == ("B", "vd25", 403, "B1") else None)
+# (qmethod_bh is an ordinary case below: the q-method count is reported, not a stop)
 stop_case("guardstop", "instrument-stop.txt", extra_files={"instrument-stop.txt": "partial-match guard: partial match of 'ab' to 'abcd'\n"})
 stop_case("probe", "partial-match guard", env="K281_RANGE=401,404;K211_B_BOOT=%d;K281_GUARD_PROBE=1" % B_BOOT)   # a valid input; the scorer's own deliberate `$` prefix match
 stop_case("f1", "F1", kind="falsifier", over_metric=lambda m: m.__setitem__("viol", 1) if (m["cell"], m["mask"], m["r"], m["arm"]) == ("D", "vd5", 402, "B1") else None)
@@ -514,12 +518,213 @@ expect("cal105", "replicates.tsv", "A", "R", 4)
 expect("cal105", "outcome.tsv", "", "counted", "FALSE")
 # (the T / F case "tf" carries cal105's predictions: rho_case("tf", ...) predicted them before its files were rewritten with T and F spellings)
 
+# ---- S01 (script audit): two replicates, a non-degenerate cell A: the self-test SEES which bootstrap quantile decides ------------------------------------------
+# K281_RANGE=401,402, B = 1,000. Cells B, C, D are alike in their two replicates; cell A differs between replicate 401 and 402. Per resample cell A's
+# weights are (2,0), (1,1) or (0,2) with probabilities 1/4, 1/2, 1/4, so every pooled statistic takes exactly THREE values (one per weight pattern), each an exact
+# ratio of integer sums. The 0.975 quantile (type 7, position 975.025) is the MAXIMUM of the three unless fewer than 26 of 1,000 resamples take the maximum's
+# pattern (Binomial(1000, 1/4) or (1000, 1/2): probability below 1e-50); likewise the 0.025 quantile is the MINIMUM. The estimate is the (1,1) value.
+# So upper = max, lower = min, estimate = the middle pattern: predicted exactly without knowing a single draw. The jackknife SE is the delete-one formula over the
+# 8 replicates (4 cells x 2) of the pool, by hand.
+from statistics import NormalDist
+Q_REPS = [401, 402]
+Q_ENV = "K281_RANGE=401,402;K211_B_BOOT=%d" % B_BOOT
+PATTERNS = [(2, 0), (1, 1), (0, 2)]
+
+
+def mult_a(w):
+    return lambda cell, mask, r: (w[Q_REPS.index(r)] if cell == "A" else 1)
+
+
+def jack_se(thetas):
+    n = len(thetas)
+    if n < 2 or any(math.isnan(t) for t in thetas):
+        return NAN
+    m = sum(thetas) / n
+    return math.sqrt((n - 1) / n * sum((t - m) ** 2 for t in thetas))
+
+
+def q_stats(spec, keys, cells_jack):
+    """(estimate stats, [stats at the three patterns], [stats with one replicate deleted]) for the pool (`keys` = all settings) or a setting."""
+    est = stats(agg(spec, keys))
+    pats = [stats(agg(spec, keys, mult_a(w))) for w in PATTERNS]
+    jacks = []
+    for c in cells_jack:
+        for r in Q_REPS:
+            jacks.append(stats(agg(spec, keys, lambda cell, mask, rr, c=c, r=r: 0 if (cell == c and rr == r) else 1)))
+    return est, pats, jacks
+
+
+def q_case(case, over):
+    spec = build_spec(over, Q_REPS)
+    write_case(case, spec, reps=Q_REPS)
+    add_case(case, env=Q_ENV)
+    keys = {(c, m) for c in CELLS for m in MASKS}
+    est, pats, jacks = q_stats(spec, keys, CELLS)
+    zu = NormalDist().inv_cdf(0.975)
+    states = {}
+    for id_, stat, limit in (("rho_g", "rhog.B1", RHO_MARGIN), ("G1a", "B1.fdr_bh", FDP_LIMIT), ("G1b", "dfdrbh.B1", GUARD_MARGIN), ("G2", "dpowbh.B1", POWER_MARGIN)):
+        vals = [p[stat] for p in pats]
+        up = max(vals)
+        se = jack_se([j[stat] for j in jacks])
+        states[id_] = state(up, limit)
+        expect(case, "decision.tsv", id_, "estimate", est[stat])
+        expect(case, "decision.tsv", id_, "upper", up)
+        expect(case, "decision.tsv", id_, "state", states[id_])
+        expect(case, "decision.tsv", id_, "jack_se", se)
+        expect(case, "decision.tsv", id_, "upper_jack", est[stat] + zu * se)
+        expect(case, "decision.tsv", id_, "state_jack", state(est[stat] + zu * se, limit))
+    # pooled.tsv: the two-sided 95 % limits are the min and the max
+    for stat in ("rhog.B1", "Phi.S", "B1.m6_l_H"):
+        vals = [p[stat] for p in pats]
+        key = "pool|twelve|vd|%s" % stat
+        expect(case, "pooled.tsv", key, "estimate", est[stat])
+        expect(case, "pooled.tsv", key, "lo95", min(vals))
+        expect(case, "pooled.tsv", key, "hi95", max(vals))
+        expect(case, "pooled.tsv", key, "jack_se", jack_se([j[stat] for j in jacks]))
+    pc_lower = min(p["Phi.S"] for p in pats)
+    pc = pc_lower > PC_MARGIN
+    expect(case, "positive-control.tsv", "Phi.S", "estimate", est["Phi.S"])
+    expect(case, "positive-control.tsv", "Phi.S", "lower_975", pc_lower)
+    expect(case, "positive-control.tsv", "Phi.S", "passes", pc)
+    f_lo, f_hi = min(p["B1.m6_l_H"] for p in pats), max(p["B1.m6_l_H"] for p in pats)
+    fires = f_lo > 0 or f_hi < 0
+    expect(case, "falsifier.tsv", "F5'", "estimate", est["B1.m6_l_H"])
+    expect(case, "falsifier.tsv", "F5'", "lower", f_lo)
+    expect(case, "falsifier.tsv", "F5'", "upper", f_hi)
+    expect(case, "falsifier.tsv", "F5'", "fires", fires)
+    outcome = "Withheld" if fires else ("Calibrated" if all(v == "pass" for v in states.values()) else "Not calibrated")
+    expect(case, "outcome.tsv", "", "outcome", outcome)
+    expect(case, "outcome.tsv", "", "pc_pass", pc)
+    expect(case, "outcome.tsv", "", "f5_fires", fires)
+    OUTCOMES[case] = outcome
+    return spec, est, pats, states, outcome
+
+
+def q_over(**by_cell_a):
+    """cell A's replicate-specific counts: name -> (value at 401, value at 402); every other cell and the default stay alike."""
+    def over(d, cell, mask, r):
+        if cell == "A":
+            for k, (v1, v2) in by_cell_a.items():
+                if k == "add_S":
+                    d["add"]["S"] = (100, v1 if r == 401 else v2)
+                else:
+                    d[k] = v1 if r == 401 else v2
+    return over
+
+
+def alike_added(d, cell, mask, r):
+    d["gA0n"], d["gA0p"], d["gA1n"], d["gA1p"] = 1000, 50, 0, 0   # the added proteins' rate is the comparator's (0.05) in every unit unless a case changes it
+
+
+# rho_g: estimate 1.075 (pass) but the maximum 1.25 (fail): a scorer deciding on the estimate or the lower limit would say Calibrated
+def over_rho(d, cell, mask, r):
+    alike_added(d, cell, mask, r)
+    if cell == "A":
+        d["gA0p"] = 30 if r == 401 else 100
+spec_q, est_q, pats_q, states_q, out_q = q_case("q_rho", over_rho)
+assert abs(est_q["rhog.B1"] - 1.075) < 1e-12 and max(p["rhog.B1"] for p in pats_q) > RHO_MARGIN and out_q == "Not calibrated" and states_q["rho_g"] == "fail"
+# the same quantile in one SETTING (A at vd5, labels at one-sided 0.05/12): lower 0.6 (min), upper 2.0 (max), estimate 1.3: label "not determined"; an estimate-based label would read "exceeds margin"
+keys_a5 = {("A", "vd5")}
+est_s, pats_s, jacks_s = q_stats(spec_q, keys_a5, ["A"])
+zs = NormalDist().inv_cdf(1 - 0.05 / 12)
+se_s = jack_se([j["rhog.B1"] for j in jacks_s])
+expect("q_rho", "settings.tsv", "setting|A|vd5|rhog.B1", "estimate", est_s["rhog.B1"])
+expect("q_rho", "settings.tsv", "setting|A|vd5|rhog.B1", "lo95", min(p["rhog.B1"] for p in pats_s))
+expect("q_rho", "settings.tsv", "setting|A|vd5|rhog.B1", "hi95", max(p["rhog.B1"] for p in pats_s))
+expect("q_rho", "settings.tsv", "setting|A|vd5|rhog.B1", "jack_se", se_s)
+expect("q_rho", "labels-settings.tsv", "A|vd5", "lower", min(p["rhog.B1"] for p in pats_s))
+expect("q_rho", "labels-settings.tsv", "A|vd5", "upper", max(p["rhog.B1"] for p in pats_s))
+expect("q_rho", "labels-settings.tsv", "A|vd5", "label", label(min(p["rhog.B1"] for p in pats_s), max(p["rhog.B1"] for p in pats_s)))
+expect("q_rho", "labels-settings.tsv", "A|vd5", "label_jack", label(est_s["rhog.B1"] - zs * se_s, est_s["rhog.B1"] + zs * se_s))
+assert label(0.6, 2.0) == "not determined"
+# positive control: estimate Phi_S 1.3 (> 1.20: passes) but the lower limit is the minimum 1.0 (fails)
+def over_pc(d, cell, mask, r):
+    alike_added(d, cell, mask, r)
+    d["add"]["S"] = (100, 6)
+    if cell == "A":
+        d["add"]["S"] = (100, 2 if r == 401 else 14)
+spec_p, est_p, pats_p, states_p, out_p = q_case("q_pc", over_pc)
+assert est_p["Phi.S"] > PC_MARGIN and min(p["Phi.S"] for p in pats_p) <= PC_MARGIN and out_p == "Calibrated"
+# G1b (and G1a): estimate within the limits, maximum above
+def over_g1b(d, cell, mask, r):
+    alike_added(d, cell, mask, r)
+    if cell == "A":
+        d["B1_bhV"] = 6 if r == 401 else 18
+spec_g, est_g, pats_g, states_g, out_g = q_case("q_g1b", over_g1b)
+assert est_g["dfdrbh.B1"] <= GUARD_MARGIN < max(p["dfdrbh.B1"] for p in pats_g) and out_g == "Not calibrated" and states_g["G1b"] == "fail"
+# G2: power cost estimate 0.0042 (pass), maximum 0.0083 (fail)
+def over_g2(d, cell, mask, r):
+    alike_added(d, cell, mask, r)
+    if cell == "A":
+        d["B1_bhT"] = 200 if r == 401 else 180
+spec_g2, est_g2, pats_g2, states_g2, out_g2 = q_case("q_g2", over_g2)
+assert est_g2["dpowbh.B1"] <= POWER_MARGIN < max(p["dpowbh.B1"] for p in pats_g2) and out_g2 == "Not calibrated" and states_g2["G2"] == "fail"
+# F5': fires on the minimum (all three values above 0); the mirror; a straddle with a positive estimate (no fire); a limit that touches 0 (no fire)
+def over_f5(e1, e2):
+    def over(d, cell, mask, r):
+        alike_added(d, cell, mask, r)
+        if cell == "A":
+            d["flag_err"] = e1 if r == 401 else e2
+    return over
+for name, e1, e2, want in (("q_f5_fire", 2, 6, "Withheld"), ("q_f5_fire_neg", -6, -2, "Withheld"), ("q_f5_straddle", -4, 6, "Calibrated"), ("q_f5_touch", 0, 6, "Calibrated")):
+    _, est_f, pats_f, _, out_f = q_case(name, over_f5(e1, e2))
+    assert out_f == want, (name, out_f)
+assert est_f["B1.m6_l_H"] > 0
+
+# ---- S07: further cases -------------------------------------------------------------------------------------------------------------------------------------
+# G1b at the margin as written: 0.05 - 0.0475 in doubles (B 19/400, B1 20/400; G1a at its limit 0.05: pass)
+rho_case("g1b_at", 2000, 100, extra=fdp_over(19, 381, 20, 380, 3000))
+print("g1b_at: difference in doubles =", repr(0.05 - 0.0475), "->", state(0.05 - 0.0475, GUARD_MARGIN))
+# F5' not finite: no flagged one-sided protein (0/0): does not fire; the estimate is not finite and written NA
+def over_f5na(d, cell, mask, r):
+    d["flag_n"], d["flag_p"], d["flag_err"] = 0, 0, 0
+spec_na = build_spec(over_f5na)
+write_case("f5_na", spec_na)
+add_case("f5_na")
+predict_decision("f5_na", spec_na)
+expect("f5_na", "falsifier.tsv", "F5'", "boot_nonfinite", B_BOOT)
+OUTCOMES_NA = OUTCOMES["f5_na"]
+assert OUTCOMES_NA == "Calibrated"
+# a job directory holding errors.txt; a killed job (only the start provenance, no final provenance-sim.json)
+stop_case("errors_file", "errors.txt", extra_files={"errors.txt": "1 task(s) failed; first: simulated\n"})
+stop_case("killed", "provenance-sim.json is absent", provenance=False, extra_files={"provenance-sim-start.json": json.dumps(dict(PROVENANCE_OK, status="started"))})
+# S02 ruling: a non-finite ESTIMATE of rho_g or of a guard is an instrument Stop (here: B1 has no BH call at all; the comparator has no event)
+def over_nog1a(d, cell, mask, r):
+    d["B1_bhV"], d["B1_bhT"] = 0, 0
+spec_ng = build_spec(over_nog1a)
+write_case("g1a_nonfinite", spec_ng)
+add_case("g1a_nonfinite", expect_text="stop:could not be formed")
+expect("g1a_nonfinite", "outcome.tsv", "", "outcome", "Stop")
+expect("g1a_nonfinite", "outcome.tsv", "", "kind", "instrument")
+expect("g1a_nonfinite", "decision.tsv", "G1a", "estimate", NAN)
+def over_comp0(d, cell, mask, r):
+    d["Bp"] = 0
+spec_c0 = build_spec(over_comp0)
+write_case("comp_zero", spec_c0)
+add_case("comp_zero", expect_text="stop:could not be formed")
+expect("comp_zero", "outcome.tsv", "", "outcome", "Stop")
+expect("comp_zero", "outcome.tsv", "", "kind", "instrument")
+expect("comp_zero", "decision.tsv", "rho_g", "state", "fail")
+# S03 ruling: a q-method fallback is REPORTED (per cell, mask and arm; checks; outcome), not a stop
+spec_qb = base_spec()
+write_case("qmethod_bh", spec_qb, over_metric=lambda m: m.__setitem__("qmethod", "BH") if (m["cell"], m["mask"], m["r"], m["arm"]) == ("B", "vd25", 403, "B1") else None)
+add_case("qmethod_bh")
+predict_decision("qmethod_bh", spec_qb)
+expect("qmethod_bh", "outcome.tsv", "", "n_qmethod_fallback", 1)
+expect("qmethod_bh", "checks.tsv", "qmethod", "value", 1)
+expect("qmethod_bh", "checks.tsv", "qmethod", "pass", False)
+expect("qmethod_bh", "qmethod-fallback.tsv", "B|vd25|B1", "n_fallback", 1)
+expect("qmethod_bh", "qmethod-fallback.tsv", "B|vd25|B1", "n_rows", 4)
+expect("qmethod_bh", "qmethod-fallback.tsv", "B|vd25|B", "n_fallback", 0)
+expect("cal105", "outcome.tsv", "", "n_qmethod_fallback", 0)
+
 # ---- the outcomes the ticket's rules give, written by hand (a coding mistake in the predictions above stops here) --------------------------------------------
 HAND = {"cal105": "Calibrated", "bnd_below": "Calibrated", "bnd_at": "Calibrated", "bnd_above": "Not calibrated", "rho112": "Not calibrated",
         "split": "Calibrated", "g1a_fail": "Not calibrated", "g1a_pass_edge": "Calibrated", "g1b_fail": "Not calibrated", "g1b_pass": "Calibrated",
         "g2_fail": "Not calibrated", "g2_below": "Calibrated", "g2_at": "Not calibrated", "g2_above": "Not calibrated", "pc_pass": "Calibrated",
         "pc_fail_ok": "Calibrated", "f5_fires_pos": "Withheld", "f5_fires_neg": "Withheld", "f5_zero": "Calibrated", "f5_and_fail": "Withheld",
-        "noadded": "Not calibrated", "tf": "Calibrated", "join": "Calibrated", "counted_ok": "Calibrated"}
+        "tf": "Calibrated", "join": "Calibrated", "counted_ok": "Calibrated", "q_rho": "Not calibrated", "q_pc": "Calibrated", "q_g1b": "Not calibrated", "q_g2": "Not calibrated",
+        "q_f5_fire": "Withheld", "q_f5_fire_neg": "Withheld", "q_f5_straddle": "Calibrated", "q_f5_touch": "Calibrated", "f5_na": "Calibrated", "qmethod_bh": "Calibrated"}
 for case, want in HAND.items():
     assert OUTCOMES[case] == want, (case, OUTCOMES[case], want)
 

@@ -6,7 +6,7 @@ import csv, os, subprocess, sys
 
 KEYS = {"decision.tsv": ["id"], "falsifier.tsv": ["falsifier"], "positive-control.tsv": ["stat"], "settings.tsv": ["scope", "cell", "mask", "stat"],
         "designs.tsv": ["scope", "cell", "mask", "stat"], "pooled.tsv": ["scope", "cell", "mask", "stat"], "labels-settings.tsv": ["cell", "mask"],
-        "checks.tsv": ["check"], "replicates.tsv": ["cell"], "outcome.tsv": []}
+        "checks.tsv": ["check"], "qmethod-fallback.tsv": ["cell", "mask", "arm"], "replicates.tsv": ["cell"], "outcome.tsv": []}
 here, scored = sys.argv[1], sys.argv[2]
 
 

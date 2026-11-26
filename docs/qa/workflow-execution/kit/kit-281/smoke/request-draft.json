@@ -1,0 +1,27 @@
+{
+  "requested_by": "KIT-281: parse-and-self-test send before L1 (declaration smoke/declaration.md); DRAFT, not sent: package_commit and the name are filled at send time",
+  "label": "KIT-281 parse and scorer self-test, one smoke-flagged simulation task (r 9301)",
+  "package_commit": "<40-digit commit of branch kit-281 whose R/ src/ inst/ tests/ DESCRIPTION NAMESPACE tree equals a5de1c2e's>",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-281/smoke/smoke-k281.R",
+      "args": ["smoke-out"],
+      "env": {},
+      "out": "smoke-out",
+      "out_pattern": "\\.(tsv|json|txt)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

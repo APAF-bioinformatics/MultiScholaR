@@ -544,29 +544,35 @@ scoreMain <- function(rows_root, out) {
     }, logical(1L)))
     complete <- setequal(cells, CELLS_ALL) && !any(lengths(absent) > 0L) && length(unique(r_each)) == 1L && nrow(metrics) == expected && !duplicates &&
         arms_masks_ok
-    addCheck("complete", nrow(metrics), complete, sprintf("%d rows of %d expected; cells %s; replicates absent from the declared range: %d; duplicates %s; every arm and mask present %s",
+    addCheck(check = "complete", value = nrow(metrics), pass = complete, detail = sprintf("%d rows of %d expected; cells %s; replicates absent from the declared range: %d; duplicates %s; every arm and mask present %s",
         nrow(metrics), expected, paste(cells, collapse = ""), sum(lengths(absent)), duplicates, arms_masks_ok))
     if (!complete) k211Abort("k211_instrument", sprintf("the rows are incomplete: a replicate is absent from the declared range, a cell, arm or mask is missing, or a row is duplicated (%d rows of %d expected; %d replicate(s) absent)",
         nrow(metrics), expected, sum(lengths(absent))))
     for (cellname in cells) if (anyDuplicated(input[["rows"]][[cellname]][c("mask", "r", "arm", "subset", "class", "stratum", "ell", "band", "ell0")]) > 0L)
         k211Abort("k211_instrument", sprintf("cell %s: a duplicated row key (a replicate joined twice)", cellname))
-    addCheck("ranges_incomplete", sum(ranges[["incomplete"]]), !any(ranges[["incomplete"]]), "ranges whose complete count is below the expected count")
+    addCheck(check = "ranges_incomplete", value = sum(ranges[["incomplete"]]), pass = !any(ranges[["incomplete"]]), detail = "ranges whose complete count is below the expected count")
     if (any(ranges[["incomplete"]])) k211Abort("k211_instrument", "a range is incomplete (a job did not complete; it is continued once, not scored around)")
+    # Coordinator's ruling (S03): a Benjamini-Hochberg fallback of qMethod() is deterministic and the decision reads no q-value (raw p < 0.05 and BH on
+    # raw p), so the count of rows whose recorded q-method is not qvalue is REPORTED (per cell, mask and arm in qmethod-fallback.tsv, in the checks table and
+    # in outcome.tsv), never a stop. (The way a silent switch could arise, a guard inside package code, is kept out of the simulation.)
     n_fallback <- sum(metrics[["qmethod"]] != "qvalue")
-    addCheck("qmethod", n_fallback, n_fallback == 0L, "metrics rows whose q-values did not come from qvalue::qvalue (KIT-211: 0 fallbacks); any other value is an instrument status")
-    if (n_fallback > 0L) k211Abort("k211_instrument", sprintf("%d metrics row(s) record a q-method other than qvalue", n_fallback))
+    fallback_by <- stats::aggregate(list(n_rows = rep(1, nrow(metrics)), n_fallback = as.numeric(metrics[["qmethod"]] != "qvalue")),
+        by = list(cell = metrics[["cell"]], mask = metrics[["mask"]], arm = metrics[["arm"]]), FUN = sum)
+    writeTsv(fallback_by, file.path(out, "qmethod-fallback.tsv"))
+    addCheck(check = "qmethod", value = n_fallback, pass = n_fallback == 0L,
+        detail = "metrics rows whose recorded q-method is not qvalue (KIT-211: 0); reported, not a stop: the decision reads no q-value")
     det <- input[["determinism"]]
     det_fail <- if (is.null(det)) 0L else sum(!det[["rows_identical"]]) + sum(!det[["metrics_identical"]])
-    addCheck("determinism", if (is.null(det)) 0L else nrow(det), !is.null(det) && det_fail == 0L,
-        "cell A, first five replicates of a range run twice, rows and metrics identical (required in a counted scoring)")
+    addCheck(check = "determinism", value = if (is.null(det)) 0L else nrow(det), pass = !is.null(det) && det_fail == 0L,
+        detail = "cell A, first five replicates of a range run twice, rows and metrics identical (required in a counted scoring)")
     if (counted && is.null(det)) k211Abort("k211_instrument", "no determinism table in a counted scoring")
     f1 <- sum(metrics[["viol"]])
     f2 <- sum(metrics[["e10_dev"]] > 0) + sum(!metrics[["e3_pass"]]) + det_fail
-    addCheck("F1", f1, f1 == 0, "identity violations of F1 (O in H_S, H_S in H_B, H_B in H_B1), summed")
-    addCheck("F2", f2, f2 == 0, "E3 failures (B1's DA input), logFC identities (E10) not exact, determinism differences, counted")
-    addCheck("t_r_monotone", sum(!metrics[["mono_ok"]]), all(metrics[["mono_ok"]]), "replicate-masks where the count of tested p <= t_r differs from the calls (reported, not a stop)")
-    addCheck("bootstrap_B", B_BOOT, B_BOOT == 10000L, "B is 10000 in a counted scoring; another value is a mechanics run (self-test or lifecycle)")
-    addCheck("range_declared", declared[["source"]], identical(declared[["source"]], "g3-table"), "the declared range is rule G3's table in a counted scoring; K281_RANGE is a mechanics run")
+    addCheck(check = "F1", value = f1, pass = f1 == 0, detail = "identity violations of F1 (O in H_S, H_S in H_B, H_B in H_B1), summed")
+    addCheck(check = "F2", value = f2, pass = f2 == 0, detail = "E3 failures (B1's DA input), logFC identities (E10) not exact, determinism differences, counted")
+    addCheck(check = "t_r_monotone", value = sum(!metrics[["mono_ok"]]), pass = all(metrics[["mono_ok"]]), detail = "replicate-masks where the count of tested p <= t_r differs from the calls (reported, not a stop)")
+    addCheck(check = "bootstrap_B", value = B_BOOT, pass = B_BOOT == 10000L, detail = "B is 10000 in a counted scoring; another value is a mechanics run (self-test or lifecycle)")
+    addCheck(check = "range_declared", value = declared[["source"]], pass = identical(declared[["source"]], "g3-table"), detail = "the declared range is rule G3's table in a counted scoring; K281_RANGE is a mechanics run")
     if (f1 > 0 || f2 > 0) k211Abort("k211_falsifier", if (f1 > 0) "F1: a kept-set identity fails" else "F2: B1's input, an identity of logFC or the determinism comparison fails")
     # ---- atoms per cell and mask, then the bootstrap weights --------------------------------------------------------------------
     rows <- input[["rows"]]
@@ -580,7 +586,7 @@ scoreMain <- function(rows_root, out) {
             colnames(a) <- paste0(arm, ".", colnames(a))
             a
         })
-        progress(paste("atoms", cellname, mask), "done")
+        progress(unit = paste("atoms", cellname, mask), status = "done")
         do.call(cbind, mats)
     }
     atoms <- lapply(stats::setNames(cells, cells), \(cellname) lapply(stats::setNames(CELL_MASKS[[cellname]], CELL_MASKS[[cellname]]),
@@ -594,16 +600,16 @@ scoreMain <- function(rows_root, out) {
         x <- resampleStats(stats::setNames(list(atoms[[cellname]][[mask]]), cellname), weights, ARMS_MAIN)
         setting_tables[[length(setting_tables) + 1L]] <- summariseStats(x, scope = "setting", cellname = cellname, mask = mask)
         settings[[paste(cellname, mask, sep = ":")]] <- thin(x)
-        progress(paste("setting", cellname, mask), "done")
+        progress(unit = paste("setting", cellname, mask), status = "done")
     }
     design_stats <- lapply(stats::setNames(cells, cells), \(cellname) {
         x <- resampleStats(stats::setNames(list(Reduce(`+`, atoms[[cellname]])), cellname), weights, ARMS_MAIN)
-        progress(paste("design", cellname), "done")
+        progress(unit = paste("design", cellname), status = "done")
         x
     })
     pool <- resampleStats(lapply(stats::setNames(names(POOL), names(POOL)), \(cellname) Reduce(`+`, lapply(POOL[[cellname]],
         \(mask) atoms[[cellname]][[mask]]))), weights, ARMS_MAIN)
-    progress("pool twelve settings", "done")
+    progress(unit = "pool twelve settings", status = "done")
     table_settings <- do.call(rbind, setting_tables)
     table_designs <- do.call(rbind, lapply(cells, \(cellname) summariseStats(design_stats[[cellname]], scope = "design", cellname = cellname, mask = "vd")))
     table_pool <- summariseStats(pool, scope = "pool", cellname = "twelve", mask = "vd")
@@ -617,6 +623,10 @@ scoreMain <- function(rows_root, out) {
         decisionRow(pool, id = "G1b", quantity = "FDP_BH(B1) minus FDP_BH(B), paired", stat = "dfdrbh.B1", limit = GUARD_MARGIN),
         decisionRow(pool, id = "G2", quantity = "BH power(B) minus BH power(B1), paired, over the 600 changed proteins", stat = "dpowbh.B1", limit = POWER_MARGIN))
     writeTsv(decision, file.path(out, "decision.tsv"))
+    # Coordinator's ruling (S02): a NON-FINITE ESTIMATE of rho_g or of a guard is an instrument stop (nothing is claimed; the default stays 2), not
+    # "Not calibrated". Resample-level non-finite values stay dropped and counted (boot_nonfinite).
+    not_formed <- decision[["id"]][!is.finite(decision[["estimate"]])]
+    if (length(not_formed)) k211Abort("k211_instrument", sprintf("the deciding quantity or a guard could not be formed (not finite): %s", paste(not_formed, collapse = ", ")))
     f5 <- falsifier5(pool)
     writeTsv(f5, file.path(out, "falsifier.tsv"))
     pc_limits <- limitsOf(pool, "Phi.S", ALPHA_PRIMARY)
@@ -643,6 +653,7 @@ scoreMain <- function(rows_root, out) {
         rho_g_upper = decision[["upper"]][decision[["id"]] == "rho_g"], rho_g_state = decision[["state"]][decision[["id"]] == "rho_g"],
         g1a_state = decision[["state"]][decision[["id"]] == "G1a"], g1b_state = decision[["state"]][decision[["id"]] == "G1b"],
         g2_state = decision[["state"]][decision[["id"]] == "G2"], f5_fires = f5[["fires"]], pc_pass = pc, f1 = f1, f2 = f2,
+        n_qmethod_fallback = n_fallback, notes = sprintf("%d metrics row(s) with a q-method other than qvalue (reported; the decision reads no q-value)", n_fallback),
         stringsAsFactors = FALSE), file.path(out, "outcome.tsv"))
     writeTsv(do.call(rbind, ctx[["checks"]]), file.path(out, "checks.tsv"))
     # ---- the decision table (generated; the owner edits the wording, VAL-41) ---------------------------------------------------------
@@ -680,6 +691,7 @@ scoreMain <- function(rows_root, out) {
             if (counted) "yes" else "NO (a mechanics run)", declared[["source"]]),
         sprintf("Positive control (S's one-sided 97.5 %% lower limit of Phi above %.2f; reported, decides and stops nothing): %s.", PC_MARGIN,
             if (pc) "passes" else "fails"),
+        sprintf("Metrics rows whose recorded q-method is not qvalue: %d (reported; the decision reads raw p < 0.05 and BH on raw p).", n_fallback),
         sprintf("F5' (the pooled two-sided 95 %% interval of the fold-change bias of H_B1's flagged one-sided proteins excludes 0): %s.", if (f5[["fires"]]) "FIRES" else "does not fire"), "",
         "## The deciding quantity and the guards (the twelve settings pooled; ratios of sums)", "", mdTable(deciding), "",
         "## Per design, split by the flag, Phi and the positive control (reported, deciding nothing)", "", mdTable(per_design), "",
@@ -701,7 +713,7 @@ dir.create(out_arg, recursive = TRUE, showWarnings = FALSE)
 status <- tryCatch(withCallingHandlers(scoreMain(rows_root_arg, out_arg), warning = function(w) {
     if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE))
         k211Abort("k211_instrument", paste("partial-match guard:", conditionMessage(w)))
-}), k211_falsifier = function(e) stopRecord(out_arg, "falsifier", conditionMessage(e)),
-k211_instrument = function(e) stopRecord(out_arg, "instrument", conditionMessage(e)),
-error = function(e) stopRecord(out_arg, "instrument", paste("unclassified error:", conditionMessage(e))))
+}), k211_falsifier = function(e) stopRecord(out = out_arg, kind = "falsifier", reason = conditionMessage(e)),
+k211_instrument = function(e) stopRecord(out = out_arg, kind = "instrument", reason = conditionMessage(e)),
+error = function(e) stopRecord(out = out_arg, kind = "instrument", reason = paste("unclassified error:", conditionMessage(e))))
 quit(status = if (identical(status, "ok")) 0L else 1L)

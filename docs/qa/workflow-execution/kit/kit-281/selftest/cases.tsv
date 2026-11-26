@@ -19,14 +19,13 @@ f5_fires_pos	f5_fires_pos	K281_RANGE=401,404;K211_B_BOOT=1000	ok
 f5_fires_neg	f5_fires_neg	K281_RANGE=401,404;K211_B_BOOT=1000	ok
 f5_zero	f5_zero	K281_RANGE=401,404;K211_B_BOOT=1000	ok
 f5_and_fail	f5_and_fail	K281_RANGE=401,404;K211_B_BOOT=1000	ok
-noadded	noadded	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+noadded	noadded	K281_RANGE=401,404;K211_B_BOOT=1000	stop:could not be formed
 partial	partial	K281_RANGE=401,404;K211_B_BOOT=1000	ok
 fields	fields	K281_RANGE=401,404;K211_B_BOOT=1000	ok
 miss_rep	miss_rep	K281_RANGE=401,404;K211_B_BOOT=1000	stop:a replicate is absent
 smoke	smoke	K281_RANGE=401,404;K211_B_BOOT=1000	stop:smoke flag
 smoke_absent	smoke_absent	K281_RANGE=401,404;K211_B_BOOT=1000	stop:smoke flag
 range_out	range_out	K281_RANGE=401,403;K211_B_BOOT=1000	stop:outside the declared range
-qmethod_bh	qmethod_bh	K281_RANGE=401,404;K211_B_BOOT=1000	stop:q-method other than qvalue
 guardstop	guardstop	K281_RANGE=401,404;K211_B_BOOT=1000	stop:instrument-stop.txt
 probe	probe	K281_RANGE=401,404;K211_B_BOOT=1000;K281_GUARD_PROBE=1	stop:partial-match guard
 f1	f1	K281_RANGE=401,404;K211_B_BOOT=1000	stop:F1
@@ -49,3 +48,18 @@ counted_ok	counted_ok	K281_G3_TABLE=@HERE@/cases/g3tables/g3-ok.tsv	ok
 counted_nodet	counted_nodet	K281_G3_TABLE=@HERE@/cases/g3tables/g3-ok.tsv	stop:no determinism table
 counted_g3five	counted_g3five	K281_G3_TABLE=@HERE@/cases/g3tables/g3-five.tsv	stop:a replicate is absent
 counted_g3none	counted_g3none	K281_G3_TABLE=@HERE@/cases/g3tables/absent.tsv	stop:no declared replicate range
+q_rho	q_rho	K281_RANGE=401,402;K211_B_BOOT=1000	ok
+q_pc	q_pc	K281_RANGE=401,402;K211_B_BOOT=1000	ok
+q_g1b	q_g1b	K281_RANGE=401,402;K211_B_BOOT=1000	ok
+q_g2	q_g2	K281_RANGE=401,402;K211_B_BOOT=1000	ok
+q_f5_fire	q_f5_fire	K281_RANGE=401,402;K211_B_BOOT=1000	ok
+q_f5_fire_neg	q_f5_fire_neg	K281_RANGE=401,402;K211_B_BOOT=1000	ok
+q_f5_straddle	q_f5_straddle	K281_RANGE=401,402;K211_B_BOOT=1000	ok
+q_f5_touch	q_f5_touch	K281_RANGE=401,402;K211_B_BOOT=1000	ok
+g1b_at	g1b_at	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+f5_na	f5_na	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+errors_file	errors_file	K281_RANGE=401,404;K211_B_BOOT=1000	stop:errors.txt
+killed	killed	K281_RANGE=401,404;K211_B_BOOT=1000	stop:provenance-sim.json is absent
+g1a_nonfinite	g1a_nonfinite	K281_RANGE=401,404;K211_B_BOOT=1000	stop:could not be formed
+comp_zero	comp_zero	K281_RANGE=401,404;K211_B_BOOT=1000	stop:could not be formed
+qmethod_bh	qmethod_bh	K281_RANGE=401,404;K211_B_BOOT=1000	ok
