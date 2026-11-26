@@ -1,0 +1,41 @@
+{
+  "requested_by": "KIT-188 smoke check send 2 of 3, request B (instrument check, no expectation, nothing judged; coordinator's rulings on send 1; charged to L1r's line)",
+  "label": "KIT-188 smoke2b 758d76c7",
+  "package_commit": "758d76c7730dbcc65d7331f9c1f05fa2937645b2",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "M12",
+        "401",
+        "401",
+        "k188-smoke2-d"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_LIFECYCLE": "1",
+        "K188_SMOKE": "1",
+        "K188_JOBS": "deciding",
+        "K188_JOB": "smoke2-d"
+      },
+      "out": "k188-smoke2-d",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
