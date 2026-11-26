@@ -2328,11 +2328,17 @@ runChild <- function(i) {
     res$exit <- code
     # written as the unit completes, so that a job stopped at its timeout still uploads what it finished (7.1)
     tag <- sprintf("%s-%s-%d-%s-%s%s", u$cell, u$job, u$r, u$scenario, u$mask, suffix)
+    # a unit with NO result file and NO trace (killed by the runner or the job's limit, a signal, out of memory) cannot be told from a failure of
+    # the analysis route: it is recorded as an `instrument` unit row, never `crashed` (the coordinator's ruling; the scorer stops on it, and
+    # whether it is re-sent or reclassified `crashed` with its cause is decided on the evidence, never by this script). The planted `exitplant`
+    # ends so by design and stays `crashed`.
+    no_result_no_trace <- !file.exists(rds) && !file.exists(trace_file) && !identical(u$plant, "exitplant")
+    if (no_result_no_trace) res$error <- sprintf("no_result_no_trace: child exit %d%s", code, if (code > 128L) sprintf(" (signal %d)", code - 128L) else "")
     rows <- res$rows
     if (!is.null(res$stack)) writeLines(res$stack, file.path(out_dir, "rows", sprintf("unit-trace-%s.txt", tag)))
     if (is.null(rows) || !nrow(rows)) {
         rows <- as.data.frame(do.call(newRow, list(part = part, cell = u$cell, job = u$job, scenario = u$scenario, mask = u$mask, rep = u$r,
-            arm = "unit", status = if (grepl("partial-match guard", res$error %||% "", fixed = TRUE)) "instrument" else "crashed",
+            arm = "unit", status = if (no_result_no_trace || grepl("partial-match guard", res$error %||% "", fixed = TRUE)) "instrument" else "crashed",
             class = res$error %||% "no rows")), stringsAsFactors = FALSE)
     }
     rows$smoke <- if (smoke) "1" else NA_character_

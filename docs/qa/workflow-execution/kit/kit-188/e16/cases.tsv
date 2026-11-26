@@ -13,6 +13,7 @@ excess	excess	L12:deciding	400,100	ok
 normstop	normstop	L12:deciding	2,2	stop:norm_ok
 guardstop	guardstop	L12:deciding	2,2	stop:partial-match guard
 guardunit	guardunit	L12:deciding	2,2	stop:partial-match guard
+killed	killed	L12:deciding	2,2	stop:no_result_no_trace
 rangestop	rangestop	L12:deciding	2,2	stop:outside the declared range
 e5diff	e5diff	L12:deciding,L12:lp	2,2	stop:E5 differs
 tf	tf	L12:deciding	400,100	ok

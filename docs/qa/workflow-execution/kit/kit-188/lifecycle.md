@@ -378,3 +378,20 @@ Raw: `smoke/5-raw.tar.gz`, `smoke/5/`. Judged nothing. Observed: (1) both script
 (6) `crashnet` (the `options(error=)` writer): the child ended exit 1 with no result, the writer left `unit-...-crashnet-trace.txt` (`Error: K188 planted non-guard error outside every handler`), the parent's `unit` row is `crashed` with class `child process exit 1, no result Error: K188 planted ...`, `GUARD_planted` TRUE, `unit_completed` TRUE by design. No process died without a row, a check or a trace; checks, timing and provenance exist.
 Not exercised: a guard stop that reaches the global net (the writer was exercised by a non-guard error only), and any guard hit in the parent.
 **Running total on L1r's line** (core-hours, indicative): smoke series 11.04, this send 1.39 = **12.43**; with lc2's 2.29, 14.72 spent against the line's ceiling of 48.48 (VAL-362).
+
+## The unit with no result and no trace (the coordinator's ruling; told to the owner; replaces the last row of the endings table above)
+
+Quoted: "it is NOT counted silently in the 5 % gate. Reason: with no result and no trace nobody can tell a failure of the analysis route (which 38.2 (2) counts) from a failure of the machine or the job (which is the instrument's), and a counted run must not put the second on the route. So: the parent records such a unit as status `instrument`, class `no_result_no_trace: child exit <code>` (with the signal if the status carries one), and the scorer STOPS on it like any instrument row. What happens then is decided on the evidence, by [the coordinator], under the rerun rule: if it was the job's limit or the runner (mechanics), the unit is re-sent as a continuation; if examination shows the route itself exhausted memory or was killed for a cause in the analysis, the unit is recorded as `crashed` with that cause and counts in the gate: that reclassification is written in runs.tsv with its evidence, never done by the script. A unit that ended with an R error outside the guard and left its trace stays `crashed` and counts."
+
+| Ending | Row |
+|---|---|
+| a guard stop anywhere (journey, unit, a trace left) | `instrument`, with the guard's text |
+| a package error inside a journey | the journey's own classified status |
+| an R error outside the guard that left its trace (`crashnet`) | `unit` row `crashed`, counts in the gate |
+| NO result file and NO trace (runner kill, signal, out of memory, the job's limit) | `unit` row `instrument`, class `no_result_no_trace: child exit <code>` (`(signal n)` when the code is above 128); the scorer stops; reclassified only by the coordinator, in runs.tsv, with evidence |
+
+Implemented in `runChild` (S): the planted `exitplant` is the one unit that ends so by design and stays `crashed` (35.6's prediction). E16 case `killed` (a unit row `instrument`, class `no_result_no_trace: child exit 137 (signal 9)`; the scorer stops): E16 is now 22 cases, 157 predictions, 179 checks. Checked here only by Python (generation) and bracket balance; no send: L1r's first job runs E16 anyway.
+
+**Sentence for the ticket's 38.4 (not edited into the ticket):** "A unit that left no result file and no trace (killed by the runner or the job's limit, by a signal, or out of memory) is recorded as an instrument row, not as a failure of the route, and stops scoring until the coordinator has decided, on the evidence, whether it is re-sent as a continuation or recorded as `crashed` with its cause and counted in the 5 % gate; a unit that ended with an R error and left its trace is `crashed` and counts."
+
+**Draft declaration for L1r (note):** L1r's first job runs E16 on the extended set (179 checks) before any simulation unit, since no send exercises the `killed` case; a miss is an instrument defect of the scorer (VAL-54).
