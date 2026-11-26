@@ -3,3 +3,4 @@ run_id	request	commit	purpose	job_minutes	core_hours	result
 45789773919	kit277-r1i1-55aab0cc	55aab0cc	R1 instrument re-send 1: new file only	43	2.87	0 errors; 70 passed 154 failed, every previously erroring row (F4, P1-P6, R1b, P8) fails by value on the old code
 45797066259	kit277-r1c-f16edb13	f16edb13	R1c new lines on old code	45	3.0	84 passed 160 failed 0 errors; Copy-press lines (F1/F2 x3, O4, P4 lfq) and P4-lfq head rule fail by value; G4 passes both sides; P4 head rule PASSES on the old code for tmt, dia, limpa (reported, not adjusted: their heads are at the cleanup state, not a DA state)
 45797086832	kit277-sg1-53e4c745	53e4c745	SG1 stage 1 (S1 rows + G2 + globals)	28	1.9	HELD: new file 113 passed 0 failed 17 skipped (S2/S3); globals 14 passed 0 failed
+45804909404	kit277-r2-53e4c745	53e4c745 vs f16edb13	R2 comparison, 134 files, 4 shards per side, check both	(pending)		in flight
