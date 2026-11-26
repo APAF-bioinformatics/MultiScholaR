@@ -1850,7 +1850,7 @@ omicsIntensityFilterStep <- function(binding, percentile, proportion, descriptio
 omicsDuplicateResolutionStep <- function(binding, description = NULL, state_name = NULL) {
     list(operation = paste0(binding$prefix, "_duplicate_resolution"), parameters = list(),
         state_name = state_name %||% paste0(binding$prefix, "_duplicates_resolved"),
-        description = description %||% sprintf("Resolved duplicate %s features by keeping highest intensity", binding$feature_noun))
+        description = description %||% sprintf("Resolved duplicate %s features: kept the row measured in the most design samples, then the highest average of its measured values", binding$feature_noun))
 }
 
 #' @noRd

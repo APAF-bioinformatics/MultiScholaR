@@ -55,8 +55,9 @@ lipidomicsDeclarationBinding <- list(
             lipids_min_values_per_group = parameters$lipids_min_values_per_group,
             lipids_min_groups = parameters$lipids_min_groups)
     },
-    # Per assay, the row with the highest mean intensity over the design's samples is kept (KIT-214: every numeric column
-    # under a record's earlier rule); the module reads the row counts before and after.
+    # Per assay, the row measured in the most of the design's samples is kept, then the highest mean of its measured
+    # values, then the first (KIT-258; earlier rules replay under a record's markers); the module reads the row counts
+    # before and after.
     resolve_duplicates = function(object) {
         resolveLipidDuplicateFeaturesByIntensityFn <- resolveLipidDuplicateFeaturesByIntensity
         assays <- object@lipid_data
