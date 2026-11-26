@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-277 correction pass R1: failing-first of the final tests (P4 record line replaced, O5) on the old code, tests-only tree dfffaa0b; new file + test-kit247-design-resave.R; worst case 10.0 core-hours; running total 79.5 + 10.0 of 200.00",
+  "label": "KIT-277 correction R1 dfffaa0b",
+  "package_commit": "dfffaa0bc9cd5136a178867b4f8b457d450ce647",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit277-resave-carried-through.R",
+    "test-kit247-design-resave.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-kit277-resave-carried-through.R": 90,
+    "test-kit247-design-resave.R": 120
+  },
+  "extra_packages": [
+    "sva",
+    "limpa",
+    "mixOmics"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
