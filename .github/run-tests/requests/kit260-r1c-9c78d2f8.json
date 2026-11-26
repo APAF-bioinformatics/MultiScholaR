@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-260 one correction pass (coordinator's ruling): test-kit260-itsd-default-pattern.R alone, base origin/kit-242 8162ea52 (tip 11d3150a differs in records only), head kit-260 9c78d2f8; predicted absent on base, 157/0 on head; ceiling 40 job-minutes",
+  "label": "KIT-260 R1c new test file, kit-242 8162ea52 against kit-260 9c78d2f8",
+  "package_commit": "9c78d2f89c6219870e7a51f1db6aa3d29f5a38fa",
+  "base_commit": "8162ea52f4df0a5090b93eb6ee7c17769a441de6",
+  "tools_ref": "",
+  "tests": [
+    "test-kit260-itsd-default-pattern.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 30,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
