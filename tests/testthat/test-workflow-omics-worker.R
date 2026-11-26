@@ -22,6 +22,14 @@ test_that("KIT-078: every omics compute declaration runs from a frozen request t
         expect_match(result$error %||% "", "duplicated feature identifiers.*Resolve Duplicates", info = omic)
         next
       }
+      # KIT-242 Part B (VAL-242 Q6.2 (c); declared edit, owner 2026-11-26, VAL-352 (5)): on the raw fixture the control
+      # selection cannot read an assay with duplicated feature ids, so the RUV step stops, naming the cause and the
+      # remedy; the lines below pinned the earlier completion (the assay dropped by the correction).
+      if (identical(step$operation, paste0(binding$prefix, "_ruv"))) {
+        expect_identical(result$status, "failed", info = paste(omic, step$operation))
+        expect_match(result$error %||% "", "duplicated feature identifiers.*Resolve Duplicates", info = omic)
+        next
+      }
       expect_identical(result$status, "complete", info = paste(omic, step$operation, result$error))
       expect_identical(result$result$operation, step$operation, info = omic)
       expect_true(isDIAComponentCheckpoint(result$result$checkpoint), info = step$operation)
