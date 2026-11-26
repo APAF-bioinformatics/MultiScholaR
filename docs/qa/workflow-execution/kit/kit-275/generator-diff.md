@@ -48,7 +48,7 @@ Kept unchanged from those regions: `groupOfComparison` (:970-977), `choiceOf` (:
 
 ## D. The hunks, line by line
 
-### Hunk 1: header comment; old 1-3
+### Hunk 1: header; old 1-3
 
 Old (0866982f):
 ```r
@@ -64,7 +64,7 @@ New (sim-k275.R):
 4: # copy of KIT-188's sim-k188.R at 0866982f with the marked changes of generator-diff.md (marks K275-*); nothing else of it is carried.
 ```
 
-### Hunk 2: header comment; old 6-10
+### Hunk 2: header; old 6-10
 
 Old (0866982f):
 ```r
@@ -82,7 +82,7 @@ New (sim-k275.R):
 10: #   design  D3, D4 or D6 (ID: D4); first, last  data sets (counted tiers 1 to 200 or 1 to 100; ID 1 to 20; L1 and the smoke 9101 to 9103)
 ```
 
-### Hunk 3: header comment; old 12-40
+### Hunk 3: K275-guard; old 12-40
 
 Old (0866982f):
 ```r
@@ -132,19 +132,19 @@ New (sim-k275.R):
 23: # Partial-match guard (lesson of KIT-188's smoke checks 1 to 3): `$` on a list or data frame matches a name by its prefix when none is
 24: # exact; that warning is an error here, in every process and inside `quiet()` (which would otherwise muffle it). A stop from it is an
 25: # instrument defect by definition (VAL-54). Every read of a field that may be absent below uses `[[` with exact matching.
-26: options(warnPartialMatchDollar = TRUE)
+26: options(warnPartialMatchDollar = TRUE) # K275-guard
 27: # A `stop()` raised from a GLOBAL calling handler runs with every local handler disabled (R's rule for the handler stack), so it cannot reach a
 28: # `tryCatch`: it ends the process with nothing written (smoke 2's planted guard unit). The guard is therefore also installed as a LOCAL calling
 29: # handler (`guardWarning`) around each journey and around each unit, where its stop reaches the enclosing `tryCatch`; the global handler stays as
 30: # a last net, with an error writer that leaves a trace before the process ends.
-31: guardWarning <- function(w) {
+31: guardWarning <- function(w) { # K275-guard
 32:     if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) {
 33:         options(k275.guard_trace = paste(vapply(sys.calls(), function(cl) substr(paste(deparse(cl)[[1L]], collapse = ""), 1L, 80L), ""), collapse = " <- "))
 34:         stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
 35:     }
 36: }
-37: globalCallingHandlers(warning = guardWarning)
-38: if (identical(commandArgs(TRUE)[1L], "--unit")) options(error = function() {   # an error that escaped every handler: write what is known, then end non-zero
+37: globalCallingHandlers(warning = guardWarning) # K275-guard
+38: if (identical(commandArgs(TRUE)[1L], "--unit")) options(error = function() { # K275-guard   # an error that escaped every handler: write what is known, then end non-zero
 39:     dir <- dirname(Sys.getenv("K275_CHECKS_PATH"))
 40:     tag <- sub("\\.tsv$", "", sub("^checks-", "", basename(Sys.getenv("K275_CHECKS_PATH"))))
 41:     try(writeLines(c(geterrmessage(), getOption("k275.guard_trace", "")), file.path(dir, sprintf("unit-trace-%s.txt", tag))), silent = TRUE)
@@ -409,7 +409,18 @@ New (sim-k275.R):
 582:         e13 <- if (!is.null(out$norm_check)) out$norm_check[out$norm_check$assay == a, , drop = FALSE] # K275-prefix
 ```
 
-### Hunk 22: K275-prefix; old 582-582
+### Hunk 22: K275-assaycols; old 576-576
+
+Old (0866982f):
+```r
+576:             if (any(res$status == "skipped_k_exceeds_complete_controls")) reason <- paste0(reason, " | ", oneLine(trace$error))
+```
+New (sim-k275.R):
+```r
+599:             if (any(res$status %in% c("skipped_k_exceeds_complete_controls", "skipped_no_controls_selected"))) reason <- paste0(reason, " | ", oneLine(trace$error)) # K275-assaycols: KIT-242's status (RG6)
+```
+
+### Hunk 23: K275-prefix; old 582-582
 
 Old (0866982f):
 ```r
@@ -420,7 +431,7 @@ New (sim-k275.R):
 605:         da_status <- if (da_failed) "failed" else if (!isTRUE(out$reached_da)) "not_reached" else # K275-prefix
 ```
 
-### Hunk 23: K275-assaycols; old 591-591
+### Hunk 24: K275-assaycols; old 591-591
 
 Old (0866982f):
 ```r
@@ -431,7 +442,7 @@ New (sim-k275.R):
 614:             ruv_n_controls = if (requested && !declared && !is.null(trace) && is.logical(trace[["control_genes_index"]])) sum(trace[["control_genes_index"]], na.rm = TRUE) else NA_integer_, # K275-assaycols
 ```
 
-### Hunk 24: K275-guard; old 632-632
+### Hunk 25: K275-guard; old 632-632
 
 Old (0866982f):
 ```r
@@ -442,7 +453,7 @@ New (sim-k275.R):
 655:     result <- tryCatch(withCallingHandlers({ # K275-guard
 ```
 
-### Hunk 25: K275-guard; old (insert after 638)
+### Hunk 26: K275-guard; old (insert after 638)
 
 Old (0866982f):
 ```r
@@ -457,7 +468,7 @@ New (sim-k275.R):
 666:         }
 ```
 
-### Hunk 26: K275-prefix; old 659-661
+### Hunk 27: K275-prefix; old 659-661
 
 Old (0866982f):
 ```r
@@ -472,7 +483,7 @@ New (sim-k275.R):
 689:                 bad <- out$itsd_check[!out$itsd_check$itsd_ok, , drop = FALSE]
 ```
 
-### Hunk 27: K275-pairs; old (insert after 671)
+### Hunk 28: K275-pairs; old (insert after 671)
 
 Old (0866982f):
 ```r
@@ -485,7 +496,7 @@ New (sim-k275.R):
 702:         step <- "between_sample"
 ```
 
-### Hunk 28: K275-prefix; old 677-679
+### Hunk 29: K275-prefix; old 677-679
 
 Old (0866982f):
 ```r
@@ -500,7 +511,7 @@ New (sim-k275.R):
 710:                 bad <- out$norm_check[!out$norm_check$norm_ok, , drop = FALSE]
 ```
 
-### Hunk 29: K275-W; old 691-691
+### Hunk 30: K275-W; old 691-691
 
 Old (0866982f):
 ```r
@@ -511,7 +522,7 @@ New (sim-k275.R):
 722:                 "control_count", "ruv_k_estimate", "W"))]) # K275-W
 ```
 
-### Hunk 30: K275-pairs; old (insert after 694)
+### Hunk 31: K275-pairs; old (insert after 694)
 
 Old (0866982f):
 ```r
@@ -524,7 +535,18 @@ New (sim-k275.R):
 728:             step <- "ruv"
 ```
 
-### Hunk 31: K275-pairs; old (insert after 703)
+### Hunk 32: K275-guard; old 696-696
+
+Old (0866982f):
+```r
+696:             record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) NULL)
+```
+New (sim-k275.R):
+```r
+730:             record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) if (grepl("partial-match guard", conditionMessage(e), fixed = TRUE)) stop(e) else NULL) # K275-guard
+```
+
+### Hunk 33: K275-pairs; old (insert after 703)
 
 Old (0866982f):
 ```r
@@ -542,7 +564,7 @@ New (sim-k275.R):
 745:             }) # K275-pairs
 ```
 
-### Hunk 32: K275-nogroup; old (insert after 706)
+### Hunk 34: K275-nogroup; old (insert after 706)
 
 Old (0866982f):
 ```r
@@ -556,7 +578,7 @@ New (sim-k275.R):
 752:         } else {
 ```
 
-### Hunk 33: K275-prefix; old 708-708
+### Hunk 35: K275-prefix; old 708-708
 
 Old (0866982f):
 ```r
@@ -567,7 +589,7 @@ New (sim-k275.R):
 754:         out$reached_da <- TRUE # K275-prefix
 ```
 
-### Hunk 34: K275-nogroup; old (insert after 734)
+### Hunk 36: K275-nogroup; old (insert after 734)
 
 Old (0866982f):
 ```r
@@ -578,7 +600,7 @@ New (sim-k275.R):
 781:         } # K275-nogroup
 ```
 
-### Hunk 35: K275-guard; old 752-752
+### Hunk 37: K275-guard; old 752-752
 
 Old (0866982f):
 ```r
@@ -589,7 +611,7 @@ New (sim-k275.R):
 799:     }, warning = guardWarning), error = function(e) { # K275-guard
 ```
 
-### Hunk 36: K275-guard; old (insert after 753)
+### Hunk 38: K275-guard; old (insert after 753)
 
 Old (0866982f):
 ```r
@@ -600,7 +622,7 @@ New (sim-k275.R):
 801:         guard <- grepl("partial-match guard", conditionMessage(e), fixed = TRUE) # K275-guard
 ```
 
-### Hunk 37: K275-guard; old 756-756
+### Hunk 39: K275-guard; old 756-756
 
 Old (0866982f):
 ```r
@@ -614,7 +636,7 @@ New (sim-k275.R):
 807:         } else if (identical(out$status, "instrument")) {
 ```
 
-### Hunk 38: K275-prefix; old 797-797
+### Hunk 40: K275-prefix; old 797-797
 
 Old (0866982f):
 ```r

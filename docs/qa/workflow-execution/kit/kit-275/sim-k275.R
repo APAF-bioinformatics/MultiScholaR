@@ -596,7 +596,7 @@ journeyAssayColumns <- function(out, request, assays) {
             reason <- paste(sprintf("%s:%d", names(counts), as.integer(counts)), collapse = ";")
             first <- res$error_reason[nzchar(as.character(res$error_reason))]
             if (length(first)) reason <- paste0(reason, " | ", substr(first[[1L]], 1L, 300L))
-            if (any(res$status %in% c("skipped_k_exceeds_complete_controls", "skipped_no_controls_selected"))) reason <- paste0(reason, " | ", oneLine(trace$error))
+            if (any(res$status %in% c("skipped_k_exceeds_complete_controls", "skipped_no_controls_selected"))) reason <- paste0(reason, " | ", oneLine(trace$error)) # K275-assaycols: KIT-242's status (RG6)
         }
         record <- out$record_ruv
         legacy_return <- requested && !declared && status %in% c("corrected", "uncorrected", "dropped")
