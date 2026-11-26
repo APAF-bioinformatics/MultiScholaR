@@ -179,6 +179,9 @@ setMethod(
             log_warn("Assay list was unnamed. Using default names.")
         }
 
+        # KIT-242 (VAL-373 Q-A): why an assay was skipped, kept for the RUV search under the current rule.
+        skip_reasons <- list()
+
         # --- Process Each Assay ---
         control_features_list <- lapply(seq_along(assay_list), function(i) {
             assay_name <- assay_names[i]
@@ -237,6 +240,7 @@ setMethod(
                 },
                 error = function(e) {
                     log_warn("Assay '{assay_name}': Error converting tibble to matrix: {e$message}. Skipping.", .logr = TRUE)
+                    skip_reasons[[assay_name]] <<- list(reason = "not_read")
                     return(NULL)
                 }
             )
@@ -251,6 +255,7 @@ setMethod(
             valid_cols <- colSums(!is.na(assay_matrix)) > 1
             if (sum(valid_rows) < 2 || sum(valid_cols) < 2) {
                 log_warn("Assay '{assay_name}': Insufficient non-NA data points (<2 features or <2 samples with data) for ANOVA. Skipping.", .logr = TRUE)
+                skip_reasons[[assay_name]] <<- list(reason = "too_little_data")
                 return(NULL)
             }
             assay_matrix_filt <- assay_matrix[valid_rows, valid_cols, drop = FALSE]
@@ -270,6 +275,9 @@ setMethod(
             group_counts <- table(design_matrix_filtered[[ruv_grouping_variable_final]])
             if (length(group_counts) < 2 || any(group_counts < 2)) {
                 log_warn("Assay '{assay_name}': Insufficient groups ({length(group_counts)}) or samples per group (<2) for ANOVA based on '{ruv_grouping_variable_final}' after filtering. Skipping.", .logr = TRUE)
+                all_groups <- unique(as.character(design_matrix[[ruv_grouping_variable_final]]))
+                skip_reasons[[assay_name]] <<- list(reason = "group_counts", groups = unique(c(names(group_counts)[group_counts < 2],
+                    setdiff(all_groups[!is.na(all_groups)], names(group_counts)))))
                 return(NULL)
             }
 
@@ -429,6 +437,8 @@ setMethod(
 
         # Remove NULL elements (skipped assays)
         final_control_list <- control_features_list[!sapply(control_features_list, is.null)]
+        # KIT-242 (VAL-373 Q-A): under the current rule the skipped assays' reasons travel with the list (none: no attribute).
+        if (length(skip_reasons) && omicsRuvFallbackCurrent()) attr(final_control_list, "skipped") <- skip_reasons
 
         log_info("Finished Negative Control selection for {length(final_control_list)} assay(s).")
         return(final_control_list)

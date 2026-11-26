@@ -580,6 +580,13 @@ finishProtNormNormalization <- function(completed, settings, workflowData, normD
     )
   }
   showNotificationFn(buildCompletionNotificationFn(settings$ruv_mode), type = "message", duration = 10)
+  # KIT-242 Part C (VAL-373 Q-C): a sample with no value was removed from the design; the tab names it.
+  removed <- shiny::isolate(normData$samples_removed)
+  if (isTRUE(completed) && length(removed)) {
+    text <- sprintf("Warning: samples %s have no value and were removed from the design.", paste(removed, collapse = ", "))
+    messageFn(text)
+    showNotificationFn(text, type = "warning", duration = 10)
+  }
   warnProtNormScaleNegativeLogs(completed, settings, workflowData, normData, showNotificationFn, messageFn)
   completed
 }

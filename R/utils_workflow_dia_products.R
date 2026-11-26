@@ -384,7 +384,14 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared"), supp
             none <- factors_in_model && identical(parameters$ruv_design, "none")
             if (none && !identical(parameters$ruv_mode, "skip"))
                 cli::cli_abort("the design none runs with the skip mode only", class = "workflow_execution_invalid")
-            normalized <- normaliseBetweenSamplesFn(object, normalisation_method = parameters$norm_method)
+            # KIT-242 Part C (VAL-373 Q-C): a sample with no value leaves the design; the samples removed are carried in
+            # the value, so that the record and the tab name them (the limpa route's capture).
+            removed <- character()
+            normalized <- withCallingHandlers(normaliseBetweenSamplesFn(object, normalisation_method = parameters$norm_method),
+                omics_normalisation_sample_removed = function(w) {
+                    removed <<- unique(c(removed, w$sample))
+                    invokeRestart("muffleWarning")
+                })
             normalized_reference <- store$checkpoint(normalized, "normalized-science")
             object <- NULL
             if (parameters$ruv_mode == "skip") {
@@ -511,6 +518,8 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared"), supp
                 best_k = best_k, controls = controls, percentage = best_percentage,
                 parameters = parameters[c("norm_method", "ruv_mode", "auto_percentage_min", "auto_percentage_max",
                     "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k", "grouping")])
+            # Only when a sample was removed, so that every other product is as before.
+            if (length(removed)) value$samples_removed <- removed
             # Audit F-08: a skipped RUV step applied no design, so none is recorded on its product; the design none is
             # recorded as itself (KIT-129 integration item 2).
             if (none) value$parameters[c("ruv_design", "ruv_k_rule", "ruv_k_seed")] <- parameters[c("ruv_design", "ruv_k_rule", "ruv_k_seed")]
@@ -1032,6 +1041,11 @@ diaNormalizationCommit <- function(manager, settings, run) {
     config <- list(norm_method = settings$norm_method, ruv_mode = settings$ruv_mode,
         ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage)
     if (skipped) config$ruv_applied <- FALSE
+    # KIT-242 Part C (VAL-373 Q-C): the samples removed from the design for having no value, in the record's outcomes.
+    if (length(saved$samples_removed)) {
+        config$samples_removed <- saved$samples_removed
+        config$outcomes <- list(samples_removed = saved$samples_removed)
+    }
     # KIT-129 seventh pass item 2: a new design whose k rule gave no factor (a count of 0) keeps the state's name and its
     # normalised matrix, and records that no RUV was applied (the integration input then says not corrected).
     if (!is.null(saved$parameters$ruv_design) && identical(saved$ruv_result$ruv_applied, FALSE)) config$ruv_applied <- FALSE
@@ -1057,6 +1071,8 @@ publishDIAReferenceNormalization <- function(manager, settings, run, workflow, n
     norm_data$normalized_protein_obj <- saved$normalized
     norm_data$ruv_normalized_obj <- saved$final
     norm_data$best_k <- saved$best_k
+    # KIT-242 Part C (VAL-373 Q-C): the samples removed from the design, for the tab's notice (NULL when none).
+    norm_data$samples_removed <- saved$samples_removed
     norm_data$control_genes_index <- saved$controls
     norm_data$ruv_optimization_result <- saved$ruv_result
     workflow$ruv_optimization_result <- saved$ruv_result

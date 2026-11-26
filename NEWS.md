@@ -754,8 +754,8 @@
    whether q-values or Benjamini-Hochberg adjusted p-values were used, as it already did for proteomics. In
    proteomics, a sample with no value is removed from the protein table and the design before between-sample
    normalisation; before, Scale normalisation then made every value missing, which made a later step stop with an
-   unrelated message. Known limit, not yet resolved: on the DIA route that normalises and applies RUV in one step, the
-   removed sample is not yet named in the tab or recorded in the analysis record; only the smaller design shows it.
+   unrelated message. On the DIA route that normalises and applies RUV in one step, the
+   removed sample is named in a warning on the tab and recorded in the analysis record.
    Analyses recorded before this change replay as they were made.
 
  * Lipidomics and metabolomics RUV-III (KIT-242, second part; draft wording): no assay is dropped any more. A sample or
@@ -768,9 +768,10 @@
    now stops the step with a message naming the assay. Before, such an assay was removed from the data (or, when every
    assay failed, the data were returned uncorrected) while the record said RUV had been applied. With RUV factors in
    the model, a sample with no value in an assay is left out of that assay's factors and its differential analysis.
-   Analyses recorded before this change replay as they were made. Known limit, not yet resolved: when a group is left
-   with fewer than two samples holding values in an assay (for example one sample with no value in a group of two),
-   the RUV step stops, and its message does not yet give the right cause (in Automatic mode it names no assay).
+   Analyses recorded before this change replay as they were made. When a group is left with fewer than two samples
+   holding values in an assay (for example one sample with no value in a group of two), control features cannot be
+   chosen there: that assay keeps its values without RUV, the tab and the record name the groups, and the other assays
+   are corrected, in Automatic and Manual mode alike; before, the whole RUV step stopped.
 
  * Lipidomics and metabolomics: the intensity filter now counts only the samples of the design. Before, it took every
    numeric column of the table as a sample, both when it set the intensity threshold at the chosen percentile and when
