@@ -380,6 +380,8 @@ KIT260_STANDARDS_HEAD)`, nothing else. It is recorded as the ticket's ONE correc
 expectation's path after a result was seen), not as an instrument repair." Applied in f59a2af7 (tests only, that line
 alone). No correction pass remains.
 
+**Its run, R1c 45756920334** (the new test file alone, base origin/kit-242 8162ea52, head 9c78d2f8): base `absent`, head **157 passed, 0 failed**, as predicted (`predictions-correction-pass.md`); 19.9 job-minutes; running total 2,272.2 of 3,020 job-minutes (151.5 of 201.33 core-hours).
+
 **The 16 keys of `tests/testthat/test-omic-norm-module.R` (`omicNormFrozen`)** whose stored values VAL-275 approved at
 KIT-260's stand-alone values and which on the combined head (KIT-242 + KIT-260) carry both tickets' lines. "Today" is
 the stored value on origin/kit-242 8162ea52 (staging's, not yet re-pinned by KIT-242); "KIT-260 re-pin" is commit
