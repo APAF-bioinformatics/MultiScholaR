@@ -827,3 +827,28 @@ Any miss: stop and hand back, no repair (the correction is then spent).
     warnings that are not shown. Whether the ANOVA helper returns an all-FALSE vector at 0 controls is not checked.
 - Not checked (RC-5): E17 skips the publish wiring (`norm_data$samples_removed`); no Manual VE row; no row for the
   Automatic duplicate, `too_little_data` or `not_selected` mappings.
+
+### R1f (run 45764571169, 5be656b2; 51.7 job-minutes, 3.45 core-hours): observed. Two misses: stop, no repair
+
+As predicted (14 files): the new file 571/0/0; worker 265/0; MCI 158/0; metab-02w 18/0; kit172-downstream 84/0; both
+declarations files 259/0; lipid-12b 77/0, lipid-12c 67/0, metab-02y 26/0, metab-04 53/0, metab-norm-standalone 21/0,
+ruv-control-anova-grouping 139/0, metab-03a 40/0. So E17, E27 and the VE shape pass on the corrected code, the control
+selection and RUV characterisation files are unchanged, and the 18 Q-B edits pass.
+
+Outside the prediction:
+1. `test-omics-module-globals.R` 13/1 (predicted 14/0). Observed: the one hit is `R/mod_omic_norm.R`, line 282
+   `shown_idle <<- idle`, which is staging's own (KIT-261, 8ee87839), present at this branch's merge base aa119308. Staging
+   allows that one line only since KIT-278 (07e07e67, 84941aba: `allow = "shown_idle <<- idle"`), which this branch
+   has not merged. No `<<-` remains in the two control-selection files (RC-1's repair holds). Inferred: on the merged
+   train (staging's test file with KIT-278's allow) the file reads 14/0; my prediction used staging's count, not this
+   tree's.
+2. `test-prot-norm-core.R` 1555/307 (predicted 1547/307). Observed: the failing count is the same, but the KIT-111 W1 (a)
+   and W2 captures of the tab's `normData` fields now list `samples_removed`
+   (`dia_normalization_skip norm_fields`: names gain "samples_removed", one more digest), because
+   `publishDIAReferenceNormalization` sets `norm_data$samples_removed` on every run, NULL when none, and the module's
+   reactive normData keeps a field set to NULL. So the DIA step's new field is visible to the KIT-111 frozen captures
+   (already failing on staging) on every run, not only when a sample is removed: my prediction and the train's
+   prediction row ("no new field") were wrong. Eight more expectations evaluate (the capture loops over the union of
+   field names; inferred).
+Used: 223.73 + 3.45 = 227.18 of 901.33 core-hours. Per the ruling, no repair: the correction is spent and this returns to
+the coordinator.
