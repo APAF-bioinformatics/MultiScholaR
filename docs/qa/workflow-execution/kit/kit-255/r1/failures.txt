@@ -1,0 +1,1143 @@
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E1: lipid a sample failing in LCMS_Neg only is set missing there and stays in the design
+kind: failure
+message:
+  Expected `kit255Design(out)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[9:11]`:   "B_3" "B_4" "B_5"      
+  `expected[9:12]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E1: lipid a sample failing in LCMS_Neg only is set missing there and stays in the design
+kind: failure
+message:
+  Expected `kit255AllNa(after$LCMS_Neg[[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E1: lipid a sample failing in LCMS_Neg only is set missing there and stays in the design
+kind: failure
+message:
+  Expected `names(after$LCMS_Neg)` to be identical to `names(before$LCMS_Neg)`.
+  Differences:
+  `actual[11:13]`:   "B_3" "B_4" "B_5"      
+  `expected[11:14]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E1: lipid a sample failing in LCMS_Neg only is set missing there and stays in the design
+kind: failure
+message:
+  Expected `record$threshold` to be identical to 0.5.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (0.5)
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E1: lipid a sample failing in LCMS_Neg only is set missing there and stays in the design
+kind: failure
+message:
+  Expected `names(record$excluded)` to be identical to "LCMS_Neg".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('LCMS_Neg')
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E1: lipid a sample failing in LCMS_Neg only is set missing there and stays in the design
+kind: failure
+message:
+  Expected `record$excluded$LCMS_Neg` to equal `c(B_6 = 0.1)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (0.1)
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E1: metab a sample failing in LCMS_Neg only is set missing there and stays in the design
+kind: failure
+message:
+  Expected `kit255Design(out)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[9:11]`:   "B_3" "B_4" "B_5"      
+  `expected[9:12]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E1: metab a sample failing in LCMS_Neg only is set missing there and stays in the design
+kind: failure
+message:
+  Expected `kit255AllNa(after$LCMS_Neg[[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E1: metab a sample failing in LCMS_Neg only is set missing there and stays in the design
+kind: failure
+message:
+  Expected `names(after$LCMS_Neg)` to be identical to `names(before$LCMS_Neg)`.
+  Differences:
+  `actual[11:13]`:   "B_3" "B_4" "B_5"      
+  `expected[11:14]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E1: metab a sample failing in LCMS_Neg only is set missing there and stays in the design
+kind: failure
+message:
+  Expected `record$threshold` to be identical to 0.5.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (0.5)
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E1: metab a sample failing in LCMS_Neg only is set missing there and stays in the design
+kind: failure
+message:
+  Expected `names(record$excluded)` to be identical to "LCMS_Neg".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('LCMS_Neg')
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E1: metab a sample failing in LCMS_Neg only is set missing there and stays in the design
+kind: failure
+message:
+  Expected `record$excluded$LCMS_Neg` to equal `c(B_6 = 0.1)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (0.1)
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E2: metabolomics, the repository fixture keeps four samples and blanks Sample_3 and Sample_4 in LCMS_Pos
+kind: failure
+message:
+  Expected `kit255Design(out)` to be identical to `c("Sample_1", "Sample_2", "Sample_3", "Sample_4")`.
+  Differences:
+  `actual`:   "Sample_1" "Sample_2"                      
+  `expected`: "Sample_1" "Sample_2" "Sample_3" "Sample_4"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E2: metabolomics, the repository fixture keeps four samples and blanks Sample_3 and Sample_4 in LCMS_Pos
+kind: failure
+message:
+  Expected `names(pos)` to be identical to `names(input@metabolite_data$LCMS_Pos)`.
+  Differences:
+  `actual[2:4]`:   "annotation_id" "Sample_1" "Sample_2"                      
+  `expected[2:6]`: "annotation_id" "Sample_1" "Sample_2" "Sample_3" "Sample_4"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E2: metabolomics, the repository fixture keeps four samples and blanks Sample_3 and Sample_4 in LCMS_Pos
+kind: failure
+message:
+  Expected `kit255AllNa(pos$Sample_3) && kit255AllNa(pos$Sample_4)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E2: metabolomics, the repository fixture keeps four samples and blanks Sample_3 and Sample_4 in LCMS_Pos
+kind: failure
+message:
+  Expected `names(out@args$correlation_exclusions$excluded)` to be identical to "LCMS_Pos".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('LCMS_Pos')
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E3: the object the filter makes passes the design validators and the class validity
+kind: failure
+message:
+  Expected `...$valid` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E3: the object the filter makes passes the design validators and the class validity
+kind: failure
+message:
+  Expected `...$valid` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E4, E5: lipid the DA runs on the filtered object, LCMS_Neg as without the sample; the tab's preflight passes
+kind: failure
+message:
+  Expected `inherits(da, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  Assay 'LCMS_Pos' has sample column(s) missing from design: B_6
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E4, E5: lipid the DA runs on the filtered object, LCMS_Neg as without the sample; the tab's preflight passes
+kind: failure
+message:
+  Expected `inherits(b, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E4, E5: lipid the DA runs on the filtered object, LCMS_Neg as without the sample; the tab's preflight passes
+kind: failure
+message:
+  Expected `inherits(a, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E4, E5: lipid the DA runs on the filtered object, LCMS_Neg as without the sample; the tab's preflight passes
+kind: failure
+message:
+  Expected `value` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  Assay 'LCMS_Pos' has sample column(s) missing from design: B_6
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E4, E5: metab the DA runs on the filtered object, LCMS_Neg as without the sample; the tab's preflight passes
+kind: failure
+message:
+  Expected `inherits(a, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E4, E5: metab the DA runs on the filtered object, LCMS_Neg as without the sample; the tab's preflight passes
+kind: failure
+message:
+  Expected `value` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+  
+  Assay 'LCMS_Pos' has sample column(s) missing from design: B_6
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E12, E22: lipid no option: the current rule; the earlier token: the base body (stray column, pooled design, recycled table)
+kind: failure
+message:
+  Expected `kit255Design(out)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[9:11]`:   "B_3" "B_4" "B_5"      
+  `expected[9:12]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E12, E22: lipid no option: the current rule; the earlier token: the base body (stray column, pooled design, recycled table)
+kind: failure
+message:
+  Expected `kit255Design(new)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[9:11]`:   "B_3" "B_4" "B_5"      
+  `expected[9:12]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E12, E22: lipid no option: the current rule; the earlier token: the base body (stray column, pooled design, recycled table)
+kind: failure
+message:
+  Expected `kit255Assays(new, class)$LCMS_Pos` to be identical to `kit255Assays(input, class)$LCMS_Pos`.
+  Differences:
+  `actual` is length 13
+  `expected` is length 14
+  
+  `names(actual)[11:13]`:   "B_3" "B_4" "B_5"      
+  `names(expected)[11:14]`: "B_3" "B_4" "B_5" "B_6"
+  
+  `actual$B_6` is absent
+  `expected$B_6` is a double vector (6.28917193897993, NA, 7399.42546300662, 59.8441245310146, 0.0860295646290292, ...)
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E12, E22: lipid no option: the current rule; the earlier token: the base body (stray column, pooled design, recycled table)
+kind: failure
+message:
+  Expected `kit255AllNa(kit255Assays(new, class)$LCMS_Neg[[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E12, E22: metab no option: the current rule; the earlier token: the base body (stray column, pooled design, recycled table)
+kind: failure
+message:
+  Expected `kit255Design(out)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[9:11]`:   "B_3" "B_4" "B_5"      
+  `expected[9:12]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E12, E22: metab no option: the current rule; the earlier token: the base body (stray column, pooled design, recycled table)
+kind: failure
+message:
+  Expected `kit255Design(new)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[9:11]`:   "B_3" "B_4" "B_5"      
+  `expected[9:12]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E12, E22: metab no option: the current rule; the earlier token: the base body (stray column, pooled design, recycled table)
+kind: failure
+message:
+  Expected `kit255Assays(new, class)$LCMS_Pos` to be identical to `kit255Assays(input, class)$LCMS_Pos`.
+  Differences:
+  `actual` is length 13
+  `expected` is length 14
+  
+  `names(actual)[11:13]`:   "B_3" "B_4" "B_5"      
+  `names(expected)[11:14]`: "B_3" "B_4" "B_5" "B_6"
+  
+  `actual$B_6` is absent
+  `expected$B_6` is a double vector (6.28917193897993, NA, 7399.42546300662, 59.8441245310146, 0.0860295646290292, ...)
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E12, E22: metab no option: the current rule; the earlier token: the base body (stray column, pooled design, recycled table)
+kind: failure
+message:
+  Expected `kit255AllNa(kit255Assays(new, class)$LCMS_Neg[[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E18: lipid (vii) an empty sample's pairs are not counted: it stays, is not recorded, and its partner keeps its values
+kind: failure
+message:
+  Expected `kit255Design(out)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[8:10]`:   "B_2" "B_3" "B_4"            
+  `expected[8:12]`: "B_2" "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E18: lipid (vii) an empty sample's pairs are not counted: it stays, is not recorded, and its partner keeps its values
+kind: failure
+message:
+  Expected `kit255Assays(out, class)$LCMS_Neg[["B_5"]]` to be identical to `kit255Assays(input, class)$LCMS_Neg[["B_5"]]`.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (447.336297260999, 6.88808211685948, NA, 1.15023137658023, 0.018795096480849, ...)
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E19: lipid a sample failing in LCMS_Neg and untested in LCMS_Pos (an empty table) stays with its LCMS_Pos values
+kind: failure
+message:
+  Expected `kit255Design(out)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[9:11]`:   "B_3" "B_4" "B_5"      
+  `expected[9:12]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E19: lipid a sample failing in LCMS_Neg and untested in LCMS_Pos (an empty table) stays with its LCMS_Pos values
+kind: failure
+message:
+  Expected `kit255AllNa(kit255Assays(out, class)$LCMS_Neg[[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E25, G7: lipid a sample empty in every assay leaves the design, with or without a replicate pair
+kind: failure
+message:
+  Expected `kit255Design(out)` to be identical to `setdiff(kit255Runs, kit255S)`.
+  Differences:
+  `actual[9:12]`:   "B_3" "B_4" "B_5" "B_6"
+  `expected[9:11]`: "B_3" "B_4" "B_5"      
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E25, G7: lipid a sample empty in every assay leaves the design, with or without a replicate pair
+kind: failure
+message:
+  Expected `any(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E18: metab (vii) an empty sample's pairs are not counted: it stays, is not recorded, and its partner keeps its values
+kind: failure
+message:
+  Expected `kit255Design(out)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[8:10]`:   "B_2" "B_3" "B_4"            
+  `expected[8:12]`: "B_2" "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E18: metab (vii) an empty sample's pairs are not counted: it stays, is not recorded, and its partner keeps its values
+kind: failure
+message:
+  Expected `kit255Assays(out, class)$LCMS_Neg[["B_5"]]` to be identical to `kit255Assays(input, class)$LCMS_Neg[["B_5"]]`.
+  Differences:
+  `actual` is NULL
+  `expected` is a double vector (447.336297260999, 6.88808211685948, NA, 1.15023137658023, 0.018795096480849, ...)
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E19: metab a sample failing in LCMS_Neg and untested in LCMS_Pos (an empty table) stays with its LCMS_Pos values
+kind: failure
+message:
+  Expected `kit255Design(out)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[9:11]`:   "B_3" "B_4" "B_5"      
+  `expected[9:12]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E19: metab a sample failing in LCMS_Neg and untested in LCMS_Pos (an empty table) stays with its LCMS_Pos values
+kind: failure
+message:
+  Expected `kit255AllNa(kit255Assays(out, class)$LCMS_Neg[[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E25, G7: metab a sample empty in every assay leaves the design, with or without a replicate pair
+kind: failure
+message:
+  Expected `kit255Design(out)` to be identical to `setdiff(kit255Runs, kit255S)`.
+  Differences:
+  `actual[9:12]`:   "B_3" "B_4" "B_5" "B_6"
+  `expected[9:11]`: "B_3" "B_4" "B_5"      
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E25, G7: metab a sample empty in every assay leaves the design, with or without a replicate pair
+kind: failure
+message:
+  Expected `any(...)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 G1, G2, G3, G5, G6: lipid failing everywhere, nowhere, one assay, twice, no cascade
+kind: failure
+message:
+  Expected `kit255Design(once)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[1:3]`:         "A_2" "A_3" "A_4"
+  `expected[1:4]`: "A_1" "A_2" "A_3" "A_4"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 G1, G2, G3, G5, G6: lipid failing everywhere, nowhere, one assay, twice, no cascade
+kind: failure
+message:
+  Expected `kit255Design(kit255Filter(once, class, cascade))` to be identical to `kit255Runs`.
+  Differences:
+  `actual[1:3]`:         "A_2" "A_3" "A_4"
+  `expected[1:4]`: "A_1" "A_2" "A_3" "A_4"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 G4: lipid the per-assay decision is the base body's, on random pair tables
+kind: error
+message:
+  Error in `rbind(values, standards)`: number of columns of matrices must match (see arg 2)
+trace (first lines):
+      ▆
+   1. ├─stats::setNames(...) at test-kit255-omics-correlation-assays.R:324:13
+   2. └─base::lapply(...)
+   3.   └─FUN(X[[i]], ...)
+   4.     └─kit172Values(255100L + round, missing = FALSE, n = 40L, n_itsd = 0L) at test-kit255-omics-correlation-assays.R:324:54
+   5.       └─base::rbind(values, standards) at ./helper-kit172.R:58:3
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 G1, G2, G3, G5, G6: metab failing everywhere, nowhere, one assay, twice, no cascade
+kind: failure
+message:
+  Expected `kit255Design(once)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[1:3]`:         "A_2" "A_3" "A_4"
+  `expected[1:4]`: "A_1" "A_2" "A_3" "A_4"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 G1, G2, G3, G5, G6: metab failing everywhere, nowhere, one assay, twice, no cascade
+kind: failure
+message:
+  Expected `kit255Design(kit255Filter(once, class, cascade))` to be identical to `kit255Runs`.
+  Differences:
+  `actual[1:3]`:         "A_2" "A_3" "A_4"
+  `expected[1:4]`: "A_1" "A_2" "A_3" "A_4"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 G4: metab the per-assay decision is the base body's, on random pair tables
+kind: error
+message:
+  Error in `rbind(values, standards)`: number of columns of matrices must match (see arg 2)
+trace (first lines):
+      ▆
+   1. ├─stats::setNames(...) at test-kit255-omics-correlation-assays.R:324:13
+   2. └─base::lapply(...)
+   3.   └─FUN(X[[i]], ...)
+   4.     └─kit172Values(255100L + round, missing = FALSE, n = 40L, n_itsd = 0L) at test-kit255-omics-correlation-assays.R:324:54
+   5.       └─base::rbind(values, standards) at ./helper-kit172.R:58:3
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E23: metab the DA heatmap does not draw a sample blank in the assay as a column of row means
+kind: failure
+message:
+  Expected `kit255S %in% colnames(combined$plot@matrix)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E24: a corrected view with a blank run has no removed factors, and the reason names the run
+kind: error
+message:
+  Error in ``[.data.frame`(v, 2:7)`: undefined columns selected
+trace (first lines):
+      ▆
+   1. ├─v[2:7] at test-kit255-omics-correlation-assays.R:374:5
+   2. └─base::`[.data.frame`(v, 2:7) at test-kit255-omics-correlation-assays.R:374:5
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E6, G12: lipid managed and in-process Apply give the same state; the DA runs on it
+kind: failure
+message:
+  Expected `kit255Design(worker)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[9:11]`:   "B_3" "B_4" "B_5"      
+  `expected[9:12]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E6, G12: lipid managed and in-process Apply give the same state; the DA runs on it
+kind: failure
+message:
+  Expected `inherits(da, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  Assay 'LCMS_Pos' has sample column(s) missing from design: B_6
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E6, G12: metab managed and in-process Apply give the same state; the DA runs on it
+kind: failure
+message:
+  Expected `kit255Design(worker)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[9:11]`:   "B_3" "B_4" "B_5"      
+  `expected[9:12]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E15: lipid the tab's log, notification and summary name the sample set missing, the assay, the threshold and the correlation
+kind: failure
+message:
+  Expected `text` to match string "B_6".
+  Actual text:
+  x | Starting normalization pipeline... | Post-filtering state captured | Pre-normalization QC plots generated | ITSD normalization skipped | Applying log2 transformation | Log2 transformation complete | Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; LCMS_Neg 0 non-positive, 0 non-finite | Applying between-sample normalization (method: quantile ) | Between-sample normalization complete | Post-normalization QC plots generated | RUV-III skipped | Generating composite QC figure... | Normalization pipeline complete! | Applying correlation filter (threshold: 0.5 ) | Correlation filtering complete | [message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E15: lipid the tab's log, notification and summary name the sample set missing, the assay, the threshold and the correlation
+kind: failure
+message:
+  Expected `summary` to match string "Removed: 0 samples".
+  Actual text:
+  x | === Correlation Filtering Summary ===
+    | 
+    | [LCMS_Pos]
+    |   Sample pairs: 30
+    |   Correlation: mean=0.973, min=0.953, max=0.985
+    | [LCMS_Neg]
+    |   Sample pairs: 30
+    |   Correlation: mean=0.796, min=-0.025, max=0.987
+    | 
+    | [Sample Filtering]
+    |   Original: 12 samples
+    |   After filtering: 11 samples
+    |   Removed: 1 samples
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E15: lipid the tab's log, notification and summary name the sample set missing, the assay, the threshold and the correlation
+kind: failure
+message:
+  Expected `summary` to match string "Excluded in one assay only: B_6 in LCMS_Neg".
+  Actual text:
+  x | === Correlation Filtering Summary ===
+    | 
+    | [LCMS_Pos]
+    |   Sample pairs: 30
+    |   Correlation: mean=0.973, min=0.953, max=0.985
+    | [LCMS_Neg]
+    |   Sample pairs: 30
+    |   Correlation: mean=0.796, min=-0.025, max=0.987
+    | 
+    | [Sample Filtering]
+    |   Original: 12 samples
+    |   After filtering: 11 samples
+    |   Removed: 1 samples
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E15: metab the tab's log, notification and summary name the sample set missing, the assay, the threshold and the correlation
+kind: failure
+message:
+  Expected `text` to match string "B_6".
+  Actual text:
+  x | Starting normalization pipeline... | Post-filtering state captured | Pre-normalization QC plots generated | ITSD normalization skipped | Applying log2 transformation | Log2 transformation complete | Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; LCMS_Neg 0 non-positive, 0 non-finite | Applying between-sample normalization (method: quantile ) | Between-sample normalization complete | Post-normalization QC plots generated | RUV-III skipped | Generating composite QC figure... | Normalization pipeline complete! | Applying correlation filter (threshold: 0.5 ) | Correlation filtering complete | [message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E15: metab the tab's log, notification and summary name the sample set missing, the assay, the threshold and the correlation
+kind: failure
+message:
+  Expected `summary` to match string "Removed: 0 samples".
+  Actual text:
+  x | === Correlation Filtering Summary ===
+    | 
+    | [LCMS_Pos]
+    |   Sample pairs: 30
+    |   Correlation: mean=0.973, min=0.953, max=0.985
+    | [LCMS_Neg]
+    |   Sample pairs: 30
+    |   Correlation: mean=0.796, min=-0.025, max=0.987
+    | 
+    | [Sample Filtering]
+    |   Original: 12 samples
+    |   After filtering: 11 samples
+    |   Removed: 1 samples
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E15: metab the tab's log, notification and summary name the sample set missing, the assay, the threshold and the correlation
+kind: failure
+message:
+  Expected `summary` to match string "Excluded in one assay only: B_6 in LCMS_Neg".
+  Actual text:
+  x | === Correlation Filtering Summary ===
+    | 
+    | [LCMS_Pos]
+    |   Sample pairs: 30
+    |   Correlation: mean=0.973, min=0.953, max=0.985
+    | [LCMS_Neg]
+    |   Sample pairs: 30
+    |   Correlation: mean=0.796, min=-0.025, max=0.987
+    | 
+    | [Sample Filtering]
+    |   Original: 12 samples
+    |   After filtering: 11 samples
+    |   Removed: 1 samples
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E17: lipid PCA and density omit the sample in the assay where it is blank, and show it where it is not
+kind: failure
+message:
+  Expected `unname(samples(pca))` to equal `c(12L, 11L)`.
+  Differences:
+    `actual`: 11 11
+  `expected`: 12 11
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E17: lipid PCA and density omit the sample in the assay where it is blank, and show it where it is not
+kind: failure
+message:
+  Expected `unname(samples(density))` to equal `c(12L, 11L)`.
+  Differences:
+    `actual`: 11 11
+  `expected`: 12 11
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E17: metab PCA and density omit the sample in the assay where it is blank, and show it where it is not
+kind: failure
+message:
+  Expected `unname(samples(pca))` to equal `c(12L, 11L)`.
+  Differences:
+    `actual`: 11 11
+  `expected`: 12 11
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E17: metab PCA and density omit the sample in the assay where it is blank, and show it where it is not
+kind: failure
+message:
+  Expected `unname(samples(density))` to equal `c(12L, 11L)`.
+  Differences:
+    `actual`: 11 11
+  `expected`: 12 11
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E20: lipid a group blank in one assay is not testable there and tested in the other
+kind: failure
+message:
+  Expected `kit255Design(out)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[4:6]`:    "A_4" "A_5" "A_6"                                    
+  `expected[4:12]`: "A_4" "A_5" "A_6" "B_1" "B_2" "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E20: lipid a group blank in one assay is not testable there and tested in the other
+kind: failure
+message:
+  Expected `inherits(da, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  Assay 'LCMS_Pos' has sample column(s) missing from design: B_1, B_2, B_3, B_4, B_5, B_6; Lipidomics DA formula cannot produce a model matrix: contrasts can be applied only to factors with 2 or more levels
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E20: metab a group blank in one assay is not testable there and tested in the other
+kind: failure
+message:
+  Expected `kit255Design(out)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[4:6]`:    "A_4" "A_5" "A_6"                                    
+  `expected[4:12]`: "A_4" "A_5" "A_6" "B_1" "B_2" "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E20: metab a group blank in one assay is not testable there and tested in the other
+kind: failure
+message:
+  Expected `inherits(da, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  differential abundance failed for every assay
+  x LCMS_Pos: contrasts can be applied only to factors with 2 or more levels
+  x LCMS_Neg: contrasts can be applied only to factors with 2 or more levels
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255Design(after)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[9:11]`:   "B_3" "B_4" "B_5"      
+  `expected[9:12]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255AllNa(methods::slot(after, slot)$LCMS_Neg[[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255AllNa(as.numeric(as.data.frame(copy$LCMS_Neg)[[kit255S]]))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `inherits(da, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  Assay 'LCMS_Pos' has sample column(s) missing from design: B_6
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `nrow(source$samples)` to be identical to 12L.
+  Differences:
+    `actual`: 11
+  `expected`: 12
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `ncol(source$matrices[[view]])` to be identical to 13L.
+  Differences:
+    `actual`: 12
+  `expected`: 13
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255AllNa(source$matrices[[view]][[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255AllNa(source$corrected[[view]][[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255S %in% ...` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV leg the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255Design(after)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[9:11]`:   "B_3" "B_4" "B_5"      
+  `expected[9:12]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV leg the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255AllNa(methods::slot(after, slot)$LCMS_Neg[[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV leg the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `nrow(source$samples)` to be identical to 12L.
+  Differences:
+    `actual`: 11
+  `expected`: 12
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV leg the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `ncol(source$matrices[[view]])` to be identical to 13L.
+  Differences:
+    `actual`: 12
+  `expected`: 13
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV leg the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255AllNa(source$matrices[[view]][[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV leg the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255AllNa(source$corrected[[view]][[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: lipid RUV leg the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255S %in% ...` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: metab RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255Design(after)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[9:11]`:   "B_3" "B_4" "B_5"      
+  `expected[9:12]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: metab RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255AllNa(methods::slot(after, slot)$LCMS_Neg[[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: metab RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255AllNa(as.numeric(as.data.frame(copy$LCMS_Neg)[[kit255S]]))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: metab RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `nrow(source$samples)` to be identical to 12L.
+  Differences:
+    `actual`: 11
+  `expected`: 12
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: metab RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `ncol(source$matrices[[view]])` to be identical to 13L.
+  Differences:
+    `actual`: 12
+  `expected`: 13
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: metab RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255AllNa(source$matrices[[view]][[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: metab RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255AllNa(source$corrected[[view]][[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: metab RUV new the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255S %in% ...` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: metab RUV leg the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255Design(after)` to be identical to `kit255Runs`.
+  Differences:
+  `actual[9:11]`:   "B_3" "B_4" "B_5"      
+  `expected[9:12]`: "B_3" "B_4" "B_5" "B_6"
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: metab RUV leg the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255AllNa(methods::slot(after, slot)$LCMS_Neg[[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: metab RUV leg the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `nrow(source$samples)` to be identical to 12L.
+  Differences:
+    `actual`: 11
+  `expected`: 12
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: metab RUV leg the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `ncol(source$matrices[[view]])` to be identical to 13L.
+  Differences:
+    `actual`: 12
+  `expected`: 13
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: metab RUV leg the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255AllNa(source$matrices[[view]][[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: metab RUV leg the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255AllNa(source$corrected[[view]][[kit255S]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E7 to E10: metab RUV leg the failing column is blank in the state, the uncorrected copy and the integration matrices
+kind: failure
+message:
+  Expected `kit255S %in% ...` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E13, E14: lipid a record made now lists the marker and the exclusions, and replays exactly
+kind: failure
+message:
+  Expected `marker` to have length 1.
+  Actual length: 0.
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E13, E14: lipid a record made now lists the marker and the exclusions, and replays exactly
+kind: error
+message:
+  <subscriptOutOfBoundsError/error/condition>
+  Error in `marker[[1L]]`: subscript out of bounds
+trace (first lines):
+      ▆
+   1. └─testthat::expect_identical(marker[[1L]]$source, "fixed") at test-kit255-omics-correlation-assays.R:716:9
+   2.   └─testthat::quasi_label(enquo(object), label)
+   3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E13, E14: metab a record made now lists the marker and the exclusions, and replays exactly
+kind: failure
+message:
+  Expected `marker` to have length 1.
+  Actual length: 0.
+
+file: test-kit255-omics-correlation-assays.R
+test: KIT-255 E13, E14: metab a record made now lists the marker and the exclusions, and replays exactly
+kind: error
+message:
+  <subscriptOutOfBoundsError/error/condition>
+  Error in `marker[[1L]]`: subscript out of bounds
+trace (first lines):
+      ▆
+   1. └─testthat::expect_identical(marker[[1L]]$source, "fixed") at test-kit255-omics-correlation-assays.R:716:9
+   2.   └─testthat::quasi_label(enquo(object), label)
+   3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+
+file: test-metab-s4-qc-shared.R
+test: filterSamplesByMetaboliteCorrelationThreshold and plotPearson preserve filtering and histogram output
+kind: failure
+message:
+  Expected `filtered@design_matrix$Run` to be identical to `c("Sample_1", "Sample_2", "Sample_3", "Sample_4")`.
+  Differences:
+  `actual`:   "Sample_1" "Sample_2"                      
+  `expected`: "Sample_1" "Sample_2" "Sample_3" "Sample_4"
+
+file: test-metab-s4-qc-shared.R
+test: filterSamplesByMetaboliteCorrelationThreshold and plotPearson preserve filtering and histogram output
+kind: failure
+message:
+  Expected `colnames(filtered@metabolite_data$LCMS_Pos)` to be identical to `c(...)`.
+  Differences:
+  `actual[2:4]`:   "annotation_id" "Sample_1" "Sample_2"                      
+  `expected[2:6]`: "annotation_id" "Sample_1" "Sample_2" "Sample_3" "Sample_4"
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E9: lipid two assays: applying the filter again at the same threshold removes no further sample
+kind: failure
+message:
+  Expected `kit254Removed(kit254Runs(fx))` to be identical to `character(0)`.
+  Differences:
+  `actual`:   "A_1"
+  `expected`:      
+  
+  E9 first Apply precondition lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E9: lipid two assays: applying the filter again at the same threshold removes no further sample
+kind: failure
+message:
+  Expected `kit254Removed(runs)` to be identical to `character(0)`.
+  Differences:
+  `actual`:   "A_1"
+  `expected`:      
+  
+  E9 lipid
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E9: metab two assays: applying the filter again at the same threshold removes no further sample
+kind: failure
+message:
+  Expected `kit254Removed(kit254Runs(fx))` to be identical to `character(0)`.
+  Differences:
+  `actual`:   "A_1"
+  `expected`:      
+  
+  E9 first Apply precondition metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E9: metab two assays: applying the filter again at the same threshold removes no further sample
+kind: failure
+message:
+  Expected `kit254Removed(runs)` to be identical to `character(0)`.
+  Differences:
+  `actual`:   "A_1"
+  `expected`:      
+  
+  E9 metab
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E17: lipid two assays: the statement names the sample left out of the design, with the assay it failed in
+kind: failure
+message:
+  Expected `kit254Removed(kit254Runs(fx))` to be identical to `if (case$both) "A_1" else character(0)`.
+  Differences:
+  `actual`:   "A_1"
+  `expected`:      
+  
+  E17 precondition lipid pos
+trace (first lines):
+      ▆
+   1. └─base::eval(...)
+   2.   └─base::eval(...)
+   3.     └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:903:17
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E17: lipid two assays: the statement names the sample left out of the design, with the assay it failed in
+kind: failure
+message:
+  Expected `isTRUE(grepl(expected, statement, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E17 lipid pos
+trace (first lines):
+      ▆
+   1. └─base::eval(...)
+   2.   └─base::eval(...)
+   3.     └─testthat::expect_true(...) at test-kit254-omics-correlation-skip.R:911:17
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E17: metab two assays: the statement names the sample left out of the design, with the assay it failed in
+kind: failure
+message:
+  Expected `kit254Removed(kit254Runs(fx))` to be identical to `if (case$both) "A_1" else character(0)`.
+  Differences:
+  `actual`:   "A_1"
+  `expected`:      
+  
+  E17 precondition metab pos
+trace (first lines):
+      ▆
+   1. └─base::eval(...)
+   2.   └─base::eval(...)
+   3.     └─testthat::expect_identical(...) at test-kit254-omics-correlation-skip.R:903:17
+
+file: test-kit254-omics-correlation-skip.R
+test: KIT-254 E17: metab two assays: the statement names the sample left out of the design, with the assay it failed in
+kind: failure
+message:
+  Expected `isTRUE(grepl(expected, statement, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E17 metab pos
+trace (first lines):
+      ▆
+   1. └─base::eval(...)
+   2.   └─base::eval(...)
+   3.     └─testthat::expect_true(...) at test-kit254-omics-correlation-skip.R:911:17
+

@@ -710,3 +710,18 @@ test_that("KIT-236 T22 (I09): an assay whose test failed is named, and the Metho
         expect_false(k236Has(got$norm$method_details, "the results of the 2 assays are reported together"), info = name)
     }
 })
+
+test_that("KIT-255 (I01, I02): the comment counts each sample set missing once and says which comparisons were not tested", {
+    for (name in k236Omics) {
+        record <- k236Record(k236Spec[[name]]$prefix)
+        record$steps[[7L]]$outcomes$correlation_excluded_per_assay <- list(
+            LCMS_Neg = list(A_1 = list(best_correlation = -0.015, threshold = 0.5)),
+            GCMS = list(A_1 = list(best_correlation = 0.1, threshold = 0.5)))
+        record$steps[[7L]]$outcomes$correlation_not_tested_per_assay <- list(LCMS_Neg = list("B"))
+        got <- k236Case(name, record = record)
+        expect_true(k236Has(got$norm$comments, paste("6 of 6 samples were kept by the sample-correlation filter (threshold 0.5);",
+            "1 sample was set missing in some assays only (A_1 in LCMS_Neg, GCMS).")), info = name)
+        expect_true(k236Has(got$norm$comments, paste("Comparisons with group B in LCMS_Neg were not tested",
+            "(no sample of the group has a value there).")), info = name)
+    }
+})

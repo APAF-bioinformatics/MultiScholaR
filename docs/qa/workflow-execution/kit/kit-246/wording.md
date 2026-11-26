@@ -55,3 +55,19 @@ kept apart and neither called small; "simulations"). E2's and E5's term lists of
 The new text contains none of "every computer", "any computer", "on every machine", "same total variance", "unit
 variance" (`test-integration-model.R`), no `[R3]`-style placeholder and not "has not been measured yet"
 (`test-integration-removed-factors.R`).
+
+## Follow-up (VAL-305, 2026-11-26): the passage as the owner was shown it
+
+The owner decided (VAL-305) that the four phrases of the text shown on 2026-11-25 are put back into the one shared
+passage, so the Model tab's help and the Methods sentence change together. `integrationScalingEvidenceText()` now reads
+(from "In simulations"; the sentence before it in each text is unchanged; its last sentence, VAL-251, is unchanged):
+
+> In simulations made for this software with 20 samples (two groups of 10), in which about a fifth of the values were
+> missing, mostly low ones, this scaling recovered closely (a correlation of at least 0.9 with the true pattern) a
+> pattern carried by a tenth of the features of the two smallest of four data sets, each changed by about as much as
+> its measurement noise, in 26 rather than 12 of 30 simulated data sets. Without missing values the difference could
+> not be told from none (29 rather than 26 of 30); with 60 samples the pattern was recovered closely in 30 of 30
+> either way.
+
+This is the register's text (AUDIT-KIT-246-impl-20261126, I01) character for character. The sentence "Differences from
+the ticket's section 7 draft (a)" above describes the text as built at c74f2a95; it is superseded by this section.

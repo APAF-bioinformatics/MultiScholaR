@@ -1,0 +1,402 @@
+item	object	class	route	observable	value
+STOP-i	K2-b	lipid	construction	B_6 all NA in LCMS_Neg; finite cells in LCMS_Pos; other LCMS_Neg samples hold values	TRUE; TRUE; TRUE
+STOP-i	K3-b	lipid	construction	B_6 all NA in LCMS_Neg; finite cells in LCMS_Pos; other LCMS_Neg samples hold values	TRUE; TRUE; TRUE
+STOP-i	K2-b,K3-b	lipid	construction	seconds	0.1
+STOP-i	K2-b	metab	construction	B_6 all NA in LCMS_Neg; finite cells in LCMS_Pos; other LCMS_Neg samples hold values	TRUE; TRUE; TRUE
+STOP-i	K3-b	metab	construction	B_6 all NA in LCMS_Neg; finite cells in LCMS_Pos; other LCMS_Neg samples hold values	TRUE; TRUE; TRUE
+STOP-i	K2-b,K3-b	metab	construction	seconds	0.1
+P-d	K2-b	lipid	kernel	kernel DA assays with a table	LCMS_Pos,LCMS_Neg
+P-d	K2-b	lipid	kernel	kernel DA rows per assay	LCMS_Pos=520; LCMS_Neg=520
+P-d	K2-a	lipid	kernel	kernel DA assays with a table	LCMS_Pos,LCMS_Neg
+P-d	K2-a	lipid	kernel	kernel DA rows per assay	LCMS_Pos=520; LCMS_Neg=520
+P-d	K2-b	lipid	kernel	LCMS_Neg (K2-b vs K2-a) numeric columns compared	20
+P-d	K2-b	lipid	kernel	LCMS_Neg (K2-b vs K2-a) columns differing above 1e-10	none
+P-d	K2-b	lipid	kernel	LCMS_Neg (K2-b vs K2-a) only in the first / only in the second	intensity.B_6.B / 
+P-d	K2-b	lipid	kernel	LCMS_Pos (K2-b vs K2-a) numeric columns compared	20
+P-d	K2-b	lipid	kernel	LCMS_Pos (K2-b vs K2-a) columns differing above 1e-10	logFC=45500,AveExpr=26400,t=1.64,P.Value=0.769,adj.P.Val=0.517,B=1.23,fdr_qvalue=0.517,fdr_value_bh=0.517,raw_pvalue=0.769
+P-d	K2-b	lipid	kernel	LCMS_Pos (K2-b vs K2-a) only in the first / only in the second	intensity.B_6.B / 
+P-d	K2-b	lipid	kernel	LCMS_Pos long table: B_6 column; finite cells; rows	no per-sample column; -; 520
+P-d	K2-b	lipid	kernel	LCMS_Neg long table: B_6 column; finite cells; rows	no per-sample column; -; 520
+P-d	K2-b	lipid	kernel	LCMS_Neg residual df table (K2-b)	3:1 4:1 5:8 6:34 7:121 8:187 9:168
+P-d	K2-a	lipid	kernel	LCMS_Neg residual df table (K2-a)	3:1 4:1 5:8 6:34 7:121 8:187 9:168
+P-d	K2-b	lipid	kernel	residual df equal feature by feature (K2-b vs K2-a)	TRUE
+P-d	K2-b	lipid	kernel	features with group-B observed count >= 3 before and < 3 after the blanking (of 520)	5
+P-d	K2-b	lipid	kernel	seconds	1
+P-d	K2-b	lipid	declaration	DA groupB-groupA assays with a table	LCMS_Pos,LCMS_Neg
+P-d	K2-b	lipid	declaration	DA groupB-groupA rows per assay	520,520
+P-d	K2-b	lipid	declaration	DA groupB-groupA errors	none
+P-d	K2-b	lipid	tab in process	omicDaPreflight value	NULL (the run may go on)
+P-d	K2-b	lipid	tab in process	notifications	none
+P-d	K2-b	lipid	declaration	seconds	7.1
+P-f	K3-b	lipid	kernel	kernel DA assays with a table	LCMS_Pos,LCMS_Neg
+P-f	K3-b	lipid	kernel	kernel DA rows per assay	LCMS_Pos=520; LCMS_Neg=520
+P-f	K3-b	lipid	kernel	kernel DA warnings	Partial NA coefficients for 520 probe(s),number of items to replace is not a multiple of replacement length,Estimation of var.prior failed - set to default value
+P-f	K3-b	lipid	kernel	LCMS_Neg table: rows; rows with finite logFC; rows with finite P.Value / raw p	520; 0; 0
+P-f	K3-b	lipid	kernel	LCMS_Neg table columns	lipid_id,logFC,AveExpr,t,P.Value,adj.P.Val,B,fdr_qvalue,fdr_value_bh,raw_pvalue,assay,numerator,denominator,comparison,friendly_name,lipid_name,significant,intensity.A_1.A,intensity.A_2.A,intensity.A_3.A,intensity.A_4.A,intensity.A_5.A,intensity.A_6.A,intensity.B_1.B,intensity.B_2.B,intensity.B_3.B,intensity.B_4.B,intensity.B_5.B,intensity.B_6.B
+P-f	K3-b	lipid	kernel	result fields	theObject,contrasts_results,da_lipids_long,per_assay_results,significant_counts,qvalue_warnings,da_q_val_thresh,treat_lfc_cutoff
+P-f	K3-b	lipid	kernel	seconds	0.2
+P-e	K2-b-RUV	lipid	kernel	runOmicsRuvFactors	failed: the RUV-III correction returned no corrected values for assay 'LCMS_Pos' or for one of its samples
+P-e	K2-b-RUV	lipid	kernel	seconds	0.2
+P-g	K2-b	lipid	figures	plotPca	LCMS_Pos: 12 distinct samples, B_6 TRUE | LCMS_Neg: 11 distinct samples, B_6 FALSE
+P-g	K2-b	lipid	figures	plotDensity	LCMS_Pos: 12 distinct samples, B_6 TRUE | LCMS_Neg: 11 distinct samples, B_6 FALSE
+P-g	K2-b	lipid	figures	plotRle	LCMS_Pos: 12 distinct samples, B_6 TRUE | LCMS_Neg: 12 distinct samples, B_6 TRUE
+P-g	K2-b	lipid	figures	heatmap LCMS_Neg matrix dim; columns; B_6 column zero cells / non-zero cells	50 x 12; A_1+A_2+A_3+A_4+A_5+A_6+B_1+B_2+B_3+B_4+B_5+B_6; 50 / 0
+P-g	K2-b	lipid	figures	heatmap Combined matrix dim; columns; B_6 column zero cells / non-zero cells	50 x 12; A_1+A_2+A_3+A_4+A_5+A_6+B_1+B_2+B_3+B_4+B_5+B_6; 27 / 23
+P-g	K2-b	lipid	figures	static volcano LCMS_Neg	ggplot2::ggplot
+P-g	K2-b	lipid	figures	Glimma volcano LCMS_Neg	glimmaXY
+P-g	K2-b	lipid	figures	seconds	5.8
+P-h	K2-b	lipid	integration	owner at norm complete	TRUE
+P-i	K2-b	lipid	tab summary	design rows (metadata reader); Removed (original - filtered, both the same state)	12; 0
+P-i	K2-b	lipid	session counts	samples counted per assay (intersect(columns, design))	12,12
+P-h	K2-b	lipid	integration	writer	TRUE
+P-h	K2-b	lipid	integration	writer warning classes	none
+P-h	K2-b	lipid	integration	writer warnings	none
+P-h	K2-b	lipid	integration	files	features_lipidomics_LCMS_Neg.parquet,features_lipidomics_LCMS_Pos.parquet,integration_input.json,matrix_lipidomics_LCMS_Neg.parquet,matrix_lipidomics_LCMS_Pos.parquet,samples.parquet
+P-h	K2-b	lipid	integration	samples table rows	12
+P-h	K2-b	lipid	integration	samples table has B_6	TRUE
+P-h	K2-b	lipid	integration	lipidomics_LCMS_Pos matrix sample columns; B_6 column	12; present, numeric TRUE, 53 of 520 NA
+P-h	K2-b	lipid	integration	lipidomics_LCMS_Pos feature table has a column B_6	FALSE
+P-h	K2-b	lipid	integration	lipidomics_LCMS_Neg matrix sample columns; B_6 column	12; present, numeric TRUE, 520 of 520 NA
+P-h	K2-b	lipid	integration	lipidomics_LCMS_Neg feature table has a column B_6	FALSE
+P-h	K2-b	lipid	integration	manifest correction	null
+P-h	K2-b	lipid	model	integrationViewsFromInputs	failed: integration needs the inputs of two or more omics; 1 given
+P-h	K2-b	lipid	integration	seconds	3
+P-d	K2-b	metab	kernel	kernel DA assays with a table	LCMS_Pos,LCMS_Neg
+P-d	K2-b	metab	kernel	kernel DA rows per assay	LCMS_Pos=520; LCMS_Neg=520
+P-d	K2-a	metab	kernel	kernel DA assays with a table	LCMS_Pos,LCMS_Neg
+P-d	K2-a	metab	kernel	kernel DA rows per assay	LCMS_Pos=520; LCMS_Neg=520
+P-d	K2-b	metab	kernel	LCMS_Neg (K2-b vs K2-a) numeric columns compared	20
+P-d	K2-b	metab	kernel	LCMS_Neg (K2-b vs K2-a) columns differing above 1e-10	none
+P-d	K2-b	metab	kernel	LCMS_Neg (K2-b vs K2-a) only in the first / only in the second	intensity.B_6.B / 
+P-d	K2-b	metab	kernel	LCMS_Pos (K2-b vs K2-a) numeric columns compared	20
+P-d	K2-b	metab	kernel	LCMS_Pos (K2-b vs K2-a) columns differing above 1e-10	logFC=45500,AveExpr=26400,t=1.64,P.Value=0.769,adj.P.Val=0.517,B=1.23,fdr_qvalue=0.517,fdr_value_bh=0.517,raw_pvalue=0.769
+P-d	K2-b	metab	kernel	LCMS_Pos (K2-b vs K2-a) only in the first / only in the second	intensity.B_6.B / 
+P-d	K2-b	metab	kernel	LCMS_Pos long table: B_6 column; finite cells; rows	no per-sample column; -; 520
+P-d	K2-b	metab	kernel	LCMS_Neg long table: B_6 column; finite cells; rows	no per-sample column; -; 520
+P-d	K2-b	metab	kernel	LCMS_Neg residual df table (K2-b)	3:1 4:1 5:8 6:34 7:121 8:187 9:168
+P-d	K2-a	metab	kernel	LCMS_Neg residual df table (K2-a)	3:1 4:1 5:8 6:34 7:121 8:187 9:168
+P-d	K2-b	metab	kernel	residual df equal feature by feature (K2-b vs K2-a)	TRUE
+P-d	K2-b	metab	kernel	features with group-B observed count >= 3 before and < 3 after the blanking (of 520)	5
+P-d	K2-b	metab	kernel	seconds	0.6
+P-d	K2-b	metab	declaration	DA groupB-groupA assays with a table	LCMS_Pos,LCMS_Neg
+P-d	K2-b	metab	declaration	DA groupB-groupA rows per assay	520,520
+P-d	K2-b	metab	declaration	DA groupB-groupA errors	none
+P-d	K2-b	metab	tab in process	omicDaPreflight value	NULL (the run may go on)
+P-d	K2-b	metab	tab in process	notifications	none
+P-d	K2-b	metab	declaration	seconds	5.4
+P-f	K3-b	metab	kernel	kernel DA assays with a table	LCMS_Pos,LCMS_Neg
+P-f	K3-b	metab	kernel	kernel DA rows per assay	LCMS_Pos=520; LCMS_Neg=520
+P-f	K3-b	metab	kernel	kernel DA warnings	Partial NA coefficients for 520 probe(s),number of items to replace is not a multiple of replacement length,Estimation of var.prior failed - set to default value
+P-f	K3-b	metab	kernel	LCMS_Neg table: rows; rows with finite logFC; rows with finite P.Value / raw p	520; 0; 0
+P-f	K3-b	metab	kernel	LCMS_Neg table columns	metabolite_id,logFC,AveExpr,t,P.Value,adj.P.Val,B,fdr_qvalue,fdr_value_bh,raw_pvalue,assay,numerator,denominator,comparison,friendly_name,metabolite_name,significant,intensity.A_1.A,intensity.A_2.A,intensity.A_3.A,intensity.A_4.A,intensity.A_5.A,intensity.A_6.A,intensity.B_1.B,intensity.B_2.B,intensity.B_3.B,intensity.B_4.B,intensity.B_5.B,intensity.B_6.B
+P-f	K3-b	metab	kernel	result fields	theObject,contrasts_results,da_metabolites_long,per_assay_results,significant_counts,qvalue_warnings,da_q_val_thresh,treat_lfc_cutoff
+P-f	K3-b	metab	kernel	seconds	0.2
+P-e	K2-b-RUV	metab	kernel	runOmicsRuvFactors	failed: the RUV-III correction returned no corrected values for assay 'LCMS_Pos' or for one of its samples
+P-e	K2-b-RUV	metab	kernel	seconds	0.4
+P-g	K2-b	metab	figures	plotPca	LCMS_Pos: 12 distinct samples, B_6 TRUE | LCMS_Neg: 11 distinct samples, B_6 FALSE
+P-g	K2-b	metab	figures	plotDensity	LCMS_Pos: 12 distinct samples, B_6 TRUE | LCMS_Neg: 11 distinct samples, B_6 FALSE
+P-g	K2-b	metab	figures	plotRle	LCMS_Pos: 12 distinct samples, B_6 TRUE | LCMS_Neg: 12 distinct samples, B_6 TRUE
+P-g	K2-b	metab	figures	heatmap LCMS_Neg matrix dim; columns; B_6 column zero cells / non-zero cells	50 x 12; A_1+A_2+A_3+A_4+A_5+A_6+B_1+B_2+B_3+B_4+B_5+B_6; 50 / 0
+P-g	K2-b	metab	figures	heatmap Combined matrix dim; columns; B_6 column zero cells / non-zero cells	50 x 12; A_1+A_2+A_3+A_4+A_5+A_6+B_1+B_2+B_3+B_4+B_5+B_6; 27 / 23
+P-g	K2-b	metab	figures	static volcano LCMS_Neg	ggplot2::ggplot
+P-g	K2-b	metab	figures	Glimma volcano LCMS_Neg	glimmaXY
+P-g	K2-b	metab	figures	seconds	1.2
+P-h	K2-b	metab	integration	owner at norm complete	TRUE
+P-i	K2-b	metab	tab summary	design rows (metadata reader); Removed (original - filtered, both the same state)	12; 0
+P-i	K2-b	metab	session counts	samples counted per assay (intersect(columns, design))	12,12
+P-h	K2-b	metab	integration	writer	TRUE
+P-h	K2-b	metab	integration	writer warning classes	none
+P-h	K2-b	metab	integration	writer warnings	none
+P-h	K2-b	metab	integration	files	features_metabolomics_LCMS_Neg.parquet,features_metabolomics_LCMS_Pos.parquet,integration_input.json,matrix_metabolomics_LCMS_Neg.parquet,matrix_metabolomics_LCMS_Pos.parquet,samples.parquet
+P-h	K2-b	metab	integration	samples table rows	12
+P-h	K2-b	metab	integration	samples table has B_6	TRUE
+P-h	K2-b	metab	integration	metabolomics_LCMS_Pos matrix sample columns; B_6 column	12; present, numeric TRUE, 53 of 520 NA
+P-h	K2-b	metab	integration	metabolomics_LCMS_Pos feature table has a column B_6	FALSE
+P-h	K2-b	metab	integration	metabolomics_LCMS_Neg matrix sample columns; B_6 column	12; present, numeric TRUE, 520 of 520 NA
+P-h	K2-b	metab	integration	metabolomics_LCMS_Neg feature table has a column B_6	FALSE
+P-h	K2-b	metab	integration	manifest correction	null
+P-h	K2-b	metab	model	integrationViewsFromInputs	failed: integration needs the inputs of two or more omics; 1 given
+P-h	K2-b	metab	integration	seconds	2.7
+BUILD	K2-RUVnew	lipid	declaration	head	lipid_ruv_corrected
+STOP-i	K2-RUVnew	lipid	declaration	RUV best_k per assay	1,1
+STOP-i	K2-RUVnew	lipid	declaration	RUV applied per assay	TRUE,TRUE
+STOP-i	K2-RUVnew	lipid	declaration	RUV not-applied reasons	NA,NA
+BUILD	K2-RUVnew	lipid	declaration	seconds	14.5
+P-a	K2-RUVnew	lipid	declaration (before the press)	args$ruv_uncorrected_assays: B_6 cells in LCMS_Neg	520 of 520 finite
+P-k	K2-RUVnew-b	lipid	integration (blanked by hand)	writer	TRUE
+P-k	K2-RUVnew-b	lipid	integration (blanked by hand)	writer warning classes	integration_input_removed_factors_undetermined,rlang_warning,warning,condition
+P-k	K2-RUVnew-b	lipid	integration (blanked by hand)	writer warnings	the unwanted factors removed from data set lipidomics_LCMS_Neg could not be determined (0 features are measured in every run, fewer than the 2 needed for 1 factors); the integration input is written without them
+P-k	K2-RUVnew-b	lipid	integration (blanked by hand)	files	corrected_lipidomics_LCMS_Neg.parquet,corrected_lipidomics_LCMS_Pos.parquet,features_lipidomics_LCMS_Neg.parquet,features_lipidomics_LCMS_Pos.parquet,integration_input.json,matrix_lipidomics_LCMS_Neg.parquet,matrix_lipidomics_LCMS_Pos.parquet,removed_lipidomics_LCMS_Pos.parquet,samples.parquet
+P-k	K2-RUVnew-b	lipid	integration (blanked by hand)	samples table rows	12
+P-k	K2-RUVnew-b	lipid	integration (blanked by hand)	samples table has B_6	TRUE
+P-k	K2-RUVnew-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Pos matrix sample columns; B_6 column	12; present, numeric TRUE, 0 of 520 NA
+P-k	K2-RUVnew-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Pos feature table has a column B_6	FALSE
+P-k	K2-RUVnew-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Neg matrix sample columns; B_6 column	12; present, numeric TRUE, 520 of 520 NA
+P-k	K2-RUVnew-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Neg feature table has a column B_6	FALSE
+P-k	K2-RUVnew-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Pos corrected matrix sample columns; B_6 column	12; present, 0 of 520 NA
+P-k	K2-RUVnew-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Neg corrected matrix sample columns; B_6 column	12; present, 520 of 520 NA
+P-k	K2-RUVnew-b	lipid	integration (blanked by hand)	manifest correction	{"state":"lipid_ruv_corrected","id":"C4","method":"RUVIII","ruv_mode":null,"replicate_structure":"group","grouping_variable":"group","matrix":"ruv_corrected_values","da_tests":"uncorrected_values_with_factors_in_model","views":{"lipidomics_LCMS_Pos":{"assay":"LCMS_Pos","applied":true,"k":1,"control_count":520,"not_applied_reason":null},"lipidomics_LCMS_Neg":{"assay":"LCMS_Neg","applied":true,"k":1,"control_count":520,"not_applied_reason":null}},"ruv_design":"groups_all_features","ruv_replicate_s
+P-k	K2-RUVnew-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Pos removed_factors	status=exact; features=520; k_declared=1; k=1; reason=NULL
+P-k	K2-RUVnew-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Neg removed_factors	status=not_determined; features=0; k_declared=1; k=0; reason=0 features are measured in every run, fewer than the 2 needed for 1 factors
+P-k	K2-RUVnew-b	lipid	integration	seconds	0.8
+BUILD	K2-RUVnew	lipid	declaration	correlation warnings	.local: 'tech_rep_remove_regex' is not defined. ,many-to-many relationship detected while pairing samples by `group`
+STOP-i	K2-RUVnew	lipid	declaration (after RUV)	B_6 best within-group correlation, LCMS_Pos	0.984562 (passes at 0.5)
+STOP-i	K2-RUVnew	lipid	declaration (after RUV)	B_6 best within-group correlation, LCMS_Neg	0.990833 (passes at 0.5)
+STOP-i	K2-RUVnew	lipid	declaration (after RUV)	stop rule (i): fails in exactly LCMS_Neg	FALSE
+BUILD	K2-RUVnew	lipid	declaration	head	lipid_correlation_filtered
+P-a	K2-RUVnew	lipid	declaration	design samples	12; B_6 present
+P-a	K2-RUVnew	lipid	declaration	LCMS_Pos sample columns	12; B_6 present
+P-a	K2-RUVnew	lipid	declaration	LCMS_Neg sample columns	12; B_6 present
+P-a	K2-RUVnew	lipid	declaration	args$ruv_uncorrected_assays: B_6 cells in LCMS_Neg	520 of 520 finite
+P-a	K2-RUVnew	lipid	declaration	copy identical before and after the press	TRUE
+P-a	K2-RUVnew	lipid	declaration	seconds	0.1
+P-b	K2-RUVnew	lipid	declaration	DA groupB-groupA assays with a table	LCMS_Pos,LCMS_Neg
+P-b	K2-RUVnew	lipid	declaration	DA groupB-groupA rows per assay	520,520
+P-b	K2-RUVnew	lipid	declaration	DA groupB-groupA errors	none
+P-b	K2-RUVnew	lipid	declaration	seconds	4.5
+P-c	K2-RUVnew	lipid	integration	writer	TRUE
+P-c	K2-RUVnew	lipid	integration	writer warning classes	none
+P-c	K2-RUVnew	lipid	integration	writer warnings	none
+P-c	K2-RUVnew	lipid	integration	files	corrected_lipidomics_LCMS_Neg.parquet,corrected_lipidomics_LCMS_Pos.parquet,features_lipidomics_LCMS_Neg.parquet,features_lipidomics_LCMS_Pos.parquet,integration_input.json,matrix_lipidomics_LCMS_Neg.parquet,matrix_lipidomics_LCMS_Pos.parquet,removed_lipidomics_LCMS_Neg.parquet,removed_lipidomics_LCMS_Pos.parquet,samples.parquet
+P-c	K2-RUVnew	lipid	integration	samples table rows	12
+P-c	K2-RUVnew	lipid	integration	samples table has B_6	TRUE
+P-c	K2-RUVnew	lipid	integration	lipidomics_LCMS_Pos matrix sample columns; B_6 column	12; present, numeric TRUE, 0 of 520 NA
+P-c	K2-RUVnew	lipid	integration	lipidomics_LCMS_Pos feature table has a column B_6	FALSE
+P-c	K2-RUVnew	lipid	integration	lipidomics_LCMS_Neg matrix sample columns; B_6 column	12; present, numeric TRUE, 0 of 520 NA
+P-c	K2-RUVnew	lipid	integration	lipidomics_LCMS_Neg feature table has a column B_6	FALSE
+P-c	K2-RUVnew	lipid	integration	lipidomics_LCMS_Pos corrected matrix sample columns; B_6 column	12; present, 0 of 520 NA
+P-c	K2-RUVnew	lipid	integration	lipidomics_LCMS_Neg corrected matrix sample columns; B_6 column	12; present, 0 of 520 NA
+P-c	K2-RUVnew	lipid	integration	manifest correction	{"state":"lipid_ruv_corrected","id":"C4","method":"RUVIII","ruv_mode":null,"replicate_structure":"group","grouping_variable":"group","matrix":"ruv_corrected_values","da_tests":"uncorrected_values_with_factors_in_model","views":{"lipidomics_LCMS_Pos":{"assay":"LCMS_Pos","applied":true,"k":1,"control_count":520,"not_applied_reason":null},"lipidomics_LCMS_Neg":{"assay":"LCMS_Neg","applied":true,"k":1,"control_count":520,"not_applied_reason":null}},"ruv_design":"groups_all_features","ruv_replicate_s
+P-c	K2-RUVnew	lipid	integration	lipidomics_LCMS_Pos removed_factors	status=exact; features=520; k_declared=1; k=1; reason=NULL
+P-c	K2-RUVnew	lipid	integration	lipidomics_LCMS_Neg removed_factors	status=exact; features=520; k_declared=1; k=1; reason=NULL
+P-c	K2-RUVnew	lipid	integration	seconds	0.5
+BUILD	K2-RUVleg	lipid	declaration	ruv warnings	`aes_string()` was deprecated in ggplot2 3.0.0. ℹ Please use tidy evaluation idioms with `aes()`. ℹ See also `vignette("ggplot2-in-packages")` for more information. ℹ The deprecated feature was likely used in the ruv package.   Please report the issue to the authors.
+BUILD	K2-RUVleg	lipid	declaration	head	lipid_ruv_corrected
+STOP-i	K2-RUVleg	lipid	declaration	RUV best_k per assay	1,1
+STOP-i	K2-RUVleg	lipid	declaration	RUV applied per assay	<none>
+STOP-i	K2-RUVleg	lipid	declaration	RUV not-applied reasons	<none>
+BUILD	K2-RUVleg	lipid	declaration	seconds	10.5
+P-a	K2-RUVleg	lipid	declaration (before the press)	args$ruv_uncorrected_assays: B_6 cells in LCMS_Neg	absent
+P-k	K2-RUVleg-b	lipid	integration (blanked by hand)	writer	TRUE
+P-k	K2-RUVleg-b	lipid	integration (blanked by hand)	writer warning classes	integration_input_removed_factors_undetermined,rlang_warning,warning,condition
+P-k	K2-RUVleg-b	lipid	integration (blanked by hand)	writer warnings	the unwanted factors removed from data set lipidomics_LCMS_Neg could not be determined (0 features are measured in every run, fewer than the 2 needed for 1 factors); the integration input is written without them
+P-k	K2-RUVleg-b	lipid	integration (blanked by hand)	files	corrected_lipidomics_LCMS_Neg.parquet,corrected_lipidomics_LCMS_Pos.parquet,features_lipidomics_LCMS_Neg.parquet,features_lipidomics_LCMS_Pos.parquet,integration_input.json,matrix_lipidomics_LCMS_Neg.parquet,matrix_lipidomics_LCMS_Pos.parquet,removed_lipidomics_LCMS_Pos.parquet,samples.parquet
+P-k	K2-RUVleg-b	lipid	integration (blanked by hand)	samples table rows	12
+P-k	K2-RUVleg-b	lipid	integration (blanked by hand)	samples table has B_6	TRUE
+P-k	K2-RUVleg-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Pos matrix sample columns; B_6 column	12; present, numeric TRUE, 0 of 520 NA
+P-k	K2-RUVleg-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Pos feature table has a column B_6	FALSE
+P-k	K2-RUVleg-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Neg matrix sample columns; B_6 column	12; present, numeric TRUE, 520 of 520 NA
+P-k	K2-RUVleg-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Neg feature table has a column B_6	FALSE
+P-k	K2-RUVleg-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Pos corrected matrix sample columns; B_6 column	12; present, 0 of 520 NA
+P-k	K2-RUVleg-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Neg corrected matrix sample columns; B_6 column	12; present, 520 of 520 NA
+P-k	K2-RUVleg-b	lipid	integration (blanked by hand)	manifest correction	{"state":"lipid_ruv_corrected","id":"C4","method":"RUVIII_C_Varying","ruv_mode":"manual","replicate_structure":"group","grouping_variable":"group","matrix":"ruv_corrected_values","da_tests":"this_matrix","views":{"lipidomics_LCMS_Pos":{"assay":"LCMS_Pos","applied":true,"k":1,"control_count":52,"not_applied_reason":null},"lipidomics_LCMS_Neg":{"assay":"LCMS_Neg","applied":true,"k":1,"control_count":52,"not_applied_reason":null}},"grouping_levels":["A","B"]}
+P-k	K2-RUVleg-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Pos removed_factors	status=exact; features=520; k_declared=1; k=1; reason=NULL
+P-k	K2-RUVleg-b	lipid	integration (blanked by hand)	lipidomics_LCMS_Neg removed_factors	status=not_determined; features=0; k_declared=1; k=0; reason=0 features are measured in every run, fewer than the 2 needed for 1 factors
+P-k	K2-RUVleg-b	lipid	integration	seconds	0.4
+BUILD	K2-RUVleg	lipid	declaration	correlation warnings	.local: 'tech_rep_remove_regex' is not defined. ,many-to-many relationship detected while pairing samples by `group`
+STOP-i	K2-RUVleg	lipid	declaration (after RUV)	B_6 best within-group correlation, LCMS_Pos	0.984174 (passes at 0.5)
+STOP-i	K2-RUVleg	lipid	declaration (after RUV)	B_6 best within-group correlation, LCMS_Neg	0.990676 (passes at 0.5)
+STOP-i	K2-RUVleg	lipid	declaration (after RUV)	stop rule (i): fails in exactly LCMS_Neg	FALSE
+BUILD	K2-RUVleg	lipid	declaration	head	lipid_correlation_filtered
+P-a	K2-RUVleg	lipid	declaration	design samples	12; B_6 present
+P-a	K2-RUVleg	lipid	declaration	LCMS_Pos sample columns	12; B_6 present
+P-a	K2-RUVleg	lipid	declaration	LCMS_Neg sample columns	12; B_6 present
+P-a	K2-RUVleg	lipid	declaration	args$ruv_uncorrected_assays: B_6 cells in LCMS_Neg	absent
+P-a	K2-RUVleg	lipid	declaration	copy identical before and after the press	TRUE
+P-a	K2-RUVleg	lipid	declaration	seconds	0.1
+P-b	K2-RUVleg	lipid	declaration	DA groupB-groupA assays with a table	LCMS_Pos,LCMS_Neg
+P-b	K2-RUVleg	lipid	declaration	DA groupB-groupA rows per assay	520,520
+P-b	K2-RUVleg	lipid	declaration	DA groupB-groupA errors	none
+P-b	K2-RUVleg	lipid	declaration	seconds	4.5
+P-c	K2-RUVleg	lipid	integration	writer	TRUE
+P-c	K2-RUVleg	lipid	integration	writer warning classes	none
+P-c	K2-RUVleg	lipid	integration	writer warnings	none
+P-c	K2-RUVleg	lipid	integration	files	corrected_lipidomics_LCMS_Neg.parquet,corrected_lipidomics_LCMS_Pos.parquet,features_lipidomics_LCMS_Neg.parquet,features_lipidomics_LCMS_Pos.parquet,integration_input.json,matrix_lipidomics_LCMS_Neg.parquet,matrix_lipidomics_LCMS_Pos.parquet,removed_lipidomics_LCMS_Neg.parquet,removed_lipidomics_LCMS_Pos.parquet,samples.parquet
+P-c	K2-RUVleg	lipid	integration	samples table rows	12
+P-c	K2-RUVleg	lipid	integration	samples table has B_6	TRUE
+P-c	K2-RUVleg	lipid	integration	lipidomics_LCMS_Pos matrix sample columns; B_6 column	12; present, numeric TRUE, 0 of 520 NA
+P-c	K2-RUVleg	lipid	integration	lipidomics_LCMS_Pos feature table has a column B_6	FALSE
+P-c	K2-RUVleg	lipid	integration	lipidomics_LCMS_Neg matrix sample columns; B_6 column	12; present, numeric TRUE, 0 of 520 NA
+P-c	K2-RUVleg	lipid	integration	lipidomics_LCMS_Neg feature table has a column B_6	FALSE
+P-c	K2-RUVleg	lipid	integration	lipidomics_LCMS_Pos corrected matrix sample columns; B_6 column	12; present, 0 of 520 NA
+P-c	K2-RUVleg	lipid	integration	lipidomics_LCMS_Neg corrected matrix sample columns; B_6 column	12; present, 0 of 520 NA
+P-c	K2-RUVleg	lipid	integration	manifest correction	{"state":"lipid_ruv_corrected","id":"C4","method":"RUVIII_C_Varying","ruv_mode":"manual","replicate_structure":"group","grouping_variable":"group","matrix":"ruv_corrected_values","da_tests":"this_matrix","views":{"lipidomics_LCMS_Pos":{"assay":"LCMS_Pos","applied":true,"k":1,"control_count":52,"not_applied_reason":null},"lipidomics_LCMS_Neg":{"assay":"LCMS_Neg","applied":true,"k":1,"control_count":52,"not_applied_reason":null}},"grouping_levels":["A","B"]}
+P-c	K2-RUVleg	lipid	integration	lipidomics_LCMS_Pos removed_factors	status=exact; features=520; k_declared=1; k=1; reason=NULL
+P-c	K2-RUVleg	lipid	integration	lipidomics_LCMS_Neg removed_factors	status=exact; features=520; k_declared=1; k=1; reason=NULL
+P-c	K2-RUVleg	lipid	integration	seconds	0.5
+BUILD	K2-RUVnew	metab	declaration	head	metab_ruv_corrected
+STOP-i	K2-RUVnew	metab	declaration	RUV best_k per assay	1,1
+STOP-i	K2-RUVnew	metab	declaration	RUV applied per assay	TRUE,TRUE
+STOP-i	K2-RUVnew	metab	declaration	RUV not-applied reasons	NA,NA
+BUILD	K2-RUVnew	metab	declaration	seconds	13.8
+P-a	K2-RUVnew	metab	declaration (before the press)	args$ruv_uncorrected_assays: B_6 cells in LCMS_Neg	520 of 520 finite
+P-k	K2-RUVnew-b	metab	integration (blanked by hand)	writer	TRUE
+P-k	K2-RUVnew-b	metab	integration (blanked by hand)	writer warning classes	integration_input_removed_factors_undetermined,rlang_warning,warning,condition
+P-k	K2-RUVnew-b	metab	integration (blanked by hand)	writer warnings	the unwanted factors removed from data set metabolomics_LCMS_Neg could not be determined (0 features are measured in every run, fewer than the 2 needed for 1 factors); the integration input is written without them
+P-k	K2-RUVnew-b	metab	integration (blanked by hand)	files	corrected_metabolomics_LCMS_Neg.parquet,corrected_metabolomics_LCMS_Pos.parquet,features_metabolomics_LCMS_Neg.parquet,features_metabolomics_LCMS_Pos.parquet,integration_input.json,matrix_metabolomics_LCMS_Neg.parquet,matrix_metabolomics_LCMS_Pos.parquet,removed_metabolomics_LCMS_Pos.parquet,samples.parquet
+P-k	K2-RUVnew-b	metab	integration (blanked by hand)	samples table rows	12
+P-k	K2-RUVnew-b	metab	integration (blanked by hand)	samples table has B_6	TRUE
+P-k	K2-RUVnew-b	metab	integration (blanked by hand)	metabolomics_LCMS_Pos matrix sample columns; B_6 column	12; present, numeric TRUE, 0 of 520 NA
+P-k	K2-RUVnew-b	metab	integration (blanked by hand)	metabolomics_LCMS_Pos feature table has a column B_6	FALSE
+P-k	K2-RUVnew-b	metab	integration (blanked by hand)	metabolomics_LCMS_Neg matrix sample columns; B_6 column	12; present, numeric TRUE, 520 of 520 NA
+P-k	K2-RUVnew-b	metab	integration (blanked by hand)	metabolomics_LCMS_Neg feature table has a column B_6	FALSE
+P-k	K2-RUVnew-b	metab	integration (blanked by hand)	metabolomics_LCMS_Pos corrected matrix sample columns; B_6 column	12; present, 0 of 520 NA
+P-k	K2-RUVnew-b	metab	integration (blanked by hand)	metabolomics_LCMS_Neg corrected matrix sample columns; B_6 column	12; present, 520 of 520 NA
+P-k	K2-RUVnew-b	metab	integration (blanked by hand)	manifest correction	{"state":"metab_ruv_corrected","id":"C4","method":"RUVIII","ruv_mode":null,"replicate_structure":"group","grouping_variable":"group","matrix":"ruv_corrected_values","da_tests":"uncorrected_values_with_factors_in_model","views":{"metabolomics_LCMS_Pos":{"assay":"LCMS_Pos","applied":true,"k":1,"control_count":520,"not_applied_reason":null},"metabolomics_LCMS_Neg":{"assay":"LCMS_Neg","applied":true,"k":1,"control_count":520,"not_applied_reason":null}},"ruv_design":"groups_all_features","ruv_replica
+P-k	K2-RUVnew-b	metab	integration (blanked by hand)	metabolomics_LCMS_Pos removed_factors	status=exact; features=520; k_declared=1; k=1; reason=NULL
+P-k	K2-RUVnew-b	metab	integration (blanked by hand)	metabolomics_LCMS_Neg removed_factors	status=not_determined; features=0; k_declared=1; k=0; reason=0 features are measured in every run, fewer than the 2 needed for 1 factors
+P-k	K2-RUVnew-b	metab	integration	seconds	0.6
+BUILD	K2-RUVnew	metab	declaration	correlation warnings	.local: 'tech_rep_remove_regex' is not defined. 
+STOP-i	K2-RUVnew	metab	declaration (after RUV)	B_6 best within-group correlation, LCMS_Pos	0.984562 (passes at 0.5)
+STOP-i	K2-RUVnew	metab	declaration (after RUV)	B_6 best within-group correlation, LCMS_Neg	0.990833 (passes at 0.5)
+STOP-i	K2-RUVnew	metab	declaration (after RUV)	stop rule (i): fails in exactly LCMS_Neg	FALSE
+BUILD	K2-RUVnew	metab	declaration	head	metab_correlation_filtered
+P-a	K2-RUVnew	metab	declaration	design samples	12; B_6 present
+P-a	K2-RUVnew	metab	declaration	LCMS_Pos sample columns	12; B_6 present
+P-a	K2-RUVnew	metab	declaration	LCMS_Neg sample columns	12; B_6 present
+P-a	K2-RUVnew	metab	declaration	args$ruv_uncorrected_assays: B_6 cells in LCMS_Neg	520 of 520 finite
+P-a	K2-RUVnew	metab	declaration	copy identical before and after the press	TRUE
+P-a	K2-RUVnew	metab	declaration	seconds	0.1
+P-b	K2-RUVnew	metab	declaration	DA groupB-groupA assays with a table	LCMS_Pos,LCMS_Neg
+P-b	K2-RUVnew	metab	declaration	DA groupB-groupA rows per assay	520,520
+P-b	K2-RUVnew	metab	declaration	DA groupB-groupA errors	none
+P-b	K2-RUVnew	metab	declaration	seconds	4.5
+P-c	K2-RUVnew	metab	integration	writer	TRUE
+P-c	K2-RUVnew	metab	integration	writer warning classes	none
+P-c	K2-RUVnew	metab	integration	writer warnings	none
+P-c	K2-RUVnew	metab	integration	files	corrected_metabolomics_LCMS_Neg.parquet,corrected_metabolomics_LCMS_Pos.parquet,features_metabolomics_LCMS_Neg.parquet,features_metabolomics_LCMS_Pos.parquet,integration_input.json,matrix_metabolomics_LCMS_Neg.parquet,matrix_metabolomics_LCMS_Pos.parquet,removed_metabolomics_LCMS_Neg.parquet,removed_metabolomics_LCMS_Pos.parquet,samples.parquet
+P-c	K2-RUVnew	metab	integration	samples table rows	12
+P-c	K2-RUVnew	metab	integration	samples table has B_6	TRUE
+P-c	K2-RUVnew	metab	integration	metabolomics_LCMS_Pos matrix sample columns; B_6 column	12; present, numeric TRUE, 0 of 520 NA
+P-c	K2-RUVnew	metab	integration	metabolomics_LCMS_Pos feature table has a column B_6	FALSE
+P-c	K2-RUVnew	metab	integration	metabolomics_LCMS_Neg matrix sample columns; B_6 column	12; present, numeric TRUE, 0 of 520 NA
+P-c	K2-RUVnew	metab	integration	metabolomics_LCMS_Neg feature table has a column B_6	FALSE
+P-c	K2-RUVnew	metab	integration	metabolomics_LCMS_Pos corrected matrix sample columns; B_6 column	12; present, 0 of 520 NA
+P-c	K2-RUVnew	metab	integration	metabolomics_LCMS_Neg corrected matrix sample columns; B_6 column	12; present, 0 of 520 NA
+P-c	K2-RUVnew	metab	integration	manifest correction	{"state":"metab_ruv_corrected","id":"C4","method":"RUVIII","ruv_mode":null,"replicate_structure":"group","grouping_variable":"group","matrix":"ruv_corrected_values","da_tests":"uncorrected_values_with_factors_in_model","views":{"metabolomics_LCMS_Pos":{"assay":"LCMS_Pos","applied":true,"k":1,"control_count":520,"not_applied_reason":null},"metabolomics_LCMS_Neg":{"assay":"LCMS_Neg","applied":true,"k":1,"control_count":520,"not_applied_reason":null}},"ruv_design":"groups_all_features","ruv_replica
+P-c	K2-RUVnew	metab	integration	metabolomics_LCMS_Pos removed_factors	status=exact; features=520; k_declared=1; k=1; reason=NULL
+P-c	K2-RUVnew	metab	integration	metabolomics_LCMS_Neg removed_factors	status=exact; features=520; k_declared=1; k=1; reason=NULL
+P-c	K2-RUVnew	metab	integration	seconds	0.6
+BUILD	K2-RUVleg	metab	declaration	head	metab_ruv_corrected
+STOP-i	K2-RUVleg	metab	declaration	RUV best_k per assay	1,1
+STOP-i	K2-RUVleg	metab	declaration	RUV applied per assay	<none>
+STOP-i	K2-RUVleg	metab	declaration	RUV not-applied reasons	<none>
+BUILD	K2-RUVleg	metab	declaration	seconds	10.6
+P-a	K2-RUVleg	metab	declaration (before the press)	args$ruv_uncorrected_assays: B_6 cells in LCMS_Neg	absent
+P-k	K2-RUVleg-b	metab	integration (blanked by hand)	writer	TRUE
+P-k	K2-RUVleg-b	metab	integration (blanked by hand)	writer warning classes	integration_input_removed_factors_undetermined,rlang_warning,warning,condition
+P-k	K2-RUVleg-b	metab	integration (blanked by hand)	writer warnings	the unwanted factors removed from data set metabolomics_LCMS_Neg could not be determined (0 features are measured in every run, fewer than the 2 needed for 1 factors); the integration input is written without them
+P-k	K2-RUVleg-b	metab	integration (blanked by hand)	files	corrected_metabolomics_LCMS_Neg.parquet,corrected_metabolomics_LCMS_Pos.parquet,features_metabolomics_LCMS_Neg.parquet,features_metabolomics_LCMS_Pos.parquet,integration_input.json,matrix_metabolomics_LCMS_Neg.parquet,matrix_metabolomics_LCMS_Pos.parquet,removed_metabolomics_LCMS_Pos.parquet,samples.parquet
+P-k	K2-RUVleg-b	metab	integration (blanked by hand)	samples table rows	12
+P-k	K2-RUVleg-b	metab	integration (blanked by hand)	samples table has B_6	TRUE
+P-k	K2-RUVleg-b	metab	integration (blanked by hand)	metabolomics_LCMS_Pos matrix sample columns; B_6 column	12; present, numeric TRUE, 0 of 520 NA
+P-k	K2-RUVleg-b	metab	integration (blanked by hand)	metabolomics_LCMS_Pos feature table has a column B_6	FALSE
+P-k	K2-RUVleg-b	metab	integration (blanked by hand)	metabolomics_LCMS_Neg matrix sample columns; B_6 column	12; present, numeric TRUE, 520 of 520 NA
+P-k	K2-RUVleg-b	metab	integration (blanked by hand)	metabolomics_LCMS_Neg feature table has a column B_6	FALSE
+P-k	K2-RUVleg-b	metab	integration (blanked by hand)	metabolomics_LCMS_Pos corrected matrix sample columns; B_6 column	12; present, 0 of 520 NA
+P-k	K2-RUVleg-b	metab	integration (blanked by hand)	metabolomics_LCMS_Neg corrected matrix sample columns; B_6 column	12; present, 520 of 520 NA
+P-k	K2-RUVleg-b	metab	integration (blanked by hand)	manifest correction	{"state":"metab_ruv_corrected","id":"C4","method":"RUVIII_C_Varying","ruv_mode":"manual","replicate_structure":"group","grouping_variable":"group","matrix":"ruv_corrected_values","da_tests":"this_matrix","views":{"metabolomics_LCMS_Pos":{"assay":"LCMS_Pos","applied":true,"k":1,"control_count":52,"not_applied_reason":null},"metabolomics_LCMS_Neg":{"assay":"LCMS_Neg","applied":true,"k":1,"control_count":52,"not_applied_reason":null}},"grouping_levels":["A","B"]}
+P-k	K2-RUVleg-b	metab	integration (blanked by hand)	metabolomics_LCMS_Pos removed_factors	status=exact; features=520; k_declared=1; k=1; reason=NULL
+P-k	K2-RUVleg-b	metab	integration (blanked by hand)	metabolomics_LCMS_Neg removed_factors	status=not_determined; features=0; k_declared=1; k=0; reason=0 features are measured in every run, fewer than the 2 needed for 1 factors
+P-k	K2-RUVleg-b	metab	integration	seconds	0.5
+BUILD	K2-RUVleg	metab	declaration	correlation warnings	.local: 'tech_rep_remove_regex' is not defined. 
+STOP-i	K2-RUVleg	metab	declaration (after RUV)	B_6 best within-group correlation, LCMS_Pos	0.984174 (passes at 0.5)
+STOP-i	K2-RUVleg	metab	declaration (after RUV)	B_6 best within-group correlation, LCMS_Neg	0.990676 (passes at 0.5)
+STOP-i	K2-RUVleg	metab	declaration (after RUV)	stop rule (i): fails in exactly LCMS_Neg	FALSE
+BUILD	K2-RUVleg	metab	declaration	head	metab_correlation_filtered
+P-a	K2-RUVleg	metab	declaration	design samples	12; B_6 present
+P-a	K2-RUVleg	metab	declaration	LCMS_Pos sample columns	12; B_6 present
+P-a	K2-RUVleg	metab	declaration	LCMS_Neg sample columns	12; B_6 present
+P-a	K2-RUVleg	metab	declaration	args$ruv_uncorrected_assays: B_6 cells in LCMS_Neg	absent
+P-a	K2-RUVleg	metab	declaration	copy identical before and after the press	TRUE
+P-a	K2-RUVleg	metab	declaration	seconds	0.1
+P-b	K2-RUVleg	metab	declaration	DA groupB-groupA assays with a table	LCMS_Pos,LCMS_Neg
+P-b	K2-RUVleg	metab	declaration	DA groupB-groupA rows per assay	520,520
+P-b	K2-RUVleg	metab	declaration	DA groupB-groupA errors	none
+P-b	K2-RUVleg	metab	declaration	seconds	4.5
+P-c	K2-RUVleg	metab	integration	writer	TRUE
+P-c	K2-RUVleg	metab	integration	writer warning classes	none
+P-c	K2-RUVleg	metab	integration	writer warnings	none
+P-c	K2-RUVleg	metab	integration	files	corrected_metabolomics_LCMS_Neg.parquet,corrected_metabolomics_LCMS_Pos.parquet,features_metabolomics_LCMS_Neg.parquet,features_metabolomics_LCMS_Pos.parquet,integration_input.json,matrix_metabolomics_LCMS_Neg.parquet,matrix_metabolomics_LCMS_Pos.parquet,removed_metabolomics_LCMS_Neg.parquet,removed_metabolomics_LCMS_Pos.parquet,samples.parquet
+P-c	K2-RUVleg	metab	integration	samples table rows	12
+P-c	K2-RUVleg	metab	integration	samples table has B_6	TRUE
+P-c	K2-RUVleg	metab	integration	metabolomics_LCMS_Pos matrix sample columns; B_6 column	12; present, numeric TRUE, 0 of 520 NA
+P-c	K2-RUVleg	metab	integration	metabolomics_LCMS_Pos feature table has a column B_6	FALSE
+P-c	K2-RUVleg	metab	integration	metabolomics_LCMS_Neg matrix sample columns; B_6 column	12; present, numeric TRUE, 0 of 520 NA
+P-c	K2-RUVleg	metab	integration	metabolomics_LCMS_Neg feature table has a column B_6	FALSE
+P-c	K2-RUVleg	metab	integration	metabolomics_LCMS_Pos corrected matrix sample columns; B_6 column	12; present, 0 of 520 NA
+P-c	K2-RUVleg	metab	integration	metabolomics_LCMS_Neg corrected matrix sample columns; B_6 column	12; present, 0 of 520 NA
+P-c	K2-RUVleg	metab	integration	manifest correction	{"state":"metab_ruv_corrected","id":"C4","method":"RUVIII_C_Varying","ruv_mode":"manual","replicate_structure":"group","grouping_variable":"group","matrix":"ruv_corrected_values","da_tests":"this_matrix","views":{"metabolomics_LCMS_Pos":{"assay":"LCMS_Pos","applied":true,"k":1,"control_count":52,"not_applied_reason":null},"metabolomics_LCMS_Neg":{"assay":"LCMS_Neg","applied":true,"k":1,"control_count":52,"not_applied_reason":null}},"grouping_levels":["A","B"]}
+P-c	K2-RUVleg	metab	integration	metabolomics_LCMS_Pos removed_factors	status=exact; features=520; k_declared=1; k=1; reason=NULL
+P-c	K2-RUVleg	metab	integration	metabolomics_LCMS_Neg removed_factors	status=exact; features=520; k_declared=1; k=1; reason=NULL
+P-c	K2-RUVleg	metab	integration	seconds	0.5
+P-a	K2-RUVnew	lipid	tab in process	run head	lipid_ruv_corrected
+P-a	K2-RUVnew	lipid	tab in process	Apply head	lipid_correlation_filtered
+STOP-i	K2-RUVnew	lipid	tab in process (intensity filter, log2, quantile, new RUV)	B_6 best within-group correlation, LCMS_Pos	0.984307 (passes at 0.5)
+STOP-i	K2-RUVnew	lipid	tab in process (intensity filter, log2, quantile, new RUV)	B_6 best within-group correlation, LCMS_Neg	0.990754 (passes at 0.5)
+STOP-i	K2-RUVnew	lipid	tab in process (intensity filter, log2, quantile, new RUV)	stop rule (i): fails in exactly LCMS_Neg	FALSE
+P-a	K2-RUVnew	lipid	tab in process	design samples	12; B_6 present
+P-a	K2-RUVnew	lipid	tab in process	LCMS_Pos sample columns	12; B_6 present
+P-a	K2-RUVnew	lipid	tab in process	LCMS_Neg sample columns	12; B_6 present
+P-a	K2-RUVnew	lipid	tab in process	args$ruv_uncorrected_assays: B_6 cells in LCMS_Neg	518 of 518 finite
+P-a	K2-RUVnew	lipid	tab in process	notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+P-a	K2-RUVnew	lipid	tab in process	seconds	18.7
+P-a	K2-RUVnew	lipid	managed	run completed	TRUE
+P-a	K2-RUVnew	lipid	managed	Apply settled	TRUE
+P-a	K2-RUVnew	lipid	managed	operations	lipid_qc_figures,lipid_log2,lipid_between_sample_normalisation,lipid_qc_figures,lipid_ruv,lipid_qc_figures,lipid_composite_figure,lipid_pearson_pairs,lipid_pearson_selection
+P-a	K2-RUVnew	lipid	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered,delivered,delivered
+P-a	K2-RUVnew	lipid	managed	head	lipid_correlation_filtered
+P-a	K2-RUVnew	lipid	managed	errors in log	<none>
+P-a	K2-RUVnew	lipid	managed	notes	[default] Applying lipidomics step ... | [default] Applying lipidomics step ... | [default] Applying lipidomics step ... | [default] Applying lipidomics step ... | [default] Applying lipidomics step ... | [default] Applying lipidomics step ... | [default] Applying lipidomics step ... | [message] Normalization pipeline complete! | [default] Applying correlation filter... | [default] Applying lipidomics step ... | [default] Applying lipidomics step ... | [message] Correlation filtering complete! Ready for DE analysis.
+P-a	K2-RUVnew	lipid	managed	design samples	12; B_6 present
+P-a	K2-RUVnew	lipid	managed	LCMS_Pos sample columns	12; B_6 present
+P-a	K2-RUVnew	lipid	managed	LCMS_Neg sample columns	12; B_6 present
+P-a	K2-RUVnew	lipid	managed	args$ruv_uncorrected_assays: B_6 cells in LCMS_Neg	518 of 518 finite
+P-a	K2-RUVnew	lipid	managed	managed design = in-process design	TRUE
+P-a	K2-RUVnew	lipid	managed	seconds	56.4
+P-a	K2-RUVnew	metab	tab in process	run head	metab_ruv_corrected
+P-a	K2-RUVnew	metab	tab in process	Apply head	metab_correlation_filtered
+STOP-i	K2-RUVnew	metab	tab in process (intensity filter, log2, quantile, new RUV)	B_6 best within-group correlation, LCMS_Pos	0.984307 (passes at 0.5)
+STOP-i	K2-RUVnew	metab	tab in process (intensity filter, log2, quantile, new RUV)	B_6 best within-group correlation, LCMS_Neg	0.990754 (passes at 0.5)
+STOP-i	K2-RUVnew	metab	tab in process (intensity filter, log2, quantile, new RUV)	stop rule (i): fails in exactly LCMS_Neg	FALSE
+P-a	K2-RUVnew	metab	tab in process	design samples	12; B_6 present
+P-a	K2-RUVnew	metab	tab in process	LCMS_Pos sample columns	12; B_6 present
+P-a	K2-RUVnew	metab	tab in process	LCMS_Neg sample columns	12; B_6 present
+P-a	K2-RUVnew	metab	tab in process	args$ruv_uncorrected_assays: B_6 cells in LCMS_Neg	518 of 518 finite
+P-a	K2-RUVnew	metab	tab in process	notes	[message] Normalization pipeline complete! | [default] Applying correlation filter... | [message] Correlation filtering complete! Ready for DE analysis.
+P-a	K2-RUVnew	metab	tab in process	seconds	19.1
+P-a	K2-RUVnew	metab	managed	run completed	TRUE
+P-a	K2-RUVnew	metab	managed	Apply settled	TRUE
+P-a	K2-RUVnew	metab	managed	operations	metab_qc_figures,metab_log2,metab_between_sample_normalisation,metab_qc_figures,metab_ruv,metab_qc_figures,metab_composite_figure,metab_pearson_pairs,metab_pearson_selection
+P-a	K2-RUVnew	metab	managed	statuses	delivered,delivered,delivered,delivered,delivered,delivered,delivered,delivered,delivered
+P-a	K2-RUVnew	metab	managed	head	metab_correlation_filtered
+P-a	K2-RUVnew	metab	managed	errors in log	<none>
+P-a	K2-RUVnew	metab	managed	notes	[default] Applying metabolomics step ... | [default] Applying metabolomics step ... | [default] Applying metabolomics step ... | [default] Applying metabolomics step ... | [default] Applying metabolomics step ... | [default] Applying metabolomics step ... | [default] Applying metabolomics step ... | [message] Normalization pipeline complete! | [default] Applying correlation filter... | [default] Applying metabolomics step ... | [default] Applying metabolomics step ... | [message] Correlation filtering complete! Ready for DE analysis.
+P-a	K2-RUVnew	metab	managed	design samples	12; B_6 present
+P-a	K2-RUVnew	metab	managed	LCMS_Pos sample columns	12; B_6 present
+P-a	K2-RUVnew	metab	managed	LCMS_Neg sample columns	12; B_6 present
+P-a	K2-RUVnew	metab	managed	args$ruv_uncorrected_assays: B_6 cells in LCMS_Neg	518 of 518 finite
+P-a	K2-RUVnew	metab	managed	managed design = in-process design	TRUE
+P-a	K2-RUVnew	metab	managed	seconds	55.9
+P-j	K2	lipid	project	head	lipid_correlation_filtered
+P-j	K2	lipid	project	design samples	11; B_6 absent
+P-j	K2	lipid	project	LCMS_Pos sample columns	12; B_6 present
+P-j	K2	lipid	project	LCMS_Neg sample columns	11; B_6 absent
+P-j	K2	lipid	project	analysis record written (bytes)	24981
+P-j	K2	lipid	project	record step operations	import,design_builder,lipid_qc_finalize,lipid_pearson_selection
+P-j	K2	lipid	replay	replay attempt 1 (assay order LCMS_Pos,LCMS_Neg)	failed: replay input "lipid_assay_1" does not match the record's sha256
+P-j	K2	lipid	replay	replay attempt 2 (assay order LCMS_Neg,LCMS_Pos): states; mismatches	initial+lipid_raw_data_s4+lipid_qc_complete+lipid_correlation_filtered; 0 ()
+P-j	K2	lipid	replay	replayed	TRUE
+P-j	K2	lipid	project and replay	seconds	10.3
+P-j	K2	metab	project	head	metab_correlation_filtered
+P-j	K2	metab	project	design samples	11; B_6 absent
+P-j	K2	metab	project	LCMS_Pos sample columns	12; B_6 present
+P-j	K2	metab	project	LCMS_Neg sample columns	11; B_6 absent
+P-j	K2	metab	project	analysis record written (bytes)	24982
+P-j	K2	metab	project	record step operations	import,design_builder,metab_qc_finalize,metab_pearson_selection
+P-j	K2	metab	replay	replay attempt 1 (assay order LCMS_Pos,LCMS_Neg)	failed: replay input "metab_assay_1" does not match the record's sha256
+P-j	K2	metab	replay	replay attempt 2 (assay order LCMS_Neg,LCMS_Pos): states; mismatches	initial+metab_raw_data_s4+metab_qc_complete+metab_correlation_filtered; 0 ()
+P-j	K2	metab	replay	replayed	TRUE
+P-j	K2	metab	project and replay	seconds	11.4
+P-j	K2	lipid,metab	tarball	bytes (tar.gz)	633032
+P-j	K2	lipid,metab	tarball	seconds	0.2

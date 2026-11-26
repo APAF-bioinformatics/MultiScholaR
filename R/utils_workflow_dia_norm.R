@@ -809,6 +809,36 @@ resolveProtNormCorrelationResultFilenames <- function(
   )
 }
 
+#' KIT-271 (VAL-317): the file names of the correlation filter's results table on the route that writes it. On DIA
+#' with limpa the filter's table is the protein table before any RUV step in every RUV mode (the covariates are computed
+#' after the filter and the RUV matrices are other files), so it takes the `normalised` names whatever RUV result the
+#' tab holds, which on that route is absent or applied by design. The pinned resolver stays the one place that holds the
+#' names, called once on every route; the other routes get its value unchanged.
+#' @param manager The session owner (only its `workflow_type` is read), or NULL.
+#' @param normRuvOptimizationResult,workflowRuvOptimizationResult The tab's and the workflow's RUV results.
+#' @param messagePrefix,messageFn The console line's prefix and writer.
+#' @return The resolver's list (`ruvWasSkipped`, `tsvFilename`, `rdsFilename`).
+#' @noRd
+resolveProtNormCorrelationTableNames <- function(
+  manager,
+  normRuvOptimizationResult = NULL,
+  workflowRuvOptimizationResult = NULL,
+  messagePrefix = "*** CORRELATION",
+  messageFn = message
+) {
+  workflow_type <- tryCatch(manager$workflow_type, error = function(e) NULL)
+  if (!identical(workflow_type, "DIA_LIMPA")) {
+    return(resolveProtNormCorrelationResultFilenames(normRuvOptimizationResult, workflowRuvOptimizationResult,
+      messagePrefix, messageFn))
+  }
+  table_names <- resolveProtNormCorrelationResultFilenames(list(ruv_skipped = TRUE), NULL, messagePrefix,
+    messageFn = function(...) invisible(NULL))
+  messageFn(sprintf(
+    "%s: DIA with limpa - the correlation filter's table precedes any RUV step; using 'normalised' file names ***",
+    messagePrefix))
+  table_names
+}
+
 #' KIT-257 (VAL-250): before a proteomics normalisation or correlation run, remove its own earlier files from
 #' `protein_qc_dir`, by exact name: both names of the correlation's results table (TSV and the S4 compatibility RDS),
 #' and at a normalisation also the RUV-corrected figures and the cancor figure (written with RUV only). Copy prefers the
