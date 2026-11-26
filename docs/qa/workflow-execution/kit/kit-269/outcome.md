@@ -170,3 +170,24 @@ metabolomics prints each feature id with its flag, as the record path does. Disp
 33 passed, 1 failed, 0 errors, 0 skipped (`r-corr1-tests.tsv`): the new T2 row failed by value, actual `Assay Pos: TRUE,
 FALSE, TRUE`, expected `Assay Pos: Feat_A=TRUE, Feat_B=FALSE, Feat_C=TRUE`. 7.5 job-minutes (plan 0.28, tests 6.72,
 results 0.53) = 0.50 core-hours.
+
+### Run 2 (45728050261, head a0bc43f9 vs base 50077f3a, four files, no check): all four predictions held
+
+(`r-corr2-compare.tsv`)
+
+| File | Predicted base | Observed base | Predicted head | Observed head | Verdict |
+|---|---|---|---|---|---|
+| test-kit269-config-vector-values.R | 17/6/4 | 17/6/4 | 34/0/0 | 34/0/0 | fixed |
+| test-kit235-lipid-metab-report-parser.R | 54/0 | 54/0 | 54/0 | 54/0 | same |
+| test-general-filemgmt-config-direct-shared.R | 33/0 | 33/0 | 33/0 | 33/0 | same |
+| test-general-filemgmt-config-roundtrip-contracts.R | 24/0 | 24/0 | 24/0 | 24/0 | same |
+
+Job-minutes 18.93 (plan 0.28, base 7.65, head 10.55, results 0.45). Correction pass total: 7.5 + 18.93 = 26.43
+job-minutes = 1.76 core-hours (budget 4.0). KIT-269 total: 20.86 + 1.76 = 22.62 core-hours of its 99.0 ceiling. No R CMD
+check (the train runs it); `test-kit213-study-parameters-labels.R` is not on this branch (the train runs it).
+
+### Stated limits of the named-vector form
+
+- A NAMED vector of length 1 prints without its name (the length-1 branch is unchanged: scalars print as before). The
+  auditor judges whether that matters for a single control feature.
+- Only the display of the no-record block changes; the record path and every analysis are untouched.
