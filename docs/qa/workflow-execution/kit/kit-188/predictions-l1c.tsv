@@ -36,4 +36,6 @@ daerror/ruv_record_reason.LCMS_Neg	no_usable_controls
 daerror/ruv_record_reason.LCMS_Pos	no_usable_controls
 E7_refusal/status	refused
 E7_refusal/class	omics_ruv_insufficient_controls
-E7_invalid_k/status	re:^(refused|crashed)$
+E7_invalid_k/status	refused
+E7_invalid_k/class	omics_ruv_failed
+E7_invalid_k/step	ruv

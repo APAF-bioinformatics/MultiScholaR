@@ -105,7 +105,9 @@ scenariosOf <- function(cellname) if (isTRUE(CELLS[[cellname]]$n2)) SCENARIOS el
 MASKS <- c("none", "vd5", "vd20")
 REFUSALS <- c("multischolar_refusal", "multischolar_ruv_grouping_unusable", "omics_ruv_insufficient_controls", "prot_ruv_insufficient_controls", "prot_ruv_empty_result",
     "workflow_execution_invalid", "ruv_factor_count_unavailable", "prot_ruv_factors_unavailable", "omics_ruv_factors_refused",
-    "omics_ruv_no_residual_df", "ruv_k_refused", "ruv_k_above_limit")
+    "omics_ruv_no_residual_df", "ruv_k_refused", "ruv_k_above_limit",
+    # FX-3 (the coordinator's ruling (a), r1.23 item (2)): KIT-242's typed product refusals are refusals, not crashes
+    "omics_ruv_failed", "omics_normalisation_failed", "omics_itsd_failed")
 # the columns that carry an estimand or a Part M value (blinded in the lifecycle)
 BLIND <- c("n_null", "null_p05", "null_p01", "calls", "false_calls", "true_calls", "any_call", "fdp", "power", "n_planted",
     "bh_calls", "bh_false", "bh_any", "bh_fdp", "bh_power", "err_med", "err_p99", "err_rmse", "err_max", "gross1", "slope",
@@ -367,7 +369,7 @@ contrastsOf <- function(sim) {
 # default user's path, `^IS_` in the annotation column) finds the standards; the class column and the slot regex are as
 # before. `plant` (35.6, L1c only; the plant changes the generator's input, never the route's state): "itsd" builds the
 # table as r1.15 did (the class column is the annotation column, so ITSD finds nothing); "itsdpos" gives the standards of
-# the first assay (LCMS_Pos in L cells; here the assay named LCMS_Pos) the names STD_01..STD_05 in the `Name` column only.
+# the assay named LCMS_Pos (the second assay of the L cells; its standards are IS_06..IS_10) the names STD_01..STD_05 in the `Name` column only.
 omicObject <- function(sim, log2_values, ids = NULL, scale = 1, plant = NULL) {
     omic <- sim$p$omic
     tables <- lapply(sim$p$assays, function(a) {
@@ -736,13 +738,13 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
                 "control_genes_index", "optimization_results", "error"))])
             out$m_out <- stateMatrices(owner, binding, paste0(prefix, "_ruv_corrected"))
             # 35.2 (3): the analysis record's fields beside the product's (they must equal it)
-            record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) NULL)
+            record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) if (grepl("partial-match guard", conditionMessage(e), fixed = TRUE)) stop(e) else NULL)
             out$record_ruv <- recordOutcomes(record, paste0(prefix, "_ruv_corrected"))
             out$record_itsd <- recordOutcomes(record, paste0(prefix, "_itsd_norm"))
             out$record_norm <- recordOutcomes(record, paste0(prefix, "_normalized"))
         } else if (!is.null(plant)) {
             # the planted cases without a RUV request (`emptysample`) read the record's ITSD and normalisation outcomes too (bound commit, KIT-242)
-            record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) NULL)
+            record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) if (grepl("partial-match guard", conditionMessage(e), fixed = TRUE)) stop(e) else NULL)
             out$record_itsd <- recordOutcomes(record, paste0(prefix, "_itsd_norm"))
             out$record_norm <- recordOutcomes(record, paste0(prefix, "_normalized"))
         }
