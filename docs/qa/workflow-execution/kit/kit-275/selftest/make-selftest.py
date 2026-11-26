@@ -161,12 +161,14 @@ def predict(case, spec, expected):
                 E(f"cell|C'|D|{design}|V1g|{arm}|label", "str", "raised (material)" if dalpha > M_ALPHA + TOL else "not raised")
             pi = (v["dot"] - 0.0) / 2.0
             E(f"cell|pi|D|{design}|V1g|{arm}|estimate", "num", pi)
-            E(f"cell|pi|D|{design}|V1g|{arm}|label", "str", "imprint retained" if pi > 0.5 + TOL else "imprint removed" if pi < 0.5 - TOL else "not determined")
+            vv = spec.get("valid", {}).get((design, arm), R_D)
+            E(f"cell|pi|D|{design}|V1g|{arm}|label", "str", "not determined (coverage)" if vv < 0.9 * R_D else "imprint retained" if pi > 0.5 + TOL else "imprint removed" if pi < 0.5 - TOL else "not determined")
         derived = math.sqrt((2 * n - 3) / (2 * n - 1))
         rho_lx = math.sqrt(spec.get("lx_se2", {}).get(design, derived ** 2) / 1.0)
         E(f"cell|B'|D|{design}|V1g|LX|estimate", "num", rho_lx)
         E(f"cell|B'|D|{design}|V1g|LX|label", "str", "as derived" if abs(rho_lx - derived) <= M_MATCH + TOL else f"differs from derived ({round(rho_lx, 4):g})")
         E(f"cell|pi|D|{design}|V1g|LX|label", "str", "imprint removed")
+        E(f"cell|B|D|{design}|V1g|LM2|note", "str", "%d pairs dropped for a differing tested set" % spec.get("sig_dropped", {}).get(design, 0)) if spec.get("sig_dropped") else None
     # the outcome row (7.3): the first row that holds
     f1 = not all(pass_ctrl[("PC1", d)] for d, _ in DESIGNS)
     f2 = not all(pass_ctrl[("NC1", d)] for d, _ in DESIGNS)
@@ -326,6 +328,148 @@ for row in L:
     if row[10] is not None:
         expected.append((name, f"labels|{row[0]}|shown", "str", row[10], ""))
 index.append((name, "labels", ""))
+
+
+# ---- S16: the cases the audit asked for (a) to (l), (g) non-degenerate ------------------------------------------------------------------------------------
+def new_case(name, rows, g1=None, files=None, mode="score"):
+    folder = os.path.join(OUT, "cases", name)
+    os.makedirs(os.path.join(folder, "rows"), exist_ok=True)
+    write_rows(os.path.join(folder, "rows", "d.tsv.gz"), rows)
+    write_g1(os.path.join(folder, "g1.tsv"), g1_rows({}))
+    for fname, text in (files or {}).items():
+        open(os.path.join(folder, "rows", fname), "w").write(text)
+    index.append((name, mode, "K275_SCORE_R=200,100,20;K275_BOOT_B=200"))
+    return lambda key, kind, value, tol="1e-8": expected.append((name, key, kind, str(value), tol))
+def sel(rows, **kw):
+    return [r for r in rows if all(r[k] == str(v) for k, v in kw.items())]
+
+# (a) unlabelled cells; R-2: the emulation against VD at the SAME k (tier K's VD LM2, not tier D's VD LM1)
+rows = d_rows({})
+for r in range(1, 11):
+    rows.append(blank(tier="E", design="D3", cell="D3", omic="lipid", r=r, version="V1g", arm="PEL2", smoke="FALSE", status=["uncorrected", "dropped", "refused_after_exclusion"][r % 3] if r > 6 else "uncorrected",
+                      pe_a_excluded="TRUE" if r <= 5 else "FALSE", pe_n_excluded=1, pe_excluded_x=0, tested_sig_y=SIG, se2_mod_y=0.64, fa_post_05=0, any_call_y=0, null_p05_y=0.05, dot_g=0.0, den_g=2.0))
+    rows.append(blank(tier="K", design="D3", cell="D3", omic="lipid", r=r, version="VD", arm="LM2", smoke="FALSE", status="ok", tested_sig_y=SIG, se2_mod_y=0.5, any_call_y=0, null_p05_y=0.05, dot_g=0.0, den_g=2.0))
+E = new_case("unlabelled", rows)
+predict("unlabelled", {}, expected)
+E("cell|rho_mod|D|D3|V1g|LM2|estimate", "num", 0.9)
+E("cell|pi|D|D3|V1g|LM2|estimate", "num", 1.0)
+E("cell|pi|D|D3|V1g|LM2|label", "str", "imprint retained")
+E("cell|delta_any_call_y_V0|D|D3|V1g|LM2|estimate", "num", 1.0)
+E("cell|delta_any_call_y_VD|D|D3|V1g|LM2|estimate", "num", 1.0)
+E("cell|rho_mod|E|D3|V1g|PEL2|estimate", "num", math.sqrt(0.64 / 0.5))   # VD LM2 (same k), not VD LM1 (which would give 0.8)
+E("cell|rho_mod|E|D3|V1g|PEL2|estimand", "str", "rho_mod against VD LM2 (K)")
+# (e) H2 and H3: statuses r=7..10 -> r%3: 7:dropped? computed below by the same rule
+st = [(["uncorrected", "dropped", "refused_after_exclusion"][r % 3] if r > 6 else "uncorrected") for r in range(1, 11)]
+E("cell|H3_uncorrected|E|D3|V1g|PEL2|estimate", "num", st.count("uncorrected") / 10)
+E("cell|H3_dropped|E|D3|V1g|PEL2|estimate", "num", st.count("dropped") / 10)
+E("cell|H3_refused_after_exclusion|E|D3|V1g|PEL2|estimate", "num", st.count("refused_after_exclusion") / 10)
+E("cell|H3_refused_after_exclusion|E|D3|V1g|PEL2|hi", "num", cp_upper(st.count("refused_after_exclusion"), 10, 0.025))
+E("cell|H2|E|D3|V1g|PEL2|estimate", "num", 0.5)
+
+# (b) pairs with differing tested sets: 20 data sets of V1g LM2 at D3 carry another signature (dropped from the pair, counted)
+rows = d_rows({})
+n_drop = 0
+for r_ in rows:
+    if r_["tier"] == "D" and r_["design"] == "D3" and r_["version"] == "V1g" and r_["arm"] == "LM2" and int(r_["r"]) <= 20:
+        r_["tested_sig_y"] = "249_1_1"; n_drop += 1
+E = new_case("sigdiff", rows)
+predict("sigdiff", {"sig_dropped": {"D3": 20}}, expected)
+
+# (c) tier K: LG2's pi and its reference VD LG1 across tiers
+rows = d_rows({})
+for r in range(1, 101):
+    rows.append(blank(tier="K", design="D3", cell="D3", omic="lipid", r=r, version="V1g", arm="LG2", smoke="FALSE", status="ok", tested_sig_y=SIG, dot_g=2.0, den_g=2.0, se2_mod_y=1.0))
+    rows.append(blank(tier="K", design="D3", cell="D3", omic="lipid", r=r, version="VD", arm="LG1", smoke="FALSE", status="ok", tested_sig_y=SIG, dot_g=0.0, den_g=2.0, se2_mod_y=1.0))
+E = new_case("tierk", rows)
+predict("tierk", {}, expected)
+E("cell|pi|K|D3|V1g|LG2|estimate", "num", 1.0)
+E("cell|pi|K|D3|V1g|LG2|label", "str", "imprint retained")
+
+# (d) E8 in scoring mode: 3 data sets of D4 against the ID rows, one value differing by 0.5 (a finding, not a stop)
+rows = d_rows({})
+ids = []
+for r_ in rows:
+    if r_["tier"] == "D" and r_["design"] == "D4" and r_["version"] == "V1g" and r_["arm"] in ("NO", "LM2", "GK2", "LA", "GA") and int(r_["r"]) <= 3:
+        c = dict(r_); c["tier"] = "ID"; c["cell"] = "D4M"; c["omic"] = "metab"
+        ids.append(c)
+ids[0]["se2_mod_y"] = "0.5" if ids[0]["se2_mod_y"] != "0.5" else "0.25"
+dev = abs(float(ids[0]["se2_mod_y"]) - float(sel(rows, tier="D", design="D4", version="V1g", arm=ids[0]["arm"], r=ids[0]["r"])[0]["se2_mod_y"]))
+E = new_case("e8score", rows + ids)
+predict("e8score", {}, expected)
+E("decision|E8", "str", "15 compared, 14 equal, max deviation %s" % ("%g" % dev))
+
+# (R-3) tier E's pass-1 NO against tier D's NO: identical -> reported; one differing -> Stop (F4)
+for name, change in (("crossno_ok", False), ("crossno_bad", True)):
+    rows = d_rows({})
+    es = []
+    for r_ in rows:
+        if r_["tier"] == "D" and r_["design"] == "D3" and r_["version"] == "V1g" and r_["arm"] == "NO" and int(r_["r"]) <= 5:
+            c = dict(r_); c["tier"] = "E"; es.append(c)
+    if change: es[0]["cy_post_a"] = "0.123"
+    E = new_case(name, rows + es)
+    predict(name, {}, expected)
+    if change:
+        expected[:] = [e for e in expected if not (e[0] == name and e[1] == "decision|outcome")]
+        E("decision|outcome", "str", "Stop (F4)")
+    E("decision|crossNO", "str", "5 compared, %d differ" % (1 if change else 0))
+
+# (f) no_da, dropped, uncorrected stay in the denominators of family A
+rows = d_rows({})
+k = 0
+for r_ in rows:
+    if r_["tier"] == "D" and r_["design"] == "D3" and r_["version"] == "V1g" and r_["arm"] == "LM2" and int(r_["r"]) <= 30:
+        r_["status"] = ["no_da", "dropped", "uncorrected"][(int(r_["r"]) - 1) // 10]
+E = new_case("statuses", rows)
+predict("statuses", {}, expected)
+
+# (h) rows outside the declared range; a duplicate journey row
+rows = d_rows({})
+bad = dict(rows[0]); bad["r"] = "201"
+E = new_case("range_stop", rows + [bad]); expected += [("range_stop", "exit|range_stop", "exit", "nonzero", ""), ("range_stop", "stderr|range_stop", "substr", "RANGE-1", "")]
+E = new_case("dup_stop", rows + [dict(rows[0])]); expected += [("dup_stop", "exit|dup_stop", "exit", "nonzero", ""), ("dup_stop", "stderr|dup_stop", "substr", "appears twice", "")]
+
+# (i) an instrument status, and a partial-match guard class
+rows = d_rows({}); rows[3]["status"] = "instrument"
+E = new_case("instrument", rows); expected += [("instrument", "exit|instrument", "exit", "nonzero", ""), ("instrument", "stderr|instrument", "substr", "instrument status", "")]
+rows = d_rows({}); rows[3]["class"] = "partial_match_guard: Partial match of 'abc' to 'abcdef' in data frame"
+E = new_case("guard_class", rows); expected += [("guard_class", "exit|guard_class", "exit", "nonzero", ""), ("guard_class", "stderr|guard_class", "substr", "partial-match guard", "")]
+
+# (j) pi without coverage, and pi with a missing reference
+rows = [r_ for r_ in d_rows({}) if not (r_["tier"] == "D" and r_["design"] == "D4" and r_["version"] == "VD" and r_["arm"] == "LM1")]
+rows = [r_ for r_ in rows if not (r_["tier"] == "D" and r_["design"] == "D3" and r_["version"] == "V1g" and r_["arm"] == "LM2" and int(r_["r"]) > 100)]
+E = new_case("picov", rows)
+E("cell|pi|D|D3|V1g|LM2|label", "str", "not determined (coverage)")
+E("cell|pi|D|D4|V1g|LM2|label", "str", "not determined (coverage)")
+E("cell|pi|D|D4|V1g|LM2|n_valid", "num", 0)
+
+# (k) F4 through a failing E1 row in a checks file; (l) an E12 failure is reported, not a stop
+hdr = "check\tcell\trep\tcondition\tvalue\tthreshold\tpass\tnote\n"
+E = new_case("e1_fail", d_rows({}), files={"checks-x.tsv": hdr + "E1\tD3\t1\tdeterminism\tNA\tbyte-identical\tFALSE\t\n"})
+E("decision|outcome", "str", "Stop (F4)")
+E = new_case("e12_fail", d_rows({}), files={"checks-x.tsv": hdr + "E12\tD3\t1\tV1g LG2\tNA\tpositional\tFALSE\t\n"})
+E("decision|outcome", "str", "R1")
+E("decision|E12 failing checks", "str", "1")
+
+# (g) non-degenerate data: se2_mod of V1g LM2 at D3 alternates 0.5 and 1.5 (VD 1.0): the estimate and the jackknife limits are predicted exactly,
+# the bootstrap limits are bounded by the data range
+rows = d_rows({})
+for r_ in rows:
+    if r_["tier"] == "D" and r_["design"] == "D3" and r_["version"] == "V1g" and r_["arm"] == "LM2":
+        r_["se2_mod_y"] = "0.5" if int(r_["r"]) % 2 else "1.5"
+E = new_case("nondegen", rows)
+vals = [0.5 if r % 2 else 1.5 for r in range(1, 201)]
+tot = sum(vals); n = 200
+est = tot / n
+jack = [(tot - v) / (n - 1) for v in vals]
+mj = sum(jack) / n
+se = math.sqrt((n - 1) / n * sum((j - mj) ** 2 for j in jack))
+from statistics import NormalDist
+z = NormalDist().inv_cdf(1 - 0.025 / 6)
+E("cell|B|D|D3|V1g|LM2|estimate", "num", math.sqrt(est))
+E("cell|B|D|D3|V1g|LM2|jk_lo", "num", math.sqrt(est - z * se))
+E("cell|B|D|D3|V1g|LM2|jk_hi", "num", math.sqrt(est + z * se))
+E("cell|B|D|D3|V1g|LM2|lo", "between", "%r:%r" % (math.sqrt(0.5), math.sqrt(est)))
+E("cell|B|D|D3|V1g|LM2|hi", "between", "%r:%r" % (math.sqrt(est), math.sqrt(1.5)))
 
 with open(os.path.join(OUT, "index.tsv"), "w", newline="") as f:
     w = csv.writer(f, delimiter="\t", lineterminator="\n")

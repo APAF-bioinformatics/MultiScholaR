@@ -23,7 +23,9 @@ The ticket (5.1, 8.1) has the generator and the journeys copied unchanged except
 | **K275-guard** | **no: the lead's instruction (lesson 2): the partial-match warning is an error, also inside `quiet()`** | header (the global handler, new lines 18-28) and `quiet()`, after 108 |
 | **K275-prefix** | **no: the same lesson. `out$da` read when absent matched `da_reached`; `out$e1` could match `e12`, `e13` (KIT-188's smoke 2 found it). The journey's fields `e12`, `e13`, `da_reached` are renamed `itsd_check`, `norm_check`, `reached_da`, as KIT-188 did** | 558-559, 582, 659-661, 677-679, 708 |
 | **K275-pairs** | **no, but 8.2 of the ticket names these reads ("the S4 states before and after RUV passed to `pearsonCorForSamplePairs`") and E5 needs the filter's own removed set: three added blocks in `journeyL`** | inserts after 672, 695 and 704 |
-| **K275-REFUSALS** | **no: two refusal classes of the control rule that exist at the bound commit (`multischolar_refusal`, `multischolar_ruv_grouping_unusable`) added to `REFUSALS`, as KIT-188's later version did, so a refused journey is not recorded `crashed`** | 83 |
+| **K275-REFUSALS** | **no: two refusal classes of the control rule that exist at the bound commit (`multischolar_refusal`, `multischolar_ruv_grouping_unusable`) added to `REFUSALS` (the comment sits at the end of the statement, audit S15), as KIT-188's later version did, so a refused journey is not recorded `crashed`** | 83 |
+| **K275-assaycols** | **no (audit S01): `ruv_n_controls` guarded with `is.logical` (the optimiser can return a list when an assay is skipped)** | 595 |
+| **K275-nogroup** | **no (audit S03, ruling R-1): a design that lost a whole group by the filter is `no_da`, class `filter_removed_group:<groups>`; the DA block is wrapped in an else** | after 723 |
 | **K275-E3** | **no: `checkE3` reduced to the ticket's E3 (the route defaults of 5.2 and the markers). KIT-188's clauses on the ITSD import pattern (KIT-260, not on staging: the pattern is still `w/o MS2:`) and on labelled names matching an ITSD pattern are not carried; ITSD is off in every journey here** | 430-453 |
 
 The header comment (lines 1-40) is replaced by KIT-275's.
@@ -45,7 +47,6 @@ Kept unchanged from those regions: `groupOfComparison` (:970-977), `choiceOf` (:
 `# K275: everything below is added (not copied)` to the end of `sim-k275.R`: `TIER_PLAN` and the tier tables, `armSpec`, `armClass`, `requestK275`, `maskedLog2`, `dropSamples`, `makeVersion`, `plantedShares`, `bestCorrelation`, `failsAt`, `failList`, `pseudoReplicateRatio`, `kappaControls`, `unmoderatedReading`, `ROW_COLUMNS`, `newRow`, `rowFrame`, `daFamily`, `daNumbers`, `journeyRow`, `lxRow`, `appendTable`, `flushChecks`, `checkE12`, `runArm`, `runEmulation`, `checkVersionsE1`, `runUnit`, `runChildMain`, `runParentMain`, and the library switch (`options(k275.library = TRUE)` loads the functions only, for `fixture-k275.R`).
 
 ## D. The hunks, line by line
-
 
 ### Hunk 1: header comment; old 1-3
 
@@ -133,7 +134,7 @@ New (sim-k275.R):
 25: # instrument defect by definition (VAL-54). Every read of a field that may be absent below uses `[[` with exact matching.
 26: options(warnPartialMatchDollar = TRUE)
 27: globalCallingHandlers(warning = function(w) {
-28:     if (grepl("partial match of", conditionMessage(w), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
+28:     if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
 29: })
 ```
 
@@ -187,7 +188,7 @@ Old (0866982f):
 ```
 New (sim-k275.R):
 ```r
-81: REFUSALS <- c("multischolar_refusal", "multischolar_ruv_grouping_unusable", "omics_ruv_insufficient_controls", # K275-REFUSALS "prot_ruv_insufficient_controls", "prot_ruv_empty_result",
+81: REFUSALS <- c("multischolar_refusal", "multischolar_ruv_grouping_unusable", "omics_ruv_insufficient_controls", "prot_ruv_insufficient_controls", "prot_ruv_empty_result", # K275-REFUSALS
 ```
 
 ### Hunk 8: K275-guard; old (insert after 108)
@@ -198,7 +199,7 @@ Old (0866982f):
 ```
 New (sim-k275.R):
 ```r
-99:         if (grepl("partial match of", conditionMessage(w), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE) # K275-guard
+99:         if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE) # K275-guard
 ```
 
 ### Hunk 9: K275-markers; old 139-139
@@ -372,8 +373,13 @@ Old (0866982f):
 New (sim-k275.R):
 ```r
 455:     got$cyclic_loess_minimum <- tryCatch(omicsCyclicLoessMinimumActive(), error = function(e) NA) # recorded, either state passes (as KIT-188)
-456:     list(pass = !length(differ) && !length(leaked), got = got, # K275-E3
-457:         note = sprintf("differ: %s; markers off their current token: %s", paste(differ, collapse = ","), paste(leaked, collapse = ",")))
+456:     need <- c("ruv_control_grouping", "ruv_k_bound", "ruv_feature_levels", "correlation_exclusion", strsplit(Sys.getenv("K275_REQUIRED_MARKERS"), ",", fixed = TRUE)[[1L]]) # K275-E3
+457:     absent <- setdiff(need[nzchar(need)], names(workflowReplayRuleMarkers)) # K275-E3
+458:     ce_ok <- identical(workflowReplayRuleMarkers[["correlation_exclusion"]][["current"]], "within_assay") # K275-E3
+459:     got$correlation_exclusion <- workflowReplayRuleMarkers[["correlation_exclusion"]][["current"]] # K275-E3
+460:     list(pass = !length(differ) && !length(leaked) && !length(absent) && ce_ok, got = got, # K275-E3
+461:         note = sprintf("differ: %s; markers off their current token: %s; markers absent: %s; correlation_exclusion within_assay: %s", paste(differ, collapse = ","),
+462:             paste(leaked, collapse = ","), paste(absent, collapse = ","), ce_ok))
 ```
 
 ### Hunk 21: K275-prefix; old 558-559
@@ -385,8 +391,8 @@ Old (0866982f):
 ```
 New (sim-k275.R):
 ```r
-562:         e12 <- if (!is.null(out$itsd_check)) out$itsd_check[out$itsd_check$assay == a, , drop = FALSE] # K275-prefix
-563:         e13 <- if (!is.null(out$norm_check)) out$norm_check[out$norm_check$assay == a, , drop = FALSE] # K275-prefix
+567:         e12 <- if (!is.null(out$itsd_check)) out$itsd_check[out$itsd_check$assay == a, , drop = FALSE] # K275-prefix
+568:         e13 <- if (!is.null(out$norm_check)) out$norm_check[out$norm_check$assay == a, , drop = FALSE] # K275-prefix
 ```
 
 ### Hunk 22: K275-prefix; old 582-582
@@ -397,10 +403,36 @@ Old (0866982f):
 ```
 New (sim-k275.R):
 ```r
-586:         da_status <- if (da_failed) "failed" else if (!isTRUE(out$reached_da)) "not_reached" else # K275-prefix
+591:         da_status <- if (da_failed) "failed" else if (!isTRUE(out$reached_da)) "not_reached" else # K275-prefix
 ```
 
-### Hunk 23: K275-prefix; old 659-661
+### Hunk 23: K275-assaycols; old 591-591
+
+Old (0866982f):
+```r
+591:             ruv_n_controls = if (requested && !declared && !is.null(trace)) sum(trace$control_genes_index, na.rm = TRUE) else NA_integer_,
+```
+New (sim-k275.R):
+```r
+600:             ruv_n_controls = if (requested && !declared && !is.null(trace) && is.logical(trace[["control_genes_index"]])) sum(trace[["control_genes_index"]], na.rm = TRUE) else NA_integer_, # K275-assaycols
+```
+
+### Hunk 24: K275-guard; old (insert after 638)
+
+Old (0866982f):
+```r
+(nothing)
+```
+New (sim-k275.R):
+```r
+648:         if (isTRUE(getOption("k275.guard_now"))) { # K275-guard: the planted partial `$` match on a data frame (the self-check of the guard)
+649:             options(k275.guard_now = FALSE)
+650:             out$guard_planted <- TRUE
+651:             invisible(data.frame(abcdef = 1)$abc)
+652:         }
+```
+
+### Hunk 25: K275-prefix; old 659-661
 
 Old (0866982f):
 ```r
@@ -410,12 +442,12 @@ Old (0866982f):
 ```
 New (sim-k275.R):
 ```r
-663:             out$itsd_check <- checkItsdActed(m_qc, out$m_itsd, itsd_record) # K275-prefix
-664:             if (!all(out$itsd_check$itsd_ok)) {
-665:                 bad <- out$itsd_check[!out$itsd_check$itsd_ok, , drop = FALSE]
+673:             out$itsd_check <- checkItsdActed(m_qc, out$m_itsd, itsd_record) # K275-prefix
+674:             if (!all(out$itsd_check$itsd_ok)) {
+675:                 bad <- out$itsd_check[!out$itsd_check$itsd_ok, , drop = FALSE]
 ```
 
-### Hunk 24: K275-pairs; old (insert after 671)
+### Hunk 26: K275-pairs; old (insert after 671)
 
 Old (0866982f):
 ```r
@@ -423,12 +455,12 @@ Old (0866982f):
 ```
 New (sim-k275.R):
 ```r
-676:         step <- "pairs_pre" # K275-pairs
-677:         out$pairs_pre <- quiet(pearsonCorForSamplePairs(theObject = owner$getState(paste0(prefix, "_normalized")), correlation_group = "group")) # K275-pairs
-678:         step <- "between_sample"
+686:         step <- "pairs_pre" # K275-pairs
+687:         out$pairs_pre <- quiet(pearsonCorForSamplePairs(theObject = owner$getState(paste0(prefix, "_normalized")), correlation_group = "group")) # K275-pairs
+688:         step <- "between_sample"
 ```
 
-### Hunk 25: K275-prefix; old 677-679
+### Hunk 27: K275-prefix; old 677-679
 
 Old (0866982f):
 ```r
@@ -438,12 +470,12 @@ Old (0866982f):
 ```
 New (sim-k275.R):
 ```r
-684:             out$norm_check <- checkNormActed(compared, out$m_log2) # K275-prefix
-685:             if (!all(out$norm_check$norm_ok)) {
-686:                 bad <- out$norm_check[!out$norm_check$norm_ok, , drop = FALSE]
+694:             out$norm_check <- checkNormActed(compared, out$m_log2) # K275-prefix
+695:             if (!all(out$norm_check$norm_ok)) {
+696:                 bad <- out$norm_check[!out$norm_check$norm_ok, , drop = FALSE]
 ```
 
-### Hunk 26: K275-W; old 691-691
+### Hunk 28: K275-W; old 691-691
 
 Old (0866982f):
 ```r
@@ -451,23 +483,10 @@ Old (0866982f):
 ```
 New (sim-k275.R):
 ```r
-698:                 "control_count", "ruv_k_estimate", "W"))]) # K275-W
+708:                 "control_count", "ruv_k_estimate", "W"))]) # K275-W
 ```
 
-### Hunk 27: K275-pairs; old (insert after 694)
-
-Old (0866982f):
-```r
-(nothing)
-```
-New (sim-k275.R):
-```r
-702:             step <- "pairs_post" # K275-pairs
-703:             out$pairs_post <- quiet(pearsonCorForSamplePairs(theObject = owner$getState(paste0(prefix, "_ruv_corrected")), correlation_group = "group")) # K275-pairs
-704:             step <- "ruv"
-```
-
-### Hunk 28: K275-pairs; old (insert after 703)
+### Hunk 29: K275-pairs; old (insert after 694)
 
 Old (0866982f):
 ```r
@@ -475,17 +494,44 @@ Old (0866982f):
 ```
 New (sim-k275.R):
 ```r
-714:             # K275-pairs: per assay, the samples that held a value before the filter and none after it (the package filter's own removed set, E5)
-715:             after_filter <- stateMatrices(owner, binding, owner$current_state)
-716:             out$corr_removed <- lapply(stats::setNames(names(after_filter), names(after_filter)), function(a) {
-717:                 before <- (out$m_out %||% out$m_in)[[a]]
-718:                 had <- colnames(before)[colSums(is.finite(before)) > 0L]
-719:                 kept <- colnames(after_filter[[a]])[colSums(is.finite(after_filter[[a]])) > 0L]
-720:                 setdiff(had, kept)
-721:             }) # K275-pairs
+712:             step <- "pairs_post" # K275-pairs
+713:             out$pairs_post <- quiet(pearsonCorForSamplePairs(theObject = owner$getState(paste0(prefix, "_ruv_corrected")), correlation_group = "group")) # K275-pairs
+714:             step <- "ruv"
 ```
 
-### Hunk 29: K275-prefix; old 708-708
+### Hunk 30: K275-pairs; old (insert after 703)
+
+Old (0866982f):
+```r
+(nothing)
+```
+New (sim-k275.R):
+```r
+724:             # K275-pairs: per assay, the samples that held a value before the filter and none after it (the package filter's own removed set, E5)
+725:             after_filter <- stateMatrices(owner, binding, owner$current_state)
+726:             out$corr_removed <- lapply(stats::setNames(names(after_filter), names(after_filter)), function(a) {
+727:                 before <- out$m_out[[a]] %||% out$m_in[[a]] # K275-pairs
+728:                 had <- colnames(before)[colSums(is.finite(before)) > 0L]
+729:                 kept <- colnames(after_filter[[a]])[colSums(is.finite(after_filter[[a]])) > 0L]
+730:                 setdiff(had, kept)
+731:             }) # K275-pairs
+```
+
+### Hunk 31: K275-nogroup; old (insert after 706)
+
+Old (0866982f):
+```r
+(nothing)
+```
+New (sim-k275.R):
+```r
+735:         left <- unique(as.character(final@design_matrix[[final@group_id]]))
+736:         if (!all(sim$groups %in% left)) { # K275-nogroup: the filter removed a whole group from the design: the DA has nothing to test (a result, `no_da`)
+737:             out$class <- paste0("filter_removed_group:", paste(setdiff(sim$groups, left), collapse = ","))
+738:         } else {
+```
+
+### Hunk 32: K275-prefix; old 708-708
 
 Old (0866982f):
 ```r
@@ -493,5 +539,52 @@ Old (0866982f):
 ```
 New (sim-k275.R):
 ```r
-726:         out$reached_da <- TRUE # K275-prefix
+740:         out$reached_da <- TRUE # K275-prefix
+```
+
+### Hunk 33: K275-nogroup; old (insert after 734)
+
+Old (0866982f):
+```r
+(nothing)
+```
+New (sim-k275.R):
+```r
+767:         } # K275-nogroup
+```
+
+### Hunk 34: K275-guard; old (insert after 753)
+
+Old (0866982f):
+```r
+(nothing)
+```
+New (sim-k275.R):
+```r
+787:         guard <- grepl("partial-match guard", conditionMessage(e), fixed = TRUE) # K275-guard
+```
+
+### Hunk 35: K275-guard; old 756-756
+
+Old (0866982f):
+```r
+756:         if (identical(out$status, "instrument")) {
+```
+New (sim-k275.R):
+```r
+790:         if (guard) { # K275-guard: a guard stop is an instrument defect, never a crash
+791:             out$status <<- "instrument"
+792:             out$class <<- oneLine(paste("partial_match_guard:", conditionMessage(e)))
+793:         } else if (identical(out$status, "instrument")) {
+```
+
+### Hunk 36: K275-prefix; old 797-797
+
+Old (0866982f):
+```r
+797:         k_used <- suppressWarnings(as.integer(unlist(journey$ruv_value$best_k[[a]])[1L]))
+```
+New (sim-k275.R):
+```r
+834:         k_used <- suppressWarnings(as.integer(unlist(journey[["ruv_value"]][["best_k"]][[a]])[1L])) # K275-prefix
 ```

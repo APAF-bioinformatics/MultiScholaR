@@ -1,2 +1,3 @@
 request	run_id	commit	purpose	ceiling_job_minutes	ceiling_core_hours	actual_job_minutes	actual_core_hours	result	used_before_core_hours	still_planned_core_hours	sum_core_hours	limit_core_hours	within_limit
-smoke-1 (kit275-smoke-1e381cab)		1e381cab29e7d13e68f059c02ed6c26040cd19e1	smoke send: instrument check, nothing judged (smoke/declaration.md); charged to L1's line	58	3.87			sent; run returned; scripts 892 s; 2 findings in lifecycle.md section 6	0.00	321.2	325.07	350.73	yes
+smoke-1 (kit275-smoke-1e381cab)	45742592872	1e381cab29e7d13e68f059c02ed6c26040cd19e1	smoke send 1: instrument check, nothing judged	58	3.87	25	1.67	returned: tier E crash, 2 failed checks, scorer positional emit (audit S01-S16)	0.00	321.20	325.07	350.73	yes
+smoke-2 (kit275-smoke2)		<tip>	smoke send 2: instrument check after the audit repairs (smoke/declaration-2.md)	50	3.33			not sent yet	1.67	321.20	326.20	350.73	yes

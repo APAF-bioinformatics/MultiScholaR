@@ -63,6 +63,10 @@ for e in expected:
                 ok = abs(g - w) <= t * max(1.0, abs(w))
             except ValueError:
                 ok = False
+    elif kind == "between":
+        lo_, hi_ = (float(x) for x in want.split(":"))
+        try: ok = lo_ - 1e-9 <= float(got) <= hi_ + 1e-9
+        except (TypeError, ValueError): ok = False
     elif kind == "str":
         ok = got == want
     elif kind == "substr":

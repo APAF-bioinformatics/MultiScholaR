@@ -25,7 +25,7 @@
 # instrument defect by definition (VAL-54). Every read of a field that may be absent below uses `[[` with exact matching.
 options(warnPartialMatchDollar = TRUE)
 globalCallingHandlers(warning = function(w) {
-    if (grepl("partial match of", conditionMessage(w), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
+    if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
 })
 
 args <- commandArgs(TRUE)
@@ -78,7 +78,7 @@ CELLS <- list(
     X6 = cellDef(7L, "L", "lipid", "LCMS_Pos", 2000L, 2L, 6L, 20, 2, "drift_one", no_is = TRUE))
 scenariosOf <- function(cellname) if (isTRUE(CELLS[[cellname]]$n2)) SCENARIOS else SCENARIOS[1:4]
 MASKS <- c("none", "vd5", "vd20")
-REFUSALS <- c("multischolar_refusal", "multischolar_ruv_grouping_unusable", "omics_ruv_insufficient_controls", # K275-REFUSALS "prot_ruv_insufficient_controls", "prot_ruv_empty_result",
+REFUSALS <- c("multischolar_refusal", "multischolar_ruv_grouping_unusable", "omics_ruv_insufficient_controls", "prot_ruv_insufficient_controls", "prot_ruv_empty_result", # K275-REFUSALS
     "workflow_execution_invalid", "ruv_factor_count_unavailable", "prot_ruv_factors_unavailable", "omics_ruv_factors_refused",
     "omics_ruv_no_residual_df", "ruv_k_refused", "ruv_k_above_limit")
 
@@ -96,7 +96,7 @@ quiet <- function(expr) {
         warning_count$log <- c(warning_count$log, paste(class(cond)[[1L]], if (length(hit)) hit[[1L]] else "", sep = "@"))
     }
     invisible(utils::capture.output(value <- withCallingHandlers(expr, warning = function(w) {
-        if (grepl("partial match of", conditionMessage(w), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE) # K275-guard
+        if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE) # K275-guard
         warning_count$n <- warning_count$n + 1L
         noteOf(w)
         invokeRestart("muffleWarning")
@@ -453,8 +453,13 @@ checkE3 <- function(omic) {
         (is.numeric(want[[n]]) && is.numeric(got[[n]]) && isTRUE(all.equal(got[[n]], want[[n]]))), logical(1L))]
     leaked <- markerLeaks()
     got$cyclic_loess_minimum <- tryCatch(omicsCyclicLoessMinimumActive(), error = function(e) NA) # recorded, either state passes (as KIT-188)
-    list(pass = !length(differ) && !length(leaked), got = got, # K275-E3
-        note = sprintf("differ: %s; markers off their current token: %s", paste(differ, collapse = ","), paste(leaked, collapse = ",")))
+    need <- c("ruv_control_grouping", "ruv_k_bound", "ruv_feature_levels", "correlation_exclusion", strsplit(Sys.getenv("K275_REQUIRED_MARKERS"), ",", fixed = TRUE)[[1L]]) # K275-E3
+    absent <- setdiff(need[nzchar(need)], names(workflowReplayRuleMarkers)) # K275-E3
+    ce_ok <- identical(workflowReplayRuleMarkers[["correlation_exclusion"]][["current"]], "within_assay") # K275-E3
+    got$correlation_exclusion <- workflowReplayRuleMarkers[["correlation_exclusion"]][["current"]] # K275-E3
+    list(pass = !length(differ) && !length(leaked) && !length(absent) && ce_ok, got = got, # K275-E3
+        note = sprintf("differ: %s; markers off their current token: %s; markers absent: %s; correlation_exclusion within_assay: %s", paste(differ, collapse = ","),
+            paste(leaked, collapse = ","), paste(absent, collapse = ","), ce_ok))
 }
 
 # ---- Part L journeys (5.3) ------------------------------------------------------------------------------------------
@@ -592,7 +597,7 @@ journeyAssayColumns <- function(out, request, assays) {
             ruv_status_agree = if (legacy_return && !is.na(product_status)) identical(status, product_status) else NA,
             ruv_changed = if (legacy_return) identical(status, "corrected") else NA,
             ruv_k_found = if (requested && !declared && !is.null(trace)) (if (isTRUE(trace$success)) as.integer(trace$best_k) else NA_integer_) else NA_integer_,
-            ruv_n_controls = if (requested && !declared && !is.null(trace)) sum(trace$control_genes_index, na.rm = TRUE) else NA_integer_,
+            ruv_n_controls = if (requested && !declared && !is.null(trace) && is.logical(trace[["control_genes_index"]])) sum(trace[["control_genes_index"]], na.rm = TRUE) else NA_integer_, # K275-assaycols
             ruv_no_k_reason = reason,
             ruv_k_sweep = if (requested && !declared) pickAssay(product$k_sweep, a) else NA,
             ruv_k_used = if (requested && !declared) pickAssay(product$best_k, a) else NA,
@@ -640,6 +645,11 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
         owner <- fixture$owner
         config <- fixture$workflow$config_list
         if (fault) stop("K188 deliberate fault (E7)")
+        if (isTRUE(getOption("k275.guard_now"))) { # K275-guard: the planted partial `$` match on a data frame (the self-check of the guard)
+            options(k275.guard_now = FALSE)
+            out$guard_planted <- TRUE
+            invisible(data.frame(abcdef = 1)$abc)
+        }
         if (filter) {
             step <- "intensity_filter"
             # 40.3 (3): KIT-217's two settings are passed from E3's read values, not left to the function's defaults
@@ -714,7 +724,7 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
             # K275-pairs: per assay, the samples that held a value before the filter and none after it (the package filter's own removed set, E5)
             after_filter <- stateMatrices(owner, binding, owner$current_state)
             out$corr_removed <- lapply(stats::setNames(names(after_filter), names(after_filter)), function(a) {
-                before <- (out$m_out %||% out$m_in)[[a]]
+                before <- out$m_out[[a]] %||% out$m_in[[a]] # K275-pairs
                 had <- colnames(before)[colSums(is.finite(before)) > 0L]
                 kept <- colnames(after_filter[[a]])[colSums(is.finite(after_filter[[a]])) > 0L]
                 setdiff(had, kept)
@@ -722,6 +732,10 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
         }
         final <- owner$getState(owner$current_state)
         out$runs_final <- as.character(final@design_matrix[[final@sample_id]])
+        left <- unique(as.character(final@design_matrix[[final@group_id]]))
+        if (!all(sim$groups %in% left)) { # K275-nogroup: the filter removed a whole group from the design: the DA has nothing to test (a result, `no_da`)
+            out$class <- paste0("filter_removed_group:", paste(setdiff(sim$groups, left), collapse = ","))
+        } else {
         step <- "da"
         out$reached_da <- TRUE # K275-prefix
         if (identical(plant, "daerror")) stop("K188 planted DA error (E15)")
@@ -750,6 +764,7 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
             out$da_errors <- rbind(out$da_errors, data.frame(group = g1, assay = a2, error = "K188 deliberate per-assay DA failure (E7)",
                 stringsAsFactors = FALSE))
         }
+        } # K275-nogroup
         # E1: the provenance of every committed state names the declared operation and the binding's default variant
         snapshot <- owner$.context$snapshot
         history <- unlist(snapshot$state_history)
@@ -769,9 +784,13 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
         NULL
     }, error = function(e) {
         cls <- intersect(class(e), REFUSALS)
+        guard <- grepl("partial-match guard", conditionMessage(e), fixed = TRUE) # K275-guard
         text <- if (length(cls)) cls[[1L]] else oneLine(paste(class(e)[[1L]], conditionMessage(e), sep = ": "))
         # r1.17 (R16-P07): a journey already `instrument` keeps its status; the later error goes to `class`
-        if (identical(out$status, "instrument")) {
+        if (guard) { # K275-guard: a guard stop is an instrument defect, never a crash
+            out$status <<- "instrument"
+            out$class <<- oneLine(paste("partial_match_guard:", conditionMessage(e)))
+        } else if (identical(out$status, "instrument")) {
             out$class <<- paste(out$class, text, sep = " | ")
         } else {
             out$status <<- if (length(cls)) "refused" else "crashed"
@@ -812,7 +831,7 @@ legacyChoice <- function(journey) {
         x <- o[[a]]
         ctl <- x$control_genes_index
         k_sweep <- if (isTRUE(x$success)) as.integer(x$best_k) else NA_integer_
-        k_used <- suppressWarnings(as.integer(unlist(journey$ruv_value$best_k[[a]])[1L]))
+        k_used <- suppressWarnings(as.integer(unlist(journey[["ruv_value"]][["best_k"]][[a]])[1L])) # K275-prefix
         list(k = if (length(k_used) && !is.na(k_used)) k_used else k_sweep, k_sweep = k_sweep, pct = x$best_percentage %||% NA_real_,
             controls = if (is.logical(ctl)) names(ctl)[which(ctl)] else character(), trace = x$optimization_results)
     })
@@ -1065,6 +1084,7 @@ unmoderatedReading <- function(M, design, features, W = NULL) {
 }
 
 # ---- the row of a journey (section 6.1; the columns are all the scorer reads) --------------------------------------------
+DONE <- c("ok", "refused_after_exclusion", "dropped", "uncorrected", "no_da")
 ROW_COLUMNS <- c("tier", "design", "cell", "omic", "r", "version", "arm", "smoke", "status", "class", "step", "seconds", "warnings",
     "k_used", "k_found", "k_cap", "pct", "n_controls", "ruv_status_y", "ruv_status_x", "n_runs", "n_runs_final",
     "corr_removed_y", "corr_removed_x", "e5_y", "e5_x",
@@ -1249,6 +1269,19 @@ checkE12 <- function(ctx, sim, j, arm, version) {
     addCheck("E12", ctx$cell, ctx$r, condition, NA, "first round(rows x 5 / 100) rows in table order", all(same), paste(names(same), same, collapse = "; "))
 }
 
+#' S02: after an exclusion, a refusal is `refused_after_exclusion` only when too few samples are left (VAL-347) and the refusal's class says so.
+tooFewLeft <- function(sim, k = 2L) {
+    counts <- table(sim$design[["group"]])
+    length(counts) < 2L || any(counts < 2L) || (nrow(sim$design) - length(counts) - 1L) < k
+}
+FEW_CLASSES <- c("ruv_k_above_limit", "ruv_k_refused", "omics_ruv_no_residual_df", "omics_ruv_insufficient_controls", "multischolar_ruv_grouping_unusable")
+#' S04: what L1 accepts as a completed journey: ok; a lost group (`no_da`, R-1); the emulation's results after an exclusion.
+l1Accepts <- function(row, sim, arm) {
+    status <- row[["status"]]
+    class <- as.character(row[["class"]])
+    identical(status, "ok") || (identical(status, "no_da") && !is.na(class) && startsWith(class, "filter_removed_group:")) ||
+        (arm %in% c("PEL2", "PEG2") && status %in% c("refused_after_exclusion", "dropped", "uncorrected") && tooFewLeft(sim))
+}
 #' One journey: the request of the arm, the journey, its row (written at once), its lifecycle checks.
 runArm <- function(ctx, v, version, arm, lifecycle, write, correlation = TRUE, fault = FALSE, extra = list(), note_refusal = NULL) {
     sim <- v[["sim"]]
@@ -1257,12 +1290,15 @@ runArm <- function(ctx, v, version, arm, lifecycle, write, correlation = TRUE, f
         itsd = FALSE, correlation = correlation, fault = fault)
     ruv <- !is.null(request[["ruv"]])
     row <- journeyRow(ctx, j, sim, version, arm, ruv, extra = extra)
-    if (!is.null(note_refusal) && identical(row[["status"]], "refused") && note_refusal) row[["status"]] <- "refused_after_exclusion"
+    if (isTRUE(note_refusal) && identical(row[["status"]], "refused") && tooFewLeft(sim) && row[["class"]] %in% FEW_CLASSES) row[["status"]] <- "refused_after_exclusion"
     write(row)
     condition <- paste(version, arm)
     if (lifecycle) {
-        if (!isTRUE(fault) && !identical(row[["status"]], "refused_after_exclusion")) addCheck("L1_status", ctx$cell, ctx$r, condition,
-            row[["status"]], "ok", identical(row[["status"]], "ok"), paste(row[["step"]], row[["class"]]))
+        if (isTRUE(j[["guard_planted"]])) {
+            addCheck("GUARD_planted", ctx$cell, ctx$r, condition, row[["status"]], "instrument", identical(row[["status"]], "instrument") &&
+                startsWith(as.character(row[["class"]]), "partial_match_guard:"), "")
+        } else if (!isTRUE(fault)) addCheck("L1_status", ctx$cell, ctx$r, condition, row[["status"]], "ok or a stated result", l1Accepts(row, sim, arm),
+            paste(row[["step"]], row[["class"]]))
         for (e in c("e5_y", "e5_x")) if (!is.na(row[[e]])) addCheck("E5", ctx$cell, ctx$r, paste(condition, e), NA, "fail list equals the filter's removed set",
             isTRUE(row[[e]]))
     }
@@ -1297,8 +1333,8 @@ runEmulation <- function(ctx, getV, lifecycle, write, fault_now) {
         extra <- list(pe_n_excluded = length(failed), pe_a_excluded = a_run %in% failed, pe_excluded_x = sum(failsAt(c_x, ctx$threshold)))
         for (arm in c("PEL2", "PEG2")) {
             two <- runArm(ctx, ve, version, arm, lifecycle, write, correlation = FALSE, extra = extra, note_refusal = length(failed) > 0L)
-            if (lifecycle && identical(two$row[["status"]], "refused") && !length(failed)) addCheck("E11", ctx$cell, ctx$r, paste(version, arm), NA,
-                "a refusal after no exclusion is an instrument defect", FALSE, two$row[["class"]])
+            if (lifecycle && identical(two$row[["status"]], "refused")) addCheck("E11", ctx$cell, ctx$r, paste(version, arm), NA,
+                "a refusal that is not 'too few samples left' is an instrument defect", FALSE, two$row[["class"]])
         }
     }
 }
@@ -1394,6 +1430,17 @@ runUnit <- function(tier, design, r, lifecycle, fault_now, e7r, smoke, rows_path
             checkVersionsE1(ctx, getV, journeys)   # E1 and E2 are identity checks of the counted journeys too (F4)
         }
     }
+    if (identical(tier, "V")) {   # S14: tier V's mask clauses of E1
+        v1 <- getV("V1g")
+        a_col <- match(sprintf("R%03d", 2L * ctx$per), v0$sim$runs)
+        m1 <- maskOf(v1$sim, "vd5", v0$sim$y[v0$sim$feat_ids, , drop = FALSE])
+        m0 <- maskOf(v0$sim, "vd5")
+        a_cell <- matrix(FALSE, nrow(m1), ncol(m1))
+        a_cell[v1$sim$assay_of[rownames(m1)] == Y_ASSAY, a_col] <- TRUE
+        addCheck("E1", cellname, r, "V mask: V1g equals V0's except in a's Y column", NA, "exact", identical(m1[!a_cell], m0[!a_cell]))
+        vd <- getV("VD")
+        addCheck("E1", cellname, r, "V mask: VD is V0's masked values without a", NA, "exact", identical(vd$values, v0$values[, setdiff(colnames(v0$values), colnames(v0$values)[a_col]), drop = FALSE]))
+    }
     # E7: the journey the package refuses (GK3 at D3 on VD: k = 3 above the limit 5 - 2 - 1 = 2); not a denominator, written as a refused row
     if (lifecycle && e7r) {
         one <- runArm(ctx, getV("VD"), "VD", "GK3", FALSE, write)
@@ -1416,6 +1463,7 @@ runChildMain <- function() {
     rows_path <- Sys.getenv("K275_ROWS_PATH")
     checks_path <- Sys.getenv("K275_CHECKS_PATH")
     last_calls <- NULL
+    options(k275.guard_now = flag("K275_GUARD_UNIT"))
     result <- tryCatch(withCallingHandlers({
         runUnit(args[[2L]], args[[3L]], as.integer(args[[4L]]), flag("K275_LIFECYCLE"), flag("K275_FAULT_UNIT"), flag("K275_E7R_UNIT"),
             flag("K275_SMOKE"), rows_path, checks_path)
@@ -1476,6 +1524,11 @@ runParentMain <- function() {
     units$tag <- sprintf("%s-%s-%d%s", units$tier, units$design, units$r, ifelse(units$repeat_run, "-rep", ""))
     units$fault <- FALSE
     units$e7r <- FALSE
+    units$guard <- FALSE
+    if (lifecycle && identical(Sys.getenv("K275_FAULT_GUARD"), "1")) {   # the planted partial-match fault: the guard's own self-check
+        hit <- which(units$tier == "D" & !units$repeat_run)
+        if (length(hit)) units$guard[[hit[[1L]]]] <- TRUE
+    }
     if (lifecycle && fault) {
         units$fault[[1L]] <- TRUE
         hit <- which(units$design == "D3" & units$tier == "D" & !units$repeat_run)
@@ -1522,7 +1575,7 @@ runParentMain <- function() {
         checks_path <- file.path(progress_dir, sprintf("checks-%s.tsv", u$tag))
         env <- c(sprintf("K275_LIFECYCLE=%s", if (lifecycle) "1" else "0"), sprintf("K275_FAULT_UNIT=%s", if (u$fault) "1" else "0"),
             sprintf("K275_E7R_UNIT=%s", if (u$e7r) "1" else "0"), sprintf("K275_SMOKE=%s", if (smoke) "1" else "0"),
-            sprintf("K275_ROWS_PATH=%s", rows_path), sprintf("K275_CHECKS_PATH=%s", checks_path))
+            sprintf("K275_GUARD_UNIT=%s", if (u$guard) "1" else "0"), sprintf("K275_ROWS_PATH=%s", rows_path), sprintf("K275_CHECKS_PATH=%s", checks_path))
         t0 <- Sys.time()
         code <- system2("Rscript", c(shQuote(script_file), "--unit", u$tier, u$design, u$r, shQuote(rds)), env = env, stdout = FALSE, stderr = FALSE)
         seconds <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
@@ -1541,7 +1594,7 @@ runParentMain <- function() {
         path <- file.path(rows_dir, sprintf("part-%s.tsv", units$tag[[i]]))
         if (!file.exists(path) || !nzchar(readLines(path, n = 1L))) {
             appendTable(path, rowFrame(newRow(tier = units$tier[[i]], design = units$design[[i]], r = units$r[[i]], arm = "unit", smoke = smoke,
-                status = "crashed", class = timing$error[[i]])))
+                status = if (grepl("partial-match guard", timing$error[[i]], fixed = TRUE)) "instrument" else "crashed", class = timing$error[[i]])))
         }
     }
     # the checks: the parent's, then every unit's progress file
@@ -1572,7 +1625,7 @@ runParentMain <- function() {
     if (lifecycle) {
         # L1 writes only checks, timing by arm class and design, hashes and the scorer's parse and coverage; no estimand
         tally <- do.call(rbind, lapply(split(checks, checks$check), function(x) data.frame(check = x$check[[1L]], units_compared = nrow(x),
-            units_passed = sum(x$pass == "TRUE"), pass = all(x$pass == "TRUE"), max_abs_deviation = suppressWarnings(max(as.numeric(x$value),
+            units_passed = sum(x$pass == "TRUE"), pass = all(x$pass == "TRUE"), max_abs_deviation = suppressWarnings(max(as.numeric(x[["value"]]),
                 na.rm = TRUE)), stringsAsFactors = FALSE)))
         tally$max_abs_deviation[!is.finite(tally$max_abs_deviation)] <- NA
         utils::write.table(tally, file.path(out_dir, sprintf("checks-%s.tsv", job_name)), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
@@ -1581,7 +1634,21 @@ runParentMain <- function() {
         all_rows$class_of_arm <- vapply(all_rows$arm, function(a) if (identical(a, "LX") || identical(a, "unit")) a else armClass(a), "")
         by <- split(all_rows, paste(all_rows$class_of_arm, all_rows$design))
         timing_arm <- do.call(rbind, lapply(by, function(x) data.frame(arm_class = x$class_of_arm[[1L]], design = x$design[[1L]], journeys = nrow(x),
-            completed = sum(x$status %in% c("ok", "refused_after_exclusion", "dropped", "uncorrected", "no_da")), mean_seconds = round(mean(as.numeric(x$seconds), na.rm = TRUE), 1))))
+            completed = sum(x$status %in% DONE), mean_seconds = round(mean(as.numeric(x$seconds[x$status %in% DONE]), na.rm = TRUE), 1))))
+        timing_arm <- timing_arm[!timing_arm$arm_class %in% c("unit"), , drop = FALSE]
+        # G2_coverage: a class with no completed journey at a design fails (L1 must measure every class; tier V only when bound)
+        need <- expand.grid(arm_class = c("NO", "LM", "LG", "LA", "GA", "GK", "GSC", "PEL2", "PEG2"), design = unique(units$design[units$tier %in% c("D", "K", "S", "E", "T", "F")]), stringsAsFactors = FALSE)
+        need <- need[(need$arm_class %in% c("LG") & need$design %in% unique(units$design[units$tier %in% "K"])) | (need$arm_class %in% c("GSC") & need$design %in% unique(units$design[units$tier %in% "S"])) |
+            (need$arm_class %in% c("PEL2", "PEG2") & need$design %in% unique(units$design[units$tier %in% "E"])) | need$arm_class %in% c("NO", "LM", "LA", "GA", "GK"), , drop = FALSE]
+        for (i in seq_len(nrow(need))) {
+            hit <- timing_arm[timing_arm$arm_class == need$arm_class[[i]] & timing_arm$design == need$design[[i]], , drop = FALSE]
+            checks <- rbind(checks, data.frame(check = "G2_coverage", cell = need$arm_class[[i]], rep = 0L, condition = need$design[[i]], value = NA, threshold = ">= 1 completed journey",
+                pass = nrow(hit) > 0L && hit$completed[[1L]] > 0L, note = "", stringsAsFactors = FALSE))
+        }
+        tally <- do.call(rbind, lapply(split(checks, checks$check), function(x) data.frame(check = x$check[[1L]], units_compared = nrow(x),
+            units_passed = sum(x$pass == "TRUE"), pass = all(x$pass == "TRUE"), max_abs_deviation = suppressWarnings(max(as.numeric(x[["value"]]), na.rm = TRUE)), stringsAsFactors = FALSE)))
+        tally$max_abs_deviation[!is.finite(tally$max_abs_deviation)] <- NA
+        utils::write.table(tally, file.path(out_dir, sprintf("checks-%s.tsv", job_name)), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
         utils::write.table(timing_arm, file.path(out_dir, sprintf("timing-%s.tsv", job_name)), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
         hashes <- data.frame(item = c(basename(files), "script", "scorer", "bound_commit"), value = c(vapply(files, sha, ""), sha(script_file),
             if (file.exists(scorer_file)) sha(scorer_file) else NA, tryCatch(system2("git", c("rev-parse", "HEAD"), stdout = TRUE), error = function(e) NA)))

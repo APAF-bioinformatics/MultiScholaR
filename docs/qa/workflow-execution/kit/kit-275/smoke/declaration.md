@@ -17,7 +17,7 @@ the scorer's parse and coverage lines, the E4 self-test's text, progress files a
 
 1. All five R scripts parse (`parse: all scripts parse`, first lines of script 1's console).
 2. E0: `python3 -I e0-diff.py` reports `0 unmarked` hunks against 0866982f on the runner (the commit is fetched).
-3. E4: the scorer self-test runs: 19 cases, 1,860 predictions derived in Python (`make-selftest.py`), `selftest: 1860 predictions, 0 differ`. A difference is a defect
+3. E4: the scorer self-test runs: 19 cases, 1,859 predictions derived in Python (`make-selftest.py`), `selftest: 1860 predictions, 0 differ`. A difference is a defect
    of the scorer or of a prediction, recorded and not repaired here.
 4. G1 fixture on `X3`, data sets 9101 and 9102 (smoke flag): runs to the end, writes `g1.tsv` with `rho` NA and `smoke` TRUE and `checks-g1.tsv`; every E6 and E10
    row passes (E6: the moderated SE reading, the unmoderated reading against the kernel's sigma and stdev.unscaled, LX's reading on the hand-made matrix; E10:

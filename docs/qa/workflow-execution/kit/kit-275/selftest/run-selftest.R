@@ -4,7 +4,7 @@
 # k275-selftest). Exit status 1 when a script does not parse or a prediction differs.
 options(warnPartialMatchDollar = TRUE)
 globalCallingHandlers(warning = function(w) {
-    if (grepl("partial match of", conditionMessage(w), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
+    if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
 })
 here <- dirname(normalizePath(sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[[1L]])))
 kit <- dirname(here)

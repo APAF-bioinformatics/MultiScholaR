@@ -17,7 +17,7 @@
 
 options(warnPartialMatchDollar = TRUE)
 globalCallingHandlers(warning = function(w) {
-    if (grepl("partial match of", conditionMessage(w), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
+    if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
 })
 args <- commandArgs(TRUE)
 blind <- length(args) >= 1L && identical(args[[1L]], "--blind")
@@ -51,7 +51,7 @@ TOL <- 1e-12
 DESIGNS <- c("D3", "D4", "D6")
 PER <- c(D3 = 3, D4 = 4, D6 = 6)
 CIDX <- c(D3 = 1L, D4 = 2L, D6 = 3L)
-TIER_T <- c(D = 1L, K = 2L, F = 3L, S = 4L, V = 5L, M = 6L, T = 7L, E = 8L, ID = 9L)  # the bootstrap stream t of each tier (5.3); G1 uses 9
+TIER_T <- c(D = 1L, K = 2L, F = 3L, S = 4L, V = 5L, M = 6L, T = 7L, E = 8L)  # the bootstrap stream t of each tier (5.3); ID has none (E8 only); G1 uses 10 (R-4)
 THETAS <- c("05", "07", "09", "095")
 R_SET <- as.integer(strsplit(Sys.getenv("K275_SCORE_R", "200,100,20"), ",", fixed = TRUE)[[1L]])
 BOOT_B <- as.integer(Sys.getenv("K275_BOOT_B", "10000"))
@@ -69,7 +69,7 @@ labelBp <- function(lo, hi, n, R, derived, est) if (!covered(n, R)) "not determi
     sprintf("differs from derived (%s)", format(round(est, 4)))
 labelC <- function(lo, hi, n, R, margin) if (!covered(n, R)) "not determined (coverage)" else if (gt(lo, margin)) "raised (material)" else if (le(hi, margin)) "not raised" else "not determined"
 shownC <- function(lo, n, R) covered(n, R) && gt(lo, 0)
-labelPi <- function(lo, hi) if (gt(lo, 0.5)) "imprint retained" else if (lt(hi, 0.5)) "imprint removed" else "not determined"
+labelPi <- function(lo, hi, n = 0, R = 0) if (n > 0 && !covered(n, R)) "not determined (coverage)" else if (gt(lo, 0.5)) "imprint retained" else if (lt(hi, 0.5)) "imprint removed" else "not determined"
 labelsOf <- function(table) {
     out <- lapply(seq_len(nrow(table)), function(i) {
         x <- table[i, ]
@@ -95,7 +95,15 @@ row_files <- c(list.files(rows_dir, pattern = "\\.tsv\\.gz$", full.names = TRUE,
 rows <- do.call(rbind, lapply(row_files, function(f) readText(if (grepl("\\.gz$", f)) gzfile(f) else f)))
 if (is.null(rows) || !nrow(rows)) stop("K275 scoring stops: no rows")
 for (column in setdiff(names(rows), TEXT_COLUMNS)) rows[[column]] <- num(rows[[column]])
+instrument_rows <- sum(rows[["status"]] %in% "instrument" | grepl("partial-match guard|partial_match_guard", rows[["class"]]))
+if (!blind && instrument_rows > 0L) stop("K275 scoring stops: an instrument status or a partial-match guard stop in the rows (VAL-54)")
 rows <- rows[!rows[["arm"]] %in% "unit", , drop = FALSE]
+if (!blind) {
+    lim <- vapply(rows[["tier"]], function(t) if (t %in% c("D", "K", "F", "S", "V", "M", "T", "E", "ID")) declaredR(t) else NA_real_, numeric(1L))
+    if (any(!is.finite(rows[["r"]]) | rows[["r"]] < 1 | !is.finite(lim) | rows[["r"]] > lim)) stop("K275 scoring stops: a row outside its tier's declared data sets (RANGE-1)")
+    key <- paste(rows[["tier"]], rows[["design"]], rows[["version"]], rows[["arm"]], rows[["r"]])
+    if (anyDuplicated(key)) stop("K275 scoring stops: a journey row appears twice")
+}
 VALID <- c("ok", "dropped", "uncorrected", "no_da", "refused_after_exclusion")
 rows[["valid"]] <- rows[["status"]] %in% VALID
 isTrue <- function(x) as.character(x) %in% "TRUE"
@@ -137,8 +145,9 @@ if (blind) {
     out <- rbind(data.frame(item = "parse", value = sprintf("%d rows, %d columns, %d row files", nrow(rows), ncol(rows), length(row_files)), pass = TRUE,
         stringsAsFactors = FALSE), coverage, data.frame(item = "E8", value = sprintf("%d compared, %d equal, max deviation %s", e8$compared, e8$same,
         format(e8$worst)), pass = e8$compared == 0L || e8$same == e8$compared, stringsAsFactors = FALSE))
+    out <- rbind(out, data.frame(item = "instrument_stop", value = sprintf("%d row(s) with status instrument or a guard class", instrument_rows), pass = instrument_rows == 0L, stringsAsFactors = FALSE))
     utils::write.table(out, file.path(out_dir, sprintf("scorer-%s.tsv", job)), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
-    quit(save = "no", status = 0L)
+    quit(save = "no", status = if (instrument_rows > 0L) 3L else 0L)
 }
 if (any(isTrue(rows[["smoke"]]))) stop("K275 scoring stops: the rows carry the smoke flag; a smoke row set is refused for an outcome line")
 
@@ -196,7 +205,7 @@ sigVec <- function(tier, design, version, arm, R) {
     x
 }
 REF_ARM <- c(LM1 = "NO", LM2 = "LM1", LM3 = "LM2", `LM2@20` = "LM1@20", LG2 = "LG1", GK1 = "NO", GK2 = "GK1", GK3 = "GK2", LA = "LA", GA = "GA",
-    PEL2 = "LM1", PEG2 = "GK1", LX = "LX")
+    PEL2 = "LM2", PEG2 = "GK2", LX = "LX")   # R-2 (coordinator): the emulation is compared with VD at the SAME k (no factor is spent on a in VE)
 refTiers <- function(tier) if (identical(tier, "V")) "V" else unique(c(tier, "D", "K"))
 #' the reference (VD at k - 1) of a V1x arm: the column's vector from the first tier that holds it
 refVec <- function(tier, design, arm, column, R) {
@@ -216,7 +225,7 @@ for (i in seq_len(nrow(combos))) {
     design <- combos[["design"]][[i]]
     version <- combos[["version"]][[i]]
     arm <- combos[["arm"]][[i]]
-    if (!design %in% DESIGNS || !tier %in% names(TIER_T)) next
+    if (!design %in% DESIGNS || !tier %in% names(TIER_T)) next   # tier ID: E8 only, no bootstrap cells (R-4)
     R <- declaredR(tier)
     idx <- indexOf(design, tier, R)
     sub <- rows[rows[["tier"]] %in% tier & rows[["design"]] %in% design & rows[["version"]] %in% version & rows[["arm"]] %in% arm, , drop = FALSE]
@@ -230,13 +239,22 @@ for (i in seq_len(nrow(combos))) {
     }
     means <- c("cy_pre_a", "cy_post_a", "cx_pre_a", "cx_post_a", "qa_pre", "qa_post", "pr", "kappa_c", "df_y", "k_used", "k_found", "n_controls",
         "any_call_y", "null_p05_y", "any_call_x", "null_p05_x", "ffx_pre_05", "ffx_post_05", paste0("ff_pre_", THETAS), paste0("ff_post_", THETAS),
-        "pe_n_excluded")
+        "pe_n_excluded", "pe_excluded_x")
     for (column in means) {
         x <- vec(tier, design, version, arm, column, R)
         if (any(is.finite(x))) {
             st <- meanStat(x, idx, 0.025)
             emit("reported", column, tier, design, version, arm, sprintf("mean %s", column), st$n, R, st$est, st$lo, st$hi, 0.95, "two", jk_lo = st$jk_lo, jk_hi = st$jk_hi)
         }
+    }
+    # H2 and H3 (tier E): the share of data sets in which a is excluded, and the shares of the emulation's results after an exclusion
+    if (identical(tier, "E")) {
+        a_ex <- sub[["pe_a_excluded"]][sub[["valid"]] & sub[["pe_a_excluded"]] %in% c("TRUE", "FALSE")]
+        if (length(a_ex) && identical(version, "V1g")) emit("reported", "H2", tier, design, version, arm, "share of data sets in which a is excluded", length(a_ex), R, mean(a_ex == "TRUE"),
+            cpLower(sum(a_ex == "TRUE"), length(a_ex), 0.025), cpUpper(sum(a_ex == "TRUE"), length(a_ex), 0.025), 0.95, "two", note = "exact Clopper-Pearson")
+        if (arm %in% c("PEL2", "PEG2") && nrow(sub)) for (st_name in c("refused_after_exclusion", "dropped", "uncorrected", "no_da")) emit("reported", paste0("H3_", st_name), tier, design, version, arm,
+            sprintf("share of journeys with status %s", st_name), nrow(sub), R, mean(sub[["status"]] == st_name), cpLower(sum(sub[["status"]] == st_name), nrow(sub), 0.025),
+            cpUpper(sum(sub[["status"]] == st_name), nrow(sub), 0.025), 0.95, "two", note = "exact Clopper-Pearson; denominator all rows of the arm")
     }
     # C_a quantiles
     for (column in c("cy_pre_a", "cy_post_a")) {
@@ -264,7 +282,7 @@ for (i in seq_len(nrow(combos))) {
                 if (any(is.finite(d))) {
                     st <- meanStat(d, idx, 0.025)
                     emit("reported", paste0("delta_", column, "_V0"), tier, design, version, arm, sprintf("%s: this version minus V0 (paired)", column), st$n, R, st$est, st$lo, st$hi, 0.95, "two",
-                        note = sprintf("V0's own rate %s", format(mean(vec(v0, design, "V0", arm, column, R), na.rm = TRUE))))
+                        note = sprintf("V0's own rate %s; %d data sets unpaired", format(mean(vec(v0, design, "V0", arm, column, R), na.rm = TRUE)), sum(xor(is.finite(vec(tier, design, version, arm, column, R)), is.finite(vec(v0, design, "V0", arm, column, R))))))
                 }
             }
         }
@@ -277,24 +295,25 @@ for (i in seq_len(nrow(combos))) {
             den_mod <- ifelse(same, ref$values, NA_real_)
             st <- ratioStat(num_mod, den_mod, idx, 0.025, sqrt)
             if (st$n > 0) emit("reported", "rho_mod", tier, design, version, arm, sprintf("rho_mod against VD %s (%s)", ref$arm, ref$tier), st$n, R, st$est, st$lo, st$hi, 0.95, "two",
-                st$jk_lo, st$jk_hi, note = sprintf("%d pairs dropped for a differing tested set", dropped))
+                jk_lo = st$jk_lo, jk_hi = st$jk_hi, note = sprintf("%d pairs dropped for a differing tested set", dropped))
             un_v <- vec(tier, design, version, arm, "se2_unmod_y", R)
             un_r <- refVec(tier, design, arm, "se2_unmod_y", R)$values
             st <- ratioStat(ifelse(same, un_v, NA_real_), ifelse(same, un_r, NA_real_), idx, 0.025, sqrt)
-            if (st$n > 0) emit("reported", "rho_unmod", tier, design, version, arm, sprintf("rho_unmod against VD %s (%s)", ref$arm, ref$tier), st$n, R, st$est, st$lo, st$hi, 0.95, "two", st$jk_lo, st$jk_hi)
+            if (st$n > 0) emit("reported", "rho_unmod", tier, design, version, arm, sprintf("rho_unmod against VD %s (%s)", ref$arm, ref$tier), st$n, R, st$est, st$lo, st$hi, 0.95, "two", jk_lo = st$jk_lo, jk_hi = st$jk_hi,
+                note = sprintf("%d pairs dropped for a differing tested set", dropped))
             share <- c(V1g = "g", V1s = "g", V1p = "p", V1t = "t", V2 = "two")[[version]]
             dot_v <- vec(tier, design, version, arm, paste0("dot_", share), R)
             dot_r <- refVec(tier, design, arm, paste0("dot_", share), R)$values
             den <- vec(tier, design, version, arm, paste0("den_", share), R, need_valid = FALSE)
             st <- ratioStat(ifelse(same, dot_v - dot_r, NA_real_), ifelse(same, den, NA_real_), idx, 0.025)
-            if (st$n > 0) emit("reported", "pi", tier, design, version, arm, sprintf("pi, the imprint retained, against VD %s (%s)", ref$arm, ref$tier), st$n, R, st$est, st$lo, st$hi, 0.95, "two", st$jk_lo, st$jk_hi,
-                label = labelPi(st$lo, st$hi))
+            if (st$n > 0) emit("reported", "pi", tier, design, version, arm, sprintf("pi, the imprint retained, against VD %s (%s)", ref$arm, ref$tier), st$n, R, st$est, st$lo, st$hi, 0.95, "two", jk_lo = st$jk_lo, jk_hi = st$jk_hi,
+                label = labelPi(st$lo, st$hi, st$n, R), note = sprintf("%d pairs dropped for a differing tested set", dropped))
             for (column in c("any_call_y", "null_p05_y")) {
                 d <- vec(tier, design, version, arm, column, R) - refVec(tier, design, arm, column, R)$values
                 if (any(is.finite(d))) {
                     st <- meanStat(d, idx, 0.025)
                     emit("reported", paste0("delta_", column, "_VD"), tier, design, version, arm, sprintf("%s: this version minus VD %s (paired)", column, ref$arm), st$n, R, st$est, st$lo, st$hi, 0.95, "two",
-                        note = sprintf("VD's own rate %s", format(mean(refVec(tier, design, arm, column, R)$values, na.rm = TRUE))))
+                        note = sprintf("VD's own rate %s; %d data sets unpaired", format(mean(refVec(tier, design, arm, column, R)$values, na.rm = TRUE)), sum(xor(is.finite(vec(tier, design, version, arm, column, R)), is.finite(refVec(tier, design, arm, column, R)$values)))))
                 }
             }
         }
@@ -311,7 +330,7 @@ pairedRatio <- function(tier, design, arm, column, R, transform = identity, alph
     same <- sigVec(tier, design, "V1g", arm, R) == ref$sig
     same[is.na(same)] <- FALSE
     st <- ratioStat(ifelse(same, vec(tier, design, "V1g", arm, column, R), NA_real_), ifelse(same, ref$values, NA_real_), indexOf(design, tier, R), alpha, transform)
-    c(st, list(ref = ref))
+    c(st, list(ref = ref, dropped = sum(!same & is.finite(vec(tier, design, "V1g", arm, column, R)))))
 }
 for (design in DESIGNS) {
     R <- declaredR("D")
@@ -352,7 +371,8 @@ for (design in DESIGNS) {
         }
         label <- labelB(st$lo, st$hi, st$n, R)
         emit("labelled", "B", "D", design, "V1g", arm, sprintf("rho_mod against VD %s", st$ref$arm), st$n, R, st$est, st$lo, st$hi, 0.025 / 6, "one", label = label,
-            jk_lo = st$jk_lo, jk_hi = st$jk_hi, label_jk = labelB(st$jk_lo, st$jk_hi, st$n, R))
+            jk_lo = st$jk_lo, jk_hi = st$jk_hi, label_jk = labelB(st$jk_lo, st$jk_hi, st$n, R),
+            note = sprintf("%d pairs dropped for a differing tested set", st$dropped))
         lab[[paste("B", design, arm)]] <- label
     }
     # B': rho_unmod of LX against the derived value, two-sided 0.05/3
@@ -364,7 +384,8 @@ for (design in DESIGNS) {
     } else {
         label <- labelBp(st$lo, st$hi, st$n, R, derived, st$est)
         emit("labelled", "B'", "D", design, "V1g", "LX", sprintf("rho_unmod of LX against the derived %s", format(round(derived, 4))), st$n, R, st$est, st$lo, st$hi, 0.05 / 3, "two",
-            label = label, jk_lo = st$jk_lo, jk_hi = st$jk_hi, label_jk = labelBp(st$jk_lo, st$jk_hi, st$n, R, derived, st$est))
+            label = label, jk_lo = st$jk_lo, jk_hi = st$jk_hi, label_jk = labelBp(st$jk_lo, st$jk_hi, st$n, R, derived, st$est),
+            note = sprintf("%d pairs dropped for a differing tested set", st$dropped))
         lab[[paste("B'", design)]] <- label
     }
     # C and C': the paired rise of the any call and of the per-feature null rate, V1g against V0, 0.025/12, both readings
@@ -386,14 +407,18 @@ for (design in DESIGNS) {
         tier <- if (identical(arm, "LG2")) "K" else "D"
         Rt <- declaredR(tier)
         ref <- refVec(tier, design, arm, "dot_g", Rt)
-        if (is.null(ref)) next
+        if (is.null(ref)) {
+            emitMissing("labelled", "pi", tier, design, "V1g", arm, "pi, the imprint retained (A7)", Rt, 0.05, "two")
+            lab[[paste("pi", design, arm)]] <- "not determined (coverage)"
+            next
+        }
         same <- sigVec(tier, design, "V1g", arm, Rt) == ref$sig
         same[is.na(same)] <- FALSE
         st <- ratioStat(ifelse(same, vec(tier, design, "V1g", arm, "dot_g", Rt) - ref$values, NA_real_), ifelse(same, vec(tier, design, "V1g", arm, "den_g", Rt, FALSE), NA_real_),
             indexOf(design, tier, Rt), 0.025)
-        emit("labelled", "pi", tier, design, "V1g", arm, "pi, the imprint retained (A7)", st$n, Rt, st$est, st$lo, st$hi, 0.05, "two", label = labelPi(st$lo, st$hi),
-            jk_lo = st$jk_lo, jk_hi = st$jk_hi, label_jk = labelPi(st$jk_lo, st$jk_hi))
-        lab[[paste("pi", design, arm)]] <- labelPi(st$lo, st$hi)
+        emit("labelled", "pi", tier, design, "V1g", arm, "pi, the imprint retained (A7)", st$n, Rt, st$est, st$lo, st$hi, 0.05, "two", label = labelPi(st$lo, st$hi, st$n, Rt),
+            jk_lo = st$jk_lo, jk_hi = st$jk_hi, label_jk = labelPi(st$jk_lo, st$jk_hi, st$n, Rt), note = sprintf("%d pairs dropped for a differing tested set", sum(!same & is.finite(vec(tier, design, "V1g", arm, "dot_g", Rt)))))
+        lab[[paste("pi", design, arm)]] <- labelPi(st$lo, st$hi, st$n, Rt)
     }
 }
 
@@ -410,7 +435,7 @@ for (design in DESIGNS) for (kind in c("PC2", "NC2")) {
     n <- PER[[design]]
     target <- if (identical(kind, "PC2")) sqrt((2 * n - 3) / (2 * n - 1)) else 1
     R <- nrow(s)
-    set.seed(277000000 + 100 * CIDX[[design]] + 9L, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")
+    set.seed(277000000 + 100 * CIDX[[design]] + 10L, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")
     idx <- matrix(sample.int(max(R, 1L), max(R, 1L) * BOOT_B, replace = TRUE), nrow = max(R, 1L))
     st <- meanStat(s[["rho"]], idx, 0.01 / 3 / 2)
     pass <- R > 0 && ge(st$lo, target - M_MATCH) && le(st$hi, target + M_MATCH)
@@ -423,10 +448,36 @@ e5_bad <- sum(isFalse(rows[["e5_y"]]) | isFalse(rows[["e5_x"]]))
 checks_files <- list.files(rows_dir, pattern = "^checks-.*\\.tsv$", full.names = TRUE, recursive = TRUE)
 checks <- if (length(checks_files)) do.call(rbind, lapply(checks_files, readText))
 idcheck_bad <- if (is.null(checks)) 0L else sum(checks[["check"]] %in% c("E1", "E2") & !isTrue(checks[["pass"]]))
+# S11 (R-3): E8 (a finding) and the cross-job identity of tier E's pass-1 NO journeys with tier D's NO journeys (a mismatch STOPS, as F4 does)
+e8 <- e8Compare(rows)
+crossNO <- function() {
+    skip <- c("tier", "seconds", "warnings", grep("^pe_", names(rows), value = TRUE), "valid")
+    e <- rows[rows[["tier"]] %in% "E" & rows[["arm"]] %in% "NO" & rows[["r"]] <= 100, , drop = FALSE]
+    d <- rows[rows[["tier"]] %in% "D" & rows[["arm"]] %in% "NO", , drop = FALSE]
+    bad <- 0L
+    compared <- 0L
+    for (i in seq_len(nrow(e))) {
+        m <- d[d[["design"]] == e[["design"]][[i]] & d[["version"]] == e[["version"]][[i]] & d[["r"]] == e[["r"]][[i]], , drop = FALSE]
+        if (!nrow(m)) next
+        compared <- compared + 1L
+        for (column in setdiff(names(rows), skip)) {
+            x <- e[[column]][[i]]
+            y <- m[[column]][[1L]]
+            differs <- if (is.numeric(x)) !((is.na(x) && is.na(y)) || (!is.na(x) && !is.na(y) && abs(x - y) <= 1e-10)) else !identical(as.character(x), as.character(y))
+            if (differs) {
+                bad <- bad + 1L
+                break
+            }
+        }
+    }
+    c(compared = compared, bad = bad)
+}
+cross <- crossNO()
+e12_bad <- if (is.null(checks)) 0L else sum(checks[["check"]] %in% "E12" & !isTrue(checks[["pass"]]))   # reported, not a stop
 f1 <- !all(unlist(lab[grepl("^PC1", names(lab))]))
 f2 <- !all(unlist(lab[grepl("^NC1", names(lab))]))
 f3 <- !all(unlist(lab[grepl("^(PC2|NC2)", names(lab))]))
-f4 <- e5_bad > 0L || idcheck_bad > 0L
+f4 <- e5_bad > 0L || idcheck_bad > 0L || cross[["bad"]] > 0L
 
 # ---- the outcome row (7.3; the first row that holds; fixed-k cells only) ----------------------------------------------------------
 cellA <- function(design, arm) lab[[paste("A", design, arm)]]
@@ -438,7 +489,8 @@ outcome <- if (f1) "Stop (F1)" else if (f2) "Stop (F2)" else if (f3) "Stop (F3)"
 decision <- data.frame(item = "outcome", value = outcome, stringsAsFactors = FALSE)
 for (name in sort(names(lab))) if (grepl("^(A|B|B'|C|C'|pi) ", name)) decision <- rbind(decision, data.frame(item = name, value = as.character(lab[[name]]), stringsAsFactors = FALSE))
 decision <- rbind(decision, data.frame(item = c("F1", "F2", "F3", "F4"), value = as.character(c(f1, f2, f3, f4)), stringsAsFactors = FALSE),
-    data.frame(item = c("E5 failing rows", "E1/E2 failing checks"), value = as.character(c(e5_bad, idcheck_bad)), stringsAsFactors = FALSE))
+    data.frame(item = c("E5 failing rows", "E1/E2 failing checks", "E12 failing checks", "E8", "crossNO"), value = c(as.character(c(e5_bad, idcheck_bad, e12_bad)),
+        sprintf("%d compared, %d equal, max deviation %s", e8$compared, e8$same, format(e8$worst)), sprintf("%d compared, %d differ", cross[["compared"]], cross[["bad"]])), stringsAsFactors = FALSE))
 all_cells <- do.call(rbind, cells)
 utils::write.table(all_cells, file.path(out_dir, "cells.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
 utils::write.table(decision, file.path(out_dir, "decision.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
