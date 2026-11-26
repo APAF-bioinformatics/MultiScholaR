@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-266 R1 failing-first: tests-only commit 3b79ebd4 (new file, kit259b, kit227 files) on staging 7b4ae7da; predictions docs/qa/workflow-execution/kit/kit-266/predictions-r1.md; 1 job, ceiling 45 job-minutes; decides A1",
+  "label": "KIT-266 R1 tests only on kit-266 3b79ebd4",
+  "package_commit": "3b79ebd43fd170d080298227838e1b76e33036e6",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit266-limpa-combined-qc-figure.R",
+    "test-kit259b-second-correction.R",
+    "test-kit227-report-ruv-sentences.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
