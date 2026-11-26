@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-219: run R2d (ruling I03): the new test file with row E9, base against head; ceiling 6.0 core-h",
+  "label": "KIT-219 R2d E9 head b8c18fcf against base 2cab053d",
+  "package_commit": "b8c18fcf1fbfae3b2f432bee6dfcf0ad6d9f0617",
+  "base_commit": "2cab053de29515826544ad9e8cf3bf387d00c3b5",
+  "tools_ref": "",
+  "tests": [
+    "test-kit219-enrichment-files-current.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
