@@ -161,6 +161,22 @@
    re-run: Copy delivers the table they hold as `normalised_results.tsv` and the session export works; the old file
    name stays in their protein QC folder until the normalisation or the correlation filter is run again. This route is
    new in 0.9 (tag v0.9.0 and later). (KIT-271)
+ * DIA with limpa: the report now has its Figure 1. The Results text of the limpa report described four quality-control
+   views at each stage of processing, but this route never built the combined figure, so the report showed none; Copy to
+   Results Summary said the files were copied, but Figure 1 was not among them (the copy's log listed it as missing). The
+   figure is now built after the normalisation step (two stages), again with two stages when the sample-correlation
+   filter is re-applied after the RUV step, and after the RUV step when RUV was applied (three stages; with no factor
+   found the two-stage figure stays); in the RUV-covariates mode its right-hand column shows the RUV-III-adjusted matrix
+   after the sample-correlation filter and is labelled as drawn for quality control only, because the analysis used the
+   quantified matrix with the RUV-III factors as covariates. On this route the tab's first column of quality-control
+   figures had been drawn from a later table (or not at all); it is now drawn from the DPC-Quant output. A project saved
+   with an earlier version has no Figure 1 until a step that builds it is run again (a normalisation press on the current
+   table, a RUV step that applied RUV, or the correlation filter re-applied after the RUV step); until then its report
+   still describes a figure it does not have. Its first Figure 1 shows a note in the first column unless that step is a
+   normalisation press, which draws the column from the DPC-Quant output. No number or result changes. One limit: if you
+   re-apply the sample-correlation filter after the RUV step, Figure 1 is rebuilt with two columns, but the report's
+   Methods and Results text still describe the earlier RUV step as part of the analysis (this was so before this change
+   and is not changed by it). This was so in the first 0.9 release (v0.9.0). (KIT-266)
  * Lipidomics and metabolomics with two or more assays (for example positive and negative mode): the sample-correlation
    filter now judges each sample within each assay. A sample whose correlation with its replicates is below the threshold
    in one assay only has its values in that assay set to missing; it stays in the analysis of the other assays and leaves
