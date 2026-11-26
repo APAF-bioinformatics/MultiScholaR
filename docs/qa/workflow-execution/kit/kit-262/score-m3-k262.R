@@ -8,6 +8,7 @@
 #       interval or verdict); per cell: units, errors, checks passed and failed, seconds. A source dir holds summary.tsv.
 #   Rscript score-m3-k262.R full <out> <plan.tsv> <m2-verdict.tsv> <source dir> [<source dir> ...]
 #       The counted scoring: one run over the union of the jobs and their continuations; each data set scored once.
+#   (blind, full and missing read the supersede list named by the environment variable K262_M3_SUPERSEDE, a TSV; none by default)
 #   Rscript score-m3-k262.R missing <plan.tsv> <source dir> [<source dir> ...]
 #       The continuation's unit list: the planned units no source holds a complete line for, as K262_M3_ONLY_UNITS (no value is shown).
 #   Rscript score-m3-k262.R selftest <out> <expected.tsv>
@@ -216,13 +217,51 @@ readSource <- function(dir) {
 # The replicates a cell is planned for: 1..R, or `reps` when given (the lifecycle's own seeds 9001 and 9002; never in a counted scoring).
 repsOf <- function(plan, cell, reps = NULL) if (is.null(reps)) seq_len(plan$R[plan$cell == cell]) else as.integer(reps)
 
-loadUnits <- function(dirs, plan, reps = NULL) {
+# ---- the supersede list (VAL-54 instrument re-runs; ruled by the coordinator): ONE committed TSV, read by loadUnits ----------------------------------
+# Columns: cell, r, purpose, superseded_source, superseding_source, run_id, reason. Rules in code: only a row with status `instrument` may be superseded
+# (an `ok` or `error` row never: m3_supersede_not_instrument); the superseding source must hold exactly one row for the unit (m3_supersede_target), and that
+# row must not be `instrument` unless the list supersedes it again (m3_supersede_target_instrument); at most three supersessions per unit (m3_supersede_limit);
+# a unit present in two sources without a list entry stops as before (m3_unit_in_two_sources); an entry whose superseded row is absent (m3_supersede_missing) or
+# listed twice (m3_supersede_duplicate) stops. Superseded rows are dropped before the stops; they stay in their source's records. An empty list or none (the
+# default) changes nothing: the scorer's output is byte-identical to a call without a list (a self-test case).
+SUPERSEDE_COLUMNS <- c("cell", "r", "purpose", "superseded_source", "superseding_source", "run_id", "reason")
+readSupersede <- function(path) {
+  if (!nzchar(path)) return(NULL)
+  s <- utils::read.delim(path, stringsAsFactors = FALSE, colClasses = "character")
+  if (!identical(names(s), SUPERSEDE_COLUMNS)) stopClass("m3_schema", "the supersede list's columns are not cell, r, purpose, superseded_source, superseding_source, run_id, reason")
+  s
+}
+supersedeSha <- function(path) tryCatch(strsplit(system2("sha256sum", shQuote(path), stdout = TRUE), " ")[[1L]][[1L]], error = function(e) NA_character_)
+applySupersede <- function(u, s) {
+  if (is.null(s) || !nrow(s)) return(u)
+  if (!identical(names(s), SUPERSEDE_COLUMNS)) stopClass("m3_schema", "the supersede list's columns are not the declared ones")
+  key <- paste(u$cell, u$r, u$purpose, sep = "|")
+  skey <- paste(s$cell, s$r, s$purpose, sep = "|")
+  if (any(table(skey) > 3L)) stopClass("m3_supersede_limit", paste("more than three supersessions of one unit:", paste(names(table(skey))[table(skey) > 3L], collapse = ", ")))
+  if (anyDuplicated(paste(skey, s$superseded_source))) stopClass("m3_supersede_duplicate", "the same row is listed twice as superseded")
+  drop <- logical(nrow(u))
+  for (i in seq_len(nrow(s))) {
+    k <- skey[[i]]
+    a <- which(key == k & u$source == s$superseded_source[[i]])
+    if (length(a) != 1L) stopClass("m3_supersede_missing", paste("the superseded row is not in its source:", k, s$superseded_source[[i]]))
+    if (!identical(u$status[[a]], "instrument")) stopClass("m3_supersede_not_instrument", paste("only an instrument row may be superseded; this row is", u$status[[a]], ":", k, s$superseded_source[[i]]))
+    b <- which(key == k & u$source == s$superseding_source[[i]])
+    if (length(b) != 1L) stopClass("m3_supersede_target", paste("the superseding source must hold exactly one row for the unit:", k, s$superseding_source[[i]]))
+    if (identical(u$status[[b]], "instrument") && !any(skey == k & s$superseded_source == s$superseding_source[[i]]))
+      stopClass("m3_supersede_target_instrument", paste("the superseding row is an instrument row that the list does not supersede again:", k, s$superseding_source[[i]]))
+    drop[a] <- TRUE
+  }
+  u[!drop, , drop = FALSE]
+}
+
+loadUnits <- function(dirs, plan, reps = NULL, supersede = NULL) {
   parts <- lapply(dirs, readSource)
   headers <- lapply(parts, `[[`, "header")
   if (!all(vapply(headers, function(h) identical(h, headers[[1L]]), logical(1L)))) stopClass("m3_schema", "the sources' summary headers differ")
   if (!identical(headers[[1L]], M3_COLUMNS)) stopClass("m3_schema", "the summary header is not the row format of m3-k262.R")
   u_all <- do.call(rbind, lapply(parts, `[[`, "rows"))
   if (is.null(u_all) || !nrow(u_all)) u_all <- stats::setNames(as.data.frame(matrix(character(), 0L, length(M3_COLUMNS) + 1L), stringsAsFactors = FALSE), c(M3_COLUMNS, "source"))
+  u_all <- applySupersede(u_all, supersede)
   if (any(u_all$status %in% "instrument")) stopClass("m3_instrument", sprintf("scoring stops: %d instrument row(s) (VAL-54): %s", sum(u_all$status %in% "instrument"),
     paste(utils::head(paste(u_all$cell[u_all$status %in% "instrument"], u_all$r[u_all$status %in% "instrument"], u_all$class[u_all$status %in% "instrument"]), 3L), collapse = "; ")))
   if (!all(u_all$cell %in% M3_IDS)) stopClass("m3_unknown_cell", paste("a cell outside the ten:", paste(setdiff(unique(u_all$cell), M3_IDS), collapse = ", ")))
@@ -247,9 +286,9 @@ readPlan <- function(path) {
 }
 
 # ---- the blind scorer: mechanics and controls only; every estimand NA --------------------------------------------------------------
-blindM3 <- function(dirs, plan, out_dir, reps = NULL) {
+blindM3 <- function(dirs, plan, out_dir, reps = NULL, supersede = NULL) {
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-  u_all <- loadUnits(dirs, plan, reps)
+  u_all <- loadUnits(dirs, plan, reps, supersede)
   main <- u_all[u_all$purpose == "main", , drop = FALSE]
   rows <- lapply(plan$cell, function(cell) {
     u <- main[main$cell == cell, , drop = FALSE]
@@ -382,9 +421,9 @@ outcomeOf <- function(verdicts, plan, a_gain, check_fail, e11_fail, missing_cell
   list(outcome = "K4", reason = why)
 }
 
-fullM3 <- function(dirs, plan, a_gain, out_dir, B = BOOT_B, reps = NULL) {
+fullM3 <- function(dirs, plan, a_gain, out_dir, B = BOOT_B, reps = NULL, supersede = NULL) {
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-  u_all <- loadUnits(dirs, plan, reps)
+  u_all <- loadUnits(dirs, plan, reps, supersede)
   main <- u_all[u_all$purpose == "main", , drop = FALSE]
   e9rows <- u_all[u_all$purpose == "e9", , drop = FALSE]
   ok <- main[main$status == "ok", , drop = FALSE]
@@ -411,6 +450,17 @@ fullM3 <- function(dirs, plan, a_gain, out_dir, B = BOOT_B, reps = NULL) {
   verdicts$excluded <- vapply(verdicts$cell, function(cell) per[[cell]]$errors, numeric(1L))
   verdicts$missing <- vapply(verdicts$cell, function(cell) per[[cell]]$missing, numeric(1L))
   verdicts$owner_asked <- verdicts$excluded > 5
+  # error rows by arm (coordinator's ruling): "P journey" = the shipped Automatic journey stopped, "C1 Manual journey" = C1's Manual journey stopped (P ok), else "other";
+  # named by cell, r, arm and error class (no data value); a C1-only or P-only error row is handed to the coordinator. `owner_asked` stays as declared.
+  err_tab <- main[main$status == "error", , drop = FALSE]
+  err_arm <- as.character(ifelse(startsWith(err_tab$error, "P journey"), "P", ifelse(startsWith(err_tab$error, "C1 Manual journey"), "C1", "other")))
+  err_tab <- data.frame(cell = err_tab$cell, r = err_tab$r, arm = err_arm, class = err_tab$class, stringsAsFactors = FALSE)
+  verdicts$error_p <- vapply(verdicts$cell, function(cell) sum(err_tab$cell == cell & err_tab$arm == "P"), numeric(1L))
+  verdicts$error_c1 <- vapply(verdicts$cell, function(cell) sum(err_tab$cell == cell & err_tab$arm == "C1"), numeric(1L))
+  verdicts$errors_named <- vapply(verdicts$cell, function(cell) {
+    e <- err_tab[err_tab$cell == cell, , drop = FALSE]
+    if (!nrow(e)) "" else paste(sprintf("r%s:%s:%s", e$r, e$arm, e$class), collapse = "; ")
+  }, "")
   utils::write.table(verdicts, file.path(out_dir, "m3-verdicts.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
   set.seed(BOOT_SEED, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")
   usable <- cells[det & vapply(per, function(x) x$valid > 0L, logical(1L))]
@@ -423,8 +473,13 @@ fullM3 <- function(dirs, plan, a_gain, out_dir, B = BOOT_B, reps = NULL) {
   write2(e10Table(ok), "m3-e10.tsv")
   counts <- data.frame(cell = cells, planned = vapply(per, `[[`, 0L, "planned"), present = vapply(per, `[[`, 0L, "present"), valid = vapply(per, `[[`, 0L, "valid"),
     error_rows = vapply(per, `[[`, 0L, "errors"), missing = vapply(per, `[[`, 0L, "missing"), stringsAsFactors = FALSE)
+  counts$error_p <- verdicts$error_p[match(counts$cell, verdicts$cell)]
+  counts$error_c1 <- verdicts$error_c1[match(counts$cell, verdicts$cell)]
   write2(counts, "m3-units.tsv")
+  write2(err_tab, "m3-error-rows.tsv")
   out <- outcomeOf(verdicts = verdicts, plan = plan, a_gain = a_gain, check_fail = hard > 0L, e11_fail = e11_bad > 0L, missing_cells = cells[!det])
+  one_arm <- err_tab[err_tab$arm %in% c("P", "C1"), , drop = FALSE]
+  if (nrow(one_arm)) out$reason <- paste0(out$reason, " Error rows by arm, to the coordinator: ", paste(sprintf("%s r%s %s %s", one_arm$cell, one_arm$r, one_arm$arm, one_arm$class), collapse = "; "), ".")
   write2(data.frame(outcome = out$outcome, reason = out$reason, a_gain_m2 = a_gain, falsifier_failures = hard, e11_failures = e11_bad, stringsAsFactors = FALSE), "m3-outcome.tsv")
   list(outcome = out, verdicts = verdicts, counts = counts)
 }
@@ -432,8 +487,8 @@ fullM3 <- function(dirs, plan, a_gain, out_dir, B = BOOT_B, reps = NULL) {
 # The CONTINUATION's unit list (ticket 9.5; declared with the job): the planned main units that no source holds a complete line for, as the
 # tags `cNN-rR` that K262_M3_ONLY_UNITS takes. Counted from cell, r and purpose only: no value is read or shown. An instrument row stops it
 # (an instrument row is not a missing unit). An errored data set is NOT missing (it has its row and is never re-run).
-missingTags <- function(dirs, plan, reps = NULL) {
-  u <- loadUnits(dirs, plan, reps)
+missingTags <- function(dirs, plan, reps = NULL, supersede = NULL) {
+  u <- loadUnits(dirs, plan, reps, supersede)
   main <- u[u$purpose == "main", , drop = FALSE]
   have <- paste(main$cell, main$r)
   tags <- character()
@@ -648,6 +703,56 @@ selfTest <- function(out_dir, expected_path) {
   # with two pairs and equal arms the null cells' Tango statistic is -sqrt(2) x sqrt(0.1 / 0.9) = -0.4714, not below -1.6449: not NW, lower bound below 0
   add("full_scorer_runs_on_two_pairs_per_cell", !inherits(lc_full, "error") && identical(lc_full$outcome$outcome, "K4") && grepl("N-r (inconclusive)", lc_full$outcome$reason, fixed = TRUE) &&
     isTRUE(abs(lc_full$verdicts$statistic[lc_full$verdicts$cell == "N-r"] + sqrt(2) * sqrt(0.1 / 0.9)) < 1e-6), if (inherits(lc_full, "error")) conditionMessage(lc_full) else "K4 on two equal pairs: the null cells are inconclusive")
+  # --- error rows by arm (ruling): P journey, C1 Manual journey; named by cell, r, arm, class; owner_asked (excluded > 5) stays
+  plan1 <- data.frame(cell = "N-r", R = 100L, stringsAsFactors = FALSE)
+  ea <- c(lapply(1:90, function(r) mkUnit("N-r", r)), lapply(91:93, function(r) mkUnit("N-r", r, status = "error", class = "omics_ruv_failed", error = "P journey: constructed")),
+    lapply(94:95, function(r) mkUnit("N-r", r, status = "error", class = "omics_ruv_failed", error = "C1 Manual journey: constructed")), lapply(96:100, function(r) mkUnit("N-r", r)))
+  writeSource(src("errarm"), ea)
+  re <- fullM3(src("errarm"), plan1, TRUE, file.path(out_dir, "case-errarm"), B = 100L)
+  add("error_rows_by_arm", re$counts$error_p == 3 && re$counts$error_c1 == 2 && re$counts$valid == 95L && re$verdicts$error_p == 3 && re$verdicts$error_c1 == 2 &&
+    grepl("r94:C1:omics_ruv_failed", re$verdicts$errors_named, fixed = TRUE) && grepl("r91:P:omics_ruv_failed", re$verdicts$errors_named, fixed = TRUE) && !re$verdicts$owner_asked &&
+    grepl("Error rows by arm, to the coordinator: N-r r91 P omics_ruv_failed", re$outcome$reason, fixed = TRUE), re$verdicts$errors_named)
+  writeSource(src("errarm6"), c(lapply(1:94, function(r) mkUnit("N-r", r)), lapply(95:100, function(r) mkUnit("N-r", r, status = "error", class = "omics_ruv_failed", error = "other: constructed"))))
+  re6 <- fullM3(src("errarm6"), plan1, TRUE, file.path(out_dir, "case-errarm6"), B = 100L)
+  add("owner_asked_flag_stays_above_five_errors", re6$verdicts$owner_asked && re6$verdicts$excluded == 6 && re6$verdicts$error_p == 0 && re6$verdicts$error_c1 == 0, "6 other errors: flag TRUE, none by arm")
+  # --- the supersede list (VAL-54 re-runs): rules in code, expectations fixed by the rule
+  plan10 <- data.frame(cell = "N-r", R = 10L, stringsAsFactors = FALSE)
+  sup_row <- function(r, from, to) data.frame(cell = "N-r", r = as.character(r), purpose = "main", superseded_source = from, superseding_source = to, run_id = "1", reason = "VAL-54 instrument re-run", stringsAsFactors = FALSE)
+  instr <- function(r) mkUnit("N-r", r, status = "instrument", class = "partial_match_guard", error = "constructed")
+  writeSource(src("sA"), c(lapply(1:4, function(r) mkUnit("N-r", r)), list(instr(5)), lapply(6:10, function(r) mkUnit("N-r", r))))
+  writeSource(src("sB"), list(mkUnit("N-r", 5)))
+  ok_sup <- loadUnits(c(src("sA"), src("sB")), plan10, supersede = sup_row(5, "sA", "sB"))
+  add("supersede_instrument_row_accepted", nrow(ok_sup) == 10L && ok_sup$status[ok_sup$r == "5"] == "ok" && ok_sup$source[ok_sup$r == "5"] == "sB" && length(missingTags(c(src("sA"), src("sB")), plan10, supersede = sup_row(5, "sA", "sB"))) == 0L, "unit 5 counted once, from sB")
+  add("unlisted_instrument_row_still_stops", stopsWith(loadUnits(c(src("sA"), src("sB")), plan10), "m3_instrument"), "no list: as before")
+  writeSource(src("sC"), lapply(1:10, function(r) mkUnit("N-r", r)))
+  writeSource(src("sD"), list(mkUnit("N-r", 5)))
+  add("supersede_ok_row_refused", stopsWith(loadUnits(c(src("sC"), src("sD")), plan10, supersede = sup_row(5, "sC", "sD")), "m3_supersede_not_instrument"), "an ok row can never be superseded")
+  add("unlisted_duplicate_ok_ok_stops", stopsWith(loadUnits(c(src("sC"), src("sD")), plan10), "m3_unit_in_two_sources"), "")
+  for (nm in c("c1", "c2", "c3")) writeSource(src(nm), list(instr(5)))
+  writeSource(src("c4"), list(mkUnit("N-r", 5)))
+  chain3 <- rbind(sup_row(5, "c1", "c2"), sup_row(5, "c2", "c3"), sup_row(5, "c3", "c4"))
+  add("three_supersessions_accepted", nrow(loadUnits(c(src("c1"), src("c2"), src("c3"), src("c4")), plan10, supersede = chain3)) == 1L, "c1 -> c2 -> c3 -> c4")
+  for (nm in c("d1", "d2", "d3", "d4")) writeSource(src(nm), list(instr(5)))
+  writeSource(src("d5"), list(mkUnit("N-r", 5)))
+  chain4 <- rbind(sup_row(5, "d1", "d2"), sup_row(5, "d2", "d3"), sup_row(5, "d3", "d4"), sup_row(5, "d4", "d5"))
+  add("fourth_supersession_refused", stopsWith(loadUnits(c(src("d1"), src("d2"), src("d3"), src("d4"), src("d5")), plan10, supersede = chain4), "m3_supersede_limit"), "four entries for one unit")
+  writeSource(src("eA"), list(instr(5))); writeSource(src("eB"), list(mkUnit("N-r", 5), mkUnit("N-r", 5)))
+  add("superseding_source_with_two_rows_refused", stopsWith(loadUnits(c(src("eA"), src("eB")), plan10, supersede = sup_row(5, "eA", "eB")), "m3_supersede_target"), "")
+  writeSource(src("fA"), list(instr(5))); writeSource(src("fB"), list(instr(5)))
+  add("superseding_instrument_row_not_listed_again_refused", stopsWith(loadUnits(c(src("fA"), src("fB")), plan10, supersede = sup_row(5, "fA", "fB")), "m3_supersede_target_instrument"), "")
+  add("superseded_row_absent_refused", stopsWith(loadUnits(c(src("sA"), src("sB")), plan10, supersede = sup_row(5, "nowhere", "sB")), "m3_supersede_missing"), "")
+  add("duplicate_list_entry_refused", stopsWith(loadUnits(c(src("sA"), src("sB")), plan10, supersede = rbind(sup_row(5, "sA", "sB"), sup_row(5, "sA", "sB"))), "m3_supersede_duplicate"), "")
+  # the list file: columns checked, the sha256 printed in the provenance
+  sup_file <- file.path(out_dir, "supersede.tsv")
+  utils::write.table(sup_row(5, "sA", "sB"), sup_file, sep = "\t", quote = FALSE, row.names = FALSE)
+  bad_file <- file.path(out_dir, "supersede-bad.tsv"); writeLines(c("cell\tr", "N-r\t5"), bad_file)
+  add("supersede_file_read_and_sha", identical(readSupersede(sup_file)$superseding_source, "sB") && is.null(readSupersede("")) && stopsWith(readSupersede(bad_file), "m3_schema") && nchar(supersedeSha(sup_file)) == 64L, "")
+  # an empty list (or none) is the default: byte-identical output to a call without a list
+  writeSource(src("onecell"), lapply(1:100, function(r) mkUnit("N-r", r, p_fdp = sprintf("%.3f", 0.1 + 0.001 * (r %% 5)), c_fdp = sprintf("%.3f", 0.1 + 0.001 * (r %% 5) + 0.01 * (r %% 3)))))
+  fullM3(src("onecell"), plan1, TRUE, file.path(out_dir, "case-nolist"), B = 100L)
+  fullM3(src("onecell"), plan1, TRUE, file.path(out_dir, "case-emptylist"), B = 100L, supersede = sup_row(5, "sA", "sB")[0L, ])
+  fn <- list.files(file.path(out_dir, "case-nolist")); fe <- list.files(file.path(out_dir, "case-emptylist"))
+  add("empty_supersede_list_byte_identical", identical(fn, fe) && length(fn) > 0L && all(unname(tools::md5sum(file.path(out_dir, "case-nolist", fn))) == unname(tools::md5sum(file.path(out_dir, "case-emptylist", fe)))), paste(length(fn), "files"))
   # E6: the scorer twice on the same input, byte-identical
   fullM3(src("shifted"), fullPlan(rep(100L, 10L)), TRUE, file.path(out_dir, "case-shifted-again"), B = 200L)
   fa <- list.files(file.path(out_dir, "case-shifted")); fb <- list.files(file.path(out_dir, "case-shifted-again"))
@@ -668,13 +773,17 @@ if (!length(args) || !args[[1L]] %in% c("selftest", "blind", "full", "missing"))
 } else if (length(args) >= 3L && identical(args[[1L]], "selftest")) {
   selfTest(normalizePath(file.path(getwd(), args[[2L]]), mustWork = FALSE), args[[3L]])
 } else if (length(args) >= 4L && identical(args[[1L]], "blind")) {
-  tab <- blindM3(dirs = args[-(1:3)], plan = readPlan(args[[3L]]), out_dir = normalizePath(file.path(getwd(), args[[2L]]), mustWork = FALSE))
+  sup <- readSupersede(Sys.getenv("K262_M3_SUPERSEDE"))
+  if (!is.null(sup)) cat(sprintf("supersede list sha256 %s (%d entries)\n", supersedeSha(Sys.getenv("K262_M3_SUPERSEDE")), nrow(sup)))
+  tab <- blindM3(dirs = args[-(1:3)], plan = readPlan(args[[3L]]), out_dir = normalizePath(file.path(getwd(), args[[2L]]), mustWork = FALSE), supersede = sup)
   print(tab[c("cell", "planned", "present", "ok", "error_rows", "missing", "e1_fail", "e9_fail", "e11_fail", "f2_fail", "seconds_mean")])
 } else if (length(args) >= 5L && identical(args[[1L]], "full")) {
-  res <- fullM3(dirs = args[-(1:4)], plan = readPlan(args[[3L]]), a_gain = readGainA(args[[4L]]), out_dir = normalizePath(file.path(getwd(), args[[2L]]), mustWork = FALSE))
-  print(res$verdicts[c("cell", "n", "label", "excluded", "missing")])
+  sup <- readSupersede(Sys.getenv("K262_M3_SUPERSEDE"))
+  cat(if (is.null(sup)) "supersede list: none\n" else sprintf("supersede list sha256 %s (%d entries)\n", supersedeSha(Sys.getenv("K262_M3_SUPERSEDE")), nrow(sup)))
+  res <- fullM3(dirs = args[-(1:4)], plan = readPlan(args[[3L]]), a_gain = readGainA(args[[4L]]), out_dir = normalizePath(file.path(getwd(), args[[2L]]), mustWork = FALSE), supersede = sup)
+  print(res$verdicts[c("cell", "n", "label", "excluded", "error_p", "error_c1", "missing")])
   cat(sprintf("outcome: %s\n%s\n", res$outcome$outcome, res$outcome$reason))
 } else if (length(args) >= 3L && identical(args[[1L]], "missing")) {
-  tags <- missingTags(dirs = args[-(1:2)], plan = readPlan(args[[2L]]))
+  tags <- missingTags(dirs = args[-(1:2)], plan = readPlan(args[[2L]]), supersede = readSupersede(Sys.getenv("K262_M3_SUPERSEDE")))
   cat(sprintf("units missing: %d\nK262_M3_ONLY_UNITS=%s\n", length(tags), paste(tags, collapse = ",")))
 } else stop("usage: score-m3-k262.R blind|full|missing|selftest ...")

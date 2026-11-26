@@ -1,6 +1,6 @@
-# KIT-262 M3 local checks (no R; python3 -I), L3r2
+# KIT-262 M3 local checks (no R; python3 -I), counted declaration
 PASS docs/qa/workflow-execution/kit/kit-262/m3-k262.R: 788 lines, brackets balanced
-PASS docs/qa/workflow-execution/kit/kit-262/score-m3-k262.R: 681 lines, brackets balanced
+PASS docs/qa/workflow-execution/kit/kit-262/score-m3-k262.R: 790 lines, brackets balanced
 PASS docs/qa/workflow-execution/kit/kit-262/reestimate-m3-k262.R: 148 lines, brackets balanced
 PASS m3 e2PickCells = effect.R 8 source lines, 8 kept verbatim, 0 marked, 0 source lines replaced
 PASS m3 e2Values = effect.R (marked [L]) 37 source lines, 37 kept verbatim, 1 marked, 0 source lines replaced
