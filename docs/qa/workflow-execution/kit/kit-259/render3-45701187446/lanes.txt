@@ -1,0 +1,5 @@
+trace installed: TRUE
+lfq prot_lfq: ran (137 s)
+tmt prot_tmt: ran (147 s)
+dia prot_dia: ran (292 s)
+dial prot_dia_limpa: ran (197 s)

@@ -1,0 +1,8 @@
+pid 19824, hex 4d70, session folder Rtmp9PQqXN
+== repeat ad6314dc (kit270-out/repeat-ad6314dc.tsv)
+                                 revision   mode   pid pid_hex session_folder
+ ad6314dc15ca068e9cba4cdbbe3dfc739178bbf1 repeat 19824    4d70     Rtmp9PQqXN
+ repeats f1_iterations f2_iterations guard1_failures guard2_failures
+    5000             0             0               0               0
+ guard3_failures seconds
+               0    1357

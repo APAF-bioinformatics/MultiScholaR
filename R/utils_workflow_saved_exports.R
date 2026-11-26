@@ -138,7 +138,7 @@ collectWorkflowOmicsNormSession <- function(binding, workflowData, normData, inp
             list(features = n_features, samples = n_samples)
         }) |> purrr::set_names(names(assays))
     }
-    c(list(
+    session <- c(list(
         r6_current_state_name = current_state_name, current_s4_object = if (!managed) current_s4,
         contrasts_tbl = workflowData$contrasts_tbl, design_matrix = workflowData$design_matrix, config_list = workflowData$config_list,
         itsd_selections = normData$itsd_selections, ruv_optimization_results = normData$ruv_optimization_results,
@@ -157,6 +157,12 @@ collectWorkflowOmicsNormSession <- function(binding, workflowData, normData, inp
         # applied" line reads it; `itsd_applied` above keeps the checkbox, what the user asked for).
         # (only when the state records it, so a session list of a state without the ITSD step keeps its fields)
         if (!is.null(omicsItsdOutcomeOfState(current_s4))) list(itsd_outcome_per_assay = omicsItsdOutcomeOfState(current_s4)))
+    # KIT-255 (VAL-283): the samples the correlation filter set missing in one assay (added only when there are any, so a session
+    # without them is the list it was).
+    excluded <- tryCatch(readWorkflowOmicsMetadata(binding, manager, current_state_name)$slots$args$correlation_exclusions,
+        error = function(error) NULL)
+    if (!is.null(excluded)) session$correlation_exclusions <- excluded
+    session
 }
 
 #' The ITSD step's per-assay outcome a state carries (KIT-242): applied, the reason where not, and the count of standards

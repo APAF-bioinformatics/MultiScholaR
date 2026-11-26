@@ -354,9 +354,21 @@ runProtImportMixedSpeciesAnalysisIfNeeded <- function(
     , analyzeDistribution = analyzeOrganismDistribution
     , buildSelectionModal = buildProtImportOrganismSelectionModal
     , showModal = shiny::showModal
+    , organismName = NULL
+    , taxonId = NULL
 ) {
-  if (!isTRUE(mixedSpeciesFasta) || is.null(workflowData$aa_seq_tbl_final)) {
+  if (!isTRUE(mixedSpeciesFasta)) {
     return(FALSE)
+  }
+
+  # KIT-265: FASTA processing failed (its handler logs and leaves no table): the organisms cannot be counted, so the
+  # import is refused rather than completed on the form's organism, which the form said would be chosen in a window.
+  if (is.null(workflowData$aa_seq_tbl_final)) {
+    abortProtImportOrganismUnavailable(paste0(
+      "The import was stopped: the FASTA file could not be read or processed, so the organisms in it cannot be "
+      , "counted. Nothing was imported. Check that the file is a FASTA file of protein sequences, or "
+      , PROT_IMPORT_UNTICK_ADVICE
+    ))
   }
 
   analyzeMixedSpeciesData(
@@ -374,6 +386,8 @@ runProtImportMixedSpeciesAnalysisIfNeeded <- function(
     , analyzeDistribution = analyzeDistribution
     , buildSelectionModal = buildSelectionModal
     , showModal = showModal
+    , organismName = organismName
+    , taxonId = taxonId
   )
 }
 

@@ -23,15 +23,22 @@
 # from conventions/R-shiny.md (module function names, fluidRow layout, no ExtendedTask): the integration tabs' existing
 # pattern is kept, under the existing-code rule of conventions/R.md.
 
-#' A setting's label on the Enrichment tab (KIT-240, R1-04): the label, and, for a default not yet confirmed
-#' (`integrationParameterProvisional`: its `settled_by` says it awaits confirmation), the mark in brackets after it.
+#' The Enrichment settings whose default is the human one (KIT-267, VAL-310): they carry the organism mark.
+#' @noRd
+INTEGRATION_ENRICHMENT_ORGANISM_SETTINGS <- c("string_species", "kegg_organism", "reactome_organism")
+
+#' A setting's label on the Enrichment tab (KIT-240, R1-04; KIT-267): the label, and, for a default that awaits
+#' confirmation (`integrationParameterProvisional`: its `settled_by` says so; none today), the mark in brackets after it,
+#' or, for an organism setting, the organism mark (the default is human).
 #' @param texts `integrationGuiTexts()`.
 #' @param key The label's key in the wording table.
 #' @param entry The setting's entry of `integrationEnrichmentParameterSpec()`.
+#' @param organism Whether the setting is an organism setting.
 #' @return One string.
 #' @noRd
-integrationEnrichmentLabel <- function(texts, key, entry) {
-    if (integrationParameterProvisional(entry)) sprintf("%s (%s)", texts[[key]], texts[["mark_provisional"]]) else texts[[key]]
+integrationEnrichmentLabel <- function(texts, key, entry, organism = FALSE) {
+    if (integrationParameterProvisional(entry)) return(sprintf("%s (%s)", texts[[key]], texts[["mark_provisional"]]))
+    if (organism) sprintf("%s (%s)", texts[[key]], texts[["mark_organism"]]) else texts[[key]]
 }
 
 #' The Enrichment tab's UI.
@@ -41,8 +48,9 @@ mod_integration_enrichment_ui <- function(id) {
     ns <- shiny::NS(id)
     texts <- integrationGuiTexts()
     spec <- integrationEnrichmentParameterSpec()
-    # KIT-240 (R1-04): a default not yet confirmed carries the mark in its label.
-    label <- function(key, name) integrationEnrichmentLabel(texts, key, spec[[name]])
+    # KIT-240 (R1-04): a default that awaits confirmation carries the mark in its label; KIT-267: so does an organism default.
+    label <- function(key, name) integrationEnrichmentLabel(texts, key, spec[[name]],
+        organism = name %in% INTEGRATION_ENRICHMENT_ORGANISM_SETTINGS)
     shiny::fluidRow(shiny::column(12,
         shiny::h3(texts[["enrich_heading"]]),
         shiny::p(texts[["enrich_intro"]]),

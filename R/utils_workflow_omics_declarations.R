@@ -513,7 +513,7 @@ omicsIntensityFilterRemovedCounts <- function(binding, object, filtered, min_val
 omicsDuplicateResolutionOperation <- function(binding) {
     declaration <- newOmicsOperation(binding, paste0(binding$prefix, "_duplicate_resolution"), "feature_group", parameters = character(),
         product_type = paste0(binding$prefix, ".duplicate_resolution_result"),
-        fixed = list(duplicate_resolution_samples = "design"),
+        fixed = list(duplicate_resolution_samples = "design", duplicate_resolution_rank = "measured_then_mean"),
         kernel = function(object, parameters, store) {
             resolved <- binding$resolve_duplicates(object)
             c(list(final = store$checkpoint(resolved$object, paste0(binding$prefix, "-duplicates-resolved"))), resolved$value)
@@ -1234,6 +1234,8 @@ omicsPearsonSelectionOperation <- function(binding) {
     newOmicsOperation(binding, paste0(binding$prefix, "_pearson_selection"), "whole_matrix",
         parameters = c("pairs", "min_pearson_correlation_threshold"),
         product_type = paste0(binding$prefix, ".pearson_selection_result"),
+        # KIT-255 (VAL-283): a sample below the threshold in one assay is set missing there; see `workflowReplayRuleMarkers`.
+        fixed = list(correlation_exclusion = "within_assay"),
         kernel = function(object, parameters, store) {
             # KIT-078: the declared `pairs` entity, read through the store in either process (it was the undeclared
             # live `correlations`).
@@ -1245,6 +1247,267 @@ omicsPearsonSelectionOperation <- function(binding) {
             object <- NULL
             list(final = store$checkpoint(filtered, paste0(binding$prefix, "-correlation-filtered")))
         })
+}
+
+#' The sample-correlation filter under the within-assay rule (KIT-255, VAL-283), shared by the lipidomics and
+#' metabolomics methods. Per assay: the samples whose column holds no finite value are empty and their pairs are not
+#' counted (VAL-242 item (vii)); a counted sample with no pair at or above the threshold fails there, and its column in
+#' that assay is set to `NA_real_`; a sample that then holds no finite value in any assay leaves the design and every
+#' assay. The assays are matched to the correlation tables by name when the list is named, else by position. A sample set
+#' missing in an assay that stays in the design is recorded in `@args$correlation_exclusions`, with the assays where it
+#' reached the threshold or was not tested (`elsewhere`), the groups left without a value in an assay (`not_tested`) and
+#' the samples removed although they did not fail in every assay (`no_value`).
+#' @param theObject A `LipidomicsAssayData` or `MetaboliteAssayData`.
+#' @param slot The assay slot (`lipid_data` or `metabolite_data`).
+#' @param correlations The pairs tables (`pearsonCorForSamplePairs`).
+#' @param threshold The correlation threshold.
+#' @return The updated object.
+#' @noRd
+omicsCorrelationFilterWithinAssay <- function(theObject, slot, correlations, threshold) {
+    assay_list <- methods::slot(theObject, slot)
+    design_matrix <- theObject@design_matrix
+    sample_id_col_name <- theObject@sample_id
+    design_samples <- as.character(design_matrix[[sample_id_col_name]])
+    run_x <- paste0(sample_id_col_name, ".x")
+    run_y <- paste0(sample_id_col_name, ".y")
+    by_name <- !is.null(names(correlations)) && all(nzchar(names(correlations))) && !is.null(names(assay_list))
+    excluded <- list()
+    reached <- list()
+    for (i in seq_along(assay_list)) {
+        assay_name <- names(assay_list)[i]
+        table <- if (by_name) correlations[[assay_name]] else if (i <= length(correlations)) correlations[[i]]
+        if (is.null(table) || nrow(table) == 0) {
+            warning("No correlation results provided for assay. Skipping filtering.")
+            next
+        }
+        if (!all(c(run_x, run_y, "pearson_correlation") %in% colnames(table))) {
+            warning("Correlation results table missing expected columns. Skipping filtering.")
+            next
+        }
+        current <- assay_list[[i]]
+        here <- intersect(design_samples, colnames(current))
+        empty <- here[!vapply(here, function(s) any(is.finite(current[[s]])), logical(1))]
+        x <- as.character(table[[run_x]])
+        y <- as.character(table[[run_y]])
+        counted <- !(x %in% empty | y %in% empty)
+        correlation <- table$pearson_correlation[counted]
+        x <- x[counted]
+        y <- y[counted]
+        passing <- !is.na(correlation) & correlation >= threshold
+        reached[[assay_name]] <- unique(c(x[passing], y[passing]))
+        failing <- intersect(setdiff(unique(c(x, y)), reached[[assay_name]]), here)
+        if (!length(failing)) next
+        excluded[[assay_name]] <- vapply(failing, function(s) {
+            r <- correlation[x == s | y == s]
+            r <- r[is.finite(r)]
+            if (length(r)) max(r) else NA_real_
+        }, numeric(1))
+        for (s in failing) current[[s]] <- NA_real_
+        assay_list[[i]] <- current
+    }
+    holds <- function(a) {
+        s <- intersect(design_samples, colnames(a))
+        s[vapply(s, function(x) any(is.finite(a[[x]])), logical(1))]
+    }
+    present <- as.character(unlist(lapply(assay_list, function(a) intersect(design_samples, colnames(a)))))
+    valued <- as.character(unlist(lapply(assay_list, holds)))
+    removed <- setdiff(present, valued)
+    # A removed sample that did not fail in every assay it has a column in (it was empty somewhere, or untested): the notice says
+    # why it left (KIT-255, I03); one that failed everywhere is the base's removal and records nothing.
+    failed_everywhere <- vapply(removed, function(s) {
+        in_assays <- names(assay_list)[vapply(assay_list, function(a) s %in% colnames(a), logical(1))]
+        all(vapply(in_assays, function(a) s %in% names(excluded[[a]]), logical(1)))
+    }, logical(1))
+    no_value <- removed[!failed_everywhere]
+    for (assay_name in names(excluded)) {
+        best <- excluded[[assay_name]]
+        if (any(names(best) %in% removed)) {
+            message(sprintf("  Removing %d samples below correlation threshold: %s", sum(names(best) %in% removed),
+                paste(names(best)[names(best) %in% removed], collapse = ", ")))
+        }
+        kept <- best[!(names(best) %in% removed)]
+        if (length(kept)) {
+            message(sprintf("  Setting %d sample(s) missing in assay %s (below the correlation threshold): %s", length(kept),
+                assay_name, paste(names(kept), collapse = ", ")))
+        }
+    }
+    if (length(removed)) {
+        assay_list <- lapply(assay_list, function(a) if (any(removed %in% colnames(a))) a[, setdiff(colnames(a), removed), drop = FALSE] else a)
+        design_matrix <- design_matrix |>
+            dplyr::filter(!(!!rlang::sym(sample_id_col_name) %in% removed))
+        message(sprintf("Total samples removed across all assays: %d", length(removed)))
+    }
+    methods::slot(theObject, slot) <- assay_list
+    theObject@design_matrix <- design_matrix
+    stays <- Filter(length, lapply(excluded, function(best) best[!(names(best) %in% removed)]))
+    if (length(stays)) {
+        # Place 2: the uncorrected copy the new RUV design's differential analysis tests (`args$ruv_uncorrected_assays`).
+        copy <- theObject@args$ruv_uncorrected_assays
+        if (!is.null(copy)) {
+            for (assay in names(stays)) for (s in names(stays[[assay]])) {
+                if (!is.null(copy[[assay]]) && s %in% names(copy[[assay]])) copy[[assay]][[s]] <- NA_real_
+            }
+            theObject@args$ruv_uncorrected_assays <- copy
+        }
+    }
+    if (length(stays) || length(no_value)) {
+        kept_samples <- unique(unlist(lapply(stays, names), use.names = FALSE))
+        # Where each sample set missing stays: the assays where it reached the threshold, and those where it holds values
+        # but was not tested (no table, or no pair that counted).
+        elsewhere <- stats::setNames(lapply(kept_samples, function(s) list(
+            reached = names(assay_list)[vapply(names(assay_list), function(a) s %in% reached[[a]], logical(1))],
+            untested = names(assay_list)[vapply(names(assay_list), function(a) {
+                s %in% holds(assay_list[[a]]) && !(s %in% reached[[a]]) && !(s %in% names(excluded[[a]]))
+            }, logical(1))])), kept_samples)
+        # The groups left without any value in an assay by this press: their comparisons cannot be tested there.
+        group_column <- theObject@group_id
+        not_tested <- list()
+        if (is.character(group_column) && length(group_column) == 1L && group_column %in% names(design_matrix)) {
+            sid <- as.character(design_matrix[[sample_id_col_name]])
+            groups <- as.character(design_matrix[[group_column]])
+            for (assay in names(stays)) {
+                touched <- unique(groups[sid %in% names(stays[[assay]]) & !is.na(groups)])
+                blank <- vapply(touched, function(g) {
+                    members <- intersect(sid[!is.na(groups) & groups == g], colnames(assay_list[[assay]]))
+                    length(members) > 0L && !any(vapply(members, function(m) any(is.finite(assay_list[[assay]][[m]])), logical(1)))
+                }, logical(1))
+                if (any(blank)) not_tested[[assay]] <- names(blank)[blank]
+            }
+        }
+        theObject@args <- omicsCorrelationExclusionRecord(theObject@args, stays, threshold, elsewhere, not_tested, no_value)
+    }
+    theObject
+}
+
+#' Merge what a press set missing into the object's exclusion record (KIT-255): per assay, each entry keeping its own
+#' threshold (`threshold` is one number while every entry shares it, else a list by assay of named thresholds); the
+#' samples' `elsewhere` is the newest, the `not_tested` groups and the `no_value` samples are unions.
+#' @noRd
+omicsCorrelationExclusionRecord <- function(args, excluded, threshold, elsewhere = list(), not_tested = list(), no_value = character()) {
+    old <- args$correlation_exclusions
+    per_entry <- function(record) if (is.list(record$threshold)) record$threshold else
+        lapply(record$excluded, function(best) stats::setNames(rep(record$threshold, length(best)), names(best)))
+    merged <- old$excluded %||% list()
+    thresholds <- if (is.null(old)) list() else per_entry(old)
+    for (assay in names(excluded)) {
+        merged[[assay]] <- c(merged[[assay]][setdiff(names(merged[[assay]]), names(excluded[[assay]]))], excluded[[assay]])
+        thresholds[[assay]] <- c(thresholds[[assay]][setdiff(names(thresholds[[assay]]), names(excluded[[assay]]))],
+            stats::setNames(rep(threshold, length(excluded[[assay]])), names(excluded[[assay]])))
+    }
+    same <- length(unique(unlist(thresholds))) <= 1L
+    record <- list(threshold = if (!length(thresholds)) threshold else if (same) unlist(thresholds, use.names = FALSE)[[1L]] else thresholds,
+        excluded = merged)
+    record$elsewhere <- utils::modifyList(old$elsewhere %||% list(), elsewhere)
+    for (assay in names(not_tested)) old$not_tested[[assay]] <- union(old$not_tested[[assay]], not_tested[[assay]])
+    if (length(old$not_tested)) record$not_tested <- old$not_tested
+    if (length(c(old$no_value, no_value))) record$no_value <- union(old$no_value, no_value)
+    if (!length(record$elsewhere)) record$elsewhere <- NULL
+    args$correlation_exclusions <- record
+    args
+}
+
+#' The threshold an exclusion record holds for one sample in one assay (KIT-255): the record's single `threshold`, or the
+#' entry's own when two presses used different thresholds.
+#' @noRd
+omicsCorrelationExclusionThreshold <- function(record, assay, sample) {
+    threshold <- record$threshold
+    if (is.list(threshold)) threshold <- threshold[[assay]][[sample]]
+    threshold
+}
+
+#' How a best correlation is put in words (KIT-255; DRAFT wording for the owner, VAL-41).
+#' @noRd
+omicsCorrelationBestText <- function(best) {
+    if (is.na(best)) "no correlation with a replicate could be computed there" else
+        sprintf("its best correlation with a replicate there is %s", format(round(best, 3)))
+}
+
+#' Where a sample set missing stays, in words (KIT-255, I02): only the assays where it reached the threshold, and those where it
+#' was not tested; an assay where it was also set missing is not named.
+#' @noRd
+omicsCorrelationStayParts <- function(record, sample) {
+    elsewhere <- record$elsewhere[[sample]]
+    c(if (length(elsewhere$reached)) sprintf("%s (it reached the threshold there)", paste(elsewhere$reached, collapse = ", ")),
+        if (length(elsewhere$untested)) sprintf("%s (it was not tested there)", paste(elsewhere$untested, collapse = ", ")))
+}
+
+#' The notice for what a correlation press did beyond a plain removal (KIT-255; DRAFT wording): per assay the samples set
+#' missing, the groups whose comparisons cannot be tested, the samples removed because no assay kept a value for them, and
+#' once the note on the per-group minimum. Read from the state's `correlation_exclusions`.
+#' @param record `args$correlation_exclusions`, or NULL.
+#' @param assay_names Unused (kept for callers); the assays a sample stays in are those the record names.
+#' @return A character vector (empty when there is nothing to say).
+#' @noRd
+omicsCorrelationExclusionNotice <- function(record, assay_names = character()) {
+    if (is.null(record)) return(character())
+    lines <- vapply(names(record$excluded), function(assay) {
+        best <- record$excluded[[assay]]
+        threshold <- paste(format(unique(vapply(names(best), function(s) omicsCorrelationExclusionThreshold(record, assay, s), numeric(1)))),
+            collapse = " or ")
+        if (length(best) == 1L) {
+            parts <- omicsCorrelationStayParts(record, names(best))
+            stays <- if (length(parts)) sprintf("It stays in the analysis of %s, and is not removed from the study.",
+                paste(parts, collapse = " and ")) else "It is not removed from the study."
+            sprintf("Correlation filter: in assay %s, sample %s did not reach the threshold of %s (%s). Its values in %s are set to missing. %s",
+                assay, names(best), threshold, omicsCorrelationBestText(best[[1L]]), assay, stays)
+        } else {
+            stays <- vapply(names(best), function(s) {
+                parts <- omicsCorrelationStayParts(record, s)
+                if (length(parts)) sprintf("%s in %s", s, paste(parts, collapse = " and in ")) else NA_character_
+            }, character(1))
+            stays <- stays[!is.na(stays)]
+            sprintf("Correlation filter: in assay %s, samples %s did not reach the threshold of %s. Their values in %s are set to missing. They are not removed from the study.%s",
+                assay, paste(sprintf("%s (%s)", names(best), vapply(best, function(b) sub("^its ", "", omicsCorrelationBestText(b)), "")),
+                    collapse = ", "), threshold, assay,
+                if (length(stays)) paste0(" They stay in the analysis of: ", paste(stays, collapse = "; "), ".") else "")
+        }
+    }, character(1))
+    blank <- vapply(names(record$not_tested), function(assay) {
+        groups <- record$not_tested[[assay]]
+        sprintf("In assay %s, no sample of %s %s has a value left, so comparisons with %s are not tested in %s.", assay,
+            if (length(groups) == 1L) "group" else "groups", paste(groups, collapse = ", "),
+            if (length(groups) == 1L) "that group" else "those groups", assay)
+    }, character(1))
+    removed <- if (length(record$no_value)) sprintf("%s had no remaining value in any assay and %s removed from the study.",
+        if (length(record$no_value) == 1L) paste("Sample", record$no_value) else paste("Samples", paste(record$no_value, collapse = ", ")),
+        if (length(record$no_value) == 1L) "was" else "were")
+    c(unname(lines), unname(blank), removed, if (length(record$excluded)) sprintf(paste("Features in %s that met your minimum number of values per group before this step may now have fewer",
+        "values in one group. The differential analysis tests each feature on the values that remain; a feature with no remaining",
+        "values is not tested."), paste(names(record$excluded), collapse = ", ")))
+}
+
+#' The tab summary's lines for the samples set missing and the groups not tested (KIT-255; DRAFT wording), or NULL.
+#' @noRd
+omicsCorrelationExclusionSummaryLine <- function(record) {
+    if (is.null(record) || (!length(record$excluded) && !length(record$not_tested))) return(NULL)
+    entries <- unlist(lapply(names(record$excluded), function(assay) {
+        best <- record$excluded[[assay]]
+        vapply(names(best), function(s) sprintf("%s in %s (best correlation with a replicate %s; threshold %s)", s, assay,
+            if (is.na(best[[s]])) "not computable" else format(round(best[[s]], 3)), format(omicsCorrelationExclusionThreshold(record, assay, s))), "")
+    }), use.names = FALSE)
+    blank <- unlist(lapply(names(record$not_tested), function(assay) sprintf("group %s in %s", paste(record$not_tested[[assay]], collapse = ", "), assay)),
+        use.names = FALSE)
+    paste(c(if (length(entries)) sprintf("Set missing in some assays only: %s.", paste(entries, collapse = "; ")),
+        if (length(blank)) sprintf("Comparisons not tested (no sample of the group has a value): %s.", paste(blank, collapse = "; "))),
+        collapse = "\n  ")
+}
+
+#' The saved study parameters' block for the samples set missing (KIT-255; DRAFT wording), in the "* key:" form KIT-235's
+#' parser reads; empty when there are none.
+#' @noRd
+omicsCorrelationExclusionStudyLines <- function(record) {
+    if (is.null(record) || (!length(record$excluded) && !length(record$not_tested))) return(character())
+    thresholds <- unique(unlist(lapply(names(record$excluded), function(assay) vapply(names(record$excluded[[assay]]),
+        function(s) omicsCorrelationExclusionThreshold(record, assay, s), numeric(1)))))
+    c("Correlation Filter:", "-------------------",
+        if (length(record$excluded)) c(sprintf("* Samples set missing per assay (threshold %s):", paste(format(thresholds), collapse = " or ")),
+            unlist(lapply(names(record$excluded), function(assay) {
+                best <- record$excluded[[assay]]
+                sprintf("    - %s: %s", assay, paste(sprintf("%s (best correlation with a replicate %s)", names(best),
+                    ifelse(is.na(best), "not computable", format(round(best, 3)))), collapse = ", "))
+            }))),
+        if (length(record$not_tested)) c("* Comparisons not tested (no sample of the group has a value there):",
+            sprintf("    - %s: group %s", names(record$not_tested), vapply(record$not_tested, paste, "", collapse = ", "))), "")
 }
 
 #' Differential abundance (whole matrix, product only): the omic's DA kernel once over every contrast and assay, its
@@ -2641,6 +2904,8 @@ omicsIntegrationInputSource <- function(binding, manager) {
             assay = views[[view]], is_internal_standard = standards$mark(views[[view]], table, ids), annotation,
             check.names = FALSE, stringsAsFactors = FALSE)
     }
+    # KIT-255 (VAL-283): the samples the correlation filter set missing in an assay (place 3: the normalised matrix that entered RUV).
+    excluded <- object@args$correlation_exclusions$excluded
     object <- assays <- NULL
     correction <- if (identical(decider, ruvState)) omicsIntegrationInputCorrection(binding, manager, ruvState, lineage[[ruvState]],
         views, samples)
@@ -2657,6 +2922,7 @@ omicsIntegrationInputSource <- function(binding, manager) {
             table <- as.data.frame(input_assays[[views[[view]]]], check.names = FALSE, stringsAsFactors = FALSE)
             uncorrected <- data.frame(feature_id = as.character(table[[input_id]]), table[intersect(held, names(table))],
                 check.names = FALSE, stringsAsFactors = FALSE)
+            for (sample in intersect(names(excluded[[views[[view]]]]), names(uncorrected))) uncorrected[[sample]] <- NA_real_
             if (isTRUE(correction$views[[view]]$applied)) corrected[[view]] <- matrices[[view]]
             matrices[[view]] <- integrationInputUncorrectedOn(uncorrected, matrices[[view]], view)
         }

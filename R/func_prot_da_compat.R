@@ -30,6 +30,12 @@ protein_deAnalysisWrapperFunction <- function(
   # ... (rest of function remains same)
 
   contrasts_tbl <- checkParamsObjectFunctionSimplify(theObject, "contrasts_tbl", NULL)
+  # KIT-221 (VAL-193): the comparisons are read as text from a data frame, one per row of its first column; anything
+  # else is refused.
+  if (!is.data.frame(contrasts_tbl)) {
+    cli::cli_abort(c("{.arg contrasts_tbl} must be a data frame with one comparison per row in its first column",
+      x = "it is {.obj_type_friendly {contrasts_tbl}}"), class = "prot_da_contrasts_invalid", call = NULL)
+  }
   formula_string <- checkParamsObjectFunctionSimplify(theObject, "formula_string", " ~ 0 + group")
   group_id <- checkParamsObjectFunctionSimplify(theObject, "group_id", "group")
   de_q_val_thresh <- checkParamsObjectFunctionSimplify(theObject, "de_q_val_thresh", 0.05)
@@ -112,7 +118,7 @@ protein_deAnalysisWrapperFunction <- function(
 
 
   contrasts_results <- runTestsContrasts(as.matrix(column_to_rownames(theObject@protein_quant_table, theObject@protein_id_column)),
-    contrast_strings = contrasts_tbl[, 1][[1]],
+    contrast_strings = as.character(contrasts_tbl[[1]]), # KIT-221: every row, as text
     design_matrix = theObject@design_matrix,
     group_id = theObject@group_id, technical_replicate_id = theObject@technical_replicate_id, # KIT-035
     formula_string = formula_string,

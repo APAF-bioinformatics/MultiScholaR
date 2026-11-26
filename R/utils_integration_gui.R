@@ -37,11 +37,12 @@ integrationGuiEnabled <- function() {
 #' @return A character string.
 #' @noRd
 integrationScalingEvidenceText <- function() {
-    paste("In simulations with 20 samples in which about a fifth of the values were missing, mostly low ones, this",
-        "recovered closely (a correlation of at least 0.9 with the true pattern) a pattern carried by a tenth of the",
-        "features of the two smallest data sets, each changed by about as much as its measurement noise, in 26 rather",
-        "than 12 of 30 simulated data sets. Without missing values the difference could not be told from none (29",
-        "rather than 26 of 30); with 60 samples the pattern was recovered closely in 30 of 30 either way.")
+    paste("In simulations made for this software with 20 samples (two groups of 10), in which about a fifth of the",
+        "values were missing, mostly low ones, this scaling recovered closely (a correlation of at least 0.9 with the",
+        "true pattern) a pattern carried by a tenth of the features of the two smallest of four data sets, each changed",
+        "by about as much as its measurement noise, in 26 rather than 12 of 30 simulated data sets. Without missing",
+        "values the difference could not be told from none (29 rather than 26 of 30); with 60 samples the pattern was",
+        "recovered closely in 30 of 30 either way.")
 }
 
 #' Every user-facing string of the integration GUI (KIT-138, KIT-139): one table, drafts the user sets the final
@@ -240,8 +241,10 @@ integrationGuiTexts <- function() {
         # KIT-240 (VAL-221 (4)): every default is a recorded decision; the mark below is for a default that still waits.
         settings_provisional = paste("Each default below is a decision recorded in the methods ledger, named in the analysis",
             "record. A value you change is recorded as set by you."),
-        # KIT-240 (R1-04, R1-07): shown beside each Enrichment setting whose default is not yet confirmed.
+        # KIT-240 (R1-04, R1-07): shown beside a setting whose default awaits the owner's decision (none today; KIT-267).
         mark_provisional = "default not yet confirmed",
+        # KIT-267 (VAL-310): shown beside the three Enrichment organism settings, whose default is human.
+        mark_organism = "human; change for other species",
         mark_decided = "decided",
         # %s: the label, then the value in words.
         setting_fixed = "%s: %s",
@@ -1612,8 +1615,8 @@ integrationSaveDesign <- function(samples, dir) {
 #' @noRd
 INTEGRATION_GUI_MATCHING_PARAMETERS <- c("technical_replicates", "internal_standards", "missing_samples")
 
-#' Whether a parameter's default still awaits the owner's decision: its `settled_by` says so (KIT-240, VAL-221 (4): no
-#' model or Results default today; the marks of the others name their decision and ledger row).
+#' Whether a parameter's default still awaits the owner's decision: its `settled_by` says so (KIT-240, VAL-221 (4); no
+#' model, Results or Enrichment default today, KIT-267: the others name their decision and ledger row).
 #' @param entry One entry of `integrationMofaParameterSpec()` or `integrationResultsParameterSpec()`.
 #' @noRd
 integrationParameterProvisional <- function(entry) {

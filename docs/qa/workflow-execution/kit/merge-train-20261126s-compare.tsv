@@ -1,0 +1,34 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-prot-norm-core.R	1547	307	0	0	failed	1547	307	0	0	failed	message-changed	message-changed: KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and RUV covariates in both modes give the recorded values; message-changed: KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covariates through the worker give W1 (a)'s values	
+test-gui-entry-proteomics.R	92	101	0	0	failed	92	101	0	0	failed	message-changed	message-changed: KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route	
+test-prot-norm-input-current.R	321	0	0	0	ok	321	0	0	0	ok	same		
+test-prot-norm-worker-figures.R	71	0	0	0	ok	71	0	0	0	ok	same		
+test-omic-da-module.R	1288	81	0	0	failed	1288	81	0	0	failed	same		
+test-kit212-da-current.R	309	0	0	0	ok	309	0	0	0	ok	same		
+test-workflow-native-session.R	734	0	0	2	ok	734	0	0	2	ok	same		
+test-workflow-saved-da.R	755	196	0	0	failed	755	196	0	0	failed	message-changed	message-changed: KIT-112 W1 (a): the DIA_LIMPA DA click (dpcDE, no base fit) in process gives the recorded values; message-changed: KIT-112 W2 (W1 (b)): the DIA_LIMPA DA click through the worker (dpcDE, no base fit) gives W1 (a)'s values	
+test-kit244-limpa-pass-through.R	204	0	0	0	ok	204	0	0	0	ok	same		
+test-kit248-correlation-skip-record.R	206	0	0	0	ok	206	0	0	0	ok	same		
+test-kit206-prot-norm-export-guard.R	116	0	0	0	ok	116	0	0	0	ok	same		
+test-kit257-norm-own-files.R	133	0	0	0	ok	133	0	0	0	ok	same		
+test-kit271-limpa-table-name.R	0	0	0	0	absent	78	0	0	0	ok	only-on-head		
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	same		
+test-omics-summary-core.R	676	25	0	2	failed	676	25	0	2	failed	same		
+test-workflow-omics-figures.R	109	0	0	0	ok	109	0	0	0	ok	same		
+test-workflow-integration-input.R	241	0	0	0	ok	241	0	0	0	ok	same		
+test-kit225-prot-norm-reset-source.R	56	0	0	0	ok	56	0	0	0	ok	same		
+test-workflow-checkpoint-harness.R	628	0	1	8	failed	628	0	1	8	failed	same		
+test-module-ci-metab-da.R	138	0	0	0	ok	138	0	0	0	ok	same		
+test-prot-01c-import-module-contracts.R	438	0	0	0	ok	438	0	0	0	ok	same		
+test-prot-05d-norm-module-characterization.R	82	0	0	10	ok	82	0	0	10	ok	same		
+test-workflow-ruv-pearson-diagnostic.R	301	0	2	5	failed	301	0	2	5	failed	same		
+test-module-ci-lipid-summary.R	14	0	0	6	ok	14	0	0	6	ok	same		
+test-prot-05b-norm-module-contracts.R	440	0	0	22	ok	440	0	0	22	ok	same		
+test-general-filemgmt-report-helpers-shared.R	85	0	0	1	ok	85	0	0	1	ok	same		
+test-module-ci-prot-enrich.R	79	0	0	2	ok	79	0	0	2	ok	same		
+test-module-ci-metab-summary.R	12	0	0	6	ok	12	0	0	6	ok	same		
+test-workflow-memory-mechanism-member.R	0	0	0	13	ok	0	0	0	13	ok	same		
+test-module-ci-prot-summary.R	20	0	0	5	ok	20	0	0	5	ok	same		
+test-metab-05-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-prot-12-summary-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-kit259b-second-correction.R	90	0	0	0	ok	90	0	0	0	ok	same		

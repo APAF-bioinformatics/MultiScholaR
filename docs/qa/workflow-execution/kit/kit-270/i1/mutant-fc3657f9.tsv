@@ -1,0 +1,4 @@
+revision	mode	guard	pattern	outcome	hint_in_message	folder_holds_259	other_broken	other_errors	expectations_passed
+fc3657f96ffde6a9a359c03b3df50ee3b24e07e1	mutant	1	259	fail	TRUE	FALSE	0	0	20
+fc3657f96ffde6a9a359c03b3df50ee3b24e07e1	mutant	2	259	fail	TRUE	FALSE	0	0	20
+fc3657f96ffde6a9a359c03b3df50ee3b24e07e1	mutant	3	259	fail	TRUE	FALSE	0	0	20

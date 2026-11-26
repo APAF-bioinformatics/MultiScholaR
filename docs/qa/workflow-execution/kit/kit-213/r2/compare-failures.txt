@@ -1,0 +1,592 @@
+== test-kit213-study-parameters-labels.R | fixed | KIT-213 E1: lipidomics, two projects of one analysis write the same study parameters; the pairs line names step 7
+-- base:
+  Expected `bound` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "  pairs [input] = 7da0c61db802e8b689667e7e168daf76688f36356759703a6286dd036498ed0c"
+  
+  G5 E1 lipidomics
+  Expected `bound` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "  pairs [input] = d335badd927e29395f6f4cdbe2470a01464f2d397b514ee3dfa9b1587e5d1d96"
+  
+  G5 E1 lipidomics
+  Expected `k213Sha(ma)` to be identical to `k213Sha(mb)`.
+  Differences:
+  `actual`:   "cfa33d2cc05d654a2c29d9def7f402c31fcaa1fe50972023638f477d4c76cad0"
+  `expected`: "ce654030b9d4e4236dd2683180861039172a65bc6c1f3d31209746b107483071"
+  
+  E1 lipidomics differing masked lines: 93:   pairs [input] = d335badd927e29395f6f4cdbe2470a01464f2d397b514ee3dfa9b1587e5d1d96
+  Expected `line %in% a$lines` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E1 lipidomics project 1 lacks:   pairs [input] = the sample-pair correlations computed in step 7 of this analysis | L lines:   pairs [input] = d335badd927e29395f6f4cdbe2470a01464f2d397b514ee3dfa9b1587e5d1d96
+  Expected `line %in% b$lines` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E1 lipidomics project 2 lacks:   pairs [input] = the sample-pair correlations computed in step 7 of this analysis
+-- head:
+  <passes>
+
+== test-kit213-study-parameters-labels.R | fixed | KIT-213 E2: metabolomics, two projects of one analysis write the same study parameters; the pairs line names step 7
+-- base:
+  Expected `bound` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "  pairs [input] = 4591473bd46598da827ca0bf083f3b637f2480bb562879d95c65512da479263f"
+  
+  G5 E2 metabolomics
+  Expected `bound` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "  pairs [input] = 9205c1bd2f717939c884f97ec31abffc412387ab2b7e1e5599a10a8fa5a22d2b"
+  
+  G5 E2 metabolomics
+  Expected `k213Sha(ma)` to be identical to `k213Sha(mb)`.
+  Differences:
+  `actual`:   "801ebf6354be9e23efbe0864db45f71313c42eab3ff58a2917d3b50cf8ace40d"
+  `expected`: "680e3f0cfe0addafd20eaacbcb8132cfa3058b7bd2dfeb5203ff2ff435128bf5"
+  
+  E2 metabolomics differing masked lines: 93:   pairs [input] = 4591473bd46598da827ca0bf083f3b637f2480bb562879d95c65512da479263f
+  Expected `line %in% a$lines` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E2 metabolomics project 1 lacks:   pairs [input] = the sample-pair correlations computed in step 7 of this analysis | L lines:   pairs [input] = 4591473bd46598da827ca0bf083f3b637f2480bb562879d95c65512da479263f
+  Expected `line %in% b$lines` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E2 metabolomics project 2 lacks:   pairs [input] = the sample-pair correlations computed in step 7 of this analysis
+-- head:
+  <passes>
+
+== test-kit213-study-parameters-labels.R | fixed | KIT-213 E3: transcriptomics, two projects of one analysis write the same study parameters; logcpm and grid name their step
+-- base:
+  Expected `bound` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "  trx_ruv_grid.logcpm [input] = 00f77365826c7950b5d970f9a76ad0746c2fd7836f47d8b70740cbcffe919f61"
+  - "  logcpm [input] = 00f77365826c7950b5d970f9a76ad0746c2fd7836f47d8b70740cbcffe919f61"
+  - "  grid [input] = 9d4397b1df38f286bd25f635abaffcb90b9770b22f992e0f38022739537ae5be"
+  
+  G5 E3 transcriptomics
+  Expected `bound` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "  trx_ruv_grid.logcpm [input] = c34ee0498d048f05d9802a45d849ad0241962222063c35aa2db99fe0dcbecaee"
+  - "  logcpm [input] = c34ee0498d048f05d9802a45d849ad0241962222063c35aa2db99fe0dcbecaee"
+  - "  grid [input] = 597b905728c221888f9bf867ae8bc56278637b05b3edf91bdb8cf1c2509575b1"
+  
+  G5 E3 transcriptomics
+  Expected `k213Sha(ma)` to be identical to `k213Sha(mb)`.
+  Differences:
+  `actual`:   "014a20a2ecbfe0735495a4a50fb7f6b6ccaf4860b74c5cc200fc26d5e9f7286f"
+  `expected`: "1f137c98db96b8fbb3088c6406d09484655f3776f7059354ceb228af71771f6d"
+  
+  E3 transcriptomics differing masked lines: 28:   trx_ruv_grid.logcpm [input] = c34ee0498d048f05d9802a45d849ad0241962222063c35aa2db99fe0dcbecaee || 36:   logcpm [input] = c34ee0498d048f05d9802a45d849ad0241962222063c35aa2db99fe0dcbecaee || 37:   grid [input] = 597b905728c221888f9bf867ae8bc56278637b05b3edf91bdb8cf1c2509575b1
+  Expected `line %in% a$lines` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E3 transcriptomics project 1 lacks:   grid [input] = the RUV choice made in step 5 of this analysis | L lines:   trx_ruv_grid.logcpm [input] = c34ee0498d048f05d9802a45d849ad0241962222063c35aa2db99fe0dcbecaee ||   logcpm [input] = c34ee0498d048f05d9802a45d849ad0241962222063c35aa2db99fe0dcbecaee ||   grid [input] = 597b905728c221888f9bf867ae8bc56278637b05b3edf91bdb8cf1c2509575b1
+  Expected `line %in% a$lines` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E3 transcriptomics project 1 lacks:   logcpm [input] = the TMM log counts per million computed in step 5 of this analysis | L lines:   trx_ruv_grid.logcpm [input] = c34ee0498d048f05d9802a45d849ad0241962222063c35aa2db99fe0dcbecaee ||   logcpm [input] = c34ee0498d048f05d9802a45d849ad0241962222063c35aa2db99fe0dcbecaee ||   grid [input] = 597b905728c221888f9bf867ae8bc56278637b05b3edf91bdb8cf1c2509575b1
+  Expected `line %in% a$lines` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E3 transcriptomics project 1 lacks:   trx_ruv_grid.logcpm [input] = the TMM log counts per million computed in step 5 of this analysis | L lines:   trx_ruv_grid.logcpm [input] = c34ee0498d048f05d9802a45d849ad0241962222063c35aa2db99fe0dcbecaee ||   logcpm [input] = c34ee0498d048f05d9802a45d849ad0241962222063c35aa2db99fe0dcbecaee ||   grid [input] = 597b905728c221888f9bf867ae8bc56278637b05b3edf91bdb8cf1c2509575b1
+  Expected `line %in% b$lines` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E3 transcriptomics project 2 lacks:   grid [input] = the RUV choice made in step 5 of this analysis
+  Expected `line %in% b$lines` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E3 transcriptomics project 2 lacks:   logcpm [input] = the TMM log counts per million computed in step 5 of this analysis
+  Expected `line %in% b$lines` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E3 transcriptomics project 2 lacks:   trx_ruv_grid.logcpm [input] = the TMM log counts per million computed in step 5 of this analysis
+-- head:
+  <passes>
+
+== test-kit213-study-parameters-labels.R | fixed | KIT-213 E4: proteomics, two projects of one analysis write the same study parameters; pairs and results labelled
+-- base:
+  Expected `bound` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "  pairs [input] = e19deab69336a40e71590bd9ecc2b8e6258a69350b2cd8ff98b7338d9d8c899e"
+  - "  results [input] = groupB-groupA=08cb3f7a5d0ea89da31e390b6c706c2431a4753b626e72e4b1673770cb7c1c27"
+  
+  G5 E4 proteomics
+  Expected `bound` to be identical to `character()`.
+  Differences:
+  actual vs expected
+  - "  pairs [input] = ee2bcbcf90e0bca6e0007e75c5a250abb0e3def8be84be7290f15ff3fbbdccb1"
+  - "  results [input] = groupB-groupA=16e34b38709b3dbb7f008b56bb32a26dbf6fd8a4cf7fd55585472bf3730bedf8"
+  
+  G5 E4 proteomics
+  Expected `exists("studyParameterRecordValueText", mode = "function")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E4: the label helper
+  Expected `k213Sha(ma)` to be identical to `k213Sha(mb)`.
+  Differences:
+  `actual`:   "db7c6c82c736fd6c516559d54311b8191454f86bc582d6bad19c53cee456602d"
+  `expected`: "baee75381fc3b9f776c13e1484081a6a703888f4e12b598e158a8372cfcb8887"
+  
+  E4 proteomics differing masked lines: 92:   pairs [input] = e19deab69336a40e71590bd9ecc2b8e6258a69350b2cd8ff98b7338d9d8c899e || 104:   results [input] = groupB-groupA=08cb3f7a5d0ea89da31e390b6c706c2431a4753b626e72e4b1673770cb7c1c27
+  Expected `line %in% a$lines` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E4 proteomics project 1 lacks:   pairs [input] = the sample-pair correlations computed in step 3 of this analysis | L lines:   pairs [input] = e19deab69336a40e71590bd9ecc2b8e6258a69350b2cd8ff98b7338d9d8c899e ||   results [input] = groupB-groupA=08cb3f7a5d0ea89da31e390b6c706c2431a4753b626e72e4b1673770cb7c1c27
+  Expected `line %in% a$lines` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E4 proteomics project 1 lacks:   results [input] = groupB-groupA=the differential abundance results of contrast groupB-groupA in this analysis | L lines:   pairs [input] = e19deab69336a40e71590bd9ecc2b8e6258a69350b2cd8ff98b7338d9d8c899e ||   results [input] = groupB-groupA=08cb3f7a5d0ea89da31e390b6c706c2431a4753b626e72e4b1673770cb7c1c27
+  Expected `line %in% b$lines` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E4 proteomics project 2 lacks:   pairs [input] = the sample-pair correlations computed in step 3 of this analysis
+  Expected `line %in% b$lines` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  E4 proteomics project 2 lacks:   results [input] = groupB-groupA=the differential abundance results of contrast groupB-groupA in this analysis
+-- head:
+  <passes>
+
+== test-omics-summary-core.R | message-changed | (W3, core side) trx_main: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+-- base:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>" "7b9d35dbf33331d1"
+  `expected`:             "7b9d35dbf33331d1"
+  
+  trx_main save integration
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual[9:15] vs expected[9:15]
+    results_summary/transcriptomics/Publication_tables/canonical_correlation_optimization_summary.xlsx"<present>"
+    results_summary/transcriptomics/Publication_tables/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results_summary/transcriptomics/Publication_tables/ruv_normalised_log_values.tsv"83de1dbdd1018161c5ec6c1dac4dc179b0c1d0340fd2fe826d4b3c9b4ae93387"
+  - results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.pdf"<present>"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.png"<present>"
+    results_summary/transcriptomics/QC_figures/ruviii_before_and_after.pdf"<present>"
+  
+  trx_main copy files
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+  
+  actual vs expected
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+    integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+  
+  trx_main save files
+-- head:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `actual`:   "47 lines 387b8047e011288e"
+  `expected`: "47 lines 96b3fdbde9b1bb30"
+  
+  trx_main save_before_export study_parameters
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `actual`:   "50 lines bbadf5a52d70875f"
+  `expected`: "50 lines 6309448be78f095c"
+  
+  trx_main save study_parameters
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>" "7b9d35dbf33331d1"
+  `expected`:             "7b9d35dbf33331d1"
+  
+  trx_main save integration
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual[9:15] vs expected[9:15]
+    results_summary/transcriptomics/Publication_tables/canonical_correlation_optimization_summary.xlsx"<present>"
+    results_summary/transcriptomics/Publication_tables/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results_summary/transcriptomics/Publication_tables/ruv_normalised_log_values.tsv"83de1dbdd1018161c5ec6c1dac4dc179b0c1d0340fd2fe826d4b3c9b4ae93387"
+  - results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.pdf"<present>"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.png"<present>"
+    results_summary/transcriptomics/QC_figures/ruviii_before_and_after.pdf"<present>"
+  
+  trx_main copy files
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+  
+  actual vs expected
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+    integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+  
+  trx_main save files
+
+== test-omics-summary-core.R | message-changed | (W3, core side) trx_managed: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+-- base:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>" "7b9d35dbf33331d1"
+  `expected`:             "7b9d35dbf33331d1"
+  
+  trx_managed save integration
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+    "<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>"
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+    "scripts/transcriptomics/analysis_record.json"
+    "scripts/transcriptomics/study_parameters.txt"
+  
+  actual vs expected
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>"54"
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+    integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+    scripts/transcriptomics/analysis_record.json"<present>"
+    scripts/transcriptomics/study_parameters.txt"<present>"
+  
+  trx_managed save files
+-- head:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `actual`:   "50 lines bbadf5a52d70875f"
+  `expected`: "50 lines 6309448be78f095c"
+  
+  trx_managed save study_parameters
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>" "7b9d35dbf33331d1"
+  `expected`:             "7b9d35dbf33331d1"
+  
+  trx_managed save integration
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+    "<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>"
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+    "scripts/transcriptomics/analysis_record.json"
+    "scripts/transcriptomics/study_parameters.txt"
+  
+  actual vs expected
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>"54"
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+    integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+    scripts/transcriptomics/analysis_record.json"<present>"
+    scripts/transcriptomics/study_parameters.txt"<present>"
+  
+  trx_managed save files
+
+== test-omic-summary-module.R | message-changed | (b) trx_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+-- base:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>" "7b9d35dbf33331d1"
+  `expected`:             "7b9d35dbf33331d1"
+  
+  trx_main save integration
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual[5:11] vs expected[5:11]
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>"1"
+    results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results/transcriptomics/da_genes/ruv_optimization_summary.txt"<present>"
+  - results/transcriptomics/da_genes/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results/transcriptomics/da_genes/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf"<present>"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png"<present>"
+    results/transcriptomics/publication_graphs/Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf"<present>"
+  
+  trx_main da files
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual[9:15] vs expected[9:15]
+    results_summary/transcriptomics/Publication_tables/canonical_correlation_optimization_summary.xlsx"<present>"
+    results_summary/transcriptomics/Publication_tables/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results_summary/transcriptomics/Publication_tables/ruv_normalised_log_values.tsv"83de1dbdd1018161c5ec6c1dac4dc179b0c1d0340fd2fe826d4b3c9b4ae93387"
+  - results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.pdf"<present>"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.png"<present>"
+    results_summary/transcriptomics/QC_figures/ruviii_before_and_after.pdf"<present>"
+  
+  trx_main copy files
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+  
+  actual vs expected
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+    integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+  
+  trx_main save files
+-- head:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `actual`:   "47 lines 387b8047e011288e"
+  `expected`: "47 lines 96b3fdbde9b1bb30"
+  
+  trx_main save_before_export study_parameters
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `actual`:   "50 lines bbadf5a52d70875f"
+  `expected`: "50 lines 6309448be78f095c"
+  
+  trx_main save study_parameters
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>" "7b9d35dbf33331d1"
+  `expected`:             "7b9d35dbf33331d1"
+  
+  trx_main save integration
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual[5:11] vs expected[5:11]
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>"1"
+    results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results/transcriptomics/da_genes/ruv_optimization_summary.txt"<present>"
+  - results/transcriptomics/da_genes/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results/transcriptomics/da_genes/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf"<present>"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png"<present>"
+    results/transcriptomics/publication_graphs/Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf"<present>"
+  
+  trx_main da files
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual[9:15] vs expected[9:15]
+    results_summary/transcriptomics/Publication_tables/canonical_correlation_optimization_summary.xlsx"<present>"
+    results_summary/transcriptomics/Publication_tables/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results_summary/transcriptomics/Publication_tables/ruv_normalised_log_values.tsv"83de1dbdd1018161c5ec6c1dac4dc179b0c1d0340fd2fe826d4b3c9b4ae93387"
+  - results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.pdf"<present>"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.png"<present>"
+    results_summary/transcriptomics/QC_figures/ruviii_before_and_after.pdf"<present>"
+  
+  trx_main copy files
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+  
+  actual vs expected
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+    integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+  
+  trx_main save files
+
+== test-omic-summary-module.R | message-changed | (b) trx_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+-- base:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>" "7b9d35dbf33331d1"
+  `expected`:             "7b9d35dbf33331d1"
+  
+  trx_managed save integration
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual[5:11] vs expected[5:11]
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>"1"
+    results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results/transcriptomics/da_genes/ruv_optimization_summary.txt"<present>"
+  - results/transcriptomics/da_genes/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results/transcriptomics/da_genes/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf"<present>"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png"<present>"
+    results/transcriptomics/publication_graphs/Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf"<present>"
+  
+  trx_managed da files
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+    "<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>"
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+    "scripts/transcriptomics/analysis_record.json"
+    "scripts/transcriptomics/study_parameters.txt"
+  
+  actual vs expected
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>"54"
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+    integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+    scripts/transcriptomics/analysis_record.json"<present>"
+    scripts/transcriptomics/study_parameters.txt"<present>"
+  
+  trx_managed save files
+-- head:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `actual`:   "50 lines bbadf5a52d70875f"
+  `expected`: "50 lines 6309448be78f095c"
+  
+  trx_managed save study_parameters
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>" "7b9d35dbf33331d1"
+  `expected`:             "7b9d35dbf33331d1"
+  
+  trx_managed save integration
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual[5:11] vs expected[5:11]
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>"1"
+    results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results/transcriptomics/da_genes/ruv_optimization_summary.txt"<present>"
+  - results/transcriptomics/da_genes/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results/transcriptomics/da_genes/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf"<present>"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png"<present>"
+    results/transcriptomics/publication_graphs/Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf"<present>"
+  
+  trx_managed da files
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+    "<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>"
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+    "scripts/transcriptomics/analysis_record.json"
+    "scripts/transcriptomics/study_parameters.txt"
+  
+  actual vs expected
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>"54"
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+    integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+    scripts/transcriptomics/analysis_record.json"<present>"
+    scripts/transcriptomics/study_parameters.txt"<present>"
+  
+  trx_managed save files
+

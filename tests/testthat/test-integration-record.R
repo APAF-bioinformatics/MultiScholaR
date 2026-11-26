@@ -577,6 +577,14 @@ test_that("KIT-246: the Methods paragraph's scaling sentence states the simulati
     evidence <- integrationScalingEvidenceText()
     expect_true(endsWith(sentence, evidence))
     expect_true(endsWith(help, evidence))
+    # VAL-305: the four phrases of the text the owner was shown are in the one shared passage (so in both texts), and
+    # the passage's last sentence (VAL-251) is unchanged.
+    for (phrase in c("made for this software", "(two groups of 10)", "this scaling", "of four data sets")) {
+        expect_true(grepl(phrase, evidence, fixed = TRUE), info = phrase)
+        expect_true(grepl(phrase, sentence, fixed = TRUE) && grepl(phrase, help, fixed = TRUE), info = phrase)
+    }
+    expect_true(endsWith(evidence, paste("Without missing values the difference could not be told from none (29 rather",
+        "than 26 of 30); with 60 samples the pattern was recovered closely in 30 of 30 either way.")))
     for (term in c("26 rather than 12 of 30", "29 rather than 26 of 30", "30 of 30 either way",
         "could not be told from none", "a correlation of at least 0.9 with the true pattern",
         "a tenth of the features of the two smallest")) {

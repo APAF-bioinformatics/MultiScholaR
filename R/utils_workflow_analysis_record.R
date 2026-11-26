@@ -112,6 +112,38 @@ workflowParameterProvenance <- function(mapping, value, shipped_config) {
 workflowRecordProvenanceValues <- c("default", "user_set", "not_set", "no_shipped_default", "fixed", "input", "unknown")
 workflowRecordProvenanceAliases <- c(no_default = "no_shipped_default")
 
+#' The correlation selection step's own outcomes (KIT-255, VAL-283): per assay and sample the best replicate correlation (three
+#' decimals) and the threshold of each sample set missing in one assay while it stayed in the design (`correlation_excluded_per_assay`),
+#' and the samples the step removed from the design, from the design difference (`correlation_removed_from_design`). Added only when a
+#' sample was set missing or removed, so a press that changed nothing records what it recorded before.
+#' @noRd
+workflowRecordCorrelationOutcomes <- function(outcomes, operation, args, record, records, context) {
+    selection <- vapply(omicsDeclarationBindings(), function(binding) identical(operation, paste0(binding$prefix, "_pearson_selection")),
+        logical(1))
+    if (!any(selection)) return(outcomes)
+    runs <- function(entry) {
+        reference <- entry$data$components$design_matrix
+        if (is.null(reference)) return(NULL)
+        as.character(as.data.frame(materializeWorkflowTable(context, reference))[[entry$data$slots$sample_id %||% "Run"]])
+    }
+    previous <- record$previous_state
+    before <- if (is.character(previous) && length(previous) == 1L && !is.na(previous)) runs(records[[previous]] %||% list())
+    removed <- if (is.null(before)) character() else setdiff(before, runs(record))
+    excluded <- args$correlation_exclusions
+    if (is.null(excluded) && !length(removed)) return(outcomes)
+    outcomes$correlation_excluded_per_assay <- stats::setNames(lapply(names(excluded$excluded), function(assay) {
+        best <- excluded$excluded[[assay]]
+        stats::setNames(lapply(names(best), function(sample) {
+            list(best_correlation = if (is.na(best[[sample]])) NA_real_ else round(best[[sample]], 3),
+                threshold = omicsCorrelationExclusionThreshold(excluded, assay, sample))
+        }), names(best))
+    }), names(excluded$excluded))
+    # KIT-255 (I01): the groups left without a value in an assay: their comparisons there are recorded as not tested.
+    if (length(excluded$not_tested)) outcomes$correlation_not_tested_per_assay <- lapply(excluded$not_tested, as.list)
+    outcomes$correlation_removed_from_design <- as.list(removed)
+    outcomes
+}
+
 #' Realised outcomes of one step (KIT-038, IM-02): the dimensions every step has, whatever the commit put under
 #' `config$outcomes` or `config$skipped`, and for the normalisation step the realised RUV result.
 #' @noRd
@@ -340,6 +372,16 @@ readWorkflowShippedDefaults <- function(path = system.file("config", "config.ini
     out
 }
 
+#' Whether an export's source is a state of the head's history (KIT-264): compared by the state's entity, never by its name,
+#' because a later run keeps the name `trx_ruvs` for a new entity. An export without a source entity is not current.
+#' @noRd
+workflowRecordExportIsCurrent <- function(snapshot, export) {
+    entity <- export$source$entity_id
+    if (is.null(entity)) return(FALSE)
+    history <- as.character(unlist(snapshot$state_history))
+    any(vapply(history, function(state) identical(snapshot$states[[state]]$entity_id, entity), logical(1)))
+}
+
 #' One accepted export of the head as a record analysis (KIT-095): its operation, source, parameters with their provenance,
 #' product and the outcomes its omic binding records.
 #' @noRd
@@ -475,7 +517,8 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
                 build = provenance$build %||% NA_character_),
             defaults_sha256 = provenance$defaults_sha256 %||% NA_character_,
             dimensions = list(rows = sizes$rows %||% NA_integer_, columns = sizes$columns %||% NA_integer_),
-            outcomes = workflowRecordStepOutcomes(context, state, operation, record, sizes),
+            outcomes = workflowRecordCorrelationOutcomes(workflowRecordStepOutcomes(context, state, operation, record, sizes), operation, args,
+                record, records, context),
             description = record$description %||% NA_character_,
             parameters = parameters, products = Filter(Negate(is.null), products),
             stored_as_object = isTRUE(record$legacy_object))
@@ -534,7 +577,13 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     }
     # KIT-095: a product-only export accepted on the head after the DA (the transcriptomics RUVIII matrix) is listed as an
     # analysis with its parameters and the outcomes its binding records.
-    for (name in names(snapshot$exports)) analyses[[name]] <- workflowRecordExportAnalysis(context, snapshot, snapshot$exports[[name]], shipped)
+    # KIT-264 (VAL-286): an omic's export stays in the state head after a later normalisation, so it is listed only while its
+    # source state is a state of the head's history (the test `workflowDaResultStatus` applies to the DA). The integration
+    # model's export has its own inputs state and is listed as before.
+    for (name in names(snapshot$exports)) {
+        if (!identical(name, INTEGRATION_MODEL_OPERATION) && !workflowRecordExportIsCurrent(snapshot, snapshot$exports[[name]])) next
+        analyses[[name]] <- workflowRecordExportAnalysis(context, snapshot, snapshot$exports[[name]], shipped)
+    }
     # KIT-142: an integration store's model analysis carries what the integration adds (inputs, the confirmed match, each
     # setting's status, the model's identity, the saved results, the claim limit); an omic's record is as before.
     if (identical(context$omic_type, "integration") && !is.null(analyses[[INTEGRATION_MODEL_OPERATION]])) {
@@ -648,7 +697,7 @@ validateWorkflowAnalysisRecord <- function(record) {
 #' Replay rule markers (KIT-187, VAL-71; KIT-190 adds two rows, `ruv_control_grouping` and `ruv_k_bound`; KIT-205,
 #' VAL-129 (2), adds `enrichment_background`; KIT-202 adds `intensity_filter_samples`; KIT-214 adds `duplicate_resolution_samples`; KIT-224 adds `ruv_feature_levels`;
 #' KIT-201 adds `treat_moderation`, which no declaration fixes: it is read from the DA model record by the DA's
-#' replay, `workflowDaReplayRuleOptions`; KIT-217 adds `intensity_filter_missing`): for
+#' replay, `workflowDaReplayRuleOptions`; KIT-217 adds `intensity_filter_missing`; KIT-258 adds `duplicate_resolution_rank`; KIT-255 adds `correlation_exclusion`, the last row): for
 #' each marker that a step's declaration may fix, the option that selects the rule inside the package, its current
 #' token (the declaration's fixed value) and its earlier token. A step lists the marker, with source `fixed`, only when
 #' it was computed under the current rule: the record builder never back-fills it, `setWorkflowStepProvenance` omits it
@@ -687,6 +736,17 @@ workflowReplayRuleMarkers <- list(
     # ("group_counts"); records made before did not count missing values ("not_counted").
     intensity_filter_missing = list(option = "MultiScholaR.intensity_filter_missing", current = "group_counts",
         earlier = "not_counted"),
+    # KIT-258 (VAL-254, VAL-284): among the rows of one duplicated id, the most measured row (a value neither missing nor
+    # zero), then the highest mean of its measured values ("measured_then_mean"); records made before ranked by the mean
+    # of the non-missing values alone ("mean").
+    duplicate_resolution_rank = list(option = "MultiScholaR.duplicate_resolution_rank", current = "measured_then_mean",
+        earlier = "mean"),
+    # KIT-255 (VAL-283, OD-2): the lipid and metabolomics sample-correlation filter judges each sample within each assay
+    # ("within_assay": a sample below the threshold in one assay is set missing there and stays in the design); records
+    # made before pooled the decision ("design_pooled": the column left only the assay where the sample failed, the design
+    # lost the sample if it failed in any assay).
+    correlation_exclusion = list(option = "MultiScholaR.correlation_exclusion", current = "within_assay",
+        earlier = "design_pooled"),
     # KIT-242 (VAL-242 OD-1 (c), OD-4 (c)): lipid and metabolite between-sample normalisation leaves a sample with no value
     # out of the method and keeps it empty in that assay only, and stops on a method failure or a malformed assay
     # ("exclude"); records made before skipped such an assay with a warning ("warn").
@@ -1118,7 +1178,9 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
 #'   not recorded, so the replay may differ from what was run: the second statement, and no other for that omic;
 #' - otherwise the skip step (`<prefix>_norm_complete`) directly after the selection: the skip was recorded on the
 #'   filtered table and the replay repeats both, so it names the samples left out of the design (from the replayed states
-#'   before and after the selection) with the assays they failed in; none when no sample left the design.
+#'   before and after the selection) with the assays they failed in, and (KIT-255, a step computed under the current rule) the
+#'   samples set missing in one assay while they stay in the design (from the replayed state's `correlation_exclusions`); none
+#'   when neither happened.
 #' Both patterns describe the record, not a version (a script can still call the wrappers in that order).
 #' @param record The analysis record.
 #' @param manager The replay's owner after the steps were replayed (read only for the first statement).
@@ -1146,13 +1208,28 @@ workflowReplayCorrelationStatement <- function(record, manager) {
             before <- workflowReplayDesignSamples(binding, manager, steps[[i - 1L]]$state)
             after <- workflowReplayDesignSamples(binding, manager, steps[[i]]$state)
             left_out <- setdiff(before$runs, after$runs)
-            if (!length(left_out)) next
+            # KIT-255 (VAL-283): under the current rule a sample below the threshold in one assay is set missing there and stays
+            # in the design; the exclusions are read from the replayed state. A record made before (the earlier rule) is
+            # described as KIT-254 wrote it.
+            missing_in <- list()
+            if (identical(workflowReplayRule(steps[[i]], "correlation_exclusion"), workflowReplayRuleMarkers$correlation_exclusion$current)) {
+                record_excluded <- readWorkflowOmicsMetadata(binding, manager, steps[[i]]$state)$slots$args$correlation_exclusions$excluded
+                for (assay in names(record_excluded)) for (sample in names(record_excluded[[assay]]))
+                    missing_in[[sample]] <- c(missing_in[[sample]], assay)
+            }
+            if (!length(left_out) && !length(missing_in)) next
             failed_in <- Filter(function(assay) any(left_out %in% setdiff(before$columns[[assay]], after$columns[[assay]])),
                 names(before$columns))
+            consequences <- c(
+                if (length(left_out)) paste0("leaves out ", paste(left_out, collapse = ", "),
+                    if (length(failed_in)) paste0(" (below the threshold in ", paste(failed_in, collapse = ", "), ")")),
+                if (length(missing_in)) paste0("sets ", paste(vapply(names(missing_in), function(sample) paste0(sample, " missing in ",
+                    paste(missing_in[[sample]], collapse = ", "), if (length(missing_in[[sample]]) == 1L) " only" else "",
+                    " (below the threshold there)"), ""), collapse = "; "), " and keeps ",
+                    if (length(missing_in) == 1L) "it" else "them", " in the other assays"))
             texts <- c(texts, paste0("This record applies the correlation filter at threshold ", workflowReplayCorrelationThreshold(steps[[i]]),
                 " and then a step named 'correlation filtering skipped' on the filtered table. The replay repeats both as recorded, ",
-                "so its analysis leaves out ", paste(left_out, collapse = ", "),
-                if (length(failed_in)) paste0(" (below the threshold in ", paste(failed_in, collapse = ", "), ")"),
+                "so its analysis ", paste(consequences, collapse = " and "),
                 ". To analyse every sample, run the normalisation again and press 'Skip Filtering & Proceed to DE' without ",
                 "applying the filter."))
         }
@@ -1169,8 +1246,9 @@ workflowReplayCorrelationThreshold <- function(step) {
 }
 
 #' A replayed omics state's design samples, and each assay's columns as stored (KIT-254). The columns are not limited to
-#' the state's design: after the filter a sample that failed in one assay has left the design but keeps its column in
-#' the assays where it passed, so the caller can name only the assays it failed in.
+#' the state's design: under the earlier correlation rule (`correlation_exclusion`, KIT-255) a sample that failed in one
+#' assay has left the design but keeps its column in the assays where it passed, so the caller can name only the assays
+#' it failed in.
 #' @return `list(runs, columns)`, `columns` a named list per assay.
 #' @noRd
 workflowReplayDesignSamples <- function(binding, manager, state) {
