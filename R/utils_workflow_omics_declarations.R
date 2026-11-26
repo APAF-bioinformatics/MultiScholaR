@@ -941,6 +941,9 @@ omicsRuvOperation <- function(binding, ruv_design = c("legacy", "declared"), sup
                 value$ruv_not_applied_text <- lapply(outcome, function(o) if (identical(o$action, "keep")) o$text else "")
                 value$ruv_samples_excluded <- empty$samples
                 value$ruv_features_excluded <- empty$features
+                # VAL-373 Q-A: the groups named where a group was left with too few samples (only when any).
+                groups <- Filter(length, lapply(outcome, function(o) o$groups %||% character()))
+                if (length(groups)) value$ruv_not_applied_groups <- groups
             }
             value
         },
@@ -970,16 +973,28 @@ omicsRuvSearchOutcomes <- function(ruv_results, ruv_mode, search_object) {
         # not read it, and the Manual search then hands the whole list; R/func_lipid_norm_ruv_optimization_helpers.R
         # and R/func_metab_norm.R, Manual mode) is a failed search: it stops, naming duplicated feature ids when present.
         controls <- result$control_genes_index
-        if (isTRUE(result$success) && !is.null(controls) && !(is.atomic(controls) && is.null(dim(controls)))) {
+        unread <- function() {
             assay <- assays[[assay_name]]
             ids <- if (is.data.frame(assay)) as.character(assay[[methods::slot(search_object, slots$id)]]) else character()
             duplicated_ids <- unique(ids[duplicated(ids)])
-            return(list(action = "stop", reason = "search_error", text = paste0(sprintf(paste("RUV-III was not run: the",
+            list(action = "stop", reason = "search_error", text = paste0(sprintf(paste("RUV-III was not run: the",
                 "control-feature search found no control features for assay %s, because it could not read the assay."), assay_name),
                 if (length(duplicated_ids)) sprintf(paste(" The assay has %d duplicated feature identifiers (%s). Run 'Resolve",
                     "Duplicates' in the Quality Control tab, then run the normalisation again."), length(duplicated_ids),
-                    paste(utils::head(duplicated_ids, 3L), collapse = ", ")) else "")))
+                    paste(utils::head(duplicated_ids, 3L), collapse = ", ")) else ""))
         }
+        # KIT-242 (VAL-373 Q-A, option (b)): the control selection skipped the assay. A group left with fewer than two
+        # samples holding values keeps the assay without RUV ("no usable controls"), naming the groups; any other skip
+        # (an assay it could not read, duplicated ids included) stops, as before.
+        skip <- result$skip_reason
+        if (!isTRUE(result$success) && is.list(skip)) {
+            if (!identical(skip$reason, "group_counts")) return(unread())
+            groups <- as.character(skip$groups)
+            return(list(action = "keep", reason = "no_usable_controls", groups = groups, text = sprintf(paste("RUV-III was",
+                "not applied to assay %s: the groups %s have fewer than two samples with values in this assay, so control",
+                "features cannot be chosen. The assay keeps its values without RUV."), assay_name, paste(groups, collapse = ", "))))
+        }
+        if (isTRUE(result$success) && !is.null(controls) && !(is.atomic(controls) && is.null(dim(controls)))) return(unread())
         if (isTRUE(result$success)) return(list(action = "correct", reason = NA_character_, text = ""))
         status <- as.character(result$optimization_results$status %||% character())
         if (!identical(ruv_mode, "automatic") || !length(status) || any(startsWith(status, "error_"))) {
@@ -2133,6 +2148,7 @@ omicsRouteRecordOutcomes <- function(binding, context, operation, record, outcom
             if (length(excluded)) outcomes$ruv_samples_excluded_per_assay <- excluded
             features <- Filter(length, saved$ruv_features_excluded)
             if (length(features)) outcomes$ruv_features_excluded_per_assay <- features
+            if (!is.null(saved$ruv_not_applied_groups)) outcomes$ruv_not_applied_groups_per_assay <- as.list(saved$ruv_not_applied_groups)
         }
         # KIT-129 integration item 3: a new design's product records its design and its k per assay: whether RUV was
         # applied, the rule, the estimate and the seed (today's product names none, and its outcomes are as before).

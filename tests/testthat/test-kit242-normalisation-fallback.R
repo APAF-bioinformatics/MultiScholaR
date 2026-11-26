@@ -1208,3 +1208,85 @@ for (class in c("lipid", "metab")) {
     if (!is.null(a2)) expect_false("A2_F040" %in% rownames(a2))
   })
 }
+
+# ==== VAL-373 (Q-C): the one bounded correction after the implementation audit ========================================
+# E17 through the DIA normalisation declaration (audit I04): the sample with no value that leaves the design is recorded
+# and told. E27 (audit I02, VAL-373 (Q-A) option (b)): an assay in which a group is left with fewer than two samples
+# holding values keeps its values without RUV, recorded and shown as `no_usable_controls` with the groups named; the
+# other assays are corrected, on the Automatic and the Manual search; KIT-275's VE shape (group B with one sample in
+# every assay) keeps every assay without RUV.
+
+test_that("KIT-242 E17 (VAL-373 Q-C): the DIA normalisation step records and tells a sample removed for having no value", {
+  y <- kit242ProteinValues(17L)
+  y[, "B_6"] <- NA_real_
+  object <- kit242ProteinObject(y)
+  store <- list(checkpoint = function(x, name, from = NULL) x)
+  parameters <- list(norm_method = "cyclicloess", ruv_mode = "skip", auto_percentage_min = 1, auto_percentage_max = 20,
+    separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE, ruv_percentage = 10,
+    ruv_k = 1L, grouping = "group")
+  run <- kit242Conditions(diaNormalizationOperation()$kernel(object, parameters, store), "omics_normalisation_sample_removed")
+  expect_length(run$kept, 0L) # captured inside the step, not escaping as a warning
+  expect_identical(run$value$samples_removed, "B_6")
+  expect_false("B_6" %in% as.character(run$value$normalized@design_matrix$Run))
+  # The record: the commit's outcomes name the sample.
+  local_mocked_bindings(readDIAStateMetadata = function(manager, reference = NULL, ...) list(data = list(products = list())))
+  commit <- diaNormalizationCommit(list(current_state = "initial"), list(norm_method = "cyclicloess", ruv_mode = "skip"),
+    list(value = run$value, reference = NULL))
+  expect_identical(commit$config$outcomes$samples_removed, "B_6")
+  # The tab: a warning notification names the sample.
+  notes <- character()
+  finishProtNormNormalization(TRUE, list(ruv_mode = "skip", norm_method = "cyclicloess"), list(),
+    list(samples_removed = run$value$samples_removed), buildProtNormCompletionNotification,
+    function(text, type = "default", ...) notes <<- c(notes, paste(type, text)), function(...) NULL)
+  expect_true(any(grepl("^warning .*B_6.*removed from the design", notes)), info = paste(notes, collapse = " | "))
+})
+
+for (class in c("lipid", "metab")) {
+  binding <- kit172Binding(class)
+  prefix <- binding$prefix
+
+  for (mode in c("automatic", "manual")) {
+    test_that(paste("KIT-242 E27 (VAL-373 Q-A):", class, mode, "A2 with group B left with one sample keeps its values without RUV, A1 corrected"), {
+      skip_if_not(workflowOwnerCapable())
+      v <- kit242Draw(27L, n_is = c(A1 = 0L, A2 = 0L))
+      v$A2[, c("B_2", "B_3", "B_4", "B_5", "B_6")] <- NA_real_
+      fixture <- kit242Owner(kit242Object(v, class), class)
+      owner <- fixture$owner
+      config <- fixture$workflow$config_list
+      kit242RuvChain(binding, owner, config)
+      normalised <- owner$getState(paste0(prefix, "_normalized"))
+      parameters <- if (identical(mode, "automatic")) kit172LegacyRuv("automatic") else kit242ManualRuv()
+      run <- tryCatch(kit172Quiet(runWorkflowOmicsReferenceRuv(binding, owner, parameters, config)), error = function(e) e)
+      expect_false(inherits(run, "error"), info = if (inherits(run, "error")) conditionMessage(run) else "")
+      if (inherits(run, "error")) return(invisible())
+      after <- owner$getState(paste0(prefix, "_ruv_corrected"))
+      expect_equal(kit242Matrix(after, binding, "A2"), kit242Matrix(normalised, binding, "A2"), tolerance = 0)
+      expect_false(kit242Equal(kit242Matrix(normalised, binding, "A1"), kit242Matrix(after, binding, "A1")))
+      outcomes <- kit242Outcomes(owner, paste0(prefix, "_ruv_corrected"))
+      expect_identical(outcomes$ruv_applied_per_assay, list(A1 = TRUE, A2 = FALSE))
+      expect_identical(outcomes$ruv_not_applied_reason_per_assay$A2, "no_usable_controls")
+      expect_identical(outcomes$ruv_not_applied_groups_per_assay, list(A2 = "B"))
+      expect_match(run$value$ruv_not_applied_text$A2, "the groups B have fewer than two samples with values", fixed = TRUE)
+    })
+  }
+
+  test_that(paste("KIT-242 E27 (VAL-373 Q-A):", class, "KIT-275's VE shape: group B with one sample in every assay keeps every assay without RUV"), {
+    skip_if_not(workflowOwnerCapable())
+    v <- kit242Draw(127L + 100L, n_is = c(A1 = 0L, A2 = 0L))
+    for (a in c("A1", "A2")) v[[a]][, c("B_2", "B_3", "B_4", "B_5", "B_6")] <- NA_real_
+    fixture <- kit242Owner(kit242Object(v, class), class)
+    owner <- fixture$owner
+    config <- fixture$workflow$config_list
+    kit242RuvChain(binding, owner, config)
+    normalised <- owner$getState(paste0(prefix, "_normalized"))
+    run <- tryCatch(kit172Quiet(runWorkflowOmicsReferenceRuv(binding, owner, kit172LegacyRuv("automatic"), config)), error = function(e) e)
+    expect_false(inherits(run, "error"), info = if (inherits(run, "error")) conditionMessage(run) else "")
+    if (inherits(run, "error")) return(invisible())
+    after <- owner$getState(paste0(prefix, "_ruv_corrected"))
+    for (assay in c("A1", "A2")) expect_equal(kit242Matrix(after, binding, assay), kit242Matrix(normalised, binding, assay), tolerance = 0)
+    outcomes <- kit242Outcomes(owner, paste0(prefix, "_ruv_corrected"))
+    expect_false(isTRUE(outcomes$ruv_applied))
+    expect_identical(outcomes$ruv_not_applied_reason_per_assay, list(A1 = "no_usable_controls", A2 = "no_usable_controls"))
+    expect_identical(outcomes$ruv_not_applied_groups_per_assay, list(A1 = "B", A2 = "B"))
+  })
+}

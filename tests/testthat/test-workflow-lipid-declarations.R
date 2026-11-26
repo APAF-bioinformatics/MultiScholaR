@@ -136,7 +136,7 @@ test_that("KIT-031: the lipid journey on the owner commits every state with its 
     expect_identical(decodeWorkflowRecordValue(ruv$manual_k$value), 1L)
     expect_identical(by_state$lipid_ruv_corrected$outcomes$k, 2L)
     expect_identical(length(by_state$lipid_ruv_corrected$outcomes$k_per_assay), 2L)
-    expect_true(by_state$lipid_itsd_norm$outcomes$itsd_applied)
+    expect_false(by_state$lipid_itsd_norm$outcomes$itsd_applied)  # KIT-242 (owner 2026-11-27, VAL-373 (Q-B)): no standard matched
     expect_identical(by_state$lipid_itsd_norm$step_label, "5_ITSD_Normalised")
     da <- record$analyses$differential_abundance
     expect_identical(da$operation, "lipid_da_contrast")
@@ -186,7 +186,7 @@ test_that("KIT-031: the lipid journey on the owner commits every state with its 
         num_neg_ctrl = 0L, s4_de_q_val_thresh = 0.1, intensity_cutoff_percentile = 5, log_transform_offset = 2,
         ruv_applied = FALSE, itsd_applied = FALSE, qvalue_threshold = 0.01, ruv_grouping_variable = "x"), list())
     expect_identical(overlay$itsd_aggregation, "median")
-    expect_true(overlay$itsd_applied)
+    expect_false(overlay$itsd_applied)  # KIT-242 (VAL-373 (Q-B)): no standard matched, so the overlay says not applied
     expect_identical(overlay$normalisation_method, "cyclicloess")
     expect_identical(overlay$best_k, 2L)
     expect_true(overlay$ruv_applied)

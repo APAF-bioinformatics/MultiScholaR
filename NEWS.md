@@ -754,7 +754,10 @@
    whether q-values or Benjamini-Hochberg adjusted p-values were used, as it already did for proteomics. In
    proteomics, a sample with no value is removed from the protein table and the design before between-sample
    normalisation; before, Scale normalisation then made every value missing, which made a later step stop with an
-   unrelated message. Analyses recorded before this change replay as they were made.
+   unrelated message. On the proteomics routes whose normalisation step also applies RUV
+   (DIA without limpa, label-free and TMT), the removed sample is named in a warning on the tab and recorded in the
+   analysis record, as on the DIA-with-limpa route.
+   Analyses recorded before this change replay as they were made.
 
  * Lipidomics and metabolomics RUV-III (KIT-242, second part; draft wording): no assay is dropped any more. A sample or
    a feature with no value in an assay is left out of that assay's control search and correction and stays empty
@@ -766,7 +769,11 @@
    now stops the step with a message naming the assay. Before, such an assay was removed from the data (or, when every
    assay failed, the data were returned uncorrected) while the record said RUV had been applied. With RUV factors in
    the model, a sample with no value in an assay is left out of that assay's factors and its differential analysis.
-   Analyses recorded before this change replay as they were made.
+   Analyses recorded before this change replay as they were made. When a group is left with fewer than two samples
+   holding values in an assay (for example one sample with no value in a group of two), control features cannot be
+   chosen there: that assay keeps its values without RUV, the tab and the record name the groups, and the other assays
+   are corrected, in Automatic and Manual mode alike; before, the RUV step stopped (Automatic mode) or the assay was
+   left out while the record said RUV had been applied (Manual mode).
 
  * Lipidomics and metabolomics: the internal-standard pattern proposed at import for every metabolomics file and every
    lipidomics file except LipidSearch (the MS-DIAL pattern, which was proposed whatever the file's format) no longer
