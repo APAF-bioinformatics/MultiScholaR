@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-262 M2 counted job 3 of 4 (declaration.md at ade127d1; VAL-280, VAL-302): rejection-rate measurement; planned 126 compute minutes, expected 136 job-minutes, ceiling 190 script-minutes",
+  "label": "KIT-262 M2 job 3 ade127d1",
+  "package_commit": "ade127d110e166af7c7c8b4d19af7943df251d4e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/m2-k262.R",
+      "args": ["k262-m2/j3"],
+      "env": {
+        "K262_CELLS": "3,6,7,14,15,22,23,30,33,40,41,46,49,56,57,65,66,74,75,82,83,85,90,93,98,101,108,111,118,119,126,129,134,137,142,146,151,152,159,160,167,168,175,178,181,182,186,189,194,197",
+        "K262_REPS": "1:40",
+        "K262_WORKERS": "4"
+      },
+      "out": "k262-m2/j3",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 190
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
