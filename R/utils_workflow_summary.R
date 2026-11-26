@@ -224,6 +224,103 @@ assertWorkflowSummarySaveCurrent <- function(workflowData, paths) {
     invisible(TRUE)
 }
 
+#' KIT-219 (VAL-187; drafts for the owner's wording pass): the texts of the enrichment files' notice and refusal.
+#' @return A list of `sprintf` formats.
+#' @noRd
+workflowEnrichmentTexts <- function() {
+    list(
+        not_copied = paste("%d enrichment file(s) in the pathway_enrichment folder were not copied, because the current",
+            "enrichment did not make them (they come from an earlier enrichment or an earlier analysis). They are still",
+            "on disk: %s."),
+        not_copied_no_analysis = paste("%d enrichment file(s) in the pathway_enrichment folder were not copied: this",
+            "application has no enrichment analysis for %s, so they were not made by this analysis. They are still on",
+            "disk: %s."),
+        report_not_current = paste("The report was not generated: the publication folder holds enrichment results that",
+            "the current enrichment did not make. Press 'Copy to Publication Directory' again, then generate the report."))
+}
+
+#' KIT-219: the sentence of the Copy notice about the enrichment files left out, up to three names.
+#' @param record The copy's `enrichment_not_current` record (`files`).
+#' @param omicType The omic.
+#' @return A string.
+#' @noRd
+workflowEnrichmentNotCopiedText <- function(record, omicType) {
+    texts <- workflowEnrichmentTexts()
+    files <- record$files
+    listed <- paste(utils::head(files, 3L), collapse = ", ")
+    if (length(files) > 3L) listed <- sprintf("%s and %d more", listed, length(files) - 3L)
+    if (identical(omicType, "proteomics")) sprintf(texts$not_copied, length(files), listed) else
+        sprintf(texts$not_copied_no_analysis, length(files), omicType, listed)
+}
+
+#' The names one enrichment result's files have in `pathway_dir`: per contrast and direction with a result, the table with
+#' the contrast as written (`<contrast>_<direction>_enrichment_results.tsv`) and the interactive and static plot with the
+#' contrast sanitised as the kernel sanitises it (`<contrast>_<direction>_enrichment_plot.html` and `.png`). A direction
+#' with a result but no terms writes no file; the names are those a run can write, never fewer.
+#' @param results An `EnrichmentResults`.
+#' @return Character vector of file names.
+#' @noRd
+workflowEnrichmentResultFileNames <- function(results) {
+    data <- methods::slot(results, "enrichment_data")
+    as.character(unlist(lapply(names(data), function(contrast) {
+        directions <- intersect(c("up", "down"), names(Filter(Negate(is.null), data[[contrast]])))
+        safe <- gsub("[^A-Za-z0-9_.-]", "_", contrast)
+        lapply(directions, function(direction) c(paste0(contrast, "_", direction, "_enrichment_results.tsv"),
+            paste0(safe, "_", direction, "_enrichment_plot.", c("html", "png"))))
+    })))
+}
+
+#' KIT-219 (VAL-187): the files of `pathway_dir` that the current enrichment made, for Copy and the Report. A
+#' reference-state session owner of proteomics: the files of the store's current enrichment product (`diaEnrichmentProduct`)
+#' by `workflowEnrichmentResultFileNames`; `character()` when there is no current product, or when the record cannot be
+#' read (logged; the divergence from `conventions/R.md`'s specific conditions is KIT-212 E-5's fail-open form, here the
+#' safe side: nothing is presented). Another omic has no enrichment analysis, so none of its files is current:
+#' `character()`. A manager that is not a reference-state session owner (a test fake, the legacy staging state) is not
+#' checked: `NULL`.
+#' @param workflowData The workflow bus.
+#' @param omicType The omic.
+#' @return `NULL` (unchecked), or a character vector of file names.
+#' @noRd
+workflowEnrichmentCurrentFiles <- function(workflowData, omicType) {
+    manager <- workflowData$state_manager
+    if (!usesWorkflowReferenceStates(manager)) return(NULL)
+    if (!identical(omicType, "proteomics")) return(character())
+    tryCatch(withWorkflowStateScope(manager, function() {
+        marker <- diaEnrichmentProduct(manager)
+        if (is.null(marker)) return(character())
+        workflowEnrichmentResultFileNames(readDIAStateObject(manager, marker$state))
+    }), error = function(error) {
+        logger::log_warn(logger::skip_formatter(paste("The current enrichment's files could not be read:",
+            conditionMessage(error))))
+        character()
+    })
+}
+
+#' KIT-219 (VAL-187): the Report is refused when the publication folder's `Enrichment_Plots` holds a file (listed
+#' recursively) that the current enrichment did not make, or whose bytes differ from the same-named file in `pathway_dir`
+#' (a missing source counts as different); "Copy again" then clears the folder and copies the current files only. A
+#' second form beside KIT-212's refusal of DA files, stated as such: Copy omits and says, the Report refuses on what Copy
+#' left in the folder. Not checked for a manager that is not a reference-state session owner.
+#' @param workflowData The workflow bus.
+#' @param omicType The omic.
+#' @param paths The omic's project paths (`results_summary_dir`, `pathway_dir`).
+#' @return TRUE, invisibly; otherwise a condition of class `workflow_summary_enrichment_not_current`.
+#' @noRd
+assertWorkflowSummaryEnrichmentCurrent <- function(workflowData, omicType, paths) {
+    current <- workflowEnrichmentCurrentFiles(workflowData, omicType)
+    if (is.null(current)) return(invisible(TRUE))
+    folder <- file.path(paths$results_summary_dir %||% "", "Publication_figures", "Enrichment_Plots")
+    shown <- if (dir.exists(folder)) list.files(folder, recursive = TRUE) else character()
+    if (!length(shown)) return(invisible(TRUE))
+    copied <- unname(tools::md5sum(file.path(folder, shown)))
+    source <- unname(tools::md5sum(file.path(paths$pathway_dir %||% "", shown)))
+    same <- shown %in% current & !is.na(copied) & !is.na(source) & copied == source
+    if (!all(same)) {
+        rlang::abort(workflowEnrichmentTexts()$report_not_current, class = "workflow_summary_enrichment_not_current")
+    }
+    invisible(TRUE)
+}
+
 #' The files refusal's text: the folder that holds every listed file, and up to three of them relative to it.
 #' @param files Paths.
 #' @param texts `omicNormGuardTexts()`.
@@ -427,11 +524,24 @@ copyWorkflowSummaryResults <- function(config, workflowData, projectDirs, omicTy
         }
         # P-30 route B: the copy's workbook transients are freed by R but kept by the allocator, so its free pages are
         # returned once the copy has returned or failed. `copyToResultsSummary` itself is unchanged for notebook callers.
-        failures <- tryCatch(copyFn(omic_type = omicType, experiment_label = label, contrasts_tbl = contrastsTbl,
-            design_matrix = designMatrix, force = TRUE), finally = reclaimWorkflowSummaryCopyMemory())
+        # KIT-219 (VAL-187): only the files the current enrichment made are copied; NULL (a manager that is not a
+        # reference-state session owner) leaves the copy as it was.
+        enrichmentFiles <- workflowEnrichmentCurrentFiles(workflowData, omicType)
+        failures <- tryCatch(if (is.null(enrichmentFiles)) copyFn(omic_type = omicType, experiment_label = label,
+            contrasts_tbl = contrastsTbl, design_matrix = designMatrix, force = TRUE) else copyFn(omic_type = omicType,
+            experiment_label = label, contrasts_tbl = contrastsTbl, design_matrix = designMatrix, force = TRUE,
+            enrichment_files = enrichmentFiles), finally = reclaimWorkflowSummaryCopyMemory())
         required <- list()
         optional <- list()
         failed <- list()
+        notCurrent <- NULL
+        if (is.list(failures) && length(failures) > 0L) {
+            # The record of the enrichment files left out is not a failure: it is taken out before the classification.
+            left <- vapply(failures, function(failure) is.list(failure) && identical(failure$type, "enrichment_not_current"),
+                logical(1))
+            if (any(left)) notCurrent <- failures[left][[1L]]
+            failures <- failures[!left]
+        }
         if (is.list(failures) && length(failures) > 0L) {
             workbook <- vapply(failures, workflowSummaryIsWorkbookFailure, logical(1))
             failed <- failures[workbook]
@@ -448,11 +558,16 @@ copyWorkflowSummaryResults <- function(config, workflowData, projectDirs, omicTy
             stop(sprintf("Required publication artifacts missing: %s",
                 paste(vapply(required, function(failure) failure$display_name, character(1)), collapse = ", ")))
         }
+        # KIT-219: what was left out of the enrichment files, stated after the notice (T1, T1b).
+        left <- if (!is.null(notCurrent)) paste0(" ", workflowEnrichmentNotCopiedText(notCurrent, omicType))
         if (length(failed) > 0L) {
-            notify(paste("Publication files copied, but the combined results workbook failed:",
-                workflowSummaryWorkbookFailureText(failed)), "error", 10)
+            notify(paste0("Publication files copied, but the combined results workbook failed: ",
+                workflowSummaryWorkbookFailureText(failed), left), "error", 10)
             logger::log_error(logger::skip_formatter(paste("Combined results workbook failed:",
                 workflowSummaryWorkbookFailureText(failed))))
+        } else if (!is.null(notCurrent)) {
+            notify(paste0(if (length(optional) > 0L) "Publication files copied with optional missing artifacts." else
+                "Publication files copied.", left), "warning", 10)
         } else {
             notify(if (length(optional) > 0L) "Publication files copied with optional missing artifacts" else
                 "Publication files copied", if (length(optional) > 0L) "warning" else "message", 5)
@@ -525,6 +640,7 @@ renderWorkflowSummaryReport <- function(config, workflowData, projectDirs, omicT
         assertWorkflowSummaryDaCurrent(workflowData, omicType, paths, files = TRUE)
         assertWorkflowDaPublicationComplete(paths)
         assertWorkflowSummarySaveCurrent(workflowData, paths)
+        assertWorkflowSummaryEnrichmentCurrent(workflowData, omicType, paths)
     }, error = function(e) e)
     if (inherits(refused, "error")) {
         logger::log_error(logger::skip_formatter(paste("Report refused:", conditionMessage(refused))))

@@ -1581,10 +1581,10 @@ cat("*Figure 3: Volcano plots of differentially expressed proteins one per compa
 
 ```{r enrichment_presence, echo=FALSE, results='asis'}
 # KIT-055: the enrichment section renders only when an enrichment analysis produced outputs for this project.
+# KIT-219: the flag reads the publication folder only: Copy puts there the files of the current enrichment, and the
+# Report refuses a folder that holds others.
 enrichment_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots")
-pathway_dir <- tryCatch(current_project_paths$pathway_dir, error = function(e) NULL)
-enrichment_ran <- length(list.files(enrichment_plots_dir, pattern = "[.](png|jpg|jpeg)$", ignore.case = TRUE)) > 0 ||
-  (!is.null(pathway_dir) && dir.exists(pathway_dir) && length(list.files(pathway_dir, recursive = TRUE)) > 0)
+enrichment_ran <- dir.exists(enrichment_plots_dir) && length(list.files(enrichment_plots_dir, recursive = TRUE)) > 0
 cat("# GO Enrichment Analysis
 
 ")

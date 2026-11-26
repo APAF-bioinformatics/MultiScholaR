@@ -83,6 +83,19 @@
 
 ### Fixes
 
+ * Summary: 'Copy to Publication Directory' and the report no longer present enrichment results that the current analysis
+   did not make. Before, every enrichment table and plot in the project's pathway_enrichment folder was copied and shown,
+   including those of an earlier enrichment (after the differential analysis was re-run, the table changed, a later
+   enrichment found nothing for a direction, the enrichment was re-run after the last copy, or the project was reopened),
+   next to the current differential-abundance results. Now only the current enrichment's files are copied and put in the
+   enrichment workbook; the others stay on disk and the copy says how many were left out. For lipidomics, metabolomics and
+   transcriptomics, which have no enrichment analysis in the application, no file of that folder is copied. The report asks
+   for a new copy when the publication folder holds older enrichment results. Lipidomics and metabolomics: the report no
+   longer states that a pathway enrichment analysis was performed; neither omic has one in the application, and the
+   enrichment section appears only when the publication folder holds an enrichment file. 'Copy to Publication Directory'
+   called from the workbooks is unchanged. A project that already generated a report keeps its copy of the report template:
+   delete `scripts/<omic>/<template>` to take the new one. No computed value changes (KIT-219).
+
  * Proteomics reports: the description of panels d to f of Figure 1 (QC metrics across normalisation stages) was
    wrong. The panels are not distributions of protein intensities per sample: they are box plots of the samples' scores
    on principal components 1 and 2 by group, the same scores that the principal component analysis panels plot as

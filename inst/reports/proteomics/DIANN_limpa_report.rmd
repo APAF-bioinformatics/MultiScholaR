@@ -1549,10 +1549,10 @@ cat("*Figure 2: Volcano plots of differentially expressed proteins one per compa
 
 ```{r enrichment_presence, echo=FALSE, results='asis'}
 # KIT-055: the enrichment section renders only when an enrichment analysis produced outputs for this project.
+# KIT-219: the flag reads the publication folder only: Copy puts there the files of the current enrichment, and the
+# Report refuses a folder that holds others.
 enrichment_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots")
-pathway_dir <- tryCatch(current_project_paths$pathway_dir, error = function(e) NULL)
-enrichment_ran <- length(list.files(enrichment_plots_dir, pattern = "[.](png|jpg|jpeg)$", ignore.case = TRUE)) > 0 ||
-  (!is.null(pathway_dir) && dir.exists(pathway_dir) && length(list.files(pathway_dir, recursive = TRUE)) > 0)
+enrichment_ran <- dir.exists(enrichment_plots_dir) && length(list.files(enrichment_plots_dir, recursive = TRUE)) > 0
 cat("# GO Enrichment Analysis
 
 ")
@@ -1586,14 +1586,14 @@ cat("*Figure 3: GO enrichment analysis showing pathways enriched in differential
 ```{r stringdb_presence, echo=FALSE, results='asis'}
 # KIT-053: the STRING section renders only when a STRING enrichment produced outputs for this project (KIT-055's
 # rule for the GO section; this template's extra STRING section was not covered and stated a query that never ran).
-stringdb_plots_dir <- file.path(current_project_paths$pathway_dir %||% "", "string_db")
+stringdb_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots", "string_db")
 stringdb_ran <- dir.exists(stringdb_plots_dir) && length(list.files(stringdb_plots_dir, recursive = TRUE)) > 0
 if (stringdb_ran) cat("# STRING DB Functional Enrichment Analysis\n\n", results_data$content$stringdb_enrichment, "\n\n")
 ```
 
 ```{r STRING DB Enrichment Plots, echo=FALSE, eval=stringdb_ran, out.width="100%", fig.align='center'}
-# Use pathway_dir for STRING DB results
-stringdb_plots_dir <- file.path(current_project_paths$pathway_dir, "string_db")
+# KIT-219: the STRING results as Copy put them in the publication folder
+stringdb_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots", "string_db")
 if(dir.exists(stringdb_plots_dir)) {
   all_stringdb_files <- list.files(stringdb_plots_dir, full.names = TRUE, recursive = FALSE)
   stringdb_plot_files <- sort(grep(pattern = "enrichment_summary_.*\\.(png|jpg|jpeg)$", 
