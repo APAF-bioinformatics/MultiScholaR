@@ -1,0 +1,37 @@
+{
+  "requested_by": "KIT-262 M2 scoring (score-k262.R m2, once, on the four jobs and the continuation; declaration at ade127d1); expected 15 job-minutes, ceiling 40",
+  "label": "KIT-262 M2 scoring 1a88a719",
+  "package_commit": "1a88a7190272aa792a1669462e51067c561f90d7",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/score-k262.R",
+      "args": [
+        "m2",
+        "k262-sc/m2",
+        "docs/qa/workflow-execution/kit/kit-262/m2/j1/summary.tsv",
+        "docs/qa/workflow-execution/kit/kit-262/m2/j2/summary.tsv",
+        "docs/qa/workflow-execution/kit/kit-262/m2/j3/summary.tsv",
+        "docs/qa/workflow-execution/kit/kit-262/m2/j4/summary.tsv",
+        "docs/qa/workflow-execution/kit/kit-262/m2/cont/summary.tsv"
+      ],
+      "env": {},
+      "out": "k262-sc/m2",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
