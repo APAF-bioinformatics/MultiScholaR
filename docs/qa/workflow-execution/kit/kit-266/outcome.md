@@ -144,3 +144,64 @@ R/utils_workflow_dia_products.R saveWorkflowDiaLimpaCompositeFigure). Results un
 
 The cyclic loess image title (32-character first line); a real worker on Windows or with systemd (M1 used a child Rscript, the production command shape without the unit); sessions saved before this change beyond the labelled-note path; the DA tab at a re-applied correlation_filtered head (VAL-334); the
 G2b fallback beyond the shape tested; Copy's log text beyond the assertion on 'Source file not found'; test-omics-module-globals.R (not in scope); R CMD check beyond the identical findings; the real-data behaviour.
+
+# After the implementation audit (AUDIT-KIT-266-impl-20261127; records only, no product code, no run)
+
+## I02: a slip and its restoration
+The R1b commit (14c7a241, "E11 mechanics", instrument re-send 1) also wrapped E10's Copy call in `tryCatch(..., error = function(e) conditionMessage(e))`. That was not declared
+in predictions-r1.md or runs.tsv, was not needed (E10 did not error at R1), and let an error of Copy pass E10: a weakening of an expectation inside an instrument repair, which VAL-54 condition (ii)
+and the never-weaken rule forbid. Rule slip. Restored in a tests-only commit (d8df2e62) to R1's exact form; nothing else in that commit. The merge train's run of the file is the evidence;
+prediction unchanged: 210/0 on the head.
+
+## Run tables committed (I01)
+r1/ (tests.tsv, failures.txt), r1b/ (tests.tsv), r1c/ (tests.tsv, failures.txt), r2/ (compare.tsv, tests.tsv, tests-base.tsv, check-compare.txt, compare-failures-changed.txt: the blocks of the seven
+non-same files), r2c/compare.tsv, m1/out-45743367152/ and m1/out-45751962444/ (m1.txt, positive-control-two.txt, positive-control-three.txt), r3b/ (checks.tsv, dial-V0/V1/V2-head.txt).
+
+## I06: M1's design deviation
+The ticket's S03 design is a preparation process and a fresh parent per build point. M1 (all three sends) drives the whole lane in ONE controller process and resets VmHWM ("5" to /proc/self/clear_refs) right
+before each limpa_composite child starts, with a reset control (VmHWM within 5 percent of VmRSS after the reset: equal at M1c, 817,008 and 848,216 kB). M1c ran BOTH processes on a pkgload::load_all source tree, not
+the installed package. Valid for the question asked (the peak counted starts at the action), recorded as a deviation from the frozen instrument.
+
+## I07: the diagnosed field of the first path-control failure, and the residual
+The composite files' identities include the store context's software fingerprint (diaCompositeFigureIdentities, R/utils_workflow_dia_products.R; the fingerprint is built at R/utils_workflow_dia_state.R:1747-1758).
+It digests package_binary: the digest of system.file("R", "MultiScholaR.rdb") when that file exists, else a digest of the package version and a function body. Under pkgload::load_all system.file points to the source tree,
+which has no .rdb, so the first send's controller (load_all) used the fallback digest and the installed child the .rdb digest: every identity differed and writeDIACompositeFigureFiles returned FALSE. Script cause (the test
+helpers mock workflowExecutionBuildIdentity for the same reason). In the installed application the worker is refused unless it runs the same build (the request's build identity, R/utils_workflow_execution.R), so the
+package component is equal; the other components are equal on one machine and one library. Residual cases in which the fallback can still run: (i) the worker's build failed (its error is swallowed, no file saved); (ii) a stage
+image in protein_qc changed between the worker's copy and the delivery; (iii) the worker's library differs from the application's in a producer package or BLAS (the classic composite shares this). Then the user gets the correct
+figure, built in the application (deliverDiaLimpaCompositeFigure), and only logger::log_warn says so; the application's memory takes the full event (0.558 / 0.762 GiB observed in the first send). A5a holds for the route users run
+by reading plus M1c; the residual is stated, not tested.
+
+## I09: test-prot-norm-core.R
+Predicted `fixed`, observed `message-changed` (base 1531/327/1, head 1555/307/0): the tool's label for a file that keeps its 307 standing failures cannot be `fixed`. The substance predicted held: all 21 base-only messages
+(18 in KIT-111 W3 DIA_LIMPA, 3 in GUI audit A111-01) are in the two declared blocks; none on head only.
+
+## I15: E12 (c)
+A setup fix (the aesthetics change before the second press): no expected value changed, not a re-send, not the correction pass. Observation (pre-existing, shared with the classic routes through the identity replay of
+publishDIAActionOutputs, KIT-052): a figure that failed once cannot be redrawn by pressing again with the same inputs; the replay copies the placeholder and its marker back. A candidate in KIT-259's area.
+
+## I16: send accounting
+Instrument re-sends 3 of 3, all mechanics (R1b E11 export; M1b script died in helper sourcing; M1c same source tree in both processes). One correction pass (R2c, with R3b inside it), declared before sending. R1c an extra
+declared head check. 837.2 job-minutes = 55.81 core-hours (the sum of the per-run rounded figures in runs.tsv is 55.79) of the ceiling 163.46 (expected 48.03). The ledger draft's counts: the extended grep's other-omics
+files excluded from R2's scope were 12 (the ticket said nine).
+
+## Known limits, not changed here (the correction pass is spent); candidates
+- I03: nothing removes ruv_covariates_cancor.png (removeDiaLimpaRuvMarkers removes only its .placeholder). With the RUV design panel on (option MultiScholaR.ruv_design_panel, default off), a declared-rule run with k >= 1 and no
+  sweep shows an EARLIER sweep run's plot as panel m. Display only. The one-line repair (also remove the image before each covariates or correction run) and one test row (a sweep run, then a declared-rule run, gives no m) are routed by the coordinator into KIT-276.
+- I04: the left column's source is published before the pre figures are drawn; a failed draw then a retry press leaves blank or stale left cells without a note (heals at the next tab entry at correlation_filtered; the figure built in between does not).
+- I05: a failure of the chained composite action, or of the in-process notes or list writer, is reported as the step's error after the step committed (candidate: the composite's own failure text).
+
+## Not checked (completed, I17)
+(a) M1c ran both processes on a load_all source tree: identity equality under the installed app holds by reading only, with the residual (i) to (iii). (b) diaLimpaNormMethod on a real protein_normalised state with a method other than none is exercised
+by no test (E2, E13 call the resolver and the template directly); the field path is the one the existing reader protIntegrationInputNormMethod uses; risk low. (c) The stale m) of I03. (d) The failure paths of I04 and I05. (e) R3 renders the in-process route only (the GUI lane has no runner);
+the managed figure's equality is E16's PNG md5 in the test double. (f) An older project has no Figure 1 until a build point runs. (g) The M1 instrument deviation. (h) The two-column PNG was not viewed by the auditor (it was by me, R3b). (i) A real systemd or Windows worker.
+(j) Real data. Plus the earlier list: the cyclic loess image title, the DA tab at a re-applied head, test-omics-module-globals.R.
+
+## For the merge train (I12)
+- The new file ran 43.97 minutes at R2 head (2,638 s) against a 45-minute per-file timeout: set per-file timeouts 90 (test-kit266-limpa-combined-qc-figure.R), 60 (test-prot-norm-core.R), 120 (test-gui-entry-proteomics.R).
+- Deal the shards so the new file and test-prot-norm-core.R are each alone in a shard.
+- Scope: 59 files as the audit's register derives it (the R2 grep on the merged tree: 57 test files incl. the new file and test-kit273's, plus test-gui-entry-proteomics.R and test-omics-module-globals.R for continuity). The cost is permanent: about +75 test-minutes per side on this scope.
+- Env: MULTISCHOLAR_TRX_MANIFEST_NOTE=1.
+- Predictions: the new file 210/0 on the head only (base about 71/101 with 5 skipped); test-prot-norm-core.R 1547/307 to 1555/307 with identical failure messages; test-gui-entry-proteomics.R 92/101 with message changes only in the limpa lane
+  (the four file-name key lines masked); test-kit272-prot-box-panel-text.R 373/0; test-omics-module-globals.R 14/0; everything else the same on both sides; R CMD check identical.
+- Do not merge staging again into kit-266: the train builder merges the branch as it is; the two -s ours merges (5e3de9c0, ec6e282b) change no tree.

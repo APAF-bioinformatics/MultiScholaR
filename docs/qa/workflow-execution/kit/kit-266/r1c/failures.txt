@@ -1,0 +1,18 @@
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E12 (a), (c): a replaced RUV panel writes the list; a second run that draws it leaves no stale marker or list
+kind: failure
+message:
+  Expected `got$steps$ruv_drawn$list` to be NULL.
+  Differences:
+  `actual` is a character vector ('l\truv_corrected_correlation')
+  `expected` is NULL
+
+file: test-kit266-limpa-combined-qc-figure.R
+test: KIT-266 E12 (a), (c): a replaced RUV panel writes the list; a second run that draws it leaves no stale marker or list
+kind: failure
+message:
+  Expected `file.exists(file.path(fixture$paths$protein_qc_dir, "ruv_corrected_correlation.png.placeholder"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+

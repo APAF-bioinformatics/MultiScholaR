@@ -18,3 +18,11 @@ Where the code differs from the ticket's draft this is said.
 | D4 | KIT-259's placeholder sentence, limpa template (`QC_metrics_placeholders`) | stage words: `of DPC-Quant's protein estimates`, `after the peptide count filter and any between-sample normalisation`, `of the RUV-III-adjusted matrix after the sample-correlation filter`; panel m: `RUV-III canonical correlation` (also for `ruv_covariates_cancor`) |
 | D5 | the covariates step's summary text (`finishProtNormRuvCovariates`) | `... The quantified matrix is unchanged; the adjusted matrix is shown in the RUV-III-adjusted QC figures only.` |
 | D6 | NEWS entry | under `### Fixes`, as the ticket's section 13 draft |
+
+## For the owner's wording pass (AUDIT-KIT-266-impl I18)
+- D4 in correction mode: the limpa placeholder sentence names a replaced right-column panel "of the RUV-III-adjusted matrix after the sample-correlation filter" in both modes, while the figure's own title in correction mode is "RUV-III-corrected (the data analysed)".
+  Options: mode-aware stage words (the template has ruvcov_mode), or a neutral "of the RUV-III result after the sample-correlation filter". The stage map's centre words are not method-aware ("and any between-sample normalisation"), unlike D1 and D2.
+- When the left column's own draw fails, drawProtNormQcFigure passes no limpa flag, so the cell and the tab's notice say "Pre-normalisation PCA" while the report's sentence says "of DPC-Quant's protein estimates".
+- The cyclic loess centre title "After cyclic loess normalisation" has a 32-character first line (ruling: 30); unrendered. One option: "After cyclic loess\nnormalisation and the\npeptide count filter".
+- The fig.cap is static ("the first two columns are before the sample-correlation filter, and a third column, when the figure has one, is after it"); a caption computed from the state is possible (the chunk option can be an expression).
+- NEWS draft reworded after the audit (I10): the rebuild after a re-apply, three columns only when RUV was applied, older projects get no Figure 1 until a build point runs.
