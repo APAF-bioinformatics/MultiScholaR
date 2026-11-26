@@ -1,0 +1,55 @@
+{
+  "requested_by": "KIT-275 smoke send 3 (allowed by the coordinator's ruling on send 2; the guard's journey and unit paths; instrument check, nothing judged, blind; declaration smoke/declaration-3.md on branch kit-275)",
+  "label": "KIT-275 smoke3 d3eb29d2",
+  "package_commit": "d3eb29d2ae55ff0f9a28ada541a5349fe4676518",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/selftest/run-selftest.R",
+      "args": [],
+      "env": {
+        "K275_SELFTEST_OUT": "k275-smoke3-selftest"
+      },
+      "out": "k275-smoke3-selftest",
+      "out_pattern": "\\.(tsv|txt|json|log|md)$",
+      "timeout_minutes": 6
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/sim-k275.R",
+      "args": [
+        "D,T,S",
+        "D3",
+        "9101",
+        "9101",
+        "k275-smoke3-a"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K275_LIFECYCLE": "1",
+        "K275_SMOKE": "1",
+        "K275_FAULT_GUARD": "1",
+        "K275_FAULT_GUARD_UNIT": "T",
+        "K275_JOB": "smoke3-a",
+        "K275_DECLARATION": "docs/qa/workflow-execution/kit/kit-275/smoke/declaration-3.md"
+      },
+      "out": "k275-smoke3-a",
+      "out_pattern": "\\.(tsv|txt|json|log|md)$",
+      "timeout_minutes": 12
+    }
+  ],
+  "fetch_refs": [
+    "kit-188-ruv-default-calibration"
+  ],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
