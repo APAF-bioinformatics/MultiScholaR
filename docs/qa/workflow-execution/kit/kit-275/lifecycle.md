@@ -231,3 +231,18 @@ Running ceiling (core-hours; `runs.tsv`): smoke 1 used 1.67; smoke 2 used 1.53; 
 C01: every plant (the fault, the E7 refusal, both guard plants) sits on a data set E9 does not repeat (`units$r != first_rep`: r = 9102 in L1). E7's fault and refusal sit on the first unit that E9 does not repeat. C02: `score-k275.R --g1 <g1.tsv> <out>` judges PC2 and NC2 alone (`g1-judged.tsv`, exit 1 on F3); full scoring calls the same `judgeG1`; self-test cases `g1_pass`, `g1_fail`. C03: the header's guard lines carry `# K275-guard`; E0 exempts only hunks made of comments and blank lines. C04: the guard stop is re-raised in the analysis-record and E12 handlers. C05: the L1 draft is in line with the re-plan (114, 15, 139 job-minutes = 9.27 core-hours); `budget-replan.py` has no 0.8 factor (planned ceiling 340.27); `labelPi` applies the coverage rule when n = 0 (case `pi_nopair`).
 **Continuation rule as the scorer applies it:** a counted job that did not complete is replaced by its continuation in the scoring input; the scorer stops on unit rows, on a false `unit_completed` and on duplicate rows; the failed job's directory stays in the records but is not scored.
 Self-test now: 40 cases, 2,779 predictions.
+
+## 15. G1 (run 45755206721, package 6075959d; not blind; run once; fixture 39 s, judging 1 s, about 11 job-minutes = 0.73 core-hours against 2.33; `g1/`)
+
+F3 did not fire: all six controls pass (two-sided 0.01/3 bootstrap interval of the mean over 20 data sets, within 0.03 of the value).
+
+| Design | Kind | Estimate | Interval | Value | Label |
+|---|---|---|---|---|---|
+| D3 | PC2 | 0.7753 | 0.7702 to 0.7809 | 0.7746 | passes |
+| D3 | NC2 | 1.0017 | 0.9953 to 1.0080 | 1 | passes |
+| D4 | PC2 | 0.8485 | 0.8429 to 0.8538 | 0.8452 | passes |
+| D4 | NC2 | 1.0037 | 0.9987 to 1.0091 | 1 | passes |
+| D6 | PC2 | 0.9055 | 0.9021 to 0.9090 | 0.9045 | passes |
+| D6 | NC2 | 1.0003 | 0.9963 to 1.0043 | 1 | passes |
+
+E6 (moderated SE reading, unmoderated reading against the kernel, LX on the hand-made matrix: deviations at most 3.2e-16, 0) and E10 (kappa_c 0.1785714286, PR 3.16227766, dot product 2): 12 of 12 pass.

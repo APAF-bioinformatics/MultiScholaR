@@ -1,0 +1,12 @@
+{
+  "job": "g1",
+  "designs": ["D3", "D4", "D6"],
+  "data_sets": [1, 20],
+  "smoke": false,
+  "commit": "6075959d23595725cd1fe001ceaa53f2d36fbdfc",
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "script_sha256": "074570fb325abd3cf80fb0f41eff3b8b5625efa259f2e95891c506b3bab2272a",
+  "fixture_sha256": "407949a9a6c0f90fa47ab062ec73532795f8b0515c6ade567845ea36abf71a91",
+  "started": "2026-11-26T04:38:37+0000",
+  "finished": "2026-11-26T04:39:16+0000"
+}

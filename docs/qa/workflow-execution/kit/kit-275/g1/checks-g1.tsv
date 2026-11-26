@@ -1,0 +1,13 @@
+check	cell	rep	condition	value	threshold	pass	note
+E6	X3	1	moderated SE |logFC / t| equals stdev.unscaled x sqrt(s2.post)	1.11e-16	1e-08	TRUE	
+E6	X3	1	the script's lm.fit variance equals the kernel's sigma^2 x stdev.unscaled^2	2.011e-16	1e-08	TRUE	
+E6	X3	1	LX's reading on the hand-made pseudo-replicate matrix equals PC2's	0	1e-10	TRUE	
+E6	X4	1	moderated SE |logFC / t| equals stdev.unscaled x sqrt(s2.post)	1.11e-16	1e-08	TRUE	
+E6	X4	1	the script's lm.fit variance equals the kernel's sigma^2 x stdev.unscaled^2	2.226e-16	1e-08	TRUE	
+E6	X4	1	LX's reading on the hand-made pseudo-replicate matrix equals PC2's	0	1e-10	TRUE	
+E6	X6	1	moderated SE |logFC / t| equals stdev.unscaled x sqrt(s2.post)	1.11e-16	1e-08	TRUE	
+E6	X6	1	the script's lm.fit variance equals the kernel's sigma^2 x stdev.unscaled^2	3.196e-16	1e-08	TRUE	
+E6	X6	1	LX's reading on the hand-made pseudo-replicate matrix equals PC2's	0	1e-10	TRUE	
+E10	constructed	0	kappa_c = mean(delta^2 over the controls) / mean(delta^2 over the affected rows) = 0.5 / 2.8	0.1785714286	0.178571428571429	TRUE	
+E10	constructed	0	PR = d_a / median(d_s) = sqrt(12.5) / sqrt(1.25) = sqrt(10)	3.16227766	3.16227766016838	TRUE	
+E10	constructed	0	dot_g = sum(x * logFC) = 1 * 1.5 + (-1) * (-0.5) = 2; SE^2 sum = 0.25 + 0.25 = 0.5	2	2	TRUE	

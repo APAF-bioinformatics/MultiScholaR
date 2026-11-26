@@ -1,0 +1,8 @@
+# KIT-275 L1 (the blind lifecycle, VAL-11): declaration, committed before the request
+
+- Purpose: prove the instrument through completion and failure: every arm of every tier (D, K, F, S, T, E, M at D6, ID at D4; tier V waits for KIT-242) at data sets 9101, 9102, 9103 per design, plus E9's second run of the first data set (9101) of every (tier, design); checks E0 to E12; the scorer blind on L1's own rows. Writes no failure rate, correlation, standard-error ratio, any call or rate.
+- Binding: package commit = the commit named in the request (branch `kit-275` tip, on staging ec27f69e0 which holds KIT-255 with I01); G0 in `g0.txt`; G1 passed (section 15 of `lifecycle.md`).
+- Request (one): `selftest/run-selftest.R` (limit 15); `sim-k275.R all D3,D4,D6 9101 9103 k275-l1` with `K275_LIFECYCLE=1 K275_FAULT=1 K275_JOB=l1 K275_DECLARATION=<this file> OMP_NUM_THREADS=1` (limit `timeout_minutes` 114); no smoke flag, no planted guard. Upload `\.(tsv|txt|json)$`. E7's fault and refusal sit on data set 9102.
+- Ceiling: 114 + 15 + 10 = 139 job-minutes = 9.27 core-hours. Running ceiling: used 5.08 + 9.27 + still planned 329.00 = 343.35, at most 350.73: met.
+- Must show: E0 and E4 (0 differ); E1, E2, E3 (with `correlation_exclusion` at `within_assay`), E5, E7 crash and refusal, E9 (every repeat equal), E11, E12; `L1_status` for every journey and LX row; `G2_coverage`; no false `unit_completed`; the blind scorer's parse, coverage, E8 and `instrument_stop` (exit 0); `timing-l1.tsv`.
+- Decision: G2 re-plans every counted job from L1's own completed-journey means per arm class and design; a failed check is recorded and handed back without repair; L1 runs once.
