@@ -1,0 +1,124 @@
+KIT277DIAG A_after_organism_save snapshot_current_state =  chr "correlation_filtered" 
+KIT277DIAG A_after_organism_save history_entities =  Named chr [1:16] "d48dad98d02b2a755f2f127e311f59db73ee11281800fb080683e6526071a470" ... 
+KIT277DIAG A_after_organism_save context_head_entity =  chr "6a3afada22799285ccae841f0b90fcd3d5f15791945597e3a3cecb22136dff4a" 
+KIT277DIAG A_after_organism_save store_identity = List of 4  $ schema     : int 1  $ project_id : chr "DIA-IQ-native"  $ workflow_id: chr "DIA"  $ incarnation: chr "4849853b3d505c76c6147f6e2e580952866842ae8d2ed46acfdc56765a608107" 
+KIT277DIAG A_after_organism_save da_results_entity =  chr "821d1aea9e8bbdd687ac2b86a1f726807fa0f2a729ea34c65492df7742338fc5" 
+KIT277DIAG A_after_organism_save enrichment_marker =  logi TRUE 
+KIT277DIAG A_after_organism_save da_manifest = List of 5  $ source      : chr "7d0bf9dc9c6513a32079a2e7f44b38090fc7641eb0041d57e1d77b2f493f69be"  $ owner       :List of 4   ..$ schema     : int 1   ..$ project_id : chr "DIA-IQ-native"   ..$ workflow_id: chr "DIA"   ..$ incarnation: chr "4849853b3d505c76c6147f6e2e580952866842ae8d2ed46acfdc56765a608107"  $ parameters  :List of 4   ..$ formula: chr "~ 0 + group"   ..$ qvalue : num 0.05   ..$ lfc    : num 0   ..$ weights: logi NA  $ contrasts   : chr "KO_vs_WT"  $ result_names: chr "groupKO-groupWT" 
+KIT277DIAG A_after_organism_save da_status =  chr "current" 
+KIT277DIAG A_after_organism_save status_tests = List of 5  $ owner_same       : logi TRUE  $ member           : logi TRUE  $ differ           : logi FALSE  $ source_components: Named chr [1:3] "9f90229cfd63fcc7fd7d0cccecf26ccdfb9006df5cbe81bec719c7c7176a13c4" "5e05c4631cdb2dbbc9b319153fa09c30eeb660cc4cad49e2cf698d3e133e65d1" "e3402b3559d6abe265184d3d54522a3dff01cde54f105c3d83b991439b60c9a3"  $ head_components  : Named chr [1:3] "9f90229cfd63fcc7fd7d0cccecf26ccdfb9006df5cbe81bec719c7c7176a13c4" "5e05c4631cdb2dbbc9b319153fa09c30eeb660cc4cad49e2cf698d3e133e65d1" "e3402b3559d6abe265184d3d54522a3dff01cde54f105c3d83b991439b60c9a3" 
+KIT277DIAG A_after_organism_save daAnalysisUI_head = List of 4  $ q_value_threshold     : num 0.05  $ log_fold_change_cutoff: num 0  $ formula_string        : chr "~ 0 + group"  $ timestamp             : POSIXct[1:1], format: "2026-11-26 13:35:43" 
+KIT277DIAG A_after_organism_save candidate_files =  chr [1:9] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx" ... 
+KIT277DIAG A_after_organism_save made_files =  Named chr [1:23] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv" ... 
+KIT277DIAG A_after_organism_save unmade_files =  chr(0)  
+KIT277DIAG A_after_organism_save publication_marker =  chr "complete" 
+KIT277DIAG A_after_organism_save notes =  chr [1:4] "Importing design files..." "Design saved; nothing changed." ... 
+KIT277DIAG A_after_organism_save notes_full = Importing design files... || Design saved; nothing changed. || Importing design files... || Design saved; nothing changed. 
+KIT277DIAG A_after_organism_save copy_gate =  chr "allowed" 
+KIT277DIAG B_after_first_save_and_copy manager_current_state =  chr "correlation_filtered" 
+KIT277DIAG B_after_first_save_and_copy snapshot_current_state =  chr "correlation_filtered" 
+KIT277DIAG B_after_first_save_and_copy history_entities =  Named chr [1:16] "d48dad98d02b2a755f2f127e311f59db73ee11281800fb080683e6526071a470" ... 
+KIT277DIAG B_after_first_save_and_copy context_head_entity =  chr "6a3afada22799285ccae841f0b90fcd3d5f15791945597e3a3cecb22136dff4a" 
+KIT277DIAG B_after_first_save_and_copy store_identity = List of 4  $ schema     : int 1  $ project_id : chr "DIA-IQ-native"  $ workflow_id: chr "DIA"  $ incarnation: chr "4849853b3d505c76c6147f6e2e580952866842ae8d2ed46acfdc56765a608107" 
+KIT277DIAG B_after_first_save_and_copy da_results_entity =  chr "821d1aea9e8bbdd687ac2b86a1f726807fa0f2a729ea34c65492df7742338fc5" 
+KIT277DIAG B_after_first_save_and_copy enrichment_marker =  logi TRUE 
+KIT277DIAG B_after_first_save_and_copy da_manifest = List of 5  $ source      : chr "7d0bf9dc9c6513a32079a2e7f44b38090fc7641eb0041d57e1d77b2f493f69be"  $ owner       :List of 4   ..$ schema     : int 1   ..$ project_id : chr "DIA-IQ-native"   ..$ workflow_id: chr "DIA"   ..$ incarnation: chr "4849853b3d505c76c6147f6e2e580952866842ae8d2ed46acfdc56765a608107"  $ parameters  :List of 4   ..$ formula: chr "~ 0 + group"   ..$ qvalue : num 0.05   ..$ lfc    : num 0   ..$ weights: logi NA  $ contrasts   : chr "KO_vs_WT"  $ result_names: chr "groupKO-groupWT" 
+KIT277DIAG B_after_first_save_and_copy da_status =  chr "current" 
+KIT277DIAG B_after_first_save_and_copy status_tests = List of 5  $ owner_same       : logi TRUE  $ member           : logi TRUE  $ differ           : logi FALSE  $ source_components: Named chr [1:3] "9f90229cfd63fcc7fd7d0cccecf26ccdfb9006df5cbe81bec719c7c7176a13c4" "5e05c4631cdb2dbbc9b319153fa09c30eeb660cc4cad49e2cf698d3e133e65d1" "e3402b3559d6abe265184d3d54522a3dff01cde54f105c3d83b991439b60c9a3"  $ head_components  : Named chr [1:3] "9f90229cfd63fcc7fd7d0cccecf26ccdfb9006df5cbe81bec719c7c7176a13c4" "5e05c4631cdb2dbbc9b319153fa09c30eeb660cc4cad49e2cf698d3e133e65d1" "e3402b3559d6abe265184d3d54522a3dff01cde54f105c3d83b991439b60c9a3" 
+KIT277DIAG B_after_first_save_and_copy daAnalysisUI_head = List of 4  $ q_value_threshold     : num 0.05  $ log_fold_change_cutoff: num 0  $ formula_string        : chr "~ 0 + group"  $ timestamp             : POSIXct[1:1], format: "2026-11-26 13:35:43" 
+KIT277DIAG B_after_first_save_and_copy candidate_files =  chr [1:9] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx" ... 
+KIT277DIAG B_after_first_save_and_copy made_files =  Named chr [1:23] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv" ... 
+KIT277DIAG B_after_first_save_and_copy unmade_files =  chr(0)  
+KIT277DIAG B_after_first_save_and_copy publication_marker =  chr "complete" 
+KIT277DIAG B_after_first_save_and_copy notes =  chr "Publication files copied" 
+KIT277DIAG B_after_first_save_and_copy notes_full = Publication files copied 
+KIT277DIAG B_after_first_save_and_copy copy_gate =  chr "allowed" 
+KIT277DIAG C_after_refused_enrichment manager_current_state =  chr "correlation_filtered" 
+KIT277DIAG C_after_refused_enrichment snapshot_current_state =  chr "correlation_filtered" 
+KIT277DIAG C_after_refused_enrichment history_entities =  Named chr [1:16] "d48dad98d02b2a755f2f127e311f59db73ee11281800fb080683e6526071a470" ... 
+KIT277DIAG C_after_refused_enrichment context_head_entity =  chr "c63b438023c988341b76929af75c3d0005043fed62c04f718a07becf4b40c5af" 
+KIT277DIAG C_after_refused_enrichment store_identity = List of 4  $ schema     : int 1  $ project_id : chr "DIA-IQ-native"  $ workflow_id: chr "DIA"  $ incarnation: chr "4849853b3d505c76c6147f6e2e580952866842ae8d2ed46acfdc56765a608107" 
+KIT277DIAG C_after_refused_enrichment da_results_entity =  chr "821d1aea9e8bbdd687ac2b86a1f726807fa0f2a729ea34c65492df7742338fc5" 
+KIT277DIAG C_after_refused_enrichment enrichment_marker =  logi TRUE 
+KIT277DIAG C_after_refused_enrichment da_manifest = List of 5  $ source      : chr "7d0bf9dc9c6513a32079a2e7f44b38090fc7641eb0041d57e1d77b2f493f69be"  $ owner       :List of 4   ..$ schema     : int 1   ..$ project_id : chr "DIA-IQ-native"   ..$ workflow_id: chr "DIA"   ..$ incarnation: chr "4849853b3d505c76c6147f6e2e580952866842ae8d2ed46acfdc56765a608107"  $ parameters  :List of 4   ..$ formula: chr "~ 0 + group"   ..$ qvalue : num 0.05   ..$ lfc    : num 0   ..$ weights: logi NA  $ contrasts   : chr "KO_vs_WT"  $ result_names: chr "groupKO-groupWT" 
+KIT277DIAG C_after_refused_enrichment da_status =  chr "current" 
+KIT277DIAG C_after_refused_enrichment status_tests = List of 5  $ owner_same       : logi TRUE  $ member           : logi TRUE  $ differ           : logi FALSE  $ source_components: Named chr [1:3] "9f90229cfd63fcc7fd7d0cccecf26ccdfb9006df5cbe81bec719c7c7176a13c4" "5e05c4631cdb2dbbc9b319153fa09c30eeb660cc4cad49e2cf698d3e133e65d1" "e3402b3559d6abe265184d3d54522a3dff01cde54f105c3d83b991439b60c9a3"  $ head_components  : Named chr [1:3] "9f90229cfd63fcc7fd7d0cccecf26ccdfb9006df5cbe81bec719c7c7176a13c4" "5e05c4631cdb2dbbc9b319153fa09c30eeb660cc4cad49e2cf698d3e133e65d1" "e3402b3559d6abe265184d3d54522a3dff01cde54f105c3d83b991439b60c9a3" 
+KIT277DIAG C_after_refused_enrichment daAnalysisUI_head = List of 4  $ q_value_threshold     : num 0.05  $ log_fold_change_cutoff: num 0  $ formula_string        : chr "~ 0 + group"  $ timestamp             : POSIXct[1:1], format: "2026-11-26 13:35:43" 
+KIT277DIAG C_after_refused_enrichment candidate_files =  chr [1:9] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx" ... 
+KIT277DIAG C_after_refused_enrichment made_files =  Named chr [1:23] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv" ... 
+KIT277DIAG C_after_refused_enrichment unmade_files =  chr(0)  
+KIT277DIAG C_after_refused_enrichment publication_marker =  chr "complete" 
+KIT277DIAG C_after_refused_enrichment notes =  chr [1:3] "Publication files copied" "Running enrichment analysis..." ... 
+KIT277DIAG C_after_refused_enrichment notes_full = Publication files copied || Running enrichment analysis... || Enrichment analysis completed successfully for contrast: KO_vs_WT 
+KIT277DIAG C_after_refused_enrichment copy_gate =  chr "allowed" 
+KIT277DIAG D_press args formula = ~ 0 + group | annotations = 400 rows; columns Entry,From,gene_names,Protein_existence,Protein_names,annotation_score,Organism,go_id_go_biological_process,go_term_go_biological_process,go_id_go_molecular_function,go_term_go_molecular_function,go_id_go_cellular_compartment,go_term_go_cellular_compartment | taxon = 9606 
+KIT277DIAG D_press console | === DA TAB CLICKED === 
+KIT277DIAG D_press console | *** AUTO-TRIGGERING DE INITIALIZATION (correlation-filtered state found) *** 
+KIT277DIAG D_press console | *** DE INITIALIZATION COMPLETED SUCCESSFULLY *** 
+KIT277DIAG D_press console | === STARTING DIFFERENTIAL EXPRESSION ANALYSIS === 
+KIT277DIAG D_press console |  
+KIT277DIAG D_press console |  
+KIT277DIAG D_press console | === DA TAB TRIGGERED VIA STATE UPDATE: Checking for S4 object and contrasts === 
+KIT277DIAG D_press console | === DA TAB: Contrast detection complete === 
+KIT277DIAG D_press bus annotation rows = 400 | id column present = TRUE | organisms = Homo sapiens | removed flag = 
+KIT277DIAG D_after_da_run manager_current_state =  chr "correlation_filtered" 
+KIT277DIAG D_after_da_run snapshot_current_state =  chr "correlation_filtered" 
+KIT277DIAG D_after_da_run history_entities =  Named chr [1:16] "d48dad98d02b2a755f2f127e311f59db73ee11281800fb080683e6526071a470" ... 
+KIT277DIAG D_after_da_run context_head_entity =  chr "db4a757cdc3dfa16d8af3702b1bc0f5dcc6c951806a62744c751314f0094f85c" 
+KIT277DIAG D_after_da_run store_identity = List of 4  $ schema     : int 1  $ project_id : chr "DIA-IQ-native"  $ workflow_id: chr "DIA"  $ incarnation: chr "4849853b3d505c76c6147f6e2e580952866842ae8d2ed46acfdc56765a608107" 
+KIT277DIAG D_after_da_run da_results_entity =  chr "cf5475376f78dd14832c343c4edc36b3c45cf7b8bd9a35396341e65da864de14" 
+KIT277DIAG D_after_da_run enrichment_marker =  logi TRUE 
+KIT277DIAG D_after_da_run da_manifest = List of 5  $ source      : chr "7d0bf9dc9c6513a32079a2e7f44b38090fc7641eb0041d57e1d77b2f493f69be"  $ owner       :List of 4   ..$ schema     : int 1   ..$ project_id : chr "DIA-IQ-native"   ..$ workflow_id: chr "DIA"   ..$ incarnation: chr "4849853b3d505c76c6147f6e2e580952866842ae8d2ed46acfdc56765a608107"  $ parameters  :List of 4   ..$ formula: chr "~ 0 + group"   ..$ qvalue : num 0.05   ..$ lfc    : num 0   ..$ weights: logi NA  $ contrasts   : chr "KO_vs_WT"  $ result_names: chr "groupKO-groupWT" 
+KIT277DIAG D_after_da_run da_status =  chr "current" 
+KIT277DIAG D_after_da_run status_tests = List of 5  $ owner_same       : logi TRUE  $ member           : logi TRUE  $ differ           : logi FALSE  $ source_components: Named chr [1:3] "9f90229cfd63fcc7fd7d0cccecf26ccdfb9006df5cbe81bec719c7c7176a13c4" "5e05c4631cdb2dbbc9b319153fa09c30eeb660cc4cad49e2cf698d3e133e65d1" "e3402b3559d6abe265184d3d54522a3dff01cde54f105c3d83b991439b60c9a3"  $ head_components  : Named chr [1:3] "9f90229cfd63fcc7fd7d0cccecf26ccdfb9006df5cbe81bec719c7c7176a13c4" "5e05c4631cdb2dbbc9b319153fa09c30eeb660cc4cad49e2cf698d3e133e65d1" "e3402b3559d6abe265184d3d54522a3dff01cde54f105c3d83b991439b60c9a3" 
+KIT277DIAG D_after_da_run daAnalysisUI_head = List of 4  $ q_value_threshold     : num 0.05  $ log_fold_change_cutoff: num 0  $ formula_string        : chr "~ 0 + group"  $ timestamp             : POSIXct[1:1], format: "2026-11-26 13:35:43" 
+KIT277DIAG D_after_da_run candidate_files =  chr [1:9] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx" ... 
+KIT277DIAG D_after_da_run made_files =  Named chr [1:23] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv" ... 
+KIT277DIAG D_after_da_run unmade_files =  chr(0)  
+KIT277DIAG D_after_da_run publication_marker =  chr "complete" 
+KIT277DIAG D_after_da_run notes =  chr [1:5] "Publication files copied" "Running enrichment analysis..." ... 
+KIT277DIAG D_after_da_run notes_full = Publication files copied || Running enrichment analysis... || Enrichment analysis completed successfully for contrast: KO_vs_WT || Running differential abundance analysis... || Differential abundance analysis completed successfully! 
+KIT277DIAG D_after_da_run copy_gate =  chr "allowed" 
+KIT277DIAG E_press console | *** CONTRAST CHANGED: User selected 'KO_vs_WT' *** 
+KIT277DIAG E_press console | === STARTING ENRICHMENT ANALYSIS === 
+KIT277DIAG E_press console | === ENRICHMENT ANALYSIS COMPLETED === 
+KIT277DIAG E_press console |  
+KIT277DIAG E_press console |  
+KIT277DIAG E_press console | === DA TAB TRIGGERED VIA STATE UPDATE: Checking for S4 object and contrasts === 
+KIT277DIAG E_press console | === DA TAB: Contrast detection complete === 
+KIT277DIAG E_after_enrichment manager_current_state =  chr "correlation_filtered" 
+KIT277DIAG E_after_enrichment snapshot_current_state =  chr "correlation_filtered" 
+KIT277DIAG E_after_enrichment history_entities =  Named chr [1:16] "d48dad98d02b2a755f2f127e311f59db73ee11281800fb080683e6526071a470" ... 
+KIT277DIAG E_after_enrichment context_head_entity =  chr "b80360d76298c682f3f184799861bd1c82c4cb59d94cb72106103b58dc6fc6ca" 
+KIT277DIAG E_after_enrichment store_identity = List of 4  $ schema     : int 1  $ project_id : chr "DIA-IQ-native"  $ workflow_id: chr "DIA"  $ incarnation: chr "4849853b3d505c76c6147f6e2e580952866842ae8d2ed46acfdc56765a608107" 
+KIT277DIAG E_after_enrichment da_results_entity =  chr "cf5475376f78dd14832c343c4edc36b3c45cf7b8bd9a35396341e65da864de14" 
+KIT277DIAG E_after_enrichment enrichment_marker =  logi TRUE 
+KIT277DIAG E_after_enrichment da_manifest = List of 5  $ source      : chr "7d0bf9dc9c6513a32079a2e7f44b38090fc7641eb0041d57e1d77b2f493f69be"  $ owner       :List of 4   ..$ schema     : int 1   ..$ project_id : chr "DIA-IQ-native"   ..$ workflow_id: chr "DIA"   ..$ incarnation: chr "4849853b3d505c76c6147f6e2e580952866842ae8d2ed46acfdc56765a608107"  $ parameters  :List of 4   ..$ formula: chr "~ 0 + group"   ..$ qvalue : num 0.05   ..$ lfc    : num 0   ..$ weights: logi NA  $ contrasts   : chr "KO_vs_WT"  $ result_names: chr "groupKO-groupWT" 
+KIT277DIAG E_after_enrichment da_status =  chr "current" 
+KIT277DIAG E_after_enrichment status_tests = List of 5  $ owner_same       : logi TRUE  $ member           : logi TRUE  $ differ           : logi FALSE  $ source_components: Named chr [1:3] "9f90229cfd63fcc7fd7d0cccecf26ccdfb9006df5cbe81bec719c7c7176a13c4" "5e05c4631cdb2dbbc9b319153fa09c30eeb660cc4cad49e2cf698d3e133e65d1" "e3402b3559d6abe265184d3d54522a3dff01cde54f105c3d83b991439b60c9a3"  $ head_components  : Named chr [1:3] "9f90229cfd63fcc7fd7d0cccecf26ccdfb9006df5cbe81bec719c7c7176a13c4" "5e05c4631cdb2dbbc9b319153fa09c30eeb660cc4cad49e2cf698d3e133e65d1" "e3402b3559d6abe265184d3d54522a3dff01cde54f105c3d83b991439b60c9a3" 
+KIT277DIAG E_after_enrichment daAnalysisUI_head = List of 4  $ q_value_threshold     : num 0.05  $ log_fold_change_cutoff: num 0  $ formula_string        : chr "~ 0 + group"  $ timestamp             : POSIXct[1:1], format: "2026-11-26 13:35:43" 
+KIT277DIAG E_after_enrichment candidate_files =  chr [1:9] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx" ... 
+KIT277DIAG E_after_enrichment made_files =  Named chr [1:23] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv" ... 
+KIT277DIAG E_after_enrichment unmade_files =  chr(0)  
+KIT277DIAG E_after_enrichment publication_marker =  chr "complete" 
+KIT277DIAG E_after_enrichment notes =  chr [1:7] "Publication files copied" "Running enrichment analysis..." ... 
+KIT277DIAG E_after_enrichment notes_full = Publication files copied || Running enrichment analysis... || Enrichment analysis completed successfully for contrast: KO_vs_WT || Running differential abundance analysis... || Differential abundance analysis completed successfully! || Running enrichment analysis... || Enrichment analysis completed successfully for contrast: KO_vs_WT 
+KIT277DIAG E_after_enrichment copy_gate =  chr "allowed" 
+KIT277DIAG F_after_second_save_and_copy manager_current_state =  chr "correlation_filtered" 
+KIT277DIAG F_after_second_save_and_copy snapshot_current_state =  chr "correlation_filtered" 
+KIT277DIAG F_after_second_save_and_copy history_entities =  Named chr [1:16] "d48dad98d02b2a755f2f127e311f59db73ee11281800fb080683e6526071a470" ... 
+KIT277DIAG F_after_second_save_and_copy context_head_entity =  chr "b80360d76298c682f3f184799861bd1c82c4cb59d94cb72106103b58dc6fc6ca" 
+KIT277DIAG F_after_second_save_and_copy store_identity = List of 4  $ schema     : int 1  $ project_id : chr "DIA-IQ-native"  $ workflow_id: chr "DIA"  $ incarnation: chr "4849853b3d505c76c6147f6e2e580952866842ae8d2ed46acfdc56765a608107" 
+KIT277DIAG F_after_second_save_and_copy da_results_entity =  chr "cf5475376f78dd14832c343c4edc36b3c45cf7b8bd9a35396341e65da864de14" 
+KIT277DIAG F_after_second_save_and_copy enrichment_marker =  logi TRUE 
+KIT277DIAG F_after_second_save_and_copy da_manifest = List of 5  $ source      : chr "7d0bf9dc9c6513a32079a2e7f44b38090fc7641eb0041d57e1d77b2f493f69be"  $ owner       :List of 4   ..$ schema     : int 1   ..$ project_id : chr "DIA-IQ-native"   ..$ workflow_id: chr "DIA"   ..$ incarnation: chr "4849853b3d505c76c6147f6e2e580952866842ae8d2ed46acfdc56765a608107"  $ parameters  :List of 4   ..$ formula: chr "~ 0 + group"   ..$ qvalue : num 0.05   ..$ lfc    : num 0   ..$ weights: logi NA  $ contrasts   : chr "KO_vs_WT"  $ result_names: chr "groupKO-groupWT" 
+KIT277DIAG F_after_second_save_and_copy da_status =  chr "current" 
+KIT277DIAG F_after_second_save_and_copy status_tests = List of 5  $ owner_same       : logi TRUE  $ member           : logi TRUE  $ differ           : logi FALSE  $ source_components: Named chr [1:3] "9f90229cfd63fcc7fd7d0cccecf26ccdfb9006df5cbe81bec719c7c7176a13c4" "5e05c4631cdb2dbbc9b319153fa09c30eeb660cc4cad49e2cf698d3e133e65d1" "e3402b3559d6abe265184d3d54522a3dff01cde54f105c3d83b991439b60c9a3"  $ head_components  : Named chr [1:3] "9f90229cfd63fcc7fd7d0cccecf26ccdfb9006df5cbe81bec719c7c7176a13c4" "5e05c4631cdb2dbbc9b319153fa09c30eeb660cc4cad49e2cf698d3e133e65d1" "e3402b3559d6abe265184d3d54522a3dff01cde54f105c3d83b991439b60c9a3" 
+KIT277DIAG F_after_second_save_and_copy daAnalysisUI_head = List of 4  $ q_value_threshold     : num 0.05  $ log_fold_change_cutoff: num 0  $ formula_string        : chr "~ 0 + group"  $ timestamp             : POSIXct[1:1], format: "2026-11-26 13:35:43" 
+KIT277DIAG F_after_second_save_and_copy candidate_files =  chr [1:9] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx" ... 
+KIT277DIAG F_after_second_save_and_copy made_files =  Named chr [1:23] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv" ... 
+KIT277DIAG F_after_second_save_and_copy unmade_files =  chr(0)  
+KIT277DIAG F_after_second_save_and_copy publication_marker =  chr "complete" 
+KIT277DIAG F_after_second_save_and_copy notes =  chr "Publication files copied" 
+KIT277DIAG F_after_second_save_and_copy notes_full = Publication files copied 
+KIT277DIAG F_after_second_save_and_copy copy_gate =  chr "allowed" 

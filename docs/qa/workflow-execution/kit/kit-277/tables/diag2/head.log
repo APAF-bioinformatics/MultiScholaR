@@ -1,0 +1,118 @@
+KIT277DIAG A_after_organism_save snapshot_current_state =  chr "correlation_filtered" 
+KIT277DIAG A_after_organism_save history_entities =  Named chr [1:16] "eb8fefa3b557a3f0de3da42e4e752bf93c23950f3bb05f3f37b24a95778f3cef" ... 
+KIT277DIAG A_after_organism_save context_head_entity =  chr "95af9e3dbc86d6d6f4ee31a469add3fb4d5f75af16e2cea4ba56c2c387204858" 
+KIT277DIAG A_after_organism_save store_identity = List of 4  $ schema     : int 1  $ project_id : chr "DIA-IQ-native"  $ workflow_id: chr "DIA"  $ incarnation: chr "c542acf6f77d4816f23cbbe73b7d555e3f0cd821e40badf3c000cb99fe78d772" 
+KIT277DIAG A_after_organism_save da_results_entity =  chr "<none>" 
+KIT277DIAG A_after_organism_save enrichment_marker =  logi FALSE 
+KIT277DIAG A_after_organism_save da_manifest =  chr "<no DA>" 
+KIT277DIAG A_after_organism_save da_status =  chr "none" 
+KIT277DIAG A_after_organism_save status_tests =  chr "<no DA reference>" 
+KIT277DIAG A_after_organism_save daAnalysisUI_head = List of 4  $ q_value_threshold     : num 0.05  $ log_fold_change_cutoff: num 0  $ formula_string        : chr "~ 0 + group"  $ timestamp             : POSIXct[1:1], format: "2026-11-26 13:40:12" 
+KIT277DIAG A_after_organism_save candidate_files =  chr [1:9] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx" ... 
+KIT277DIAG A_after_organism_save made_files =  chr "<no DA>" 
+KIT277DIAG A_after_organism_save unmade_files =  chr "<no DA>" 
+KIT277DIAG A_after_organism_save publication_marker =  chr "complete" 
+KIT277DIAG A_after_organism_save notes =  chr [1:3] "Importing design files..." "Importing design files..." ... 
+KIT277DIAG A_after_organism_save notes_full = Importing design files... || Importing design files... || Organism saved. Run the differential analysis, then enrichment, again. 
+KIT277DIAG A_after_organism_save copy_gate =  chr "workflow_summary_da_stale/rlang_error/error/condition The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a0"| __truncated__ 
+KIT277DIAG B_after_first_save_and_copy manager_current_state =  chr "correlation_filtered" 
+KIT277DIAG B_after_first_save_and_copy snapshot_current_state =  chr "correlation_filtered" 
+KIT277DIAG B_after_first_save_and_copy history_entities =  Named chr [1:16] "eb8fefa3b557a3f0de3da42e4e752bf93c23950f3bb05f3f37b24a95778f3cef" ... 
+KIT277DIAG B_after_first_save_and_copy context_head_entity =  chr "95af9e3dbc86d6d6f4ee31a469add3fb4d5f75af16e2cea4ba56c2c387204858" 
+KIT277DIAG B_after_first_save_and_copy store_identity = List of 4  $ schema     : int 1  $ project_id : chr "DIA-IQ-native"  $ workflow_id: chr "DIA"  $ incarnation: chr "c542acf6f77d4816f23cbbe73b7d555e3f0cd821e40badf3c000cb99fe78d772" 
+KIT277DIAG B_after_first_save_and_copy da_results_entity =  chr "<none>" 
+KIT277DIAG B_after_first_save_and_copy enrichment_marker =  logi FALSE 
+KIT277DIAG B_after_first_save_and_copy da_manifest =  chr "<no DA>" 
+KIT277DIAG B_after_first_save_and_copy da_status =  chr "none" 
+KIT277DIAG B_after_first_save_and_copy status_tests =  chr "<no DA reference>" 
+KIT277DIAG B_after_first_save_and_copy daAnalysisUI_head = List of 4  $ q_value_threshold     : num 0.05  $ log_fold_change_cutoff: num 0  $ formula_string        : chr "~ 0 + group"  $ timestamp             : POSIXct[1:1], format: "2026-11-26 13:40:12" 
+KIT277DIAG B_after_first_save_and_copy candidate_files =  chr [1:9] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx" ... 
+KIT277DIAG B_after_first_save_and_copy made_files =  chr "<no DA>" 
+KIT277DIAG B_after_first_save_and_copy unmade_files =  chr "<no DA>" 
+KIT277DIAG B_after_first_save_and_copy publication_marker =  chr "complete" 
+KIT277DIAG B_after_first_save_and_copy notes =  chr "Copy error: The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a06dfb/project/prot_dia/results/proteomics h"| __truncated__ 
+KIT277DIAG B_after_first_save_and_copy notes_full = Copy error: The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a06dfb/project/prot_dia/results/proteomics holds differential analysis files that no differential analysis of this session made (da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx, publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf, publication_graphs/Volcano_Plots/groupKO-groupWT.pdf and 6 more): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report. 
+KIT277DIAG B_after_first_save_and_copy copy_gate =  chr "workflow_summary_da_stale/rlang_error/error/condition The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a0"| __truncated__ 
+KIT277DIAG C_after_refused_enrichment manager_current_state =  chr "correlation_filtered" 
+KIT277DIAG C_after_refused_enrichment snapshot_current_state =  chr "correlation_filtered" 
+KIT277DIAG C_after_refused_enrichment history_entities =  Named chr [1:16] "eb8fefa3b557a3f0de3da42e4e752bf93c23950f3bb05f3f37b24a95778f3cef" ... 
+KIT277DIAG C_after_refused_enrichment context_head_entity =  chr "95af9e3dbc86d6d6f4ee31a469add3fb4d5f75af16e2cea4ba56c2c387204858" 
+KIT277DIAG C_after_refused_enrichment store_identity = List of 4  $ schema     : int 1  $ project_id : chr "DIA-IQ-native"  $ workflow_id: chr "DIA"  $ incarnation: chr "c542acf6f77d4816f23cbbe73b7d555e3f0cd821e40badf3c000cb99fe78d772" 
+KIT277DIAG C_after_refused_enrichment da_results_entity =  chr "<none>" 
+KIT277DIAG C_after_refused_enrichment enrichment_marker =  logi FALSE 
+KIT277DIAG C_after_refused_enrichment da_manifest =  chr "<no DA>" 
+KIT277DIAG C_after_refused_enrichment da_status =  chr "none" 
+KIT277DIAG C_after_refused_enrichment status_tests =  chr "<no DA reference>" 
+KIT277DIAG C_after_refused_enrichment daAnalysisUI_head = List of 4  $ q_value_threshold     : num 0.05  $ log_fold_change_cutoff: num 0  $ formula_string        : chr "~ 0 + group"  $ timestamp             : POSIXct[1:1], format: "2026-11-26 13:40:12" 
+KIT277DIAG C_after_refused_enrichment candidate_files =  chr [1:9] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx" ... 
+KIT277DIAG C_after_refused_enrichment made_files =  chr "<no DA>" 
+KIT277DIAG C_after_refused_enrichment unmade_files =  chr "<no DA>" 
+KIT277DIAG C_after_refused_enrichment publication_marker =  chr "complete" 
+KIT277DIAG C_after_refused_enrichment notes =  chr [1:3] "Copy error: The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a06dfb/project/prot_dia/results/proteomics h"| __truncated__ ... 
+KIT277DIAG C_after_refused_enrichment notes_full = Copy error: The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a06dfb/project/prot_dia/results/proteomics holds differential analysis files that no differential analysis of this session made (da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx, publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf, publication_graphs/Volcano_Plots/groupKO-groupWT.pdf and 6 more): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report. || Please complete the differential expression analysis before accessing enrichment analysis. || The differential analysis these comparisons come from was run on an earlier step of the table: the table was changed or reverted, or the differential analysis was run again. Run the differential analysis on the current table, then run the enrichment. 
+KIT277DIAG C_after_refused_enrichment copy_gate =  chr "workflow_summary_da_stale/rlang_error/error/condition The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a0"| __truncated__ 
+KIT277DIAG D_press args formula = ~ 0 + group | annotations = 385 rows; columns Entry,gene_names,Organism,go_id_go_biological_process,go_term_go_biological_process,go_id_go_molecular_function,go_term_go_molecular_function,go_id_go_cellular_compartment,go_term_go_cellular_compartment | taxon = 10090 
+KIT277DIAG D_press ERROR class = saved_entity_outputs_pending/rlang_error/error/condition | call = assertDIAExportReady(manager, allow_action = "da") | message = session outputs are pending; retry export before dependent actions 
+KIT277DIAG D_press console | === DA TAB CLICKED === 
+KIT277DIAG D_press console | *** AUTO-TRIGGERING DE INITIALIZATION (correlation-filtered state found) *** 
+KIT277DIAG D_press console | *** DE INITIALIZATION COMPLETED SUCCESSFULLY *** 
+KIT277DIAG D_press console | === STARTING DIFFERENTIAL EXPRESSION ANALYSIS === 
+KIT277DIAG D_press console | *** ERROR in DA analysis: session outputs are pending; retry export before dependent actions  
+KIT277DIAG D_press bus annotation rows = 385 | id column present = TRUE | organisms = Synthetic test organism | removed flag = 
+KIT277DIAG D_after_da_run manager_current_state =  chr "correlation_filtered" 
+KIT277DIAG D_after_da_run snapshot_current_state =  chr "correlation_filtered" 
+KIT277DIAG D_after_da_run history_entities =  Named chr [1:16] "eb8fefa3b557a3f0de3da42e4e752bf93c23950f3bb05f3f37b24a95778f3cef" ... 
+KIT277DIAG D_after_da_run context_head_entity =  chr "95af9e3dbc86d6d6f4ee31a469add3fb4d5f75af16e2cea4ba56c2c387204858" 
+KIT277DIAG D_after_da_run store_identity = List of 4  $ schema     : int 1  $ project_id : chr "DIA-IQ-native"  $ workflow_id: chr "DIA"  $ incarnation: chr "c542acf6f77d4816f23cbbe73b7d555e3f0cd821e40badf3c000cb99fe78d772" 
+KIT277DIAG D_after_da_run da_results_entity =  chr "<none>" 
+KIT277DIAG D_after_da_run enrichment_marker =  logi FALSE 
+KIT277DIAG D_after_da_run da_manifest =  chr "<no DA>" 
+KIT277DIAG D_after_da_run da_status =  chr "none" 
+KIT277DIAG D_after_da_run status_tests =  chr "<no DA reference>" 
+KIT277DIAG D_after_da_run daAnalysisUI_head = List of 4  $ q_value_threshold     : num 0.05  $ log_fold_change_cutoff: num 0  $ formula_string        : chr "~ 0 + group"  $ timestamp             : POSIXct[1:1], format: "2026-11-26 13:40:12" 
+KIT277DIAG D_after_da_run candidate_files =  chr [1:9] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx" ... 
+KIT277DIAG D_after_da_run made_files =  chr "<no DA>" 
+KIT277DIAG D_after_da_run unmade_files =  chr "<no DA>" 
+KIT277DIAG D_after_da_run publication_marker =  chr "complete" 
+KIT277DIAG D_after_da_run notes =  chr [1:5] "Copy error: The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a06dfb/project/prot_dia/results/proteomics h"| __truncated__ ... 
+KIT277DIAG D_after_da_run notes_full = Copy error: The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a06dfb/project/prot_dia/results/proteomics holds differential analysis files that no differential analysis of this session made (da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx, publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf, publication_graphs/Volcano_Plots/groupKO-groupWT.pdf and 6 more): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report. || Please complete the differential expression analysis before accessing enrichment analysis. || The differential analysis these comparisons come from was run on an earlier step of the table: the table was changed or reverted, or the differential analysis was run again. Run the differential analysis on the current table, then run the enrichment. || Running differential abundance analysis... || Error in DA analysis: session outputs are pending; retry export before dependent actions 
+KIT277DIAG D_after_da_run copy_gate =  chr "workflow_summary_da_stale/rlang_error/error/condition The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a0"| __truncated__ 
+KIT277DIAG E_press console | *** No DE analysis results found. User needs to complete differential expression analysis first. *** 
+KIT277DIAG E_press console | *** CONTRAST CHANGED: User selected 'KO_vs_WT' *** 
+KIT277DIAG E_press console | === STARTING ENRICHMENT ANALYSIS === 
+KIT277DIAG E_after_enrichment manager_current_state =  chr "correlation_filtered" 
+KIT277DIAG E_after_enrichment snapshot_current_state =  chr "correlation_filtered" 
+KIT277DIAG E_after_enrichment history_entities =  Named chr [1:16] "eb8fefa3b557a3f0de3da42e4e752bf93c23950f3bb05f3f37b24a95778f3cef" ... 
+KIT277DIAG E_after_enrichment context_head_entity =  chr "95af9e3dbc86d6d6f4ee31a469add3fb4d5f75af16e2cea4ba56c2c387204858" 
+KIT277DIAG E_after_enrichment store_identity = List of 4  $ schema     : int 1  $ project_id : chr "DIA-IQ-native"  $ workflow_id: chr "DIA"  $ incarnation: chr "c542acf6f77d4816f23cbbe73b7d555e3f0cd821e40badf3c000cb99fe78d772" 
+KIT277DIAG E_after_enrichment da_results_entity =  chr "<none>" 
+KIT277DIAG E_after_enrichment enrichment_marker =  logi FALSE 
+KIT277DIAG E_after_enrichment da_manifest =  chr "<no DA>" 
+KIT277DIAG E_after_enrichment da_status =  chr "none" 
+KIT277DIAG E_after_enrichment status_tests =  chr "<no DA reference>" 
+KIT277DIAG E_after_enrichment daAnalysisUI_head = List of 4  $ q_value_threshold     : num 0.05  $ log_fold_change_cutoff: num 0  $ formula_string        : chr "~ 0 + group"  $ timestamp             : POSIXct[1:1], format: "2026-11-26 13:40:12" 
+KIT277DIAG E_after_enrichment candidate_files =  chr [1:9] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx" ... 
+KIT277DIAG E_after_enrichment made_files =  chr "<no DA>" 
+KIT277DIAG E_after_enrichment unmade_files =  chr "<no DA>" 
+KIT277DIAG E_after_enrichment publication_marker =  chr "complete" 
+KIT277DIAG E_after_enrichment notes =  chr [1:7] "Copy error: The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a06dfb/project/prot_dia/results/proteomics h"| __truncated__ ... 
+KIT277DIAG E_after_enrichment notes_full = Copy error: The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a06dfb/project/prot_dia/results/proteomics holds differential analysis files that no differential analysis of this session made (da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx, publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf, publication_graphs/Volcano_Plots/groupKO-groupWT.pdf and 6 more): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report. || Please complete the differential expression analysis before accessing enrichment analysis. || The differential analysis these comparisons come from was run on an earlier step of the table: the table was changed or reverted, or the differential analysis was run again. Run the differential analysis on the current table, then run the enrichment. || Running differential abundance analysis... || Error in DA analysis: session outputs are pending; retry export before dependent actions || Please complete the differential expression analysis before accessing enrichment analysis. || The differential analysis these comparisons come from was run on an earlier step of the table: the table was changed or reverted, or the differential analysis was run again. Run the differential analysis on the current table, then run the enrichment. 
+KIT277DIAG E_after_enrichment copy_gate =  chr "workflow_summary_da_stale/rlang_error/error/condition The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a0"| __truncated__ 
+KIT277DIAG F_after_second_save_and_copy manager_current_state =  chr "correlation_filtered" 
+KIT277DIAG F_after_second_save_and_copy snapshot_current_state =  chr "correlation_filtered" 
+KIT277DIAG F_after_second_save_and_copy history_entities =  Named chr [1:16] "eb8fefa3b557a3f0de3da42e4e752bf93c23950f3bb05f3f37b24a95778f3cef" ... 
+KIT277DIAG F_after_second_save_and_copy context_head_entity =  chr "95af9e3dbc86d6d6f4ee31a469add3fb4d5f75af16e2cea4ba56c2c387204858" 
+KIT277DIAG F_after_second_save_and_copy store_identity = List of 4  $ schema     : int 1  $ project_id : chr "DIA-IQ-native"  $ workflow_id: chr "DIA"  $ incarnation: chr "c542acf6f77d4816f23cbbe73b7d555e3f0cd821e40badf3c000cb99fe78d772" 
+KIT277DIAG F_after_second_save_and_copy da_results_entity =  chr "<none>" 
+KIT277DIAG F_after_second_save_and_copy enrichment_marker =  logi FALSE 
+KIT277DIAG F_after_second_save_and_copy da_manifest =  chr "<no DA>" 
+KIT277DIAG F_after_second_save_and_copy da_status =  chr "none" 
+KIT277DIAG F_after_second_save_and_copy status_tests =  chr "<no DA reference>" 
+KIT277DIAG F_after_second_save_and_copy daAnalysisUI_head = List of 4  $ q_value_threshold     : num 0.05  $ log_fold_change_cutoff: num 0  $ formula_string        : chr "~ 0 + group"  $ timestamp             : POSIXct[1:1], format: "2026-11-26 13:40:12" 
+KIT277DIAG F_after_second_save_and_copy candidate_files =  chr [1:9] "/results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx" ... 
+KIT277DIAG F_after_second_save_and_copy made_files =  chr "<no DA>" 
+KIT277DIAG F_after_second_save_and_copy unmade_files =  chr "<no DA>" 
+KIT277DIAG F_after_second_save_and_copy publication_marker =  chr "complete" 
+KIT277DIAG F_after_second_save_and_copy notes =  chr "Copy error: The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a06dfb/project/prot_dia/results/proteomics h"| __truncated__ 
+KIT277DIAG F_after_second_save_and_copy notes_full = Copy error: The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a06dfb/project/prot_dia/results/proteomics holds differential analysis files that no differential analysis of this session made (da_proteins/da_proteins_groupKO-groupWT_long_annot.xlsx, publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf, publication_graphs/Volcano_Plots/groupKO-groupWT.pdf and 6 more): they are from an earlier session, an opened session file, or a contrast the last analysis did not produce. Run the differential analysis, remove any of these files it does not make again, then press 'Save Workflow Arguments' before copying or generating the report. 
+KIT277DIAG F_after_second_save_and_copy copy_gate =  chr "workflow_summary_da_stale/rlang_error/error/condition The results folder /tmp/Rtmp9gURci/k277-prot_dia-4c4254a0"| __truncated__ 

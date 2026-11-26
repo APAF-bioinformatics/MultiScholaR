@@ -108,3 +108,23 @@ the fetch (R/mod_prot_da_handlers_run_analysis.R:71) and then does not reach `ac
 i.e. an error inside the handler's `tryCatch` (`report_error`: "Error in DA analysis: ...") is the candidate. The log does not show which.
 Needed to settle it: one more diagnostic send printing the FULL text of every notification at D (`paste(notes, collapse = " || ")`, a
 one-line change to `kit277Diag`) and the error class. NOT done: awaiting the coordinator's word.
+
+## Reading of diagnostic 2 (run 45829015562; tables/diag2/head.log, base.log)
+Head, point D (the DA press after the organism Save): the request carried formula `~ 0 + group` and a 385-row annotation (the new
+organism's: Entry, gene_names, Organism = "Synthetic test organism", GO columns; taxon 10090), so the fetch worked. Then:
+`ERROR class = saved_entity_outputs_pending/rlang_error/error/condition | call = assertDIAExportReady(manager, allow_action = "da") |
+message = session outputs are pending; retry export before dependent actions`. The DA handler's console shows "*** ERROR in DA analysis:
+session outputs are pending; retry export before dependent actions"; notes at D add "Running differential abundance analysis..." and
+"Error in DA analysis: session outputs are pending; retry export before dependent actions". The enrichment at E is refused again (no DA).
+Base, same point: the DA request carried the earlier organism's 400-row annotation and the press completed (new da_results).
+Source of the error (by reading): R/utils_workflow_saved_exports.R:310-313 (`assertWorkflowExportReady`) aborts when
+`manager$.context$export_pending` is set and the action is not a session export. `export_pending` is set at
+R/utils_workflow_dia_sessions.R:624 by `runDIANativeSessionExport` and cleared only at :642 when the publication completes.
+The press that can start such an export between the organism Save and the DA press is the Summary's Save Workflow Arguments (the test's
+`kit277CopyClick`, point B): it calls `refreshDIANativeSummaryArchive` (R/utils_workflow_dia_summary.R:92), which returns early when
+`owned$generation` equals the head entity (R/utils_workflow_dia_sessions.R:1811) and otherwise re-exports. On the base the head entity
+does not change, so no re-export starts; on the head the organism Save's set-back publishes a NEW head entity (R/utils_workflow_omics_design.R
+`setOmicsDaBack`, one `publishWorkflowStateHead`), so the archive generation no longer matches and the Summary Save starts a re-export that
+leaves `export_pending` set. The log does not show the Save's own notifications (cleared by the test before Copy), so whether that
+re-export failed or is only incomplete is NOT shown; it is the one inference.
+Smallest repair (TEXT, not applied; awaiting the coordinator's word): see the hand-back; the test evidence is O4's existing lines.
