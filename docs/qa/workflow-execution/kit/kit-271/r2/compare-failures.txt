@@ -1,0 +1,3156 @@
+== test-prot-norm-core.R | message-changed | KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and RUV covariates in both modes give the recorded values
+-- base:
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [1] 
+   [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2] 
+   [3] "960c976c397095b0" - "7e1a356bda20ce87" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "960c976c397095b0" - "7e1a356bda20ce87" [12]
+  [13] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [13]
+  
+  limpa_correction_correlation norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [1] 
+   [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2] 
+   [3] "960c976c397095b0" - "7e1a356bda20ce87" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "960c976c397095b0" - "7e1a356bda20ce87" [12]
+  [13] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [13]
+  
+  limpa_covariates_correlation norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "bf340ee5648557ff" - "331c7c06bb90a89c" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "bf340ee5648557ff" - "331c7c06bb90a89c" [15]
+  [16] "6c385ab56cdf1a34" - "eeae0389f229a0bd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  limpa_covariates_ruv norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "bf340ee5648557ff" - "331c7c06bb90a89c" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "bf340ee5648557ff" - "331c7c06bb90a89c" [15]
+  [16] "6c385ab56cdf1a34" - "eeae0389f229a0bd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  limpa_covariates_ruv_repeat norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "f4802c60a4990536" - "af87a571c574ddab" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "f4802c60a4990536" - "af87a571c574ddab" [15]
+  [16] "fc48d75d402cbaa3" - "d91a80603a5612cd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  limpa_correction_ruv norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "f4802c60a4990536" - "af87a571c574ddab" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "f4802c60a4990536" - "af87a571c574ddab" [15]
+  [16] "fc48d75d402cbaa3" - "d91a80603a5612cd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  limpa_correction_ruv_repeat norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+      actual             | expected              
+  [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2]
+  [3] "1ba7030e9325c39d" | "1ba7030e9325c39d" [3]
+  [4] "21dd4c7bf548536a" | "21dd4c7bf548536a" [4]
+  [5] "960c976c397095b0" - "7e1a356bda20ce87" [5]
+  [6] "960c976c397095b0" - "7e1a356bda20ce87" [6]
+  [7] "960c976c397095b0" - "7e1a356bda20ce87" [7]
+  [8] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [8]
+  
+  limpa_correction_pass_through norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+      actual             | expected              
+  [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2]
+  [3] "1ba7030e9325c39d" | "1ba7030e9325c39d" [3]
+  [4] "21dd4c7bf548536a" | "21dd4c7bf548536a" [4]
+  [5] "960c976c397095b0" - "7e1a356bda20ce87" [5]
+  [6] "960c976c397095b0" - "7e1a356bda20ce87" [6]
+  [7] "960c976c397095b0" - "7e1a356bda20ce87" [7]
+  [8] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [8]
+  
+  limpa_covariates_pass_through norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "036dee453b8f75bf02a303f2e2671a5cd5458e3c128c4b284bb2dbccd21a0191"
+  `expected`: "4a271d4fbb4ee0107c841aa8738df37ceaa193138ffcbc27f137f8c354350b38"
+  
+  limpa_covariates_ruv record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "036dee453b8f75bf02a303f2e2671a5cd5458e3c128c4b284bb2dbccd21a0191"
+  `expected`: "4a271d4fbb4ee0107c841aa8738df37ceaa193138ffcbc27f137f8c354350b38"
+  
+  limpa_covariates_ruv_repeat record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "03f43b8909e6a09cd8c73ab5edc28936d47f2e7e7fefcf2012725fd4b99136e6"
+  `expected`: "a63ef2f4480787088700a1b719fe07a68b4ccd37528851c78a72680f86fe2da8"
+  
+  limpa_covariates_ruv workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "03f43b8909e6a09cd8c73ab5edc28936d47f2e7e7fefcf2012725fd4b99136e6"
+  `expected`: "a63ef2f4480787088700a1b719fe07a68b4ccd37528851c78a72680f86fe2da8"
+  
+  limpa_covariates_ruv_repeat workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "178cd0c1a1bd7936ef2e1c397f450f370bccb15b726fe515f4bd1ff8a877a065"
+  `expected`: "063392ef236032c3b43590f10da0f7efc331e0b9eada0d6e27ccda9314e5c9b8"
+  
+  limpa_correction_ruv workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "178cd0c1a1bd7936ef2e1c397f450f370bccb15b726fe515f4bd1ff8a877a065"
+  `expected`: "063392ef236032c3b43590f10da0f7efc331e0b9eada0d6e27ccda9314e5c9b8"
+  
+  limpa_correction_ruv_repeat workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "19bc6774b76dd1009b8f2bd1976f514afa4c5f1f9cfbfd1741bf9a1003ae4183"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  limpa_correction_ruv files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "19bc6774b76dd1009b8f2bd1976f514afa4c5f1f9cfbfd1741bf9a1003ae4183"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  limpa_correction_ruv_repeat files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "19bc6774b76dd1009b8f2bd1976f514afa4c5f1f9cfbfd1741bf9a1003ae4183"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  limpa_covariates_ruv files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "19bc6774b76dd1009b8f2bd1976f514afa4c5f1f9cfbfd1741bf9a1003ae4183"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  limpa_covariates_ruv_repeat files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "3513470f89326f81bacb03dbacf0942b02e47e5c6ed0e0fbe251382cbccce302"
+  `expected`: "1a23a1e795d23d37e619847429154a4ed2c177b269d98f0e463d4e920589b81f"
+  
+  limpa_correction_ruv ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "3513470f89326f81bacb03dbacf0942b02e47e5c6ed0e0fbe251382cbccce302"
+  `expected`: "1a23a1e795d23d37e619847429154a4ed2c177b269d98f0e463d4e920589b81f"
+  
+  limpa_correction_ruv_repeat ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "8557d939c138b59baf4252df43c5b3c5e71cba0acdc964bd95ac955229e57668"
+  `expected`: "ee016e5d9726e7c31a07e91b25f8908eb76c47b5dceb6a21107d9765884e7dd9"
+  
+  limpa_correction_ruv norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "8557d939c138b59baf4252df43c5b3c5e71cba0acdc964bd95ac955229e57668"
+  `expected`: "ee016e5d9726e7c31a07e91b25f8908eb76c47b5dceb6a21107d9765884e7dd9"
+  
+  limpa_correction_ruv_repeat norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "926838a97f9b74674568cb413d510b8131595c97d24d59704d8ba72f45d6906c"
+  `expected`: "34e64dc1e1e246298b07d49ed56b42a6743ca9e662a09925d3be94dc69c4735c"
+  
+  limpa_correction_correlation files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "926838a97f9b74674568cb413d510b8131595c97d24d59704d8ba72f45d6906c"
+  `expected`: "34e64dc1e1e246298b07d49ed56b42a6743ca9e662a09925d3be94dc69c4735c"
+  
+  limpa_covariates_correlation files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "92e59f147817e7a1fca6794959da5e8de0835a28f40476469271b45b4b7c36b2"
+  `expected`: "dd5a614c8a2494b1c66e75e08ce2a65e9259d557dcfa5a4058b9f720b5e8f4e6"
+  
+  limpa_covariates_ruv ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "92e59f147817e7a1fca6794959da5e8de0835a28f40476469271b45b4b7c36b2"
+  `expected`: "dd5a614c8a2494b1c66e75e08ce2a65e9259d557dcfa5a4058b9f720b5e8f4e6"
+  
+  limpa_covariates_ruv_repeat ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "960c976c397095b0bf12e14905af0ecf9f4d8f18dae66ff8183fbc7fdd0651ca"
+  `expected`: "7e1a356bda20ce879fd8f423db352ae28d5e6b171ffb73d4cabec81acfa36136"
+  
+  limpa_correction_correlation value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "960c976c397095b0bf12e14905af0ecf9f4d8f18dae66ff8183fbc7fdd0651ca"
+  `expected`: "7e1a356bda20ce879fd8f423db352ae28d5e6b171ffb73d4cabec81acfa36136"
+  
+  limpa_covariates_correlation value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "99ce8a90d222e913e6b8b238d1b91686ccba15d47f4c347ee67945aeba92d930"
+  `expected`: "8c98ca3f561320405afd44b86f07d53fa0ceda8f03b8fc7e635869dfb2bcfeb1"
+  
+  limpa_correction_ruv record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "99ce8a90d222e913e6b8b238d1b91686ccba15d47f4c347ee67945aeba92d930"
+  `expected`: "8c98ca3f561320405afd44b86f07d53fa0ceda8f03b8fc7e635869dfb2bcfeb1"
+  
+  limpa_correction_ruv_repeat record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b8fb81c8cafea41eba518df1b1b88066b23af4d1d69140e9572d07544bd6715b"
+  `expected`: "d61f7e02b4c6a6d12fca78b9106ca07e9c39c3d7f406541c74a2ddc2947c3167"
+  
+  limpa_correction_pass_through norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b8fb81c8cafea41eba518df1b1b88066b23af4d1d69140e9572d07544bd6715b"
+  `expected`: "d61f7e02b4c6a6d12fca78b9106ca07e9c39c3d7f406541c74a2ddc2947c3167"
+  
+  limpa_covariates_pass_through norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b96da60e80358c6c48f5d739503b941f1eddff6ece33a4e6a43a124b262324a4"
+  `expected`: "89393fded12cf8f27c21722ad8d1a883b8d2464f0d0e82c6788f075e01c456b1"
+  
+  limpa_covariates_ruv norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b96da60e80358c6c48f5d739503b941f1eddff6ece33a4e6a43a124b262324a4"
+  `expected`: "89393fded12cf8f27c21722ad8d1a883b8d2464f0d0e82c6788f075e01c456b1"
+  
+  limpa_covariates_ruv_repeat norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "bf340ee5648557ff4b208a240234f62267c2008801b27eb845543d0b58940677"
+  `expected`: "331c7c06bb90a89c2b7d57b266835310347f5e6201a382c0551db2aa0b1bef6e"
+  
+  limpa_covariates_ruv value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "bf340ee5648557ff4b208a240234f62267c2008801b27eb845543d0b58940677"
+  `expected`: "331c7c06bb90a89c2b7d57b266835310347f5e6201a382c0551db2aa0b1bef6e"
+  
+  limpa_covariates_ruv_repeat value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "cb602cf3e180c654d26890c28711ec0827b3e7d8be6e185dd592365ad3202e7d"
+  `expected`: "3b0fbc63724b4e8bf08fb33060738e1459d38205eb8bd692f03e358d03181fa1"
+  
+  limpa_correction_correlation norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "cb602cf3e180c654d26890c28711ec0827b3e7d8be6e185dd592365ad3202e7d"
+  `expected`: "3b0fbc63724b4e8bf08fb33060738e1459d38205eb8bd692f03e358d03181fa1"
+  
+  limpa_covariates_correlation norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "f4802c60a4990536130dbefe116d8afe44ccdf820a12381319744e6eb3318b5d"
+  `expected`: "af87a571c574ddabd87bfe664ece0ee1d96b393dfc8d677765d4f7f94a17f0c7"
+  
+  limpa_correction_ruv value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "f4802c60a4990536130dbefe116d8afe44ccdf820a12381319744e6eb3318b5d"
+  `expected`: "af87a571c574ddabd87bfe664ece0ee1d96b393dfc8d677765d4f7f94a17f0c7"
+  
+  limpa_correction_ruv_repeat value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "post:09d6f2e44b60"
+  `expected`: "post:f08bb05015f2"
+  
+  limpa_correction_pass_through callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "post:09d6f2e44b60"
+  `expected`: "post:f08bb05015f2"
+  
+  limpa_covariates_pass_through callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "ruv:4a2a4f15dd7c"
+  `expected`: "ruv:d9c3203931ab"
+  
+  limpa_correction_ruv callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "ruv:4a2a4f15dd7c"
+  `expected`: "ruv:d9c3203931ab"
+  
+  limpa_covariates_ruv callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_correction_pass_through products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_covariates_pass_through products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_correction_correlation products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_covariates_correlation products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:72bbdf43a8627fbd"
+  + "dia-ruv-covariates:2d852bdb98ba0821"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_covariates_ruv products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:72bbdf43a8627fbd"
+  + "dia-ruv-covariates:2d852bdb98ba0821"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_covariates_ruv_repeat products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:fb755bc1316dbf70"
+  + "dia-ruv-covariates:a63c32e024835b06"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_correction_ruv products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:fb755bc1316dbf70"
+  + "dia-ruv-covariates:a63c32e024835b06"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_correction_ruv_repeat products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  
+  limpa_correction_pass_through states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  
+  limpa_covariates_pass_through states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  
+  limpa_correction_correlation states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  
+  limpa_covariates_correlation states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_corrected"dd0fe8235f6c4c64870c7e0d8f66d8e9baf6846f7e959312378813021b6af983"
+  + ruv_corrected"ef508c5befb5357125ebd42187d911c9ecfe7debccff02358a55dc60cb71ab6b"
+  
+  limpa_correction_ruv states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_corrected"dd0fe8235f6c4c64870c7e0d8f66d8e9baf6846f7e959312378813021b6af983"
+  + ruv_corrected"ef508c5befb5357125ebd42187d911c9ecfe7debccff02358a55dc60cb71ab6b"
+  
+  limpa_correction_ruv_repeat states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_covariates"9bf16ad10a68800f6516a2e32ce92fa896f103c65163a1940450b06a4e3aef2e"
+  + ruv_covariates"8d14c322bca980797fa860f642a24b3f39bbd85c8b70b787c58facb69ac92de5"
+  
+  limpa_covariates_ruv states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_covariates"9bf16ad10a68800f6516a2e32ce92fa896f103c65163a1940450b06a4e3aef2e"
+  + ruv_covariates"8d14c322bca980797fa860f642a24b3f39bbd85c8b70b787c58facb69ac92de5"
+  
+  limpa_covariates_ruv_repeat states
+-- head:
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [1] 
+   [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2] 
+   [3] "960c976c397095b0" - "7e1a356bda20ce87" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "960c976c397095b0" - "7e1a356bda20ce87" [12]
+  [13] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [13]
+  
+  limpa_correction_correlation norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [1] 
+   [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2] 
+   [3] "960c976c397095b0" - "7e1a356bda20ce87" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "960c976c397095b0" - "7e1a356bda20ce87" [12]
+  [13] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [13]
+  
+  limpa_covariates_correlation norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "bf340ee5648557ff" - "331c7c06bb90a89c" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "bf340ee5648557ff" - "331c7c06bb90a89c" [15]
+  [16] "6c385ab56cdf1a34" - "eeae0389f229a0bd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  limpa_covariates_ruv norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "bf340ee5648557ff" - "331c7c06bb90a89c" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "bf340ee5648557ff" - "331c7c06bb90a89c" [15]
+  [16] "6c385ab56cdf1a34" - "eeae0389f229a0bd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  limpa_covariates_ruv_repeat norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "f4802c60a4990536" - "af87a571c574ddab" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "f4802c60a4990536" - "af87a571c574ddab" [15]
+  [16] "fc48d75d402cbaa3" - "d91a80603a5612cd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  limpa_correction_ruv norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "f4802c60a4990536" - "af87a571c574ddab" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "f4802c60a4990536" - "af87a571c574ddab" [15]
+  [16] "fc48d75d402cbaa3" - "d91a80603a5612cd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  limpa_correction_ruv_repeat norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+      actual             | expected              
+  [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2]
+  [3] "1ba7030e9325c39d" | "1ba7030e9325c39d" [3]
+  [4] "21dd4c7bf548536a" | "21dd4c7bf548536a" [4]
+  [5] "960c976c397095b0" - "7e1a356bda20ce87" [5]
+  [6] "960c976c397095b0" - "7e1a356bda20ce87" [6]
+  [7] "960c976c397095b0" - "7e1a356bda20ce87" [7]
+  [8] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [8]
+  
+  limpa_correction_pass_through norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+      actual             | expected              
+  [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2]
+  [3] "1ba7030e9325c39d" | "1ba7030e9325c39d" [3]
+  [4] "21dd4c7bf548536a" | "21dd4c7bf548536a" [4]
+  [5] "960c976c397095b0" - "7e1a356bda20ce87" [5]
+  [6] "960c976c397095b0" - "7e1a356bda20ce87" [6]
+  [7] "960c976c397095b0" - "7e1a356bda20ce87" [7]
+  [8] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [8]
+  
+  limpa_covariates_pass_through norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "036dee453b8f75bf02a303f2e2671a5cd5458e3c128c4b284bb2dbccd21a0191"
+  `expected`: "4a271d4fbb4ee0107c841aa8738df37ceaa193138ffcbc27f137f8c354350b38"
+  
+  limpa_covariates_ruv record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "036dee453b8f75bf02a303f2e2671a5cd5458e3c128c4b284bb2dbccd21a0191"
+  `expected`: "4a271d4fbb4ee0107c841aa8738df37ceaa193138ffcbc27f137f8c354350b38"
+  
+  limpa_covariates_ruv_repeat record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "03f43b8909e6a09cd8c73ab5edc28936d47f2e7e7fefcf2012725fd4b99136e6"
+  `expected`: "a63ef2f4480787088700a1b719fe07a68b4ccd37528851c78a72680f86fe2da8"
+  
+  limpa_covariates_ruv workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "03f43b8909e6a09cd8c73ab5edc28936d47f2e7e7fefcf2012725fd4b99136e6"
+  `expected`: "a63ef2f4480787088700a1b719fe07a68b4ccd37528851c78a72680f86fe2da8"
+  
+  limpa_covariates_ruv_repeat workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "178cd0c1a1bd7936ef2e1c397f450f370bccb15b726fe515f4bd1ff8a877a065"
+  `expected`: "063392ef236032c3b43590f10da0f7efc331e0b9eada0d6e27ccda9314e5c9b8"
+  
+  limpa_correction_ruv workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "178cd0c1a1bd7936ef2e1c397f450f370bccb15b726fe515f4bd1ff8a877a065"
+  `expected`: "063392ef236032c3b43590f10da0f7efc331e0b9eada0d6e27ccda9314e5c9b8"
+  
+  limpa_correction_ruv_repeat workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "3513470f89326f81bacb03dbacf0942b02e47e5c6ed0e0fbe251382cbccce302"
+  `expected`: "1a23a1e795d23d37e619847429154a4ed2c177b269d98f0e463d4e920589b81f"
+  
+  limpa_correction_ruv ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "3513470f89326f81bacb03dbacf0942b02e47e5c6ed0e0fbe251382cbccce302"
+  `expected`: "1a23a1e795d23d37e619847429154a4ed2c177b269d98f0e463d4e920589b81f"
+  
+  limpa_correction_ruv_repeat ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "6c52f9ea998fe553278ce2e32f74ea48fd867871f1531f24b63832511d1d8906"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  limpa_correction_ruv files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "6c52f9ea998fe553278ce2e32f74ea48fd867871f1531f24b63832511d1d8906"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  limpa_correction_ruv_repeat files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "6c52f9ea998fe553278ce2e32f74ea48fd867871f1531f24b63832511d1d8906"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  limpa_covariates_ruv files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "6c52f9ea998fe553278ce2e32f74ea48fd867871f1531f24b63832511d1d8906"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  limpa_covariates_ruv_repeat files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "8557d939c138b59baf4252df43c5b3c5e71cba0acdc964bd95ac955229e57668"
+  `expected`: "ee016e5d9726e7c31a07e91b25f8908eb76c47b5dceb6a21107d9765884e7dd9"
+  
+  limpa_correction_ruv norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "8557d939c138b59baf4252df43c5b3c5e71cba0acdc964bd95ac955229e57668"
+  `expected`: "ee016e5d9726e7c31a07e91b25f8908eb76c47b5dceb6a21107d9765884e7dd9"
+  
+  limpa_correction_ruv_repeat norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "92e59f147817e7a1fca6794959da5e8de0835a28f40476469271b45b4b7c36b2"
+  `expected`: "dd5a614c8a2494b1c66e75e08ce2a65e9259d557dcfa5a4058b9f720b5e8f4e6"
+  
+  limpa_covariates_ruv ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "92e59f147817e7a1fca6794959da5e8de0835a28f40476469271b45b4b7c36b2"
+  `expected`: "dd5a614c8a2494b1c66e75e08ce2a65e9259d557dcfa5a4058b9f720b5e8f4e6"
+  
+  limpa_covariates_ruv_repeat ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "960c976c397095b0bf12e14905af0ecf9f4d8f18dae66ff8183fbc7fdd0651ca"
+  `expected`: "7e1a356bda20ce879fd8f423db352ae28d5e6b171ffb73d4cabec81acfa36136"
+  
+  limpa_correction_correlation value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "960c976c397095b0bf12e14905af0ecf9f4d8f18dae66ff8183fbc7fdd0651ca"
+  `expected`: "7e1a356bda20ce879fd8f423db352ae28d5e6b171ffb73d4cabec81acfa36136"
+  
+  limpa_covariates_correlation value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "99ce8a90d222e913e6b8b238d1b91686ccba15d47f4c347ee67945aeba92d930"
+  `expected`: "8c98ca3f561320405afd44b86f07d53fa0ceda8f03b8fc7e635869dfb2bcfeb1"
+  
+  limpa_correction_ruv record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "99ce8a90d222e913e6b8b238d1b91686ccba15d47f4c347ee67945aeba92d930"
+  `expected`: "8c98ca3f561320405afd44b86f07d53fa0ceda8f03b8fc7e635869dfb2bcfeb1"
+  
+  limpa_correction_ruv_repeat record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b8fb81c8cafea41eba518df1b1b88066b23af4d1d69140e9572d07544bd6715b"
+  `expected`: "d61f7e02b4c6a6d12fca78b9106ca07e9c39c3d7f406541c74a2ddc2947c3167"
+  
+  limpa_correction_pass_through norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b8fb81c8cafea41eba518df1b1b88066b23af4d1d69140e9572d07544bd6715b"
+  `expected`: "d61f7e02b4c6a6d12fca78b9106ca07e9c39c3d7f406541c74a2ddc2947c3167"
+  
+  limpa_covariates_pass_through norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b96da60e80358c6c48f5d739503b941f1eddff6ece33a4e6a43a124b262324a4"
+  `expected`: "89393fded12cf8f27c21722ad8d1a883b8d2464f0d0e82c6788f075e01c456b1"
+  
+  limpa_covariates_ruv norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b96da60e80358c6c48f5d739503b941f1eddff6ece33a4e6a43a124b262324a4"
+  `expected`: "89393fded12cf8f27c21722ad8d1a883b8d2464f0d0e82c6788f075e01c456b1"
+  
+  limpa_covariates_ruv_repeat norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "bf340ee5648557ff4b208a240234f62267c2008801b27eb845543d0b58940677"
+  `expected`: "331c7c06bb90a89c2b7d57b266835310347f5e6201a382c0551db2aa0b1bef6e"
+  
+  limpa_covariates_ruv value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "bf340ee5648557ff4b208a240234f62267c2008801b27eb845543d0b58940677"
+  `expected`: "331c7c06bb90a89c2b7d57b266835310347f5e6201a382c0551db2aa0b1bef6e"
+  
+  limpa_covariates_ruv_repeat value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "cb602cf3e180c654d26890c28711ec0827b3e7d8be6e185dd592365ad3202e7d"
+  `expected`: "3b0fbc63724b4e8bf08fb33060738e1459d38205eb8bd692f03e358d03181fa1"
+  
+  limpa_correction_correlation norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "cb602cf3e180c654d26890c28711ec0827b3e7d8be6e185dd592365ad3202e7d"
+  `expected`: "3b0fbc63724b4e8bf08fb33060738e1459d38205eb8bd692f03e358d03181fa1"
+  
+  limpa_covariates_correlation norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "f4802c60a4990536130dbefe116d8afe44ccdf820a12381319744e6eb3318b5d"
+  `expected`: "af87a571c574ddabd87bfe664ece0ee1d96b393dfc8d677765d4f7f94a17f0c7"
+  
+  limpa_correction_ruv value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "f4802c60a4990536130dbefe116d8afe44ccdf820a12381319744e6eb3318b5d"
+  `expected`: "af87a571c574ddabd87bfe664ece0ee1d96b393dfc8d677765d4f7f94a17f0c7"
+  
+  limpa_correction_ruv_repeat value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "fe6b0c95b1e900d4a3b3f58922f002a0885c6e0a9da17ae7dca1f9b0b6679d8f"
+  `expected`: "34e64dc1e1e246298b07d49ed56b42a6743ca9e662a09925d3be94dc69c4735c"
+  
+  limpa_correction_correlation files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "fe6b0c95b1e900d4a3b3f58922f002a0885c6e0a9da17ae7dca1f9b0b6679d8f"
+  `expected`: "34e64dc1e1e246298b07d49ed56b42a6743ca9e662a09925d3be94dc69c4735c"
+  
+  limpa_covariates_correlation files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "post:09d6f2e44b60"
+  `expected`: "post:f08bb05015f2"
+  
+  limpa_correction_pass_through callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "post:09d6f2e44b60"
+  `expected`: "post:f08bb05015f2"
+  
+  limpa_covariates_pass_through callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "ruv:4a2a4f15dd7c"
+  `expected`: "ruv:d9c3203931ab"
+  
+  limpa_correction_ruv callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "ruv:4a2a4f15dd7c"
+  `expected`: "ruv:d9c3203931ab"
+  
+  limpa_covariates_ruv callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_correction_pass_through products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_covariates_pass_through products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_correction_correlation products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_covariates_correlation products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:72bbdf43a8627fbd"
+  + "dia-ruv-covariates:2d852bdb98ba0821"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_covariates_ruv products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:72bbdf43a8627fbd"
+  + "dia-ruv-covariates:2d852bdb98ba0821"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_covariates_ruv_repeat products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:fb755bc1316dbf70"
+  + "dia-ruv-covariates:a63c32e024835b06"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_correction_ruv products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:fb755bc1316dbf70"
+  + "dia-ruv-covariates:a63c32e024835b06"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  limpa_correction_ruv_repeat products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  
+  limpa_correction_pass_through states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  
+  limpa_covariates_pass_through states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  
+  limpa_correction_correlation states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  
+  limpa_covariates_correlation states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_corrected"dd0fe8235f6c4c64870c7e0d8f66d8e9baf6846f7e959312378813021b6af983"
+  + ruv_corrected"ef508c5befb5357125ebd42187d911c9ecfe7debccff02358a55dc60cb71ab6b"
+  
+  limpa_correction_ruv states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_corrected"dd0fe8235f6c4c64870c7e0d8f66d8e9baf6846f7e959312378813021b6af983"
+  + ruv_corrected"ef508c5befb5357125ebd42187d911c9ecfe7debccff02358a55dc60cb71ab6b"
+  
+  limpa_correction_ruv_repeat states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_covariates"9bf16ad10a68800f6516a2e32ce92fa896f103c65163a1940450b06a4e3aef2e"
+  + ruv_covariates"8d14c322bca980797fa860f642a24b3f39bbd85c8b70b787c58facb69ac92de5"
+  
+  limpa_covariates_ruv states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_covariates"9bf16ad10a68800f6516a2e32ce92fa896f103c65163a1940450b06a4e3aef2e"
+  + ruv_covariates"8d14c322bca980797fa860f642a24b3f39bbd85c8b70b787c58facb69ac92de5"
+  
+  limpa_covariates_ruv_repeat states
+
+== test-prot-norm-core.R | message-changed | KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covariates through the worker give W1 (a)'s values
+-- base:
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [1] 
+   [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2] 
+   [3] "960c976c397095b0" - "7e1a356bda20ce87" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "960c976c397095b0" - "7e1a356bda20ce87" [12]
+  [13] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [13]
+  
+  worker limpa_correction_correlation norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [1] 
+   [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2] 
+   [3] "960c976c397095b0" - "7e1a356bda20ce87" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "960c976c397095b0" - "7e1a356bda20ce87" [12]
+  [13] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [13]
+  
+  worker limpa_covariates_correlation norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "bf340ee5648557ff" - "331c7c06bb90a89c" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "bf340ee5648557ff" - "331c7c06bb90a89c" [15]
+  [16] "6c385ab56cdf1a34" - "eeae0389f229a0bd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  worker limpa_covariates_ruv norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "bf340ee5648557ff" - "331c7c06bb90a89c" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "bf340ee5648557ff" - "331c7c06bb90a89c" [15]
+  [16] "6c385ab56cdf1a34" - "eeae0389f229a0bd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  worker limpa_covariates_ruv_repeat norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "f4802c60a4990536" - "af87a571c574ddab" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "f4802c60a4990536" - "af87a571c574ddab" [15]
+  [16] "fc48d75d402cbaa3" - "d91a80603a5612cd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  worker limpa_correction_ruv norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "f4802c60a4990536" - "af87a571c574ddab" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "f4802c60a4990536" - "af87a571c574ddab" [15]
+  [16] "fc48d75d402cbaa3" - "d91a80603a5612cd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  worker limpa_correction_ruv_repeat norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+      actual             | expected              
+  [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2]
+  [3] "1ba7030e9325c39d" | "1ba7030e9325c39d" [3]
+  [4] "21dd4c7bf548536a" | "21dd4c7bf548536a" [4]
+  [5] "960c976c397095b0" - "7e1a356bda20ce87" [5]
+  [6] "960c976c397095b0" - "7e1a356bda20ce87" [6]
+  [7] "960c976c397095b0" - "7e1a356bda20ce87" [7]
+  [8] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [8]
+  
+  worker limpa_correction_pass_through norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+      actual             | expected              
+  [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2]
+  [3] "1ba7030e9325c39d" | "1ba7030e9325c39d" [3]
+  [4] "21dd4c7bf548536a" | "21dd4c7bf548536a" [4]
+  [5] "960c976c397095b0" - "7e1a356bda20ce87" [5]
+  [6] "960c976c397095b0" - "7e1a356bda20ce87" [6]
+  [7] "960c976c397095b0" - "7e1a356bda20ce87" [7]
+  [8] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [8]
+  
+  worker limpa_covariates_pass_through norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "036dee453b8f75bf02a303f2e2671a5cd5458e3c128c4b284bb2dbccd21a0191"
+  `expected`: "4a271d4fbb4ee0107c841aa8738df37ceaa193138ffcbc27f137f8c354350b38"
+  
+  worker limpa_covariates_ruv record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "036dee453b8f75bf02a303f2e2671a5cd5458e3c128c4b284bb2dbccd21a0191"
+  `expected`: "4a271d4fbb4ee0107c841aa8738df37ceaa193138ffcbc27f137f8c354350b38"
+  
+  worker limpa_covariates_ruv_repeat record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "03f43b8909e6a09cd8c73ab5edc28936d47f2e7e7fefcf2012725fd4b99136e6"
+  `expected`: "a63ef2f4480787088700a1b719fe07a68b4ccd37528851c78a72680f86fe2da8"
+  
+  worker limpa_covariates_ruv workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "03f43b8909e6a09cd8c73ab5edc28936d47f2e7e7fefcf2012725fd4b99136e6"
+  `expected`: "a63ef2f4480787088700a1b719fe07a68b4ccd37528851c78a72680f86fe2da8"
+  
+  worker limpa_covariates_ruv_repeat workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "178cd0c1a1bd7936ef2e1c397f450f370bccb15b726fe515f4bd1ff8a877a065"
+  `expected`: "063392ef236032c3b43590f10da0f7efc331e0b9eada0d6e27ccda9314e5c9b8"
+  
+  worker limpa_correction_ruv workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "178cd0c1a1bd7936ef2e1c397f450f370bccb15b726fe515f4bd1ff8a877a065"
+  `expected`: "063392ef236032c3b43590f10da0f7efc331e0b9eada0d6e27ccda9314e5c9b8"
+  
+  worker limpa_correction_ruv_repeat workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "19bc6774b76dd1009b8f2bd1976f514afa4c5f1f9cfbfd1741bf9a1003ae4183"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  worker limpa_correction_ruv files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "19bc6774b76dd1009b8f2bd1976f514afa4c5f1f9cfbfd1741bf9a1003ae4183"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  worker limpa_correction_ruv_repeat files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "19bc6774b76dd1009b8f2bd1976f514afa4c5f1f9cfbfd1741bf9a1003ae4183"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  worker limpa_covariates_ruv files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "19bc6774b76dd1009b8f2bd1976f514afa4c5f1f9cfbfd1741bf9a1003ae4183"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  worker limpa_covariates_ruv_repeat files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "3513470f89326f81bacb03dbacf0942b02e47e5c6ed0e0fbe251382cbccce302"
+  `expected`: "1a23a1e795d23d37e619847429154a4ed2c177b269d98f0e463d4e920589b81f"
+  
+  worker limpa_correction_ruv ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "3513470f89326f81bacb03dbacf0942b02e47e5c6ed0e0fbe251382cbccce302"
+  `expected`: "1a23a1e795d23d37e619847429154a4ed2c177b269d98f0e463d4e920589b81f"
+  
+  worker limpa_correction_ruv_repeat ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "8557d939c138b59baf4252df43c5b3c5e71cba0acdc964bd95ac955229e57668"
+  `expected`: "ee016e5d9726e7c31a07e91b25f8908eb76c47b5dceb6a21107d9765884e7dd9"
+  
+  worker limpa_correction_ruv norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "8557d939c138b59baf4252df43c5b3c5e71cba0acdc964bd95ac955229e57668"
+  `expected`: "ee016e5d9726e7c31a07e91b25f8908eb76c47b5dceb6a21107d9765884e7dd9"
+  
+  worker limpa_correction_ruv_repeat norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "926838a97f9b74674568cb413d510b8131595c97d24d59704d8ba72f45d6906c"
+  `expected`: "34e64dc1e1e246298b07d49ed56b42a6743ca9e662a09925d3be94dc69c4735c"
+  
+  worker limpa_correction_correlation files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "926838a97f9b74674568cb413d510b8131595c97d24d59704d8ba72f45d6906c"
+  `expected`: "34e64dc1e1e246298b07d49ed56b42a6743ca9e662a09925d3be94dc69c4735c"
+  
+  worker limpa_covariates_correlation files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "92e59f147817e7a1fca6794959da5e8de0835a28f40476469271b45b4b7c36b2"
+  `expected`: "dd5a614c8a2494b1c66e75e08ce2a65e9259d557dcfa5a4058b9f720b5e8f4e6"
+  
+  worker limpa_covariates_ruv ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "92e59f147817e7a1fca6794959da5e8de0835a28f40476469271b45b4b7c36b2"
+  `expected`: "dd5a614c8a2494b1c66e75e08ce2a65e9259d557dcfa5a4058b9f720b5e8f4e6"
+  
+  worker limpa_covariates_ruv_repeat ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "960c976c397095b0bf12e14905af0ecf9f4d8f18dae66ff8183fbc7fdd0651ca"
+  `expected`: "7e1a356bda20ce879fd8f423db352ae28d5e6b171ffb73d4cabec81acfa36136"
+  
+  worker limpa_correction_correlation value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "960c976c397095b0bf12e14905af0ecf9f4d8f18dae66ff8183fbc7fdd0651ca"
+  `expected`: "7e1a356bda20ce879fd8f423db352ae28d5e6b171ffb73d4cabec81acfa36136"
+  
+  worker limpa_covariates_correlation value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "99ce8a90d222e913e6b8b238d1b91686ccba15d47f4c347ee67945aeba92d930"
+  `expected`: "8c98ca3f561320405afd44b86f07d53fa0ceda8f03b8fc7e635869dfb2bcfeb1"
+  
+  worker limpa_correction_ruv record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "99ce8a90d222e913e6b8b238d1b91686ccba15d47f4c347ee67945aeba92d930"
+  `expected`: "8c98ca3f561320405afd44b86f07d53fa0ceda8f03b8fc7e635869dfb2bcfeb1"
+  
+  worker limpa_correction_ruv_repeat record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b8fb81c8cafea41eba518df1b1b88066b23af4d1d69140e9572d07544bd6715b"
+  `expected`: "d61f7e02b4c6a6d12fca78b9106ca07e9c39c3d7f406541c74a2ddc2947c3167"
+  
+  worker limpa_correction_pass_through norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b8fb81c8cafea41eba518df1b1b88066b23af4d1d69140e9572d07544bd6715b"
+  `expected`: "d61f7e02b4c6a6d12fca78b9106ca07e9c39c3d7f406541c74a2ddc2947c3167"
+  
+  worker limpa_covariates_pass_through norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b96da60e80358c6c48f5d739503b941f1eddff6ece33a4e6a43a124b262324a4"
+  `expected`: "89393fded12cf8f27c21722ad8d1a883b8d2464f0d0e82c6788f075e01c456b1"
+  
+  worker limpa_covariates_ruv norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b96da60e80358c6c48f5d739503b941f1eddff6ece33a4e6a43a124b262324a4"
+  `expected`: "89393fded12cf8f27c21722ad8d1a883b8d2464f0d0e82c6788f075e01c456b1"
+  
+  worker limpa_covariates_ruv_repeat norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "bf340ee5648557ff4b208a240234f62267c2008801b27eb845543d0b58940677"
+  `expected`: "331c7c06bb90a89c2b7d57b266835310347f5e6201a382c0551db2aa0b1bef6e"
+  
+  worker limpa_covariates_ruv value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "bf340ee5648557ff4b208a240234f62267c2008801b27eb845543d0b58940677"
+  `expected`: "331c7c06bb90a89c2b7d57b266835310347f5e6201a382c0551db2aa0b1bef6e"
+  
+  worker limpa_covariates_ruv_repeat value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "cb602cf3e180c654d26890c28711ec0827b3e7d8be6e185dd592365ad3202e7d"
+  `expected`: "3b0fbc63724b4e8bf08fb33060738e1459d38205eb8bd692f03e358d03181fa1"
+  
+  worker limpa_correction_correlation norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "cb602cf3e180c654d26890c28711ec0827b3e7d8be6e185dd592365ad3202e7d"
+  `expected`: "3b0fbc63724b4e8bf08fb33060738e1459d38205eb8bd692f03e358d03181fa1"
+  
+  worker limpa_covariates_correlation norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "f4802c60a4990536130dbefe116d8afe44ccdf820a12381319744e6eb3318b5d"
+  `expected`: "af87a571c574ddabd87bfe664ece0ee1d96b393dfc8d677765d4f7f94a17f0c7"
+  
+  worker limpa_correction_ruv value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "f4802c60a4990536130dbefe116d8afe44ccdf820a12381319744e6eb3318b5d"
+  `expected`: "af87a571c574ddabd87bfe664ece0ee1d96b393dfc8d677765d4f7f94a17f0c7"
+  
+  worker limpa_correction_ruv_repeat value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "post:09d6f2e44b60"
+  `expected`: "post:f08bb05015f2"
+  
+  worker limpa_correction_pass_through callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "post:09d6f2e44b60"
+  `expected`: "post:f08bb05015f2"
+  
+  worker limpa_covariates_pass_through callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "ruv:4a2a4f15dd7c"
+  `expected`: "ruv:d9c3203931ab"
+  
+  worker limpa_correction_ruv callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "ruv:4a2a4f15dd7c"
+  `expected`: "ruv:d9c3203931ab"
+  
+  worker limpa_covariates_ruv callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_correction_pass_through products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_covariates_pass_through products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_correction_correlation products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_covariates_correlation products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:72bbdf43a8627fbd"
+  + "dia-ruv-covariates:2d852bdb98ba0821"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_covariates_ruv products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:72bbdf43a8627fbd"
+  + "dia-ruv-covariates:2d852bdb98ba0821"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_covariates_ruv_repeat products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:fb755bc1316dbf70"
+  + "dia-ruv-covariates:a63c32e024835b06"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_correction_ruv products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:fb755bc1316dbf70"
+  + "dia-ruv-covariates:a63c32e024835b06"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_correction_ruv_repeat products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  
+  worker limpa_correction_pass_through states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  
+  worker limpa_covariates_pass_through states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  
+  worker limpa_correction_correlation states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  
+  worker limpa_covariates_correlation states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_corrected"dd0fe8235f6c4c64870c7e0d8f66d8e9baf6846f7e959312378813021b6af983"
+  + ruv_corrected"ef508c5befb5357125ebd42187d911c9ecfe7debccff02358a55dc60cb71ab6b"
+  
+  worker limpa_correction_ruv states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_corrected"dd0fe8235f6c4c64870c7e0d8f66d8e9baf6846f7e959312378813021b6af983"
+  + ruv_corrected"ef508c5befb5357125ebd42187d911c9ecfe7debccff02358a55dc60cb71ab6b"
+  
+  worker limpa_correction_ruv_repeat states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_covariates"9bf16ad10a68800f6516a2e32ce92fa896f103c65163a1940450b06a4e3aef2e"
+  + ruv_covariates"8d14c322bca980797fa860f642a24b3f39bbd85c8b70b787c58facb69ac92de5"
+  
+  worker limpa_covariates_ruv states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_covariates"9bf16ad10a68800f6516a2e32ce92fa896f103c65163a1940450b06a4e3aef2e"
+  + ruv_covariates"8d14c322bca980797fa860f642a24b3f39bbd85c8b70b787c58facb69ac92de5"
+  
+  worker limpa_covariates_ruv_repeat states
+-- head:
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [1] 
+   [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2] 
+   [3] "960c976c397095b0" - "7e1a356bda20ce87" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "960c976c397095b0" - "7e1a356bda20ce87" [12]
+  [13] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [13]
+  
+  worker limpa_correction_correlation norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [1] 
+   [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2] 
+   [3] "960c976c397095b0" - "7e1a356bda20ce87" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "960c976c397095b0" - "7e1a356bda20ce87" [12]
+  [13] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [13]
+  
+  worker limpa_covariates_correlation norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "bf340ee5648557ff" - "331c7c06bb90a89c" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "bf340ee5648557ff" - "331c7c06bb90a89c" [15]
+  [16] "6c385ab56cdf1a34" - "eeae0389f229a0bd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  worker limpa_covariates_ruv norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "bf340ee5648557ff" - "331c7c06bb90a89c" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "bf340ee5648557ff" - "331c7c06bb90a89c" [15]
+  [16] "6c385ab56cdf1a34" - "eeae0389f229a0bd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  worker limpa_covariates_ruv_repeat norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "f4802c60a4990536" - "af87a571c574ddab" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "f4802c60a4990536" - "af87a571c574ddab" [15]
+  [16] "fc48d75d402cbaa3" - "d91a80603a5612cd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  worker limpa_correction_ruv norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+       actual             | expected               
+   [1] "a7b8541c0f557ee0" | "a7b8541c0f557ee0" [1] 
+   [2] "1c497b478576b300" | "1c497b478576b300" [2] 
+   [3] "f4802c60a4990536" - "af87a571c574ddab" [3] 
+   [4] "acf06dd9ce0cc864" | "acf06dd9ce0cc864" [4] 
+   [5] "395f760e43d30337" - "9eaece3602f93d46" [5] 
+   [6] "1ba7030e9325c39d" | "1ba7030e9325c39d" [6] 
+   [7] "1cc1786a46386211" | "1cc1786a46386211" [7] 
+   [8] "1117845348765162" - "1252e1714ac6c9a2" [8] 
+   [9] "21dd4c7bf548536a" | "21dd4c7bf548536a" [9] 
+  [10] "960c976c397095b0" - "7e1a356bda20ce87" [10]
+  [11] "960c976c397095b0" - "7e1a356bda20ce87" [11]
+  [12] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [12]
+  [13] "21dd4c7bf548536a" | "21dd4c7bf548536a" [13]
+  [14] "960c976c397095b0" - "7e1a356bda20ce87" [14]
+  [15] "f4802c60a4990536" - "af87a571c574ddab" [15]
+  [16] "fc48d75d402cbaa3" - "d91a80603a5612cd" [16]
+  [17] "bebd4fabf233ec61" - "bf419098d53c4e33" [17]
+  
+  worker limpa_correction_ruv_repeat norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+      actual             | expected              
+  [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2]
+  [3] "1ba7030e9325c39d" | "1ba7030e9325c39d" [3]
+  [4] "21dd4c7bf548536a" | "21dd4c7bf548536a" [4]
+  [5] "960c976c397095b0" - "7e1a356bda20ce87" [5]
+  [6] "960c976c397095b0" - "7e1a356bda20ce87" [6]
+  [7] "960c976c397095b0" - "7e1a356bda20ce87" [7]
+  [8] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [8]
+  
+  worker limpa_correction_pass_through norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+      actual             | expected              
+  [2] "3fe0774c75a5f7ec" | "3fe0774c75a5f7ec" [2]
+  [3] "1ba7030e9325c39d" | "1ba7030e9325c39d" [3]
+  [4] "21dd4c7bf548536a" | "21dd4c7bf548536a" [4]
+  [5] "960c976c397095b0" - "7e1a356bda20ce87" [5]
+  [6] "960c976c397095b0" - "7e1a356bda20ce87" [6]
+  [7] "960c976c397095b0" - "7e1a356bda20ce87" [7]
+  [8] "71557d1c8bac9bbe" | "71557d1c8bac9bbe" [8]
+  
+  worker limpa_covariates_pass_through norm_fields
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "036dee453b8f75bf02a303f2e2671a5cd5458e3c128c4b284bb2dbccd21a0191"
+  `expected`: "4a271d4fbb4ee0107c841aa8738df37ceaa193138ffcbc27f137f8c354350b38"
+  
+  worker limpa_covariates_ruv record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "036dee453b8f75bf02a303f2e2671a5cd5458e3c128c4b284bb2dbccd21a0191"
+  `expected`: "4a271d4fbb4ee0107c841aa8738df37ceaa193138ffcbc27f137f8c354350b38"
+  
+  worker limpa_covariates_ruv_repeat record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "03f43b8909e6a09cd8c73ab5edc28936d47f2e7e7fefcf2012725fd4b99136e6"
+  `expected`: "a63ef2f4480787088700a1b719fe07a68b4ccd37528851c78a72680f86fe2da8"
+  
+  worker limpa_covariates_ruv workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "03f43b8909e6a09cd8c73ab5edc28936d47f2e7e7fefcf2012725fd4b99136e6"
+  `expected`: "a63ef2f4480787088700a1b719fe07a68b4ccd37528851c78a72680f86fe2da8"
+  
+  worker limpa_covariates_ruv_repeat workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "178cd0c1a1bd7936ef2e1c397f450f370bccb15b726fe515f4bd1ff8a877a065"
+  `expected`: "063392ef236032c3b43590f10da0f7efc331e0b9eada0d6e27ccda9314e5c9b8"
+  
+  worker limpa_correction_ruv workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "178cd0c1a1bd7936ef2e1c397f450f370bccb15b726fe515f4bd1ff8a877a065"
+  `expected`: "063392ef236032c3b43590f10da0f7efc331e0b9eada0d6e27ccda9314e5c9b8"
+  
+  worker limpa_correction_ruv_repeat workflow
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "3513470f89326f81bacb03dbacf0942b02e47e5c6ed0e0fbe251382cbccce302"
+  `expected`: "1a23a1e795d23d37e619847429154a4ed2c177b269d98f0e463d4e920589b81f"
+  
+  worker limpa_correction_ruv ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "3513470f89326f81bacb03dbacf0942b02e47e5c6ed0e0fbe251382cbccce302"
+  `expected`: "1a23a1e795d23d37e619847429154a4ed2c177b269d98f0e463d4e920589b81f"
+  
+  worker limpa_correction_ruv_repeat ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "6c52f9ea998fe553278ce2e32f74ea48fd867871f1531f24b63832511d1d8906"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  worker limpa_correction_ruv files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "6c52f9ea998fe553278ce2e32f74ea48fd867871f1531f24b63832511d1d8906"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  worker limpa_correction_ruv_repeat files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "6c52f9ea998fe553278ce2e32f74ea48fd867871f1531f24b63832511d1d8906"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  worker limpa_covariates_ruv files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "6c52f9ea998fe553278ce2e32f74ea48fd867871f1531f24b63832511d1d8906"
+  `expected`: "b1817922687d2c0630fd22ee130095d32c509bf8ad8a87a5b880348b34535576"
+  
+  worker limpa_covariates_ruv_repeat files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "8557d939c138b59baf4252df43c5b3c5e71cba0acdc964bd95ac955229e57668"
+  `expected`: "ee016e5d9726e7c31a07e91b25f8908eb76c47b5dceb6a21107d9765884e7dd9"
+  
+  worker limpa_correction_ruv norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "8557d939c138b59baf4252df43c5b3c5e71cba0acdc964bd95ac955229e57668"
+  `expected`: "ee016e5d9726e7c31a07e91b25f8908eb76c47b5dceb6a21107d9765884e7dd9"
+  
+  worker limpa_correction_ruv_repeat norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "92e59f147817e7a1fca6794959da5e8de0835a28f40476469271b45b4b7c36b2"
+  `expected`: "dd5a614c8a2494b1c66e75e08ce2a65e9259d557dcfa5a4058b9f720b5e8f4e6"
+  
+  worker limpa_covariates_ruv ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "92e59f147817e7a1fca6794959da5e8de0835a28f40476469271b45b4b7c36b2"
+  `expected`: "dd5a614c8a2494b1c66e75e08ce2a65e9259d557dcfa5a4058b9f720b5e8f4e6"
+  
+  worker limpa_covariates_ruv_repeat ruv_result
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "960c976c397095b0bf12e14905af0ecf9f4d8f18dae66ff8183fbc7fdd0651ca"
+  `expected`: "7e1a356bda20ce879fd8f423db352ae28d5e6b171ffb73d4cabec81acfa36136"
+  
+  worker limpa_correction_correlation value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "960c976c397095b0bf12e14905af0ecf9f4d8f18dae66ff8183fbc7fdd0651ca"
+  `expected`: "7e1a356bda20ce879fd8f423db352ae28d5e6b171ffb73d4cabec81acfa36136"
+  
+  worker limpa_covariates_correlation value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "99ce8a90d222e913e6b8b238d1b91686ccba15d47f4c347ee67945aeba92d930"
+  `expected`: "8c98ca3f561320405afd44b86f07d53fa0ceda8f03b8fc7e635869dfb2bcfeb1"
+  
+  worker limpa_correction_ruv record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "99ce8a90d222e913e6b8b238d1b91686ccba15d47f4c347ee67945aeba92d930"
+  `expected`: "8c98ca3f561320405afd44b86f07d53fa0ceda8f03b8fc7e635869dfb2bcfeb1"
+  
+  worker limpa_correction_ruv_repeat record
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b8fb81c8cafea41eba518df1b1b88066b23af4d1d69140e9572d07544bd6715b"
+  `expected`: "d61f7e02b4c6a6d12fca78b9106ca07e9c39c3d7f406541c74a2ddc2947c3167"
+  
+  worker limpa_correction_pass_through norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b8fb81c8cafea41eba518df1b1b88066b23af4d1d69140e9572d07544bd6715b"
+  `expected`: "d61f7e02b4c6a6d12fca78b9106ca07e9c39c3d7f406541c74a2ddc2947c3167"
+  
+  worker limpa_covariates_pass_through norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b96da60e80358c6c48f5d739503b941f1eddff6ece33a4e6a43a124b262324a4"
+  `expected`: "89393fded12cf8f27c21722ad8d1a883b8d2464f0d0e82c6788f075e01c456b1"
+  
+  worker limpa_covariates_ruv norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "b96da60e80358c6c48f5d739503b941f1eddff6ece33a4e6a43a124b262324a4"
+  `expected`: "89393fded12cf8f27c21722ad8d1a883b8d2464f0d0e82c6788f075e01c456b1"
+  
+  worker limpa_covariates_ruv_repeat norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "bf340ee5648557ff4b208a240234f62267c2008801b27eb845543d0b58940677"
+  `expected`: "331c7c06bb90a89c2b7d57b266835310347f5e6201a382c0551db2aa0b1bef6e"
+  
+  worker limpa_covariates_ruv value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "bf340ee5648557ff4b208a240234f62267c2008801b27eb845543d0b58940677"
+  `expected`: "331c7c06bb90a89c2b7d57b266835310347f5e6201a382c0551db2aa0b1bef6e"
+  
+  worker limpa_covariates_ruv_repeat value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "cb602cf3e180c654d26890c28711ec0827b3e7d8be6e185dd592365ad3202e7d"
+  `expected`: "3b0fbc63724b4e8bf08fb33060738e1459d38205eb8bd692f03e358d03181fa1"
+  
+  worker limpa_correction_correlation norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "cb602cf3e180c654d26890c28711ec0827b3e7d8be6e185dd592365ad3202e7d"
+  `expected`: "3b0fbc63724b4e8bf08fb33060738e1459d38205eb8bd692f03e358d03181fa1"
+  
+  worker limpa_covariates_correlation norm_state
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "f4802c60a4990536130dbefe116d8afe44ccdf820a12381319744e6eb3318b5d"
+  `expected`: "af87a571c574ddabd87bfe664ece0ee1d96b393dfc8d677765d4f7f94a17f0c7"
+  
+  worker limpa_correction_ruv value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "f4802c60a4990536130dbefe116d8afe44ccdf820a12381319744e6eb3318b5d"
+  `expected`: "af87a571c574ddabd87bfe664ece0ee1d96b393dfc8d677765d4f7f94a17f0c7"
+  
+  worker limpa_correction_ruv_repeat value
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "fe6b0c95b1e900d4a3b3f58922f002a0885c6e0a9da17ae7dca1f9b0b6679d8f"
+  `expected`: "34e64dc1e1e246298b07d49ed56b42a6743ca9e662a09925d3be94dc69c4735c"
+  
+  worker limpa_correction_correlation files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "fe6b0c95b1e900d4a3b3f58922f002a0885c6e0a9da17ae7dca1f9b0b6679d8f"
+  `expected`: "34e64dc1e1e246298b07d49ed56b42a6743ca9e662a09925d3be94dc69c4735c"
+  
+  worker limpa_covariates_correlation files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "post:09d6f2e44b60"
+  `expected`: "post:f08bb05015f2"
+  
+  worker limpa_correction_pass_through callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "post:09d6f2e44b60"
+  `expected`: "post:f08bb05015f2"
+  
+  worker limpa_covariates_pass_through callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "ruv:4a2a4f15dd7c"
+  `expected`: "ruv:d9c3203931ab"
+  
+  worker limpa_correction_ruv callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "ruv:4a2a4f15dd7c"
+  `expected`: "ruv:d9c3203931ab"
+  
+  worker limpa_covariates_ruv callbacks
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_correction_pass_through products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_covariates_pass_through products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_correction_correlation products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_covariates_correlation products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:72bbdf43a8627fbd"
+  + "dia-ruv-covariates:2d852bdb98ba0821"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_covariates_ruv products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:72bbdf43a8627fbd"
+  + "dia-ruv-covariates:2d852bdb98ba0821"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_covariates_ruv_repeat products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:fb755bc1316dbf70"
+  + "dia-ruv-covariates:a63c32e024835b06"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_correction_ruv products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:fbc056253acf7cde"
+  + "dia-pearson-selection:36ea8f5f2e373570"
+  - "dia-ruv-covariates:fb755bc1316dbf70"
+  + "dia-ruv-covariates:a63c32e024835b06"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "output/dia-protein-filtering-counts:67049a631f7b624a"
+  - "output/dia-protein-qc-output:1f3642b2b42d7210"
+  + "output/dia-protein-qc-output:8b8101851eb54168"
+  - "output/dia-protein-qc-output:cd86962aeac07d34"
+  + "output/dia-protein-qc-output:deef48a7ebdbcb3a"
+  
+  worker limpa_correction_ruv_repeat products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  
+  worker limpa_correction_pass_through states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  
+  worker limpa_covariates_pass_through states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  
+  worker limpa_correction_correlation states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  
+  worker limpa_covariates_correlation states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_corrected"dd0fe8235f6c4c64870c7e0d8f66d8e9baf6846f7e959312378813021b6af983"
+  + ruv_corrected"ef508c5befb5357125ebd42187d911c9ecfe7debccff02358a55dc60cb71ab6b"
+  
+  worker limpa_correction_ruv states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_corrected"dd0fe8235f6c4c64870c7e0d8f66d8e9baf6846f7e959312378813021b6af983"
+  + ruv_corrected"ef508c5befb5357125ebd42187d911c9ecfe7debccff02358a55dc60cb71ab6b"
+  
+  worker limpa_correction_ruv_repeat states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_covariates"9bf16ad10a68800f6516a2e32ce92fa896f103c65163a1940450b06a4e3aef2e"
+  + ruv_covariates"8d14c322bca980797fa860f642a24b3f39bbd85c8b70b787c58facb69ac92de5"
+  
+  worker limpa_covariates_ruv states
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"7f774966f9b8ffacf475ba7891ccace8317c4899b631964940b5191c9f6f28a0"
+  + protein_dpc_quant"41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549"
+  - protein_normalised"bf54acc5aaa0c3c60b59a8158d607c8425ed3e843592c3922af401d1a059c1dc"
+  + protein_normalised"ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64"
+  - peptide_count_filtered"9f730430388d1f7e8abe6b44796c9807b6328c92196e7bd1996023fb9642eaba"
+  + peptide_count_filtered"75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"
+  - correlation_filtered"e75186467e391762a2ee73bfed566b4405992a3cb1a5b223e5b0be610745ad87"
+  + correlation_filtered"312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+  - ruv_covariates"9bf16ad10a68800f6516a2e32ce92fa896f103c65163a1940450b06a4e3aef2e"
+  + ruv_covariates"8d14c322bca980797fa860f642a24b3f39bbd85c8b70b787c58facb69ac92de5"
+  
+  worker limpa_covariates_ruv_repeat states
+
+== test-gui-entry-proteomics.R | new-failure | KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route
+-- base:
+  <passes>
+-- head:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[14:20] vs names(expected$artifacts)[14:19]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[31:36] vs names(expected$artifacts)[30:36]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'summary_save' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[14:20] vs names(expected$artifacts)[14:19]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[31:36] vs names(expected$artifacts)[30:36]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  names(actual$artifacts)[145:153] vs names(expected$artifacts)[145:153]
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.pdf"
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.png"
+    "results_summary/proteomics/Publication_tables/DA_results_proteomics.xlsx"
+    "results_summary/proteomics/Publication_tables/Pathway_enrichment_results_proteomics.xlsx"
+  + "results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv"
+    "results_summary/proteomics/Publication_tables/da_proteomics_num_sig_da_molecules.tab"
+    "results_summary/proteomics/Publication_tables/filtered_session.msdia.tar"
+  - "results_summary/proteomics/Publication_tables/normalised_results.tsv"
+    "results_summary/proteomics/Study_report/contrasts_tbl.tab"
+    "results_summary/proteomics/Study_report/design_matrix.tab"
+    "results_summary/proteomics/Study_report/study_parameters.txt"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is absent
+  `expected$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'summary_copy' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[14:20] vs names(expected$artifacts)[14:19]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[31:36] vs names(expected$artifacts)[30:36]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  names(actual$artifacts)[146:154] vs names(expected$artifacts)[146:154]
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.pdf"
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.png"
+    "results_summary/proteomics/Publication_tables/DA_results_proteomics.xlsx"
+    "results_summary/proteomics/Publication_tables/Pathway_enrichment_results_proteomics.xlsx"
+  + "results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv"
+    "results_summary/proteomics/Publication_tables/da_proteomics_num_sig_da_molecules.tab"
+    "results_summary/proteomics/Publication_tables/filtered_session.msdia.tar"
+  - "results_summary/proteomics/Publication_tables/normalised_results.tsv"
+    "results_summary/proteomics/Study_report/analysis_record.docx"
+    "results_summary/proteomics/Study_report/analysis_record.json"
+    "results_summary/proteomics/Study_report/analysis_record.xlsx"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is absent
+  `expected$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'summary_export' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[14:20] vs names(expected$artifacts)[14:19]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[31:36] vs names(expected$artifacts)[30:36]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  names(actual$artifacts)[146:154] vs names(expected$artifacts)[146:154]
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.pdf"
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.png"
+    "results_summary/proteomics/Publication_tables/DA_results_proteomics.xlsx"
+    "results_summary/proteomics/Publication_tables/Pathway_enrichment_results_proteomics.xlsx"
+  + "results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv"
+    "results_summary/proteomics/Publication_tables/da_proteomics_num_sig_da_molecules.tab"
+    "results_summary/proteomics/Publication_tables/filtered_session.msdia.tar"
+  - "results_summary/proteomics/Publication_tables/normalised_results.tsv"
+    "results_summary/proteomics/Study_report/analysis_record.docx"
+    "results_summary/proteomics/Study_report/analysis_record.json"
+    "results_summary/proteomics/Study_report/analysis_record.xlsx"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is absent
+  `expected$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'summary_report' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[6:12] vs names(expected$artifacts)[6:11]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[23:28] vs names(expected$artifacts)[22:28]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.pdf"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.png"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_peptides_per_protein.pdf"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'da_load' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[6:12] vs names(expected$artifacts)[6:11]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[23:28] vs names(expected$artifacts)[22:28]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.pdf"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.png"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_peptides_per_protein.pdf"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'ruv_covariates' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[6:12] vs names(expected$artifacts)[6:11]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[23:28] vs names(expected$artifacts)[22:28]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.pdf"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.png"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_peptides_per_protein.pdf"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'session_export' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[6:16] vs names(expected$artifacts)[6:16]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+  + "results/proteomics/protein_qc/post_norm_correlation.png"
+  - "results/proteomics/protein_qc/post_norm_correlation.png"
+  + "results/proteomics/protein_qc/post_norm_density.png"
+  - "results/proteomics/protein_qc/post_norm_density.png"
+  + "results/proteomics/protein_qc/post_norm_pca.png"
+  - "results/proteomics/protein_qc/post_norm_pca.png"
+  + "results/proteomics/protein_qc/post_norm_rle.png"
+  - "results/proteomics/protein_qc/post_norm_rle.png"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.pdf"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.png"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_peptides_per_protein.pdf"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'correlation' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[8:14] vs names(expected$artifacts)[8:13]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[25:30] vs names(expected$artifacts)[24:30]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'da' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  names(actual$artifacts)[8:14] vs names(expected$artifacts)[8:13]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[25:30] vs names(expected$artifacts)[24:30]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'summary_refusal' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+
+== test-workflow-saved-da.R | message-changed | KIT-112 W1 (a): the DIA_LIMPA DA click (dpcDE, no base fit) in process gives the recorded values
+-- base:
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+      actual             | expected              
+  [1] "327b17a1920c8db3" - "e110155297408588" [1]
+  [2] "TRUE"             | "TRUE"             [2]
+  [3] "11806ed3b64f4e61" - "92ab8e0a6f5ff71f" [3]
+  [4] "327b17a1920c8db3" - "e110155297408588" [4]
+  [5] "2bce5494a485e1c6" | "2bce5494a485e1c6" [5]
+  [6] "7fba41c2c7de2596" | "7fba41c2c7de2596" [6]
+  
+  limpa_one_contrast display
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "327b17a1920c8db3b1c5fdc5514265e76f22691f4cac40ff3bf5f27ccb71fc15"
+  `expected`: "e110155297408588615cc4228500932db820b236588b5b02aab5a803a41d055f"
+  
+  limpa_one_contrast head_manifest
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "327b17a1920c8db3b1c5fdc5514265e76f22691f4cac40ff3bf5f27ccb71fc15"
+  `expected`: "e110155297408588615cc4228500932db820b236588b5b02aab5a803a41d055f"
+  
+  limpa_one_contrast manifest
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "8fc2b7310cedd49593eb9c88f01cea1c751bd6457d923451ececfa4d5d63b720"
+  `expected`: "2ce30818ad600eddb0e918a66e8e8341a74a4311b1e99352de92d87c611b94c3"
+  
+  limpa_one_contrast files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-contrast-references:c45564222d81ee34 <- c9a6ae8301805db9"
+  + "dia-contrast-references:f4e904e8f0028b60 <- b9ef2b33ea1cdddf"
+  - "manifest <- c9a6ae8301805db9"
+  + "manifest <- b9ef2b33ea1cdddf"
+  
+  limpa_one_contrast dependencies
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-contrast-references:c45564222d81ee34"
+  + "dia-contrast-references:f4e904e8f0028b60"
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:95e69eee8d9dd164"
+  + "dia-pearson-selection:cb46f62c60963c21"
+  - "dia-ruv-covariates:3c66b6a44afcfbfa"
+  + "dia-ruv-covariates:ae5c2029f83e23a8"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "rendered_asset"
+  
+  limpa_one_contrast products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"b7508e9636ffa82ba8ea0a4d1e05a83fc074428094de641588daf7bac1cc9097"
+  + protein_dpc_quant"22f553887dc4edb1623ab2d0b556c048cd7f216ba22d1f250abd9d86eb5db726"
+  - protein_normalised"b560af3f684ecc77875f07ce6567b03090149c7184a2a00995676696e0d2dbfb"
+  + protein_normalised"8f9c8ef12ddf5740a442f8b23bf258aeb7a02793932943a0f1901d84a9e9867b"
+  - peptide_count_filtered"e1bdceb4ae0ed6333c6ed3c6d258590b9ebf954efdaf0302eb589b52a0eee40a"
+  + peptide_count_filtered"32b145aaa12d358ffff2ff6d857c643e9305792be84d2aeec59c0bb9c9fab661"
+  - correlation_filtered"676287ec23f2a36b0257af1ba8ca1a92d185f1afab68bb1250b35b5f54a28f99"
+  + correlation_filtered"69b20b13edbf2f85ae088f8fa1e296b1412d2a1d7ea8021a85307b983e4b45fb"
+  - ruv_covariates"c8bb4b13e368fb6487682df50bc6cf1732ef314cddd341a9c60f3cf91d47c855"
+  + ruv_covariates"a247ca82c2b0e461cf6080fb13ea283025e128ec264034be9b93ccd16a6ee10d"
+  
+  limpa_one_contrast states
+-- head:
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+      actual             | expected              
+  [1] "327b17a1920c8db3" - "e110155297408588" [1]
+  [2] "TRUE"             | "TRUE"             [2]
+  [3] "11806ed3b64f4e61" - "92ab8e0a6f5ff71f" [3]
+  [4] "327b17a1920c8db3" - "e110155297408588" [4]
+  [5] "2bce5494a485e1c6" | "2bce5494a485e1c6" [5]
+  [6] "7fba41c2c7de2596" | "7fba41c2c7de2596" [6]
+  
+  limpa_one_contrast display
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "327b17a1920c8db3b1c5fdc5514265e76f22691f4cac40ff3bf5f27ccb71fc15"
+  `expected`: "e110155297408588615cc4228500932db820b236588b5b02aab5a803a41d055f"
+  
+  limpa_one_contrast head_manifest
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "327b17a1920c8db3b1c5fdc5514265e76f22691f4cac40ff3bf5f27ccb71fc15"
+  `expected`: "e110155297408588615cc4228500932db820b236588b5b02aab5a803a41d055f"
+  
+  limpa_one_contrast manifest
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "d9db4b793014c018698ba61e4b5ba984095c469932d4f40b13425e1a10dadf2c"
+  `expected`: "2ce30818ad600eddb0e918a66e8e8341a74a4311b1e99352de92d87c611b94c3"
+  
+  limpa_one_contrast files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-contrast-references:c45564222d81ee34 <- c9a6ae8301805db9"
+  + "dia-contrast-references:f4e904e8f0028b60 <- b9ef2b33ea1cdddf"
+  - "manifest <- c9a6ae8301805db9"
+  + "manifest <- b9ef2b33ea1cdddf"
+  
+  limpa_one_contrast dependencies
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-contrast-references:c45564222d81ee34"
+  + "dia-contrast-references:f4e904e8f0028b60"
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:95e69eee8d9dd164"
+  + "dia-pearson-selection:cb46f62c60963c21"
+  - "dia-ruv-covariates:3c66b6a44afcfbfa"
+  + "dia-ruv-covariates:ae5c2029f83e23a8"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "rendered_asset"
+  
+  limpa_one_contrast products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"b7508e9636ffa82ba8ea0a4d1e05a83fc074428094de641588daf7bac1cc9097"
+  + protein_dpc_quant"22f553887dc4edb1623ab2d0b556c048cd7f216ba22d1f250abd9d86eb5db726"
+  - protein_normalised"b560af3f684ecc77875f07ce6567b03090149c7184a2a00995676696e0d2dbfb"
+  + protein_normalised"8f9c8ef12ddf5740a442f8b23bf258aeb7a02793932943a0f1901d84a9e9867b"
+  - peptide_count_filtered"e1bdceb4ae0ed6333c6ed3c6d258590b9ebf954efdaf0302eb589b52a0eee40a"
+  + peptide_count_filtered"32b145aaa12d358ffff2ff6d857c643e9305792be84d2aeec59c0bb9c9fab661"
+  - correlation_filtered"676287ec23f2a36b0257af1ba8ca1a92d185f1afab68bb1250b35b5f54a28f99"
+  + correlation_filtered"69b20b13edbf2f85ae088f8fa1e296b1412d2a1d7ea8021a85307b983e4b45fb"
+  - ruv_covariates"c8bb4b13e368fb6487682df50bc6cf1732ef314cddd341a9c60f3cf91d47c855"
+  + ruv_covariates"a247ca82c2b0e461cf6080fb13ea283025e128ec264034be9b93ccd16a6ee10d"
+  
+  limpa_one_contrast states
+
+== test-workflow-saved-da.R | message-changed | KIT-112 W2 (W1 (b)): the DIA_LIMPA DA click through the worker (dpcDE, no base fit) gives W1 (a)'s values
+-- base:
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+      actual             | expected              
+  [1] "327b17a1920c8db3" - "e110155297408588" [1]
+  [2] "TRUE"             | "TRUE"             [2]
+  [3] "11806ed3b64f4e61" - "92ab8e0a6f5ff71f" [3]
+  [4] "327b17a1920c8db3" - "e110155297408588" [4]
+  [5] "2bce5494a485e1c6" | "2bce5494a485e1c6" [5]
+  [6] "7fba41c2c7de2596" | "7fba41c2c7de2596" [6]
+  
+  worker limpa_one_contrast display
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "327b17a1920c8db3b1c5fdc5514265e76f22691f4cac40ff3bf5f27ccb71fc15"
+  `expected`: "e110155297408588615cc4228500932db820b236588b5b02aab5a803a41d055f"
+  
+  worker limpa_one_contrast head_manifest
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "327b17a1920c8db3b1c5fdc5514265e76f22691f4cac40ff3bf5f27ccb71fc15"
+  `expected`: "e110155297408588615cc4228500932db820b236588b5b02aab5a803a41d055f"
+  
+  worker limpa_one_contrast manifest
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "8fc2b7310cedd49593eb9c88f01cea1c751bd6457d923451ececfa4d5d63b720"
+  `expected`: "2ce30818ad600eddb0e918a66e8e8341a74a4311b1e99352de92d87c611b94c3"
+  
+  worker limpa_one_contrast files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-contrast-references:c45564222d81ee34 <- c9a6ae8301805db9"
+  + "dia-contrast-references:f4e904e8f0028b60 <- b9ef2b33ea1cdddf"
+  - "manifest <- c9a6ae8301805db9"
+  + "manifest <- b9ef2b33ea1cdddf"
+  
+  worker limpa_one_contrast dependencies
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-contrast-references:c45564222d81ee34"
+  + "dia-contrast-references:f4e904e8f0028b60"
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:95e69eee8d9dd164"
+  + "dia-pearson-selection:cb46f62c60963c21"
+  - "dia-ruv-covariates:3c66b6a44afcfbfa"
+  + "dia-ruv-covariates:ae5c2029f83e23a8"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "rendered_asset"
+  
+  worker limpa_one_contrast products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"b7508e9636ffa82ba8ea0a4d1e05a83fc074428094de641588daf7bac1cc9097"
+  + protein_dpc_quant"22f553887dc4edb1623ab2d0b556c048cd7f216ba22d1f250abd9d86eb5db726"
+  - protein_normalised"b560af3f684ecc77875f07ce6567b03090149c7184a2a00995676696e0d2dbfb"
+  + protein_normalised"8f9c8ef12ddf5740a442f8b23bf258aeb7a02793932943a0f1901d84a9e9867b"
+  - peptide_count_filtered"e1bdceb4ae0ed6333c6ed3c6d258590b9ebf954efdaf0302eb589b52a0eee40a"
+  + peptide_count_filtered"32b145aaa12d358ffff2ff6d857c643e9305792be84d2aeec59c0bb9c9fab661"
+  - correlation_filtered"676287ec23f2a36b0257af1ba8ca1a92d185f1afab68bb1250b35b5f54a28f99"
+  + correlation_filtered"69b20b13edbf2f85ae088f8fa1e296b1412d2a1d7ea8021a85307b983e4b45fb"
+  - ruv_covariates"c8bb4b13e368fb6487682df50bc6cf1732ef314cddd341a9c60f3cf91d47c855"
+  + ruv_covariates"a247ca82c2b0e461cf6080fb13ea283025e128ec264034be9b93ccd16a6ee10d"
+  
+  worker limpa_one_contrast states
+-- head:
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+      actual             | expected              
+  [1] "327b17a1920c8db3" - "e110155297408588" [1]
+  [2] "TRUE"             | "TRUE"             [2]
+  [3] "11806ed3b64f4e61" - "92ab8e0a6f5ff71f" [3]
+  [4] "327b17a1920c8db3" - "e110155297408588" [4]
+  [5] "2bce5494a485e1c6" | "2bce5494a485e1c6" [5]
+  [6] "7fba41c2c7de2596" | "7fba41c2c7de2596" [6]
+  
+  worker limpa_one_contrast display
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "327b17a1920c8db3b1c5fdc5514265e76f22691f4cac40ff3bf5f27ccb71fc15"
+  `expected`: "e110155297408588615cc4228500932db820b236588b5b02aab5a803a41d055f"
+  
+  worker limpa_one_contrast head_manifest
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "327b17a1920c8db3b1c5fdc5514265e76f22691f4cac40ff3bf5f27ccb71fc15"
+  `expected`: "e110155297408588615cc4228500932db820b236588b5b02aab5a803a41d055f"
+  
+  worker limpa_one_contrast manifest
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  `actual`:   "d9db4b793014c018698ba61e4b5ba984095c469932d4f40b13425e1a10dadf2c"
+  `expected`: "2ce30818ad600eddb0e918a66e8e8341a74a4311b1e99352de92d87c611b94c3"
+  
+  worker limpa_one_contrast files
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-contrast-references:c45564222d81ee34 <- c9a6ae8301805db9"
+  + "dia-contrast-references:f4e904e8f0028b60 <- b9ef2b33ea1cdddf"
+  - "manifest <- c9a6ae8301805db9"
+  + "manifest <- b9ef2b33ea1cdddf"
+  
+  worker limpa_one_contrast dependencies
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - "dia-contrast-references:c45564222d81ee34"
+  + "dia-contrast-references:f4e904e8f0028b60"
+  - "dia-pearson-pairs:395f760e43d30337"
+  + "dia-pearson-pairs:9eaece3602f93d46"
+  - "dia-pearson-selection:95e69eee8d9dd164"
+  + "dia-pearson-selection:cb46f62c60963c21"
+  - "dia-ruv-covariates:3c66b6a44afcfbfa"
+  + "dia-ruv-covariates:ae5c2029f83e23a8"
+  - "dia_normalization_pca:a57248e6a375d610"
+  + "dia_normalization_pca:d9b5720af8d8a298"
+    "rendered_asset"
+  
+  worker limpa_one_contrast products
+  Expected `capture[[field]]` to be identical to `frozen[[field]]`.
+  Differences:
+  actual vs expected
+  - protein_dpc_quant"b7508e9636ffa82ba8ea0a4d1e05a83fc074428094de641588daf7bac1cc9097"
+  + protein_dpc_quant"22f553887dc4edb1623ab2d0b556c048cd7f216ba22d1f250abd9d86eb5db726"
+  - protein_normalised"b560af3f684ecc77875f07ce6567b03090149c7184a2a00995676696e0d2dbfb"
+  + protein_normalised"8f9c8ef12ddf5740a442f8b23bf258aeb7a02793932943a0f1901d84a9e9867b"
+  - peptide_count_filtered"e1bdceb4ae0ed6333c6ed3c6d258590b9ebf954efdaf0302eb589b52a0eee40a"
+  + peptide_count_filtered"32b145aaa12d358ffff2ff6d857c643e9305792be84d2aeec59c0bb9c9fab661"
+  - correlation_filtered"676287ec23f2a36b0257af1ba8ca1a92d185f1afab68bb1250b35b5f54a28f99"
+  + correlation_filtered"69b20b13edbf2f85ae088f8fa1e296b1412d2a1d7ea8021a85307b983e4b45fb"
+  - ruv_covariates"c8bb4b13e368fb6487682df50bc6cf1732ef314cddd341a9c60f3cf91d47c855"
+  + ruv_covariates"a247ca82c2b0e461cf6080fb13ea283025e128ec264034be9b93ccd16a6ee10d"
+  
+  worker limpa_one_contrast states
+
+== test-kit271-limpa-table-name.R | fixed | KIT-271 T1: DIA with limpa, after the correlation filter the protein QC folder holds normalised_ and no ruv_ table (fails before)
+-- base:
+  Expected `present` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  in process
+  Expected `present` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  worker
+-- head:
+  <passes>
+
+== test-kit271-limpa-table-name.R | fixed | KIT-271 T2: the RUV covariates action, in either mode, leaves the table's name and content unchanged (name row fails before)
+-- base:
+  Expected `after` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  correction
+  Expected `after` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  covariates
+-- head:
+  <passes>
+
+== test-kit271-limpa-table-name.R | fixed | KIT-271 T3: DIA with limpa, after Skip RUV the table is the same normalised_ table (fails before)
+-- base:
+  Expected `after` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  in process
+  Expected `after` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  worker
+-- head:
+  <passes>
+
+== test-kit271-limpa-table-name.R | fixed | KIT-271 T4: Copy after the correlation delivers normalised_results.tsv, not RUV_normalised_results.tsv, with the table's values (fails before)
+-- base:
+  Expected `"normalised_results.tsv" %in% copy$tables` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  in process
+  Expected `"normalised_results.tsv" %in% copy$tables` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  worker
+  Expected `"RUV_normalised_results.tsv" %in% copy$tables` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  in process
+  Expected `"RUV_normalised_results.tsv" %in% copy$tables` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  worker
+-- head:
+  <passes>
+
+== test-kit271-limpa-table-name.R | fixed | KIT-271 T5: the export names the table normalised_ in its metadata and file list (fails before)
+-- base:
+  Expected `out$results_file` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  Expected `paste0("protein_qc/", k271New) %in% out$destinations` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `paste0("protein_qc/", k271Old) %in% out$destinations` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+-- head:
+  <passes>
+
+== test-kit271-limpa-table-name.R | fixed | KIT-271 T5b: after the RUV covariates action, in either mode, the export names the same table and succeeds (name row fails before)
+-- base:
+  Expected `out$results_file` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  correction
+  Expected `out$results_file` to be identical to `k271New`.
+  Differences:
+  `actual`:   "ruv_normalised_results_cln_with_replicates.tsv"
+  `expected`: "normalised_results_cln_with_replicates.tsv"    
+  
+  covariates
+  Expected `paste0("protein_qc/", k271New) %in% out$destinations` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  correction
+  Expected `paste0("protein_qc/", k271New) %in% out$destinations` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  covariates
+-- head:
+  <passes>
+
+== test-kit271-limpa-table-name.R | fixed | KIT-271 T8 (Copy): an earlier build's project: Copy delivers the table it holds as normalised_results.tsv (fails before)
+-- base:
+  Expected `"normalised_results.tsv" %in% copy$tables` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  Expected `"RUV_normalised_results.tsv" %in% copy$tables` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+-- head:
+  <passes>
+
