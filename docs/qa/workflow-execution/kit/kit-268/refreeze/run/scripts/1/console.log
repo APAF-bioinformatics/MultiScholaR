@@ -1,0 +1,215 @@
+gui-entry-lipidomics: ::notice title=INFO::--- Processing setup for omic type: lipidomics ---
+::notice title=INFO::Ensured omic-specific data directory exists: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/data/lipidomics
+::notice title=INFO::Ensured timestamped directory exists: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results/lipidomics/publication_graphs/filtering_qc/20261125_225258
+::notice title=INFO::Creating directory structure for 'lipidomics'...
+::warning title=WARN::Source script directory not found for lipidomics: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/scripts/lipidomics. No scripts copied.
+::notice title=INFO::Stored paths for lipidomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'lipidomics' (Type: lipidomics)
+  base_dir                       : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical (5 items)
+  data_dir                       : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/data/lipidomics (0 items)
+  source_dir                     : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/scripts/lipidomics (0 items)
+  results_dir                    : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results/lipidomics (6 items)
+  results_summary_dir            : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results_summary/lipidomics (4 items)
+  timestamp                      : 20261125_225258
+  time_dir                       : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results/lipidomics/publication_graphs/filtering_qc/20261125_225258 (0 items)
+  clean_features_dir             : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results/lipidomics/clean_lipids (0 items)
+  clean_lipids_dir               : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results/lipidomics/clean_lipids (0 items)
+  da_output_dir                  : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results/lipidomics/da_lipids (0 items)
+  feature_qc_dir                 : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results/lipidomics/lipid_qc (0 items)
+  integration_dir                : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/integration (0 items)
+  lipid_qc_dir                   : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results/lipidomics/lipid_qc (0 items)
+  pathway_dir                    : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results/lipidomics/pathway_enrichment (0 items)
+  publication_figures_dir        : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results_summary/lipidomics/Publication_figures (0 items)
+  publication_graphs_dir         : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results/lipidomics/publication_graphs (1 items)
+  publication_tables_dir         : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results_summary/lipidomics/Publication_tables (0 items)
+  qc_dir                         : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results/lipidomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results_summary/lipidomics/QC_figures (0 items)
+  study_report_dir               : /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results_summary/lipidomics/Study_report (0 items)
+------------------------------------------
+::notice title=INFO::Added base_dir to volumes: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical
+::notice title=INFO::=== LIPIDOMICS NORMALIZATION MODULE STARTED ===
+::notice title=INFO::Module ID: norm
+::warning title=WARN::Could not detect assay names: state requires explicit legacy conversion
+::notice title=INFO::Starting LipidSearch import from: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/inputs/lipidsearch_lcms_pos.txt
+::notice title=INFO::Read 10 rows and 13 columns
+::notice title=INFO::Detected 6 sample columns and 7 annotation columns
+::notice title=INFO::Imported assay 1: 10 rows, 13 columns, format: lipidsearch
+::error title=ERROR::Error processing import: Primary lipidomics assay name is required
+::notice title=INFO::Starting LipidSearch import from: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/inputs/lipidsearch_lcms_pos.txt
+::notice title=INFO::Read 10 rows and 13 columns
+::notice title=INFO::Detected 6 sample columns and 7 annotation columns
+::notice title=INFO::Imported assay 1: 10 rows, 13 columns, format: lipidsearch
+::notice title=INFO::Starting LipidSearch import from: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/inputs/lipidsearch_lcms_neg.txt
+::notice title=INFO::Read 10 rows and 13 columns
+::notice title=INFO::Detected 6 sample columns and 7 annotation columns
+::notice title=INFO::Workflow type set to: LIPIDOMICS
+::notice title=INFO::Lipidomics import complete: 2 assays, 20 total lipids
+::warning title=WARN::Could not detect assay names: state requires explicit legacy conversion
+::notice title=INFO::Received results from lipidomics design builder. Saving to workflow and disk.
+::notice title=INFO::Writing design matrix to: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/scripts/lipidomics/design_matrix.tab
+::notice title=INFO::Writing contrasts to: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/scripts/lipidomics/contrast_strings.tab
+::notice title=INFO::Writing assay data to: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/scripts/lipidomics/data_cln_LCMS_Pos.tab
+::notice title=INFO::Writing assay data to: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/scripts/lipidomics/data_cln_LCMS_Neg.tab
+::notice title=INFO::Saved assay manifest with 2 assays: LCMS_Pos, LCMS_Neg
+::notice title=INFO::Design save complete. Files saved to: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/scripts/lipidomics
+::notice title=INFO::Lipidomics QC: starting the sub-modules on LIPIDOMICS
+::notice title=INFO::Applying lipid intensity filter: percentile = 10 , proportion = 0.5 , values required per group = 2 , groups required = 1
+::notice title=INFO::Lipid intensity filter applied: removed 3 lipids
+::notice title=INFO::Detected 0 duplicate feature IDs across assays
+::notice title=INFO::Resolved duplicates: removed 0 rows
+::notice title=INFO::Analyzing internal standards with pattern: ^IS_|ISTD|Internal|_IS
+::error title=ERROR::Error analyzing internal standards: No internal standards found. Pattern: ^IS_|ISTD|Internal|_IS
+Columns searched: LipidName, LipidClass
+Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')
+::notice title=INFO::Lipidomics QC finalized successfully
+::notice title=INFO::=== LOAD FILTERED SESSION BUTTON CLICKED ===
+::notice title=INFO::Normalization tab selected - checking if pre-QC needed
+::notice title=INFO::Auto-triggering pre-normalization QC plots
+::notice title=INFO::=== GENERATING PRE-NORMALIZATION QC PLOTS ===
+::notice title=INFO::Set assay names: LCMS_Pos, LCMS_Neg
+::notice title=INFO::Generating QC plots for assay: LCMS_Pos
+::notice title=INFO::Generating QC plots for assay: LCMS_Neg
+::notice title=INFO::Generated 8 QC plots for stage: post_filter
+::notice title=INFO::Pre-normalization QC plots generated successfully
+::notice title=INFO::ITSD selection updated for LCMS_Pos : 0 features selected
+::notice title=INFO::ITSD selection updated for LCMS_Neg : 0 features selected
+::notice title=INFO::=== EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+::notice title=INFO::Normalization tab selected - checking if pre-QC needed
+::notice title=INFO::Generating QC plots for assay: LCMS_Pos
+::notice title=INFO::Generating QC plots for assay: LCMS_Neg
+::notice title=INFO::Generated 8 QC plots for stage: post_filter
+::notice title=INFO::Applying between-sample normalization method: cyclicloess
+::notice title=INFO::Between-sample normalization process finished for all assays.
+::notice title=INFO::Generating QC plots for assay: LCMS_Pos
+::notice title=INFO::Generating QC plots for assay: LCMS_Neg
+::notice title=INFO::Generated 8 QC plots for stage: post_norm
+::notice title=INFO::[generateCompositeFromFiles] Generating composite from 16 files...
+::notice title=INFO::[generateCompositeFromFiles] Added column titles
+::notice title=INFO::[generateCompositeFromFiles] Added row: lcms_pos_pca
+::notice title=INFO::[generateCompositeFromFiles] Added row: lcms_pos_density
+::notice title=INFO::[generateCompositeFromFiles] Added row: lcms_pos_rle
+::notice title=INFO::[generateCompositeFromFiles] Added row: lcms_pos_correlation
+::notice title=INFO::[generateCompositeFromFiles] Added row: lcms_neg_pca
+::notice title=INFO::[generateCompositeFromFiles] Added row: lcms_neg_density
+::notice title=INFO::[generateCompositeFromFiles] Added row: lcms_neg_rle
+::notice title=INFO::[generateCompositeFromFiles] Added row: lcms_neg_correlation
+::notice title=INFO::[generateCompositeFromFiles] Combining plot sections...
+::notice title=INFO::Normalization tab selected - checking if pre-QC needed
+::notice title=INFO::Calculating Pearson correlations per sample pair...
+::notice title=INFO::Normalization tab selected - checking if pre-QC needed
+::notice title=INFO::=== EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+::notice title=INFO::*** EXPORT: Gathered session data successfully ***
+::notice title=INFO::*** EXPORT: Assays: LCMS_Pos, LCMS_Neg ***
+::notice title=INFO::*** EXPORT: Contrasts available: 1 ***
+::notice title=INFO::*** EXPORT: Session data saved to: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/scripts/lipidomics/lipid_filtered_session_data_20261125_225343.rds ***
+::notice title=INFO::*** EXPORT: Latest version saved to: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/scripts/lipidomics/lipid_filtered_session_data_latest.rds ***
+::notice title=INFO::*** EXPORT: Summary saved to: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/scripts/lipidomics/lipid_filtered_session_summary.txt ***
+::notice title=INFO::=== EXPORT NORMALIZED SESSION COMPLETED SUCCESSFULLY ===
+::notice title=INFO::=== LOAD FILTERED SESSION BUTTON CLICKED ===
+::notice title=INFO::   Loaded session from: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/scripts/lipidomics/lipid_filtered_session_data_latest.rds
+::notice title=INFO::   Reopened the session owner at its head
+::notice title=INFO::   Restored 1 contrasts
+::notice title=INFO::=== RUN DA ANALYSIS BUTTON CLICKED ===
+::notice title=INFO::   Expression matrix: 9 lipids x 6 samples
+::notice title=INFO::   design_m dims = 6 x 2
+::notice title=INFO::   data_subset dims = 9 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 9 rows
+::warning title=WARN::      qvalue() failed: missing or infinite values in inputs are not allowed, using BH
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 9 rows
+::notice title=INFO::   expr_matrix: 9 lipids x 6 samples
+::notice title=INFO::   intensity_long: 54 rows
+::notice title=INFO::   intensity_wide: 9 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 9 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   Expression matrix: 8 lipids x 6 samples
+::notice title=INFO::   design_m dims = 6 x 2
+::notice title=INFO::   data_subset dims = 8 x 6
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Extracted 8 rows
+::warning title=WARN::      qvalue() failed: missing or infinite values in inputs are not allowed, using BH
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 8 rows
+::notice title=INFO::   expr_matrix: 8 lipids x 6 samples
+::notice title=INFO::   intensity_long: 48 rows
+::notice title=INFO::   intensity_wide: 8 lipids x 7 columns
+::notice title=INFO::   Processing 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Final da_results_long: 8 rows x 23 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+::notice title=INFO::   DA analysis completed successfully
+::notice title=INFO::   Updated dropdowns: 1 contrasts, 2 assays
+::notice title=INFO::   Writing DA results to disk...
+::notice title=INFO::--- Entering outputLipidDaResultsAllContrasts ---
+::notice title=INFO::   da_output_dir = /tmp/RtmpMsET5N/lipid-publication-4b895b9bb735/omics-publication/da_output_dir
+::notice title=INFO::   publication_graphs_dir = /tmp/RtmpMsET5N/lipid-publication-4b895b9bb735/omics-publication/publication_graphs_dir
+::notice title=INFO::   Created Volcano_Plots directory: /tmp/RtmpMsET5N/lipid-publication-4b895b9bb735/omics-publication/publication_graphs_dir/Volcano_Plots
+::notice title=INFO::   Created Heatmaps directory: /tmp/RtmpMsET5N/lipid-publication-4b895b9bb735/omics-publication/publication_graphs_dir/Heatmaps
+::notice title=INFO::   Created NumSigDeMolecules directory: /tmp/RtmpMsET5N/lipid-publication-4b895b9bb735/omics-publication/publication_graphs_dir/NumSigDeMolecules
+::notice title=INFO::   Found 2 assays: LCMS_Pos, LCMS_Neg
+::notice title=INFO::   Found 1 contrasts: groupKO-groupWT
+::notice title=INFO::   Processing assay: LCMS_Pos (mode: posmode)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_posmode_lipids_groupKO-groupWT_long_annot.tsv (9 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_posmode_lipids_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: posmode_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: posmode_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::      Saved heatmap PNG: posmode_groupKO-groupWT_heatmap.png
+::notice title=INFO::      Saved heatmap PDF: posmode_groupKO-groupWT_heatmap.pdf
+::notice title=INFO::   Processing assay: LCMS_Neg (mode: negmode)
+::notice title=INFO::      Processing contrast: groupKO-groupWT
+::notice title=INFO::      Wrote TSV: de_negmode_lipids_groupKO-groupWT_long_annot.tsv (8 rows, 23 cols)
+::notice title=INFO::      Wrote Excel: de_negmode_lipids_groupKO-groupWT_long_annot.xlsx
+::notice title=INFO::      Saved volcano PNG: negmode_groupKO-groupWT.png
+::notice title=INFO::      Saved volcano PDF: negmode_groupKO-groupWT.pdf
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = groupKO-groupWT, top_n = 50
+::warning title=WARN::   No significant lipids found
+::warning title=WARN::      No significant lipids for heatmap: LCMS_Neg / groupKO-groupWT
+::notice title=INFO::   Created combined volcano PDF: 2 plots
+::notice title=INFO::   Created combined heatmap PDF: 1 plots
+::notice title=INFO::   Wrote NumSigDE table: lipids_num_sig_de_molecules.tab
+::notice title=INFO::   Wrote NumSigDE Excel: lipids_num_sig_de_molecules.xlsx
+::notice title=INFO::   Saved NumSigDE barplot: lipids_num_sig_barplot.png
+::notice title=INFO::--- Exiting outputLipidDaResultsAllContrasts ---
+::notice title=INFO::   All DA results written to disk successfully
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = KO_vs_WT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::--- Entering generateLipidDAHeatmap ---
+::notice title=INFO::   selected_contrast = KO_vs_WT, top_n = 50
+::notice title=INFO::   Selected 4 top lipids
+::notice title=INFO::   Expression matrix: 4 x 6
+::notice title=INFO::--- Exiting generateLipidDAHeatmap (success) ---
+::notice title=INFO::Results summary directory for lipidomics_lipid_canonical (/tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results_summary/lipidomics) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Results summary directory for lipidomics_lipid_canonical (/tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results_summary/lipidomics) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Attempting to render report:
+::notice title=INFO::- Rmd Source (Template): /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/scripts/lipidomics/lipidomics_report.rmd
+::notice title=INFO::- Output File: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results_summary/lipidomics/lipidomics_report_lipidomics_lipid_canonical.docx
+::notice title=INFO::- Params: omic_type='lipidomics', experiment_label='lipid_canonical'
+::notice title=INFO::Report successfully rendered to: /tmp/RtmpMsET5N/gui-entry-lipid_canonical-4b89e55a4e1/project/lipid_canonical/results_summary/lipidomics/lipidomics_report_lipidomics_lipid_canonical.docx
+...............
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+[1] TRUE
+copied: TRUE 

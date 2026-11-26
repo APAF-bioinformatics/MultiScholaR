@@ -471,6 +471,11 @@ completeOmicDaRun <- function(results, tab, workflowData, session, experimentPat
     workflowData$tab_status <- status
     shiny::removeNotification("da_running")
     shiny::showNotification("Differential expression analysis complete!", type = "message", duration = 5)
+    # KIT-268 (VAL-312): the comparisons whose q-values fell back to Benjamini-Hochberg, by assay; none for transcriptomics.
+    fell_back <- daQvalueFallbackKeys(results$qvalue_warnings)
+    if (NROW(fell_back)) {
+        notifyDaQvalueFallback(daQvalueFallbackNames(fell_back$key, workflowData$contrasts_tbl), fell_back$assay)
+    }
     logger::log_info("   DA analysis completed successfully")
     # KIT-076: a failed contrast fails alone; the run says so instead of a table that is silently missing.
     if (length(results$failed_contrasts) > 0) {

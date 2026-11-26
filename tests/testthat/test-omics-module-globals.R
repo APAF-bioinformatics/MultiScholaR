@@ -55,7 +55,9 @@ test_that("KIT-030: the super-assignments in the lipid and metab code are the li
         "func_lipid_da_results.R", "func_metab_da_orchestration.R",
         "func_lipid_s4_correlation_methods.R", "func_metab_s4_qc_methods.R"
     )
-    hits <- omics_global_hits(sources, "<<-")
+    # KIT-261: registerOmicNormRunButtonState's `shown_idle` (R/mod_omic_norm.R), the last state sent to the page:
+    # the one line is exempt, so any other `<<-` in that shared module still fails.
+    hits <- omics_global_hits(sources, "<<-", allow = "shown_idle <<- idle")
     files_hit <- unique(sub(":.*$", "", hits))
     expect_identical(setdiff(files_hit, allowed_files), character(0))
 })

@@ -1,0 +1,180 @@
+file: test-kit247-design-resave.R
+test: KIT-247 I02 (VAL-277): a design commit that fails after the bus write, then the same design saved again, is not judged unchanged
+kind: failure
+message:
+  Expected `out$head` to be identical to "lipid_raw_data_s4".
+  Differences:
+  `actual`:   "lipid_correlation_filtered"
+  `expected`: "lipid_raw_data_s4"         
+
+file: test-kit247-design-resave.R
+test: KIT-247 I02 (VAL-277): a design commit that fails after the bus write, then the same design saved again, is not judged unchanged
+kind: failure
+message:
+  Expected `utils::tail(out$history, 1L)` to be identical to "lipid_raw_data_s4".
+  Differences:
+  `actual`:   "lipid_correlation_filtered"
+  `expected`: "lipid_raw_data_s4"         
+
+file: test-kit247-design-resave.R
+test: KIT-247 I07 (VAL-277): lipid_canonical after the confirmed re-save, Reset and a run, the DA is on the NEW groups and the record agrees with itself
+kind: failure
+message:
+  Expected `out$da` to be identical to `new`.
+  Differences:
+  `actual`:   "<no DA>"
+  `expected`: "WT"     
+
+file: test-kit247-design-resave.R
+test: KIT-247 I07 (VAL-277): lipid_canonical after the confirmed re-save, Reset and a run, the DA is on the NEW groups and the record agrees with itself
+kind: failure
+message:
+  Expected `out$record_group` to be identical to `new`.
+  Differences:
+  `actual`:       
+  `expected`: "WT"
+
+file: test-kit247-design-resave.R
+test: KIT-247 I07 (VAL-277): lipid_canonical after the confirmed re-save, Reset and a run, the DA is on the NEW groups and the record agrees with itself
+kind: failure
+message:
+  Expected `out$builder_entity` to be identical to `out$design_entity`.
+  Differences:
+  `actual` is a character vector (NA)
+  `expected` is NULL
+
+file: test-kit247-design-resave.R
+test: KIT-247 I07b (VAL-277, coordinator's ruling): lipidomics, Quality Control re-applied after the confirmed re-save, then the run: the DA is on the NEW groups and the record agrees with itself
+kind: failure
+message:
+  Expected `out$da` to be identical to "WT".
+  Differences:
+  `actual`:   "<no DA>"
+  `expected`: "WT"     
+
+file: test-kit247-design-resave.R
+test: KIT-247 I07b (VAL-277, coordinator's ruling): lipidomics, Quality Control re-applied after the confirmed re-save, then the run: the DA is on the NEW groups and the record agrees with itself
+kind: failure
+message:
+  Expected `out$record_group` to be identical to "WT".
+  Differences:
+  `actual`:       
+  `expected`: "WT"
+
+file: test-kit247-design-resave.R
+test: KIT-247 I07b (VAL-277, coordinator's ruling): lipidomics, Quality Control re-applied after the confirmed re-save, then the run: the DA is on the NEW groups and the record agrees with itself
+kind: failure
+message:
+  Expected `is.na(out$builder_entity)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit247-design-resave.R
+test: KIT-247 I07b (VAL-277, coordinator's ruling): lipidomics, Quality Control re-applied after the confirmed re-save, then the run: the DA is on the NEW groups and the record agrees with itself
+kind: failure
+message:
+  Expected `out$builder_entity` to be identical to `out$design_entity`.
+  Differences:
+  `actual` is a character vector (NA)
+  `expected` is NULL
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288a (VAL-288 (a)): prot_lfq a formula-only re-save asks; Save keeps every earlier step and sets the differential analysis back to be run again
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288a (VAL-288 (a)): prot_lfq a formula-only re-save asks; Save keeps every earlier step and sets the differential analysis back to be run again
+kind: failure
+message:
+  Expected `out$status[[key]]` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288a (VAL-288 (a)): lipid_canonical a formula-only re-save asks; Save keeps every earlier step and sets the differential analysis back to be run again
+kind: failure
+message:
+  Expected `out$before$status[[key]]` to be identical to "complete".
+  Differences:
+  `actual`:   "disabled"
+  `expected`: "complete"
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288a (VAL-288 (a)): lipid_canonical a formula-only re-save asks; Save keeps every earlier step and sets the differential analysis back to be run again
+kind: failure
+message:
+  Expected `out$status[[key]]` to be identical to "pending".
+  Differences:
+  `actual`:   "disabled"
+  `expected`: "pending" 
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288b (VAL-288 (b)): a proteomics Import Existing Design with only the organism changed asks; Save keeps every earlier step and applies the organism
+kind: failure
+message:
+  Expected `out$history` to be identical to `out$before$history`.
+  Differences:
+      actual               | expected                        
+  [1] "initial"            | "initial"                    [1]
+  [2] "protein_s4_initial" | "protein_s4_initial"         [2]
+                           - "protein_accession_cleaned"  [3]
+                           - "protein_intensity_filtered" [4]
+                           - "duplicates_removed"         [5]
+                           - "protein_replicate_filtered" [6]
+                           - "normalized"                 [7]
+                           - "correlation_filtered"       [8]
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288b (VAL-288 (b)): a proteomics Import Existing Design with only the organism changed asks; Save keeps every earlier step and applies the organism
+kind: failure
+message:
+  Expected `out$head` to be identical to `out$before$head`.
+  Differences:
+  `actual`:   "protein_s4_initial"  
+  `expected`: "correlation_filtered"
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288b (VAL-288 (b)): a proteomics Import Existing Design with only the organism changed asks; Save keeps every earlier step and applies the organism
+kind: failure
+message:
+  Expected `out$entity` to be identical to `out$before$entity`.
+  Differences:
+  `actual`:   "8df1931520d56fa60ef1b4fc130bd9732858095ed79483a01267d7efea40cbb5"
+  `expected`: "d4b486301d9a01cc98c682b2dfc9cbab2aeeadf625ee0bfbf6cfa122473a8058"
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288b (VAL-288 (b)): a proteomics Import Existing Design with only the organism changed asks; Save keeps every earlier step and applies the organism
+kind: failure
+message:
+  Expected `out$status$quality_control` to be identical to `out$before$status$quality_control`.
+  Differences:
+  `actual`:   "pending" 
+  `expected`: "complete"
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288b (VAL-288 (b)): a proteomics Import Existing Design with only the organism changed asks; Save keeps every earlier step and applies the organism
+kind: failure
+message:
+  Expected `out$status$normalization` to be identical to `out$before$status$normalization`.
+  Differences:
+  `actual`:   "disabled"
+  `expected`: "complete"
+
+file: test-kit247-design-resave.R
+test: KIT-247 F288c (VAL-288): the question names what changed (draft wording)
+kind: error
+message:
+  Error in `omicsDesignResaveLimitedText("formula")`: could not find function "omicsDesignResaveLimitedText"
+trace (first lines):
+      ▆
+   1. └─testthat::expect_match(...) at test-kit247-design-resave.R:758:5
+   2.   └─testthat::quasi_label(enquo(object), label)
+   3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+

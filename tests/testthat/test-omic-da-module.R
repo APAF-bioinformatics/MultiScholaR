@@ -5511,7 +5511,10 @@ test_that("KIT-112 W3 (D3): the plugin mounted alone on a managed session instal
 test_that("GUI audit A112-03: a managed run whose contrast fell back to BH shows the in-process run's fallback warning", {
     skip_if_not_installed("Glimma")
     skip_if_not(workflowOwnerCapable())
-    fallback <- "[warning NULL -] Some contrasts used the existing BH fallback after q-value estimation failed."
+    # KIT-268 (VAL-312, VAL-351): the fixture has one contrast (B_vs_A), which falls back (the probe forces the warning on its
+    # entry): exactly one notice naming it on each route, built from the shared text so the wording pass changes one place.
+    text <- get0("daQvalueFallbackText", asNamespace("MultiScholaR"), inherits = FALSE)
+    fallback <- if (is.function(text)) paste0("[warning NULL -] ", text("B_vs_A", NA_character_)) else "<absent>"
     steps <- function(setup) {
         setup$counts$fallback <- TRUE
         omicDaK112Steady(setup)

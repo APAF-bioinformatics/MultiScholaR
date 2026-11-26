@@ -229,7 +229,8 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
         # KIT-212 (VAL-172 (1)): the DA shown was run on another table; refused the same way, the earlier input removed.
         if (inherits(error, c("omic_norm_correlation_input_stale", "workflow_summary_da_stale"))) {
             notify(paste("The session could not be saved:", cli::ansi_strip(conditionMessage(error))), "error", NULL)
-            tryCatch(removeIntegrationInput(file.path(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType)),
+            # KIT-247 (VAL-239 (iv)): the omic's folder and the top-level file the Save writes beside it.
+            tryCatch(removeOmicIntegrationInput(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType),
                 error = function(e) notify(cli::ansi_strip(conditionMessage(e)), "warning", NULL))
             failed(error)
             return(invisible(NULL))
@@ -244,7 +245,8 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
         # KIT-206 audit I02 (K061-3; as KIT-207 SD-5 (b)): the proteomics archive refresh refused a table that is not the
         # normalisation tab's last result before the integration input was written; the omic's earlier input is removed.
         if (inherits(error, "prot_norm_correlation_input_stale")) {
-            tryCatch(removeIntegrationInput(file.path(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType)),
+            # KIT-247 (VAL-239 (iv)): the omic's folder and the top-level file the Save writes beside it.
+            tryCatch(removeOmicIntegrationInput(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType),
                 error = function(e) notify(cli::ansi_strip(conditionMessage(e)), "warning", NULL))
         }
         basicParamsFile <- file.path(paths$source_dir, "study_parameters.txt")
@@ -620,14 +622,22 @@ runWorkflowSummaryExportStep <- function(step, workflowData, experimentPaths, ch
     runner <- workflowOmicsManagedActions(binding$omic_type)
     if (!is.null(runner)) {
         held <- new.env(parent = emptyenv())
-        source <- getWorkflowStateReference(manager)
-        export <- omicsManagedProduct(step$operation, step$parameters(manager, source, choice), function(result) {
-            step$accept(manager, source, list(reference = result$reference, value = result$value))
-            held$value <- result$value
+        # KIT-274: the request's setup (the head's reference and the step's parameters, which may refuse) runs inside the
+        # failure handler, as the in-process branch's run does.
+        actions <- tryCatch({
+            source <- getWorkflowStateReference(manager)
+            export <- omicsManagedProduct(step$operation, step$parameters(manager, source, choice), function(result) {
+                step$accept(manager, source, list(reference = result$reference, value = result$value))
+                held$value <- result$value
+            })
+            c(list(export), lapply(step$publications, function(publication) {
+                omicsManagedProduct(publication$operation, publication$parameters, function(result) invisible(NULL))
+            }))
+        }, error = function(error) {
+            failed(error)
+            NULL
         })
-        actions <- c(list(export), lapply(step$publications, function(publication) {
-            omicsManagedProduct(publication$operation, publication$parameters, function(result) invisible(NULL))
-        }))
+        if (is.null(actions)) return(invisible(FALSE))
         runner$run(actions, done = function() done(list(text = step$status$text(held$value), at = Sys.time())),
             failed = failed)
         return(invisible(TRUE))
@@ -712,7 +722,11 @@ trxSummaryIntegrationRequires <- function(workflowData) {
 #' @param source The head's reference.
 #' @noRd
 trxRuviiiExportParameters <- function(manager, source, m_source) {
-    ruvs <- withWorkflowStateScope(manager, function() trxStateRuvs(manager, source))
+    ruvs <- withWorkflowStateScope(manager, function() {
+        # KIT-274: a head that applied no RUV refuses the managed request before anything is sent to the worker.
+        trxAssertRuviiiExportApplied(manager)
+        trxStateRuvs(manager, source)
+    })
     list(logcpm = ruvs$logcpm$entity_id, grid = ruvs$grid$entity_id, ruviii_m_source = m_source)
 }
 

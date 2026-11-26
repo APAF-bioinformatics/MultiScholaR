@@ -1,0 +1,4 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit247-design-resave.R	179	9	0	0	0	4034.9	failed
+test-kit247-import-config.R	2	0	0	0	0	7.1	ok
+test-kit247-resave-no-session.R	7	0	0	0	0	7.1	ok

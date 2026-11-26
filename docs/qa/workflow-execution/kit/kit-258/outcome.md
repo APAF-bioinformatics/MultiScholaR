@@ -236,3 +236,97 @@ standards instead (unchanged).
   one identifier changed, P001 in the MS-DIAL lipid fixture through the import, 'TG 52:3' (3 of 4, mean 177.33) to
   'PC 34:1' (4 of 4, mean 150.5)); R2 45676413310 (32 files, check). Limits: constructed and fixture data only; no
   real data; the frequency of such duplicates is unknown.
+
+## Texts (VAL-306), 2026-11-26
+
+Branch `kit-258b` from staging `75acd4219` (train 21 head). Owner decision: ledger VAL-306. Step 0 (every place that states
+the rule, every holder of the texts, the grep for the regression scope) and the predictions, committed before R1:
+`texts-step0.md`. Tests first at `155aac8d`; text changes at `ac12c7e0` (strings, roxygen comments and the two `man/*.Rd`
+`\title` lines by hand; roxygen2 not run; no behaviour change, nothing else under `R/` touched).
+
+**Observed.**
+- R1 (run 45725399662, head `155aac8d` = staging's `R/` plus the tests, base `75acd4219`; tables in `tx1/`): as predicted.
+  `test-kit258b-duplicate-texts.R` 0 passed, 34 failed, 0 errors on head (every expectation a failure, none an error);
+  `test-lipid-01-qc-filtering-helpers.R` base 58/0 (2 skipped), head 57/1: the pin at `:445`, edited as declared, fails on
+  the old message ("Expected `... <- NULL` to throw a message").
+- R2 (run 45727220849, head `ac12c7e0`, base `75acd4219`, 34 files, 2 shards per side, check; tables in `tx2/`):
+  - `test-kit258b-duplicate-texts.R` 34 passed, 0 failed on head (`only-on-head`).
+  - `test-lipid-01-qc-filtering-helpers.R` 58/0 (2 skipped) on both sides (`same`): the new pin passes on the new message.
+  - `test-omic-qc-module.R` 156/4 on both sides, `message-changed` as predicted: in the `tabs` part (lipid_qc
+    `aff67c88...` to `9b790e5e...`, metab_qc `c9d67a3f...` to `45d43789...`) and the `subtabs` part (lipid_duplicates
+    `ab0f3fc1...` to `db88499e...`, metab_duplicates `f766e81a...` to `f04872ea...`) the head digest differs from base's; `ids`
+    and `id_counts` identical on both sides. This also shows that the tabset digest holds the help (INFERRED in the audit).
+  - `test-gui-entry-lipidomics.R` 19/16 and `test-gui-entry-metabolomics.R` 57/48 on both sides, `message-changed` as
+    predicted: in every lane the 15 steps from `qc_duplicates` on differ on head by the line
+    "Strategy: Keep feature with highest average intensity" against "Rule: the row measured in the most design samples ...";
+    the 16th failing step (`qc_intensity`) and the `states` differences are KIT-217's and unchanged. No new failure, no fix.
+  - Every other file `same`, counts equal on both sides. R CMD check identical on both sides: 0 errors, 3 warnings,
+    3 notes, none only on head.
+- Prediction misses (absolute counts of unrelated files, equal on both sides, so verdict `same` as predicted):
+  `test-omics-module-globals.R` 13/1 on both sides (I predicted 14/0 from the older checkpoint table; the failing test is
+  KIT-030's super-assignment list, which names `mod_omic_norm.R`: not this ticket's), and `test-workflow-omics-declarations.R`
+  43/25 on both sides (I wrote 45/23; the newer staging record says 43/25, and train 22's declared figure agrees).
+
+**The four texts, before and after** (drafts of the audit, I01; the owner sets the final wording, VAL-41; also in `wording.md`):
+1. Duplicates help (`R/utils_omic_gui_config.R:1263`). Before: "Duplicates are resolved by keeping the feature with the highest
+   average intensity across samples." After: "When an ID appears more than once, one row is kept: the row measured in the
+   most of the design's samples; among rows measured in equally many, the one with the highest average of its measured
+   values; if still tied, the first in the table as imported. A missing value or an intensity of 0 counts as not
+   measured. The kept row keeps its own name and annotation."
+2. Result text (`R/mod_omic_qc_tabs.R:331`). Before: "Strategy: Keep feature with highest average intensity". After: "Rule:
+   the row measured in the most design samples (a missing value or 0 is not measured), then the highest average of its
+   measured values".
+3. Console (four sites, eight lines). Before: "Resolving duplicates in ID column '%s' by keeping highest average intensity
+   feature...", "Removed %d lower-intensity duplicate feature row(s)." After: "Resolving duplicates in ID column '%s':
+   keeping the most completely measured row, then the highest average of its measured values...", "Removed %d duplicate
+   feature row(s)." (S4 methods: "...in non-ITSD ID column '%s': ...", "Removed %d duplicate non-ITSD feature row(s).")
+4. Help titles (two roxygen comments, two `.Rd` `\title`). Before: "Resolve Duplicate Features by Keeping Highest Average
+   Intensity". After: "Resolve Duplicate Features by Keeping the Most Completely Measured Row".
+`git grep -i "highest average intensity\|lower-intensity" -- R man` returns nothing on head.
+
+**Stored values that move and wait for the end-of-project re-record (VAL-306), not edited:**
+`tests/testthat/test-omic-qc-module.R` `omicQcFrozen$subtabs` (`:171`, `:175`) and `$tabs` (`:160`, `:161`); the 15 captured
+`<omic>_workflow-qc-duplicates-resolution_results` values in each of `tests/testdata/gui-entry/lipid_canonical.json`
+(lines 773 to 3789), `metab_lc.json` (773 to 3736), `metab_gc.json` (759 to 3562) and `metab_combined.json` (773 to 3736):
+60 values. All already fail (KIT-217), so the counts do not change. The one declared test edit:
+`tests/testthat/test-lipid-01-qc-filtering-helpers.R:445`.
+
+**Inferred.** That the wording drafts are what the owner wants (the tests match the rule's parts, not exact sentences, so a
+reworded text that keeps the parts still passes).
+
+**Core-hours** (job durations from `gh run view --json jobs`; core-hours = job-minutes x 4 / 60; skipped jobs not
+counted): R1 45725399662 22.61 job-minutes (plan 0.30, tests head 11.23, tests base 10.58, results 0.50) = 1.51; R2
+45727220849 141.07 job-minutes (plan 0.32, check head 12.62, check base 13.57, tests head 27.70 and 28.13, tests base
+22.88 and 35.23, results 0.62) = 9.40; total 163.68 job-minutes = 10.91 core-hours (expected before R1: 14.4).
+KIT-258: 19.62 + 10.91 = 30.53 of 106.0. No instrument defect; the texts follow-up used no correction.
+
+**Not checked.** The two screens in a browser; the other omics' (proteomics, transcriptomics) texts (they have no duplicate
+rule step); the text of the declared step's description ("Resolved duplicate %s features by keeping highest intensity",
+`R/utils_workflow_omics_declarations.R:1853`, stored in each state's history and the analysis record), which still says the
+earlier rule and is not one of the four texts: left untouched, for a scope decision; the stale code comment at
+`R/utils_workflow_lipid_declarations.R:58`; `tools/refactor/staging/**` (old snapshots, not loaded); the quarantined test
+files; a full-suite run (both done since: see the Addition below).
+
+### Addition: the declared step's description (T02, T03, T06, T07), 2026-11-26
+
+Ruled by the coordinator inside VAL-306's intent. Tests first at `f0ca0ef4` (block (5): 3 expectations per omic on
+`omicsDuplicateResolutionStep(binding)$description`; T03: the zero clause on the help (2) and the result text (2), the
+annotation clause on the help (2)); predictions in `texts-step0.md` section 5 (committed before the change and the run;
+the tests-first state itself was not run: the block's failure on the old text is by reading, and R1's pattern applies).
+Change at `ef570448`: the description now reads "Resolved duplicate <noun> features: kept the row measured in the most
+design samples, then the highest average of its measured values" (before: "...by keeping highest intensity"); the code
+comments at `R/utils_workflow_lipid_declarations.R:58` and `R/func_metab_s4_qc_methods.R:382` state the rule as merged.
+Nothing else under `R/`.
+
+**Observed** (run 45734166836, head `ef570448`, base `8496674a`, 5 files, 1 shard per side; `tx3/`): all predictions held.
+`test-kit258b-duplicate-texts.R` 34/0 to 46/0 (`count-changed`); `test-workflow-omics-binding-steps.R` 57/2 on both
+sides, `message-changed`; `test-kit258-duplicate-completeness.R` 162/0, `test-workflow-lipid-declarations.R` and
+`test-workflow-metab-declarations.R` 259/0: `same`. Moved lines of the KIT-094 snapshot
+(`tests/testthat/fixtures/kit094-characterisation.rds`, not edited): `lipidomics$steps[[4]]$description` (snapshot
+"Resolved duplicate lipid features by keeping highest intensity") and `metabolomics$steps[[4]]$description` (snapshot
+"Resolved duplicate metabolite features by keeping highest intensity"); nothing else in the failure text differs.
+Job-minutes from the jobs API: 27.20 (plan 0.35, tests base 12.58, head 13.78, results 0.48) = 1.81 core-hours. KIT-258:
+30.53 + 1.81 = 32.34 of 106.0. A record keeps the description it was made with on replay; only development records made
+between merge train 20 and this fix carry the old words beside `measured_then_mean`.
+Interpretation: "the two declarations files" read as the lipid and the metabolomics declarations tests.
+Instrument note: the first `gh run watch` ended with exit 1 on a network read timeout (`connection timed out`) while the run was still in progress; the single fetch.sh then waited for the run itself.

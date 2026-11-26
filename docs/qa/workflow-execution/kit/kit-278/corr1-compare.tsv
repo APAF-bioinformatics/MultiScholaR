@@ -1,0 +1,2 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-omics-module-globals.R	13	1	0	0	failed	14	0	0	0	ok	fixed	fixed: KIT-030: the super-assignments in the lipid and metab code are the listed local closures; counts: KIT-030: the super-assignments in the lipid and metab code are the listed local closures (passed 0 -> 1, skipped 0 -> 0)	
