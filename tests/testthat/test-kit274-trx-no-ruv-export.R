@@ -485,6 +485,12 @@ test_that("KIT-274 T10 (guard): KIT-264's routes still list no earlier export (r
     expect_false(b)
 })
 
+test_that("KIT-274 T11 (guard): a manager that is not the session's owner is refused by both wrappers, before anything else", {
+    not_owner <- list(.context = list())
+    expect_error(runTrxReferenceRuviiiExport(not_owner, "group"), class = "saved_entity_scope")
+    expect_error(acceptTrxRuviiiExport(not_owner, NULL, list()), class = "saved_entity_scope")
+})
+
 # ------------------------------------------------------------------------------------------------
 # T12: the call sites.
 # ------------------------------------------------------------------------------------------------

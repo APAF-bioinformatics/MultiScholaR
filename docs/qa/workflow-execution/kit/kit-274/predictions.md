@@ -11,3 +11,12 @@ at 75acd421, plus test-kit213-study-parameters-labels.R from train 23, plus the 
   test-kit207-summary-head-guard.R, test-integration-input-transcriptomics.R, test-workflow-trx-declarations.R, test-e2e-*: same.
 - R CMD check: identical on both sides (new functions @noRd; no Rd, no NAMESPACE).
 Any other verdict stops the work.
+
+# R2b predictions (coordinator's ruling after AUDIT-KIT-274-impl-20261126 I01; written before the request)
+
+Commit 60565dd4 (R1b) deleted T11 by mistake (see outcome.md); T11 is restored verbatim from 050a0402. One run of the new file only, base against
+head, one shard per side, no check, ceiling 40 job-minutes. Base = the tree of the head with the fix reverted (staging ec27f69e merged on both).
+- T11 passes on base and on head (two `saved_entity_scope` expectations).
+- The new file reads 55 passed / 25 failed on base and 84 passed / 0 failed on head (R1b 53/25 and R2 82/0, plus T11's 2).
+- Nothing else moves.
+A failing T11 on either side is a result about the saved-entity scope, recorded and not removed.
