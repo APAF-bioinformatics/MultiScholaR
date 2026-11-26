@@ -1,0 +1,106 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-prot-norm-core.R	1555	307	0	0	failed	1543	319	0	0	failed	message-changed	message-changed: the normalisation action and the correlation action give the recorded output through the moved functions; message-changed: KIT-111 W1 (a): the DIA normalisation and correlation clicks give the recorded states, products, provenance, files and display; message-changed: KIT-111 W2 (W1 (b)): the DIA normalisation and correlation clicks through the worker give W1 (a)'s values; message-changed: KIT-111 W2 (R7): a managed publication that fails is completed by the repeated click, a hit that commits nothing; message-changed: KIT-111 W3: unmanaged, the tab's run, apply, skip and refusal give W1 (a)'s states and today's notices; message-changed: KIT-111 W3: managed, the tab's run, apply and refusal run on the worker on their named inputs and equal the unmanaged tab; counts: KIT-111 W1 (a): the DIA normalisation and correlation clicks give the recorded states, products, provenance, files and display (passed 96 -> 90, skipped 0 -> 0); counts: KIT-111 W2 (W1 (b)): the DIA normalisation and correlation clicks through the worker give W1 (a)'s values (passed 97 -> 91, skipped 0 -> 0)	
+test-kit266-limpa-combined-qc-figure.R	210	0	0	0	ok	210	0	0	0	ok	same		
+test-prot-missing-value-counts.R	67	0	0	0	ok	67	0	0	0	ok	same		
+test-prot-norm-input-current.R	321	0	0	0	ok	260	39	5	0	failed	new-failure	new-failure: KIT-182 F1 (a) to (f), (i): QC computed downstream of a normalisation has normalisation in its lineage; QC from PRF1 has not; new-failure: KIT-182 F1 (h): after a session export, a reopen into a new owner and the tab's restore, the state keeps its lineage and normalisation is refused; new-failure: KIT-182 T1 (S2): a re-run after a Revert and a QC change reads the QC result, on DIA, LFQ and TMT, in process and managed (fails before); new-failure: KIT-182 T1 (e) (S9): after the design is saved again, a QC change and a click read the QC result (fails before); new-failure: KIT-182 T3 (S4, S5): a first run after a QC change reads the QC result, with and without tab entry (fails before); new-failure: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before); new-failure: KIT-182 T5: Reset then run reads PRF1 (as before); after Reset, a QC change and a run read the QC result (fails before); new-failure: KIT-182 T6: a restored session re-runs from its own state as before, and from a QC change reads the QC result (fails before); new-failure: KIT-182 T7 (a): the tab says when the run reads another table than the previous run, and only then (fails before); new-failure: KIT-182 T8 (in process): the pre-normalisation figures are redrawn from the table normalised, before the publication (fails before); new-failure: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before); counts: KIT-182 F1 (a) to (f), (i): QC computed downstream of a normalisation has normalisation in its lineage; QC from PRF1 has not (passed 27 -> 23, skipped 0 -> 0); counts: KIT-182 F1 (h): after a session export, a reopen into a new owner and the tab's restore, the state keeps its lineage and normalisation is refused (passed 7 -> 5, skipped 0 -> 0); counts: KIT-182 T1 (e) (S9): after the design is saved again, a QC change and a click read the QC result (fails before) (passed 2 -> 1, skipped 0 -> 0); counts: KIT-182 T1 (S2): a re-run after a Revert and a QC change reads the QC result, on DIA, LFQ and TMT, in process and managed (fails before) (passed 15 -> 11, skipped 0 -> 0); counts: KIT-182 T3 (S4, S5): a first run after a QC change reads the QC result, with and without tab entry (fails before) (passed 4 -> 1, skipped 0 -> 0); counts: KIT-182 T4 (a) to (d) (S1): QC applied to a normalised table is refused at the next normalisation, in process, managed and on the tab (fails before) (passed 59 -> 39, skipped 0 -> 0); counts: KIT-182 T5: Reset then run reads PRF1 (as before); after Reset, a QC change and a run read the QC result (fails before) (passed 4 -> 3, skipped 0 -> 0); counts: KIT-182 T6: a restored session re-runs from its own state as before, and from a QC change reads the QC result (fails before) (passed 5 -> 4, skipped 0 -> 0); counts: KIT-182 T7 (a): the tab says when the run reads another table than the previous run, and only then (fails before) (passed 9 -> 7, skipped 0 -> 0); counts: KIT-182 T8 (in process): the pre-normalisation figures are redrawn from the table normalised, before the publication (fails before) (passed 10 -> 1, skipped 0 -> 0); counts: KIT-182 T9 (a): the four DIA protein QC steps refuse a normalised head and run on PRF1 (fails before) (passed 67 -> 53, skipped 0 -> 0)	
+test-gui-entry-proteomics.R	92	101	0	0	failed	79	114	0	0	failed	message-changed	message-changed: KIT-101 entry lane prot_dia: DIA-NN, the DIA route, with enrichment through the doubles; message-changed: KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route; message-changed: KIT-101 entry lane prot_tmt: Proteome Discoverer TMT, the protein route; message-changed: KIT-101 entry lane prot_lfq: MaxQuant LFQ, the protein route; message-changed: KIT-101 entry lane prot_lfq_fragpipe: FragPipe LFQ, the protein route; counts: KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route (passed 17 -> 16, skipped 0 -> 0); counts: KIT-101 entry lane prot_dia: DIA-NN, the DIA route, with enrichment through the doubles (passed 18 -> 15, skipped 0 -> 0); counts: KIT-101 entry lane prot_lfq_fragpipe: FragPipe LFQ, the protein route (passed 19 -> 16, skipped 0 -> 0); counts: KIT-101 entry lane prot_lfq: MaxQuant LFQ, the protein route (passed 19 -> 16, skipped 0 -> 0); counts: KIT-101 entry lane prot_tmt: Proteome Discoverer TMT, the protein route (passed 19 -> 16, skipped 0 -> 0)	
+test-kit242-normalisation-fallback.R	571	0	0	0	ok	571	0	0	0	ok	same		
+test-workflow-native-session.R	734	0	0	2	ok	734	0	0	2	ok	same		
+test-prot-norm-worker-figures.R	71	0	0	0	ok	69	2	0	0	failed	new-failure	new-failure: KIT-182 T8 (managed): after a QC change the run's actions start with the QC result's figures, and the pre-normalisation PCA is redrawn, byte-identical to the unmanaged tab's (fails before); counts: KIT-182 T8 (managed): after a QC change the run's actions start with the QC result's figures, and the pre-normalisation PCA is redrawn, byte-identical to the unmanaged tab's (fails before) (passed 8 -> 6, skipped 0 -> 0)	
+test-kit129-run-path.R	711	0	0	1	ok	711	0	0	1	ok	same		
+test-prot-design-log2.R	226	0	0	0	ok	226	0	0	0	ok	same		
+test-kit280-prot-threshold-values.R	0	0	0	0	absent	147	1	0	0	failed	only-on-head		
+test-kit206-prot-norm-export-guard.R	116	0	0	0	ok	111	0	1	0	failed	new-failure	new-failure: KIT-206 E2b: S2, then a second normalisation without the correlation filter: the export is refused (fails before); counts: KIT-206 E2b: S2, then a second normalisation without the correlation filter: the export is refused (fails before) (passed 6 -> 1, skipped 0 -> 0)	
+test-omic-enrich-module.R	1011	59	0	0	failed	1011	59	0	0	failed	same		identical message without the actual digest value: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+test-kit244-limpa-pass-through.R	204	0	0	0	ok	204	0	0	0	ok	same		
+test-workflow-saved-da.R	755	196	0	0	failed	755	196	0	0	failed	same		
+test-kit200-prot-da-no-value-proteins.R	538	0	0	0	ok	538	0	0	0	ok	same		
+test-workflow-analysis-record.R	351	0	0	0	ok	353	0	0	0	ok	count-changed	counts: KIT-177 T5: an LFQ record made with log2(x + 1) replays state by state and still reads log2(x + 1) (passed 44 -> 46, skipped 0 -> 0)	
+test-gui-entry-metabolomics.R	57	48	0	0	failed	57	48	0	0	failed	same		
+test-kit259b-second-correction.R	90	0	0	0	ok	90	0	0	0	ok	same		
+test-kit248-correlation-skip-record.R	206	0	0	0	ok	206	0	0	0	ok	same		
+test-kit224-ruv-feature-levels.R	69	0	0	0	ok	69	0	0	0	ok	same		
+test-kit215-not-tested-lists.R	112	0	0	0	ok	112	0	0	0	ok	same		
+test-ruv-control-anova-grouping.R	139	0	0	0	ok	139	0	0	0	ok	same		
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	same		
+test-omics-summary-core.R	676	25	0	2	failed	676	25	0	2	failed	same		
+test-gui-entry-lipidomics.R	19	16	0	0	failed	19	16	0	0	failed	same		
+test-workflow-integration-input.R	240	0	0	0	ok	240	0	0	0	ok	same		
+test-prot-ruv-factors-in-model.R	312	0	0	0	ok	311	1	0	0	failed	new-failure	new-failure: through the operations the DA table is arm 7 on every protein of the normalised matrix (audit F-03, F-07; M14); counts: through the operations the DA table is arm 7 on every protein of the normalised matrix (audit F-03, F-07; M14) (passed 40 -> 39, skipped 0 -> 0)	
+test-kit205-enrichment-background.R	228	0	0	0	ok	228	0	0	0	ok	same		
+test-enrichment-significance.R	181	0	0	0	ok	181	0	0	0	ok	same		
+test-workflow-dia-products.R	191	0	0	0	ok	191	0	0	0	ok	same		
+test-go-propagation.R	321	0	0	1	ok	321	0	0	1	ok	same		
+test-kit225-prot-norm-reset-source.R	56	0	0	0	ok	56	0	0	0	ok	same		
+test-dia-limpa-ruv-rules.R	333	1	0	0	failed	333	1	0	0	failed	same		
+test-workflow-prot-declarations.R	303	0	0	2	ok	303	0	0	2	ok	same		
+test-workflow-checkpoint-harness.R	628	0	1	8	failed	628	0	1	8	failed	same		
+test-kit217-intensity-filter-missing.R	344	0	0	0	ok	344	0	0	0	ok	same		
+test-kit214-sample-columns.R	176	0	0	0	ok	176	0	0	0	ok	same		
+test-workflow-metab-declarations.R	259	0	0	0	ok	259	0	0	0	ok	same		
+test-workflow-operations.R	75	0	0	0	ok	75	0	0	0	ok	same		
+test-kit204-prot-da-not-tested.R	81	0	0	0	ok	81	0	0	0	ok	same		
+test-kit220-da-threshold-consumers.R	79	0	0	0	ok	79	0	0	0	ok	same		
+test-gui-entry-transcriptomics.R	16	13	0	0	failed	16	13	0	0	failed	same		
+test-kit249-prot-da-qvalue-fallback.R	144	0	0	0	ok	144	0	0	0	ok	same		
+test-kit201-treat-moderation.R	89	0	0	0	ok	89	0	0	0	ok	same		
+test-perf107-audit.R	191	0	0	1	ok	191	0	0	1	ok	same		
+test-kit263-prot-study-parameters-sections.R	11	0	0	0	ok	11	0	0	0	ok	same		
+test-workflow-lipid-declarations.R	259	0	0	0	ok	259	0	0	0	ok	same		
+test-omic-qc-module.R	156	4	0	0	failed	153	7	0	0	failed	new-failure	message-changed: (b) each omic's QC UI, sub-tab UIs and namespaced ids are today's (lipid, metab, trx, prot by route); new-failure: W5 the shell renders proteomics' tabsets by route as mod_prot_qc_server does, before the trigger; counts: W5 the shell renders proteomics' tabsets by route as mod_prot_qc_server does, before the trigger (passed 5 -> 2, skipped 0 -> 0)	
+test-kit202-intensity-filter-samples.R	163	0	0	0	ok	163	0	0	0	ok	same		
+test-kit218-da-wrapper-tail.R	80	0	0	2	ok	80	0	0	2	ok	same		
+test-multiomics-enrich-shared.R	108	0	0	0	ok	108	0	0	0	ok	same		
+test-prot-02b-qc-peptide-module-contracts.R	586	0	0	15	ok	586	0	0	15	ok	same		
+test-kit174-ruv-grouping.R	77	0	0	0	ok	77	0	0	0	ok	same		
+test-workflow-ruv-pearson-diagnostic.R	301	0	2	5	failed	301	0	2	5	failed	same		
+test-kit221-da-several-comparisons.R	124	0	0	0	ok	124	0	0	0	ok	same		
+test-protein-da-golden-master.R	15	0	0	0	ok	15	0	0	0	ok	same		
+test-kit236-report-sentences.R	321	0	0	0	ok	321	0	0	0	ok	same		
+test-prot-05d-norm-module-characterization.R	82	0	0	10	ok	82	0	0	10	ok	same		
+test-workflow-operation-registry.R	1107	2	0	0	failed	1107	2	0	0	failed	same		
+test-general-filemgmt-report-helpers-shared.R	85	0	0	1	ok	85	0	0	1	ok	same		
+test-prot-02c-qc-protein-module-contracts.R	407	0	0	23	ok	407	0	0	23	ok	same		
+test-prot-08-volcano.R	54	0	0	1	ok	54	0	0	1	ok	same		
+test-kit256-tech-rep-selection-cleared.R	20	0	0	0	ok	20	0	0	0	ok	same		
+test-prot-07d-da-model-stats-shared.R	60	0	0	1	ok	60	0	0	1	ok	same		
+test-dia-baseline-compatibility.R	26	0	0	2	ok	26	0	0	2	ok	same		
+test-prot-s4-norm-methods-direct-shared.R	11	0	0	1	ok	11	0	0	1	ok	same		
+test-kit227-report-ruv-sentences.R	186	0	0	0	ok	189	0	0	0	ok	count-changed	counts: KIT-227 G1: Automatic on the group column prints the base text byte for byte, without and with a record (passed 66 -> 69, skipped 0 -> 0)	
+test-prot-s4-qc-direct-shared.R	72	0	0	0	ok	72	0	0	0	ok	same		
+test-module-ci-prot-import.R	107	0	0	0	ok	107	0	0	0	ok	same		
+test-kit128-no-biological-replication-prot.R	6	0	0	0	ok	6	0	0	0	ok	same		
+test-module-ci-prot-da.R	250	0	0	1	ok	250	0	0	1	ok	same		
+test-kit245-github-push-safety.R	87	0	0	0	ok	87	0	0	0	ok	same		
+test-kit272-prot-box-panel-text.R	373	0	0	0	ok	373	0	0	0	ok	same		
+test-kit234-workbooks-withdrawn.R	29	0	0	0	ok	29	0	0	0	ok	same		
+test-prot-09-heatmap.R	13	0	0	1	ok	13	0	0	1	ok	same		
+test-prot-02c-qc-peptide-intensity-shared.R	0	0	0	5	ok	0	0	0	5	ok	same		
+test-prot-05b-norm-module-contracts.R	440	0	0	22	ok	440	0	0	22	ok	same		
+test-prot-02-qc-filtering.R	4	0	0	1	ok	4	0	0	1	ok	same		
+test-prot-07c-da-results-output-shared.R	38	0	0	0	ok	38	0	0	0	ok	same		
+test-module-ci-prot-peptide-qc.R	39	0	0	1	ok	39	0	0	1	ok	same		
+test-prot-da-compat-shared.R	16	0	0	0	ok	16	0	0	0	ok	same		
+test-quality-runtime-contracts.R	3	0	0	0	ok	3	0	0	0	ok	same		
+test-prot-07c-da-results-characterization.R	23	0	0	0	ok	23	0	0	0	ok	same		
+test-prot-07b-da-handlers-compat.R	35	0	0	2	ok	35	0	0	2	ok	same		
+test-prot-summary-report-templates.R	123	0	0	0	ok	123	0	0	0	ok	same		
+test-e2e-proteomics-tmt-lfq.R	0	0	0	3	ok	0	0	0	3	ok	same		
+test-prot-12a-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-e2e-manifest.R	237	0	0	0	ok	237	0	0	0	ok	same		
+test-prot-12-summary-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-prot-02d-qc-protein-intensity-shared.R	0	0	0	5	ok	0	0	0	5	ok	same		
+test-module-ci-prot-summary.R	20	0	0	5	ok	20	0	0	5	ok	same		
+test-workflow-gui-memory-repairs.R	0	0	0	6	ok	0	0	0	6	ok	same		
+test-lipid-08-s4-da-analysis-methods.R	20	0	0	0	ok	20	0	0	0	ok	same		
+test-general-filemgmt-duplicate-resolution-contracts.R	88	0	0	0	ok	88	0	0	0	ok	same		
+test-general-filemgmt-update-missing-value-shared.R	16	0	0	0	ok	16	0	0	0	ok	same		
+test-prot-da-render-direct-shared.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-general-filemgmt-config-contracts.R	52	0	0	0	ok	52	0	0	0	ok	same		
+test-e2e-browser-harness.R	126	0	0	1	ok	126	0	0	1	ok	same		
+test-workflow-memory-mechanism-member.R	0	0	0	13	ok	0	0	0	13	ok	same		
+test-e2e-proteomics-dia-limpa.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-module-ci-prot-protein-qc.R	0	0	0	6	ok	0	0	0	6	ok	same		
+test-e2e-proteomics-dia.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-prot-02p-qc-protein-orchestrator-shared.R	19	0	0	0	ok	19	0	0	0	ok	same		
+test-prot-07-da-analysis.R	3	0	0	1	ok	3	0	0	1	ok	same		
