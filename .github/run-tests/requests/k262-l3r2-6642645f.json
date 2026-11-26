@@ -1,0 +1,86 @@
+{
+  "requested_by": "KIT-262 M3 lifecycle L3r2, re-send 2 of 3 (m3-lifecycle-declaration-l3r2.md at 6642645f; VAL-400); blind; OMP_NUM_THREADS=1; L3 line 4.00 used about 2.7, this send about 1.4 (overrun about 0.1 allowed); explicit timeouts 5, 20, 55, 10, 30 script-minutes",
+  "label": "KIT-262 M3 L3r2 6642645f",
+  "package_commit": "6642645f35d439b3718165eddc45fd9b7cca0766",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/reestimate-m3-k262.R",
+      "args": ["selftest", "k262-l3r2/s1"],
+      "env": {"OMP_NUM_THREADS": "1"},
+      "out": "k262-l3r2/s1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 5
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/score-m3-k262.R",
+      "args": ["selftest", "k262-l3r2/s2", "docs/qa/workflow-execution/kit/kit-262/e5hand-m3-expected.tsv"],
+      "env": {"OMP_NUM_THREADS": "1"},
+      "out": "k262-l3r2/s2",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/m3-k262.R",
+      "args": ["k262-l3r2/s3"],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K262_LIFECYCLE": "1",
+        "K262_M3_CELLS": "N-r,N-s,E-r,E-s,E-p,E-g,N-w,E-w,S-N,S-E",
+        "K262_M3_REPS": "9001,9002",
+        "K262_M3_E9REPS": "1,2",
+        "K262_M3_FORCE_ARMS": "1",
+        "K262_M3_E8": "1",
+        "K262_M3_E8_MAX": "9001",
+        "K262_M3_WORKERS": "4"
+      },
+      "out": "k262-l3r2/s3",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 55
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/m3-k262.R",
+      "args": ["k262-l3r2/s4"],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K262_LIFECYCLE": "1",
+        "K262_M3_FAULT": "1",
+        "K262_M3_CELLS": "N-r",
+        "K262_M3_REPS": "9101:9106",
+        "K262_M3_E8": "0",
+        "K262_M3_WORKERS": "4"
+      },
+      "out": "k262-l3r2/s4",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 10
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/m3-k262.R",
+      "args": ["k262-l3r2/s5"],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K262_LIFECYCLE": "1",
+        "K262_M3_STAGE1": "1",
+        "K262_M3_REPS": "9011:9015",
+        "K262_M3_E8": "0",
+        "K262_M3_WORKERS": "4"
+      },
+      "out": "k262-l3r2/s5",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
