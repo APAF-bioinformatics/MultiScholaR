@@ -1,0 +1,13 @@
+sim-k211.R: lines 24 to 279 of the file = sim-k197.R lines 26 to 279 (254 lines) plus 2 inserted: as declared
+  inserted:     if (identical(cellname, "Av")) s2 <- s2 * 2^((20 - mu) / 2)
+  inserted:     if (identical(cellname, "Ag")) beta <- 3 * beta
+  SHA-256 of the copy (newline-terminated): 84bb3712067b6899032af7aa598f444171c871ffb83a7190694a738d0b83007b
+  SHA-256 of the block with its two marked lines: 16d9e76ec4c4029896df3194b04fcf30f0473031f004851afc18f4b9ceae4744
+score-k211.R: block 44-49 (6 lines): identical; SHA-256 bd600c00aebb4c09f21dbc1ebe765ea112398420fe2a1e1225b73eff7d656628
+score-k211.R: block 219-223 (5 lines): identical; SHA-256 aeffef5048ed9566942f502a9392212065a172347cb246de498ebe9719a5cc03
+score-k211.R: block 225-225 (1 lines): identical; SHA-256 23e1040dacf26fbec806ec71a1e5b4b4a6a16087b0175fd9a54cae1ce5af9a61
+score-k211.R: 3 verbatim blocks
+l1-k211.R: block 34-37 (4 lines): identical; SHA-256 2e9658ad6d0d476be1fe037f2054c53af13f627b32072fe657455e69f86ec5f0
+l1-k211.R: block 38-38 (1 lines): identical; SHA-256 25bc11ee85ddb5a7ba3744d7e983bcd43c09a27e4ed2289f7d1fdc19e84fc769
+l1-k211.R: 2 verbatim blocks
+E0: pass
