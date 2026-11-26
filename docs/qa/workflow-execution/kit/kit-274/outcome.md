@@ -21,8 +21,3 @@ calls k274Run). Predictions for R1b: T10 passes on base with the precondition me
 T11 pass; X1 base line as in R1). If T10 still fails with the precondition met: a result, stop. If the precondition fails: hand back.
 T4 deviation (accepted by the coordinator): the press is made in the summary hook, not through `ruviii = "group"`, so the product set is
 read before and after it; it asserts the same observables as the plan register's P04.
-
-R1b result: run 45726224100 on tests-only 60565dd4 (r1b-tests.tsv, r1b-failures.txt): 53 passed, 25 failed, 0 errors (185.5 s). As predicted:
-T1 (3), T2 (3), T3 (4), T4 (4), T5 (1), T6 (4), T7 (3), T12 (3) fail by value; T8, T9, T10, T11 pass. T10: both preconditions met
-(the second run committed a new trx_ruvs entity), `route A listed: FALSE route B listed: FALSE` on the base: R1's T10 failure was the
-instrument (no second run). Core-hours so far: R1 about 1.0 plus R1b about 0.4.
