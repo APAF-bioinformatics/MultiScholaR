@@ -1,0 +1,9 @@
+file: test-omics-module-globals.R
+test: KIT-030: the super-assignments in the lipid and metab code are the listed local closures
+kind: failure
+message:
+  Expected `setdiff(files_hit, allowed_files)` to be identical to `character(0)`.
+  Differences:
+  `actual`:   "mod_omic_norm.R"
+  `expected`:                  
+
