@@ -375,9 +375,9 @@ test_that("KIT-266 E10: Copy to Results Summary after the covariates step delive
         subfeature_qc_dir = file.path(root, "peptide_qc"))
     for (path in setdiff(unlist(paths), fixture$paths$protein_qc_dir)) dir.create(path, recursive = TRUE, showWarnings = FALSE)
     testthat::local_mocked_bindings(getProjectPaths = function(...) paths, .package = "MultiScholaR")
-    printed <- tryCatch(k266Quiet(utils::capture.output(copyToResultsSummary(omic_type = "proteomics", experiment_label = "kit266",
+    printed <- k266Quiet(utils::capture.output(copyToResultsSummary(omic_type = "proteomics", experiment_label = "kit266",
         contrasts_tbl = data.frame(contrasts = "groupB-groupA"), design_matrix = data.frame(Run = "S1", group = "A"),
-        force = TRUE))), error = function(e) conditionMessage(e))
+        force = TRUE)))
     figures <- file.path(paths$results_summary_dir, "QC_figures")
     expect_true(file.exists(file.path(figures, "proteomics_composite_QC_figure.png")))
     expect_true(file.exists(file.path(figures, "proteomics_composite_QC_figure.pdf")))
