@@ -37,3 +37,12 @@ the new file only-on-head... passes completely on head; `test-prot-norm-core.R`,
 `test-workflow-integration-input.R`: `fixed` (the declared edit); R CMD check identical.
 Instrument risks recorded in advance (repaired only as VAL-54 mechanics): the mocked non-function binding in T19, the
 enrichment recipe in T6, the replay harness paths in T17 and T18.
+
+## Addendum before R3 (instrument repair 2 of 3, declared before sending)
+
+R2 (45784213557) showed T2's last expectation failing on the head because the fixture's DPC state has no step record, so the
+template did not take the limpa route (its R1 base failure count of 1 already showed two of T2's three expectations passing
+on the base for the same reason). The repair gives the report chunks the DPC step as test-kit227's E7 does; no expectation
+or text changes. Predicted with it: T2 on the base (tests-only e6f83d43) fails all three expectations by value (covariates
+Methods paragraph, covariates Results caption, the two-stage text absent); on the head (fix 79e77621) it passes. R3 runs the
+new file only, base against head.
