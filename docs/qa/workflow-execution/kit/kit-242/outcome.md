@@ -417,3 +417,23 @@ and the GUI-entry files (as train 19). Line: 59.33 expected / 120.0 ceiling core
   `test-kit259b-…` (90/0; its `ruv_applied` is a stub report value), `test-kit213-…` (56/0; transcriptomics),
   `test-kit264-trx-export-current.R` (transcriptomics; no lipid or metab RUV): same on both sides.
 - Any other verdict stops the run.
+
+### R2 (run 45738934354, base 9bb5ef0d, head afb27738; 1102.3 job-minutes, 73.49 core-hours; ceiling 120.0): observed
+
+- **File verdicts as predicted.** fixed: `test-kit242-normalisation-fallback.R` (base 370/84/4 errors, head 526/0),
+  `test-workflow-omics-worker.R` (base 4 failures, head 0), `test-module-ci-metab-norm.R` (base 4, head 0).
+  message-changed: `test-omic-norm-module.R`, `test-workflow-omics-declarations.R` (KIT-073),
+  `test-workflow-omics-binding-steps.R` (KIT-094). The other 184 files same; check identical (6 findings on both).
+  `test-omic-norm-module.R` 583/56 on both sides (KIT-255's eight are among Part A's 56 keys).
+- **Expectation level, `test-omic-norm-module.R`: as predicted** (4 log, 12 provenance, 10 outputs keys changed). The two
+  keys not predicted, manual `reset outputs` (lipid, metab), changed: the log survives the reset.
+- **KIT-094: as predicted**, the `records` expectation changed; `report_sources` identical.
+- **KIT-073: one departure from the written expectation list.** The two `values` expectations changed as predicted; the
+  `registry` expectation's message is identical on both sides, where a change was predicted. Inferred cause: the
+  registry's difference display is cut after its first differences (it begins with
+  `lipid_between_sample_normalisation`, `lipid_duplicate_resolution`, `lipid_intensity_filter`), so the RUV
+  declarations' new `fixed` row is never printed; the actual value is expected to differ but the message cannot show it.
+  Not verified. Stopped and reported under the stop rule.
+- The E25m row fails by value on the base, as the change intended; the two declared edits fail on the base and pass on
+  the head.
+- Used: 148.31 + 73.49 = 221.80 of 901.33 core-hours.
