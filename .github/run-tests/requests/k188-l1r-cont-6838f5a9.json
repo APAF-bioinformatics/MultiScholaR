@@ -1,0 +1,41 @@
+{
+  "requested_by": "KIT-188 L1r continuation (declaration-l1r-continuation.md; the two units with no result; mechanics only, estimands blinded; bound e4a6d4ae)",
+  "label": "KIT-188 L1r continuation 6838f5a9",
+  "package_commit": "6838f5a9104a8f33e1fd9a39fcdd9f7ce2161e8c",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "L12",
+        "401",
+        "401",
+        "l1r-l-cont"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_LIFECYCLE": "1",
+        "K188_JOBS": "deciding,las",
+        "K188_JOB": "l1r-l-cont",
+        "K188_PREDICTIONS": "docs/qa/workflow-execution/kit/kit-188/predictions-l1c.tsv"
+      },
+      "out": "l1r-l-cont",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
