@@ -43,3 +43,22 @@ Base values (the first failing expectation of each row; the rest of the row also
 | G5 | fails on base (the limpa template's STRING chunks read `current_project_paths$pathway_dir`): the template change's own row |
 Instrument risks named in advance (VAL-54; not results): a helper that does not run on the runner (the owner fixture, the
 module-CI helpers); decided from `failures.txt`.
+
+## Run R1h (head check, declared 2026-11-27 before the request): the new test file and G0 on the fix commit
+
+Purpose: all rows of the new file pass on the fix (A2's "all pass on the fix") before the large R2 is sent, and G0 is
+run on head for G4's check with the package function (`package_current_files`) and for the g:Profiler route's (ii),
+whose mock was repaired (the kernel retries a NULL answer; instrument defect, no result changed). One request: one tests
+job (the new file) and one scripts job (`g0.R`). Ceiling 8.0 core-h (two jobs of 60 min), expected 3.3, drawn from the
+total's slack (ticket total ceiling 485.33; used so far 6.1).
+Predictions: every test of the file passes (E1 to E8, G1 to G3, G5). G0 on head: run1 both routes `package_equals_derived`
+TRUE and `written_not_derived` empty; g:Profiler run2 derived excludes the three down files, which stay on disk
+(`first_run_files_not_in_second_run_names` = `of_which_still_on_disk` = 3 names); GO run2 as on the base.
+A failing row on head is a result of this change (the ticket's one correction pass); a row whose mechanics fail without a
+result is an instrument defect (VAL-54).
+
+## R2 scope and price (not yet requested)
+
+The ticket's regression scope formula gives 49 files at the branch point (39 by the grep, helpers dropped, with the new
+file, +4 GUI-entry lane files, +1 `test-prot-summary-report-templates.R`, +5 template-naming tests): above the ticket's 40,
+so the coordinator re-prices R2 before it is sent (ticket 10). Not sent by this implementer.

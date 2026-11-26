@@ -122,12 +122,13 @@ g0RunProject <- function(route, run, root, taxon, gost = NULL, down_cutoff = 0) 
     state
 }
 
-# The fixed g:Profiler answer: the first call of a contrast is the up list, the second the down list.
+# The fixed g:Profiler answer: the first call of a contrast is the up list, the later ones the down list.
 g0MakeGost <- function(down_empty) {
     calls <- 0L
     function(query, ..., custom_bg = NULL) {
         calls <<- calls + 1L
-        if (down_empty && calls %% 2L == 0L) return(NULL)
+        # The kernel retries a NULL answer (up to five attempts), so once the up list has its answer every later call is NULL.
+        if (down_empty && calls >= 2L) return(NULL)
         buildProtEnrichDeterministicGprofilerResult(if (calls %% 2L == 1L) "positive" else "negative")
     }
 }
