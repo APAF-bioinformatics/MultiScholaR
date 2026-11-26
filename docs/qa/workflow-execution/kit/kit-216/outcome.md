@@ -76,7 +76,8 @@ A base project with enrichment, then 'Run Normalization & RUV' at the enrichment
 exported, could not be opened before and now opens. Its analysis record still lists the earlier enrichment as the last
 step with the current table as input, and the re-run normalisation's input names the enrichment record (the D2 class:
 a commit made at a result head). No number changes. Stated in NEWS (DRAFT sentence, also in `wording.md`); no code;
-G21 observes the store shape and its record. For a separate ticket: how the record treats a step committed at a result
+G21 shows the store shape; its step count reads 0 because the fixture's enrichment is a legacy step; F03's record
+statement is by reading (audit F18). For a separate ticket: how the record treats a step committed at a result
 head.
 
 ## Acceptance
@@ -219,10 +220,10 @@ Next: merge staging 75acd421, then the controls and the re-freeze on the merged 
 
   The two exceptions to (i):
   - **W1 `kernel_clusterprofiler` `states`.** The base dump has `d8f57c99`; the stored value has `1167a2b0` (the
-    pre-existing KIT-173 failure). Not re-frozen: stop rule 3, to the owner.
-  - **`prot_dia` `states`.** Every state digest other than `enrichment_completed` differs between the base dump and
-    the stored file. This is not KIT-216's change, and its cause is not traced. Only the predicted change was applied:
-    the `enrichment_completed` entry was removed.
+    pre-existing KIT-173 failure). Not re-frozen: left for the end-of-project re-record (owner, VAL-372 (2); F16).
+  - **`prot_dia` `states`.** The other 15 state digests are KIT-217's (merge train 15, run 45681065939: identical pairs; VAL-279 (1), VAL-324:
+    not edited, end-of-project re-record); control (i) holds at the one changed entry. Only the predicted change was
+    applied: the `enrichment_completed` entry was removed (audit F17).
 
   Details: `leaves.tsv`, `gui-entry-control.tsv`, `control/`.
 - **Re-freeze:** 28a42a75, at the predicted leaves only (VAL-179 SD-3).
@@ -233,3 +234,26 @@ Next: merge staging 75acd421, then the controls and the re-freeze on the merged 
     `"<unchanged>"`, so each of the four W2 cases gains one failure. R1-01's "fixed by the re-freeze" was wrong for
     this check.
   - Everything else was as predicted.
+
+## R2e, the bounded correction allowed by VAL-372 (1) (run 45759247038)
+
+The run compares 392efa32 (the two test edits only) against 923cc370, one shard per side. The result matched
+`r2e-predictions.md`:
+- `test-kit213-study-parameters-labels.R`: `same`, 56/0 on both sides.
+- `test-omics-enrich-core.R`: `message-changed`, 221/20/0/1 → 222/20/0/1. The only changed message is the W2
+  `kernel_clusterprofiler` reader's run `states` (the base digest on base, `"<unchanged>"` on head).
+
+F16 (W1 `kernel_clusterprofiler` run `states`, `test-omic-enrich-module.R:2114-2116`) is left for the end-of-project
+re-record (VAL-372 (2)).
+
+## Acceptance (current)
+
+| # | State |
+|---|---|
+| A00 | met (VAL-179; re-check 1; R2 audit; implementation audit) |
+| A0 | met (R1; G0, G0b; archives committed with their sha256) |
+| A1 | met: the new file `fixed` (R2c: 152/0; R2d: 152/0) |
+| A2 | met: R2c every verdict as predicted; R2d's two misses closed by the VAL-372 (1) correction, R2e as predicted |
+| A3 | the full suite is the merge train's run (coordinator's ruling in VAL-372) |
+| A4 | met: the controls, then the re-freeze at the predicted leaves only (28a42a75); F16 left for the end-of-project re-record (VAL-372 (2)) |
+| A5 | NEWS, ledger row, wording drafts committed; no version, `NAMESPACE` or `man/` change |
