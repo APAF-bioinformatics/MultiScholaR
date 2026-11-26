@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-228 further correction D1: tests-only (I05 changed, C01, C02 rows) on the current code; 16 failures predicted; ceiling 60 job-min = 4.0 core-h; used 84.2 of 135.0, plan 84.2 + 4.0 + 45.0 = 133.2",
+  "label": "KIT-228 D1 tests-only ae9ee18d",
+  "package_commit": "ae9ee18d28bbaa6ffd3b3d5ba68452fdc437d982",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit228-integration-input-refused-save.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
