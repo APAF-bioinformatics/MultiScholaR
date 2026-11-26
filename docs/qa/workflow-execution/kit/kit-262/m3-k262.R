@@ -297,7 +297,7 @@ m3Data <- function(cell, r) {
     d <- e2Data(cell$id, r)
     return(list(values = d$values, effects = d$effects, level = d$level, design = kit172Design(), itsd = TRUE, seed = d$seed))
   }
-  seed <- m3Seed(cell$idx, TRUE, r)
+  seed <- m3Seed(idx = cell$idx, stress = TRUE, r = r)
   sim <- m3StressValues(seed, effect_share = if (identical(cell$kind, "null")) 0 else 0.1)
   # no `IS_` rows exist in the stress cells (as M2): the ITSD step has no standard to act on and is not run (ruling item)
   list(values = sim$values, effects = sim$effects, level = sim$level, design = sim$design, itsd = FALSE, seed = seed)
@@ -390,7 +390,7 @@ m3Line <- function(row) paste(vapply(M3_COLUMNS, function(cn) {
 m3Unit <- function(task, omic = task$omic) {
   started <- proc.time()[[3L]]
   cell <- M3_CELLS[M3_CELLS$id == task$cell, ]
-  row <- m3EmptyRow(task$cell, task$r, m3Seed(cell$idx, cell$stress, task$r), task$purpose, omic)
+  row <- m3EmptyRow(cell = task$cell, r = task$r, seed = m3Seed(idx = cell$idx, stress = cell$stress, r = task$r), purpose = task$purpose, omic = omic)
   data <- m3Data(cell, task$r)
   runs <- data$design$Run
   n_samples <- length(runs)
@@ -419,13 +419,13 @@ m3Unit <- function(task, omic = task$omic) {
     run_p <- tryCatch(withCallingHandlers({ invisible(data.frame(abcdef = 1)$abc); simpleError("the planted partial match was not signalled") },
       warning = m3GuardMuffle), error = function(e) e)
   } else {
-    run_p <- m3RunJourney(root_p, object_for(), omic, kit172LegacyRuv("automatic"), data$itsd)
+    run_p <- m3RunJourney(root = root_p, object = object_for(), omic = omic, ruv = kit172LegacyRuv("automatic"), itsd = data$itsd)
   }
   row$seconds_p <- proc.time()[[3L]] - t0
   if (inherits(run_p, "error")) return(stopped(run_p, "P journey"))
   on.exit(closeDIAStateAdapter(run_p$owner), add = TRUE, after = FALSE)
   if (identical(planted_fault, "unit")) invisible(data.frame(abcdef = 1)$abc)  # a partial match in unit code outside any journey
-  p <- m3Endpoints(run_p, data, runs, n_samples)
+  p <- m3Endpoints(run = run_p, data = data, runs = runs, n_samples = n_samples)
   trace <- p$trace
   if (!is.data.frame(trace) || !nrow(trace)) stop("the P journey returned no optimisation trace")
   cap <- MultiScholaR:::calculateAdaptiveMaxK(trace$sample_size[[1L]])
@@ -441,7 +441,7 @@ m3Unit <- function(task, omic = task$omic) {
   parsed <- lapply(trace$error_reason, k262ParseReason)
   is_r5 <- status == K262_R5
   complete[is_r5] <- vapply(parsed[is_r5], function(x) x$c, integer(1L))
-  ru <- k262Rules(trace, NULL, complete, cap)
+  ru <- k262Rules(trace = trace, curves = NULL, complete = complete, cap = cap)
   wp <- ru$winner$P; w1 <- ru$winner$C1
   # E1: P's usable set, composites, winner and k used against the shipped trace and the step's own outcome
   shipped_usable <- status == "ok"
@@ -498,14 +498,14 @@ m3Unit <- function(task, omic = task$omic) {
     ruv$manual_k <- as.integer(k)
     root_c <- file.path(tempdir(), sprintf("k262m3-%s-%s-C-%s", task$tag, omic, gsub("[^0-9]", "", format(pct))))
     on.exit(unlink(root_c, recursive = TRUE), add = TRUE)
-    run <- m3RunJourney(root_c, object_for(), omic, ruv, data$itsd)
+    run <- m3RunJourney(root = root_c, object = object_for(), omic = omic, ruv = ruv, itsd = data$itsd)
     if (inherits(run, "error")) return(list(error = run))
     on.exit(closeDIAStateAdapter(run$owner), add = TRUE, after = FALSE)
-    list(endpoints = m3Endpoints(run, data, runs, n_samples), input = state_matrix(run))
+    list(endpoints = m3Endpoints(run = run, data = data, runs = runs, n_samples = n_samples), input = state_matrix(run))
   }
   if (identical(row$c_source, "manual")) {
     t2 <- proc.time()[[3L]]
-    m <- manual_at(w1$percentage, w1$k_used)
+    m <- manual_at(pct = w1$percentage, k = w1$k_used)
     row$seconds_c <- proc.time()[[3L]] - t2
     if (!is.null(m$error)) return(stopped(m$error, "C1 Manual journey"))
     c1 <- m$endpoints
@@ -524,7 +524,7 @@ m3Unit <- function(task, omic = task$omic) {
     do_e11 <- identical(row$c_source, "reused") && (identical(Sys.getenv("K262_M3_FORCE_ARMS"), "1") || task$r %% e11_mod == 7L)
     if (do_e11) {
       t3 <- proc.time()[[3L]]
-      m <- manual_at(p$pct, p$k_used)
+      m <- manual_at(pct = p$pct, k = p$k_used)
       row$seconds_other <- sum(row$seconds_other, proc.time()[[3L]] - t3, na.rm = TRUE)
       row$e11_run <- TRUE
       if (!is.null(m$error)) {
@@ -557,7 +557,7 @@ m3Unit <- function(task, omic = task$omic) {
 m3UnitSafe <- function(task) {
   started <- proc.time()[[3L]]
   cell <- M3_CELLS[M3_CELLS$id == task$cell, ]
-  empty <- m3EmptyRow(task$cell, task$r, m3Seed(cell$idx, cell$stress, task$r), task$purpose, task$omic)
+  empty <- m3EmptyRow(cell = task$cell, r = task$r, seed = m3Seed(idx = cell$idx, stress = cell$stress, r = task$r), purpose = task$purpose, omic = task$omic)
   if (identical(task$fault, "kill")) tools::pskill(Sys.getpid(), tools::SIGKILL)  # the worker dies with no row and no trace
   row <- tryCatch(withCallingHandlers(m3Unit(task), warning = m3GuardMuffle), error = function(e) {
     trace <- paste(c(conditionMessage(e), getOption("k262.guard_trace", "")), collapse = "\n")
@@ -570,6 +570,7 @@ m3UnitSafe <- function(task) {
   })
   if (identical(row$status, "error")) try(writeLines(c(row$class, row$error), file.path(out_dir, "traces", sprintf("trace-%s.txt", task$tag))), silent = TRUE)
   cat(m3Line(row), "\n", sep = "", file = summary_file, append = TRUE)  # the unit's own record, before it returns
+  cat(sprintf("unit %s: %s (%.0f s)\n", task$tag, row$status, as.numeric(row$seconds_total)))  # progress: the tag and the status only
   row$status
 }
 
@@ -656,7 +657,7 @@ for (i in seq_len(nrow(tasks))) {
   tag_rows <- have[have$cell == tasks$cell[[i]] & have$r == as.character(tasks$r[[i]]) & have$purpose == tasks$purpose[[i]], , drop = FALSE]
   if (nrow(tag_rows) >= 1L) next
   cell <- M3_CELLS[M3_CELLS$id == tasks$cell[[i]], ]
-  row <- m3EmptyRow(tasks$cell[[i]], tasks$r[[i]], m3Seed(cell$idx, cell$stress, tasks$r[[i]]), tasks$purpose[[i]], "lipid")
+  row <- m3EmptyRow(cell = tasks$cell[[i]], r = tasks$r[[i]], seed = m3Seed(idx = cell$idx, stress = cell$stress, r = tasks$r[[i]]), purpose = tasks$purpose[[i]], omic = "lipid")
   trace_file <- file.path(out_dir, "traces", sprintf("trace-%s.txt", tasks$tag[[i]]))
   row$status <- "instrument"; row$class <- "no_row"
   row$error <- if (file.exists(trace_file)) paste("no row; trace:", gsub("[\t\r\n]", " ", paste(readLines(trace_file, warn = FALSE), collapse = " | "))) else
@@ -680,7 +681,7 @@ checks <- rbind(checks,
   data.frame(check = "ERROR_ROWS_REPORTED", units = nrow(final), passed = sum(final$status != "error"), failed = sum(final$status == "error"), stringsAsFactors = FALSE))
 seed_ok <- vapply(seq_len(nrow(final)), function(i) {
   cell <- M3_CELLS[M3_CELLS$id == final$cell[[i]], ]
-  isTRUE(as.numeric(final$seed[[i]]) == m3Seed(cell$idx, cell$stress, as.numeric(final$r[[i]])))
+  isTRUE(as.numeric(final$seed[[i]]) == m3Seed(idx = cell$idx, stress = cell$stress, r = as.numeric(final$r[[i]])))
 }, logical(1L))
 checks <- rbind(checks, data.frame(check = "SEEDS", units = nrow(final), passed = sum(seed_ok), failed = sum(!seed_ok), stringsAsFactors = FALSE))
 checks <- rbind(checks, data.frame(check = "FLOOR_ORDER_STRESS", units = 1L, passed = as.integer(identical(M3_STRESS_FLOOR_ORDER, "after")),
@@ -698,6 +699,24 @@ if (fault_on) {
   others_ok <- sum(final$status == "ok") == nrow(final) - 4L
   checks <- rbind(checks, data.frame(check = "FAULT_ROWS", units = 5L, passed = sum(hit) + as.integer(others_ok), failed = 5L - sum(hit) - as.integer(others_ok), stringsAsFactors = FALSE))
 }
+# ---- the lifecycle's scorer rehearsal (blind: counts only): the blind scorer twice (E6, byte-identical files, every estimand NA) and the full
+# scorer once on the rows just written (the format the simulation writes is the format the scorer reads); nothing it computes leaves the run ----
+if (lifecycle && !fault_on) {
+  source(file.path(script_dir, "score-m3-k262.R"))  # sourced: defines the functions; its command line runs nothing when the first argument is no mode
+  lc_main <- final[final$purpose == "main" & final$status == "ok", , drop = FALSE]
+  lc_reps <- sort(unique(as.integer(lc_main$r)))
+  lc_plan <- data.frame(cell = unique(lc_main$cell), R = length(lc_reps), stringsAsFactors = FALSE)
+  ra <- tryCatch(blindM3(dirs = out_dir, plan = lc_plan, out_dir = file.path(tempdir(), "blind-a"), reps = lc_reps), error = function(e) e)
+  rb <- tryCatch(blindM3(dirs = out_dir, plan = lc_plan, out_dir = file.path(tempdir(), "blind-b"), reps = lc_reps), error = function(e) e)
+  same_files <- !inherits(ra, "error") && !inherits(rb, "error") && identical(list.files(file.path(tempdir(), "blind-a")), list.files(file.path(tempdir(), "blind-b"))) &&
+    all(unname(tools::md5sum(file.path(tempdir(), "blind-a", list.files(file.path(tempdir(), "blind-a"))))) == unname(tools::md5sum(file.path(tempdir(), "blind-b", list.files(file.path(tempdir(), "blind-b"))))))
+  na_ok <- !inherits(ra, "error") && all(is.na(ra$share_rescued)) && all(is.na(ra$share_reranked)) && all(is.na(ra$calibration)) && all(is.na(ra$power)) && all(is.na(ra$verdict))
+  full_ok <- tryCatch({ fullM3(dirs = out_dir, plan = lc_plan, a_gain = TRUE, out_dir = file.path(tempdir(), "full-lc"), B = 200L, reps = lc_reps); TRUE }, error = function(e) FALSE)
+  checks <- rbind(checks,
+    data.frame(check = "E6_BLIND_SCORER", units = 1L, passed = as.integer(same_files), failed = as.integer(!same_files), stringsAsFactors = FALSE),
+    data.frame(check = "BLIND_ESTIMANDS_NA", units = 1L, passed = as.integer(na_ok), failed = as.integer(!na_ok), stringsAsFactors = FALSE),
+    data.frame(check = "FULL_SCORER_ON_ROWS", units = 1L, passed = as.integer(full_ok), failed = as.integer(!full_ok), stringsAsFactors = FALSE))
+}
 checks$status <- ifelse(checks$failed == 0L, "pass", "FAIL")
 timing <- if (nrow(ok_rows)) stats::aggregate(cbind(seconds_total, seconds_p) ~ cell + purpose, data = final[final$status == "ok", ], FUN = mean) else data.frame()
 # ---- what leaves the run -------------------------------------------------------------------------------------------------------
@@ -714,11 +733,26 @@ if (stage1) {
     stdout = file.path(tempdir(), "reestimate.log"), stderr = file.path(tempdir(), "reestimate.log"))
   for (cl in unique(final$cell)) cat(sprintf("units %s: %d\n", cl, sum(final$cell == cl)))
   cat(sprintf("instrument rows: %d; error rows: %d; seconds: %.0f\n", sum(final$status == "instrument"), sum(final$status == "error"), sum(final$seconds_total, na.rm = TRUE)))
-  if (code == 0L && file.exists(file.path(out, "reestimate.tsv"))) cat(readLines(file.path(out, "reestimate.tsv")), sep = "\n") else cat("reestimate: failed\n")
-  jsonlite::write_json(c(provenance(TRUE), list(seconds_median_per_unit = stats::median(final$seconds_total, na.rm = TRUE))), file.path(out, "provenance.json"),
-    auto_unbox = TRUE, pretty = TRUE, digits = NA)
-  quit(status = if (code != 0L || any(final$status == "instrument")) 1L else 0L)
+  if (lifecycle) {
+    # the lifecycle (L3) proves the stage-1 mechanics only: the estimate's schema and pair counts are shown, its values never; the file is removed
+    est_file <- file.path(out, "reestimate.tsv")
+    est <- NULL
+    if (code == 0L && file.exists(est_file)) {
+      est <- utils::read.delim(est_file, stringsAsFactors = FALSE)
+      print(est[c("cell", "endpoint", "n_pairs")])
+      unlink(est_file)
+    } else cat("reestimate: failed\n")
+    checks$status <- NULL
+    checks <- rbind(checks, data.frame(check = "STAGE1_ESTIMATE_SCHEMA", units = 1L, passed = as.integer(code == 0L && identical(names(est), c("cell", "endpoint", "n_pairs", "value")) && all(est$n_pairs > 1L)),
+      failed = as.integer(!(code == 0L && identical(names(est), c("cell", "endpoint", "n_pairs", "value")) && all(est$n_pairs > 1L))), stringsAsFactors = FALSE))
+  } else {
+    if (code == 0L && file.exists(file.path(out, "reestimate.tsv"))) cat(readLines(file.path(out, "reestimate.tsv")), sep = "\n") else cat("reestimate: failed\n")
+    jsonlite::write_json(c(provenance(TRUE), list(seconds_median_per_unit = stats::median(final$seconds_total, na.rm = TRUE))), file.path(out, "provenance.json"),
+      auto_unbox = TRUE, pretty = TRUE, digits = NA)
+    quit(status = if (code != 0L || any(final$status == "instrument")) 1L else 0L)
+  }
 }
+checks$status <- ifelse(checks$failed == 0L, "pass", "FAIL")
 utils::write.table(checks, file.path(out, "checks.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
 utils::write.table(timing, file.path(out, "timing.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
 if (!lifecycle) {
@@ -730,5 +764,6 @@ print(checks)
 print(timing)
 cat(sprintf("units: %d; ok: %d; error rows: %d; instrument rows: %d\n", nrow(final), sum(final$status == "ok"), sum(final$status == "error"), sum(final$status == "instrument")))
 # the exit status reads the hard checks only; E8, E10, E11 and the error-row count are reported in checks.tsv (a lifecycle finding or a scorer input)
-hard <- c("E1", "E7", "E9", "F2", "COMPLETION", "INSTRUMENT_ROWS", "SEEDS", "SEED_RANGE", "FLOOR_ORDER_STRESS", "FAULT_ROWS")
+hard <- c("E1", "E7", "E9", "F2", "COMPLETION", "INSTRUMENT_ROWS", "SEEDS", "SEED_RANGE", "FLOOR_ORDER_STRESS", "FAULT_ROWS", "E6_BLIND_SCORER", "BLIND_ESTIMANDS_NA",
+  "FULL_SCORER_ON_ROWS", "STAGE1_ESTIMATE_SCHEMA")
 quit(status = if (any(checks$status[checks$check %in% hard] == "FAIL")) 1L else 0L)

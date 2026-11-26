@@ -8,6 +8,8 @@
 #       interval or verdict); per cell: units, errors, checks passed and failed, seconds. A source dir holds summary.tsv.
 #   Rscript score-m3-k262.R full <out> <plan.tsv> <m2-verdict.tsv> <source dir> [<source dir> ...]
 #       The counted scoring: one run over the union of the jobs and their continuations; each data set scored once.
+#   Rscript score-m3-k262.R missing <plan.tsv> <source dir> [<source dir> ...]
+#       The continuation's unit list: the planned units no source holds a complete line for, as K262_M3_ONLY_UNITS (no value is shown).
 #   Rscript score-m3-k262.R selftest <out> <expected.tsv>
 #       Constructed cases for every path; the expected values are read from e5hand-m3-expected.tsv (worked in Python, e5hand-m3-k262.py).
 #
@@ -33,6 +35,7 @@ M3_IDS <- c("N-r", "N-s", "E-r", "E-s", "E-p", "E-g", "N-w", "E-w", "S-N", "S-E"
 M3_IDX <- stats::setNames(c(1:8, 9L, 10L), M3_IDS)
 M3_STRESS <- c("S-N", "S-E")
 m3Seed <- function(idx, stress, r) if (stress) 262200000 + 10000 * idx + r else 190000000 + 10000 * idx + r
+m3Tag <- function(idx, r) sprintf("c%02d-r%d", idx, r)  # the unit tag of m3-k262.R (the continuation names units by it)
 # the row format of m3-k262.R (E0, e0-m3-k262.py: the vector below equals M3_COLUMNS there)
 M3_COLUMNS <- c("cell", "r", "seed", "purpose", "omic", "status", "class", "error", "n_samples", "cap", "n_features",
   "t_n_ok", "t_n_r3", "t_n_r4", "t_n_r5", "t_n_r6", "t_n_err", "t_n_skipped_no_controls", "t_n_rejected",
@@ -162,7 +165,7 @@ newcombePaired <- function(a, b, c, d) {
   n <- a + b + c + d
   if (n == 0) return(c(NA_real_, NA_real_))
   p1 <- (a + b) / n; p2 <- (a + c) / n
-  w1 <- wilson(a + b, n, Z95); w2 <- wilson(a + c, n, Z95)
+  w1 <- wilson(x = a + b, n = n, z = Z95); w2 <- wilson(x = a + c, n = n, z = Z95)
   A <- (a + b) * (c + d) * (a + c) * (b + d)
   phi <- if (A == 0) 0 else {
     diff <- a * d - b * c
@@ -209,7 +212,10 @@ readSource <- function(dir) {
   list(rows = rows, dropped = sum(!whole), header = header)
 }
 
-loadUnits <- function(dirs, plan) {
+# The replicates a cell is planned for: 1..R, or `reps` when given (the lifecycle's own seeds 9001 and 9002; never in a counted scoring).
+repsOf <- function(plan, cell, reps = NULL) if (is.null(reps)) seq_len(plan$R[plan$cell == cell]) else as.integer(reps)
+
+loadUnits <- function(dirs, plan, reps = NULL) {
   parts <- lapply(dirs, readSource)
   headers <- lapply(parts, `[[`, "header")
   if (!all(vapply(headers, function(h) identical(h, headers[[1L]]), logical(1L)))) stopClass("m3_schema", "the sources' summary headers differ")
@@ -227,9 +233,9 @@ loadUnits <- function(dirs, plan) {
     stopClass("m3_duplicate_key", paste("a unit twice in one source:", paste(utils::head(dup, 3L), collapse = ", ")))
   }
   main <- u_all[u_all$purpose == "main", , drop = FALSE]
-  rmax <- plan$R[match(main$cell, plan$cell)]
-  if (nrow(main) && (anyNA(rmax) || any(num(main$r) < 1 | num(main$r) > rmax))) stopClass("m3_range", "a row outside the plan's replicate range 1..R (or a cell not in the plan)")
-  seed_ok <- vapply(seq_len(nrow(u_all)), function(i) isTRUE(num(u_all$seed[[i]]) == m3Seed(M3_IDX[[u_all$cell[[i]]]], u_all$cell[[i]] %in% M3_STRESS, num(u_all$r[[i]]))), logical(1L))
+  in_plan <- vapply(seq_len(nrow(main)), function(i) main$cell[[i]] %in% plan$cell && num(main$r[[i]]) %in% repsOf(plan, main$cell[[i]], reps), logical(1L))
+  if (!all(in_plan)) stopClass("m3_range", "a row outside the plan's replicate range 1..R (or a cell not in the plan)")
+  seed_ok <- vapply(seq_len(nrow(u_all)), function(i) isTRUE(num(u_all$seed[[i]]) == m3Seed(idx = M3_IDX[[u_all$cell[[i]]]], stress = u_all$cell[[i]] %in% M3_STRESS, r = num(u_all$r[[i]]))), logical(1L))
   if (!all(seed_ok)) stopClass("m3_seed", "a seed is not the declared formula")
   u_all
 }
@@ -240,17 +246,18 @@ readPlan <- function(path) {
 }
 
 # ---- the blind scorer: mechanics and controls only; every estimand NA --------------------------------------------------------------
-blindM3 <- function(dirs, plan, out_dir) {
+blindM3 <- function(dirs, plan, out_dir, reps = NULL) {
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-  u_all <- loadUnits(dirs, plan)
+  u_all <- loadUnits(dirs, plan, reps)
   main <- u_all[u_all$purpose == "main", , drop = FALSE]
   rows <- lapply(plan$cell, function(cell) {
     u <- main[main$cell == cell, , drop = FALSE]
     flag <- function(col) c(pass = sum(u[[col]] %in% "TRUE"), fail = sum(u[[col]] %in% "FALSE"))
     f <- lapply(c("e1", "e7", "e9", "e11", "e8", "f2", "e10"), flag)
     names(f) <- c("e1", "e7", "e9", "e11", "e8", "f2", "e10")
-    data.frame(cell = cell, planned = plan$R[plan$cell == cell], present = nrow(u), ok = sum(u$status == "ok"), error_rows = sum(u$status == "error"),
-      missing = plan$R[plan$cell == cell] - nrow(u), e1_fail = f$e1[["fail"]], e7_fail = f$e7[["fail"]], e9_fail = f$e9[["fail"]], e11_fail = f$e11[["fail"]],
+    planned <- length(repsOf(plan, cell, reps))
+    data.frame(cell = cell, planned = planned, present = nrow(u), ok = sum(u$status == "ok"), error_rows = sum(u$status == "error"),
+      missing = length(setdiff(repsOf(plan, cell, reps), num(u$r))), e1_fail = f$e1[["fail"]], e7_fail = f$e7[["fail"]], e9_fail = f$e9[["fail"]], e11_fail = f$e11[["fail"]],
       e8_fail = f$e8[["fail"]], f2_fail = f$f2[["fail"]], e10_fail = f$e10[["fail"]], e1_pass = f$e1[["pass"]], e9_pass = f$e9[["pass"]], e11_pass = f$e11[["pass"]],
       e8_pass = f$e8[["pass"]], f2_pass = f$f2[["pass"]], seconds_mean = mean(num(u$seconds_total), na.rm = TRUE), seconds_max = suppressWarnings(max(num(u$seconds_total), na.rm = TRUE)),
       share_rescued = NA_real_, share_reranked = NA_real_, calibration = NA_real_, power = NA_real_, verdict = NA_character_, stringsAsFactors = FALSE)
@@ -267,7 +274,7 @@ verdictCell <- function(cell, v) {
     skewness = NA_real_, johnson_used = NA, no_worse = NA, lower_bound = NA_real_, upper_bound = NA_real_, label = "not determined (no valid pair)", stringsAsFactors = FALSE))
   if (kind == "any_call") {
     r <- nullTest(lgl(v$c_any_call), lgl(v$p_any_call))
-    lower <- tangoBound(r$b, r$c, r$n, "lower"); upper <- tangoBound(r$b, r$c, r$n, "upper")
+    lower <- tangoBound(b = r$b, c = r$c, n = r$n, side = "lower"); upper <- tangoBound(b = r$b, c = r$c, n = r$n, side = "upper")
     nw <- r$no_worse
     data.frame(cell = cell, endpoint = kind, n = r$n, estimate = r$difference, statistic = r$tango_z, p_value = NA_real_, p_berger_boos = r$berger_boos_p, skewness = NA_real_,
       johnson_used = NA, no_worse = nw, lower_bound = lower, upper_bound = upper,
@@ -292,7 +299,7 @@ changedCell <- function(cell, v) {
     if (cell %in% NULL_CELLS) {
       cc <- lgl(u$c_any_call); pp <- lgl(u$p_any_call)
       a <- sum(cc & pp); b <- sum(cc & !pp); c <- sum(!cc & pp); d <- sum(!cc & !pp)
-      ci <- newcombePaired(a, b, c, d)
+      ci <- newcombePaired(a = a, b = b, c = c, d = d)
       data.frame(cell = cell, subset = label, n = n, endpoint = "any_call", estimate = if (n) (b - c) / n else NA_real_, lo = ci[[1L]], hi = ci[[2L]], b = b, c = c, stringsAsFactors = FALSE)
     } else {
       ts <- tSummary(num(u$c_fdp) - num(u$p_fdp))
@@ -333,7 +340,7 @@ powerCell <- function(cell, v) {
 coverageCell <- function(cell, v) {
   n <- nrow(v)
   p <- lgl(v$p_ruv) %in% TRUE; c1 <- lgl(v$c_ruv) %in% TRUE; ch <- lgl(v$c_differs) %in% TRUE
-  w <- function(x) wilson(x, n, Z95)
+  w <- function(x) wilson(x = x, n = n, z = Z95)
   data.frame(cell = cell, n = n, p_ruv = sum(p), p_ruv_lo = w(sum(p))[[1L]], p_ruv_hi = w(sum(p))[[2L]], c1_ruv = sum(c1), c1_ruv_lo = w(sum(c1))[[1L]], c1_ruv_hi = w(sum(c1))[[2L]],
     changed = sum(ch), changed_lo = w(sum(ch))[[1L]], changed_hi = w(sum(ch))[[2L]], rescued = sum(v$change_class %in% "rescued"), reranked = sum(v$change_class %in% "reranked"),
     p_pct_median = suppressWarnings(stats::median(num(v$p_pct), na.rm = TRUE)), c1_pct_median = suppressWarnings(stats::median(num(v$c_pct), na.rm = TRUE)),
@@ -358,7 +365,7 @@ e10Table <- function(v_all) {
   do.call(rbind, lapply(split(s, s$cell), function(u) {
     j <- !(lgl(u$p_ruv) %in% TRUE); d <- lgl(u$e10_direct_no_ruv) %in% TRUE
     a <- sum(j & d); b <- sum(j & !d); c <- sum(!j & d); dd <- sum(!j & !d)
-    ci <- newcombePaired(a, b, c, dd)
+    ci <- newcombePaired(a = a, b = b, c = c, d = dd)
     data.frame(cell = u$cell[[1L]], n = nrow(u), both_no = a, journey_only = b, direct_only = c, both_ruv = dd, difference = (b - c) / nrow(u), lo = ci[[1L]], hi = ci[[2L]], stringsAsFactors = FALSE)
   }))
 }
@@ -374,9 +381,9 @@ outcomeOf <- function(verdicts, plan, a_gain, check_fail, e11_fail, missing_cell
   list(outcome = "K4", reason = why)
 }
 
-fullM3 <- function(dirs, plan, a_gain, out_dir, B = BOOT_B) {
+fullM3 <- function(dirs, plan, a_gain, out_dir, B = BOOT_B, reps = NULL) {
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-  u_all <- loadUnits(dirs, plan)
+  u_all <- loadUnits(dirs, plan, reps)
   main <- u_all[u_all$purpose == "main", , drop = FALSE]
   e9rows <- u_all[u_all$purpose == "e9", , drop = FALSE]
   ok <- main[main$status == "ok", , drop = FALSE]
@@ -388,8 +395,8 @@ fullM3 <- function(dirs, plan, a_gain, out_dir, B = BOOT_B) {
   per <- lapply(cells, function(cell) {
     u <- main[main$cell == cell, , drop = FALSE]
     v <- ok[ok$cell == cell, , drop = FALSE]
-    planned <- plan$R[plan$cell == cell]
-    missing <- planned - nrow(u)
+    planned <- length(repsOf(plan, cell, reps))
+    missing <- length(setdiff(repsOf(plan, cell, reps), num(u$r)))
     list(cell = cell, planned = planned, present = nrow(u), valid = nrow(v), errors = sum(u$status == "error"), missing = missing, v = v)
   })
   names(per) <- cells
@@ -397,7 +404,7 @@ fullM3 <- function(dirs, plan, a_gain, out_dir, B = BOOT_B) {
   verdicts <- do.call(rbind, lapply(per, function(x) {
     if (x$missing > 0L) return(data.frame(cell = x$cell, endpoint = if (x$cell %in% NULL_CELLS) "any_call" else "fdp", n = x$valid, estimate = NA_real_, statistic = NA_real_, p_value = NA_real_,
       p_berger_boos = NA_real_, skewness = NA_real_, johnson_used = NA, no_worse = NA, lower_bound = NA_real_, upper_bound = NA_real_, label = "not determined (did not complete)", stringsAsFactors = FALSE))
-    verdictCell(x$cell, x$v)
+    verdictCell(cell = x$cell, v = x$v)
   }))
   rownames(verdicts) <- NULL
   verdicts$excluded <- vapply(verdicts$cell, function(cell) per[[cell]]$errors, numeric(1L))
@@ -407,18 +414,32 @@ fullM3 <- function(dirs, plan, a_gain, out_dir, B = BOOT_B) {
   set.seed(BOOT_SEED, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")
   usable <- cells[det & vapply(per, function(x) x$valid > 0L, logical(1L))]
   write2 <- function(x, name) utils::write.table(if (is.null(x)) data.frame() else x, file.path(out_dir, name), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
-  write2(do.call(rbind, lapply(usable, function(cell) changedCell(cell, per[[cell]]$v))), "m3-changed.tsv")
-  write2(do.call(rbind, lapply(usable, function(cell) calibrationCell(cell, per[[cell]]$v, B))), "m3-calibration.tsv")
-  write2(do.call(rbind, lapply(intersect(usable, EFFECT_CELLS), function(cell) powerCell(cell, per[[cell]]$v))), "m3-power.tsv")
-  write2(do.call(rbind, lapply(usable, function(cell) coverageCell(cell, per[[cell]]$v))), "m3-coverage.tsv")
+  write2(do.call(rbind, lapply(usable, function(cell) changedCell(cell = cell, v = per[[cell]]$v))), "m3-changed.tsv")
+  write2(do.call(rbind, lapply(usable, function(cell) calibrationCell(cell = cell, v = per[[cell]]$v, B = B))), "m3-calibration.tsv")
+  write2(do.call(rbind, lapply(intersect(usable, EFFECT_CELLS), function(cell) powerCell(cell = cell, v = per[[cell]]$v))), "m3-power.tsv")
+  write2(do.call(rbind, lapply(usable, function(cell) coverageCell(cell = cell, v = per[[cell]]$v))), "m3-coverage.tsv")
   write2(residTable(ok), "m3-resid-df.tsv")
   write2(e10Table(ok), "m3-e10.tsv")
   counts <- data.frame(cell = cells, planned = vapply(per, `[[`, 0L, "planned"), present = vapply(per, `[[`, 0L, "present"), valid = vapply(per, `[[`, 0L, "valid"),
     error_rows = vapply(per, `[[`, 0L, "errors"), missing = vapply(per, `[[`, 0L, "missing"), stringsAsFactors = FALSE)
   write2(counts, "m3-units.tsv")
-  out <- outcomeOf(verdicts, plan, a_gain, hard > 0L, e11_bad > 0L, cells[!det])
+  out <- outcomeOf(verdicts = verdicts, plan = plan, a_gain = a_gain, check_fail = hard > 0L, e11_fail = e11_bad > 0L, missing_cells = cells[!det])
   write2(data.frame(outcome = out$outcome, reason = out$reason, a_gain_m2 = a_gain, falsifier_failures = hard, e11_failures = e11_bad, stringsAsFactors = FALSE), "m3-outcome.tsv")
   list(outcome = out, verdicts = verdicts, counts = counts)
+}
+
+# The CONTINUATION's unit list (ticket 9.5; declared with the job): the planned main units that no source holds a complete line for, as the
+# tags `cNN-rR` that K262_M3_ONLY_UNITS takes. Counted from cell, r and purpose only: no value is read or shown. An instrument row stops it
+# (an instrument row is not a missing unit). An errored data set is NOT missing (it has its row and is never re-run).
+missingTags <- function(dirs, plan, reps = NULL) {
+  u <- loadUnits(dirs, plan, reps)
+  main <- u[u$purpose == "main", , drop = FALSE]
+  have <- paste(main$cell, main$r)
+  tags <- character()
+  for (cell in plan$cell) for (r in repsOf(plan, cell, reps)) {
+    if (!(paste(cell, r) %in% have)) tags <- c(tags, m3Tag(idx = M3_IDX[[cell]], r = r))
+  }
+  tags
 }
 
 readGainA <- function(path) {
@@ -433,7 +454,7 @@ mkUnit <- function(cell, r, ...) {
   idx <- M3_IDX[[cell]]
   row <- stats::setNames(rep(list("NA"), length(M3_COLUMNS)), M3_COLUMNS)
   row[c("cell", "r", "seed", "purpose", "omic", "status", "class", "error", "n_samples", "cap")] <- list(cell, as.character(r),
-    sprintf("%.15g", m3Seed(idx, cell %in% M3_STRESS, r)), "main", "lipid", "ok", "", "", if (cell %in% M3_STRESS) "24" else "12", if (cell %in% M3_STRESS) "3" else "2")
+    sprintf("%.15g", m3Seed(idx = idx, stress = cell %in% M3_STRESS, r = r)), "main", "lipid", "ok", "", "", if (cell %in% M3_STRESS) "24" else "12", if (cell %in% M3_STRESS) "3" else "2")
   row[c("p_ruv", "c_ruv", "c_differs")] <- list("TRUE", "TRUE", "FALSE")
   row[c("p_pct", "c_pct", "p_k_used", "c_k_used", "p_resid_df", "c_resid_df", "p_calls", "c_calls")] <- list("5", "5", "2", "2", "8", "8", "0", "0")
   row[c("p_any_call", "c_any_call")] <- list("FALSE", "FALSE")
@@ -460,15 +481,15 @@ selfTest <- function(out_dir, expected_path) {
   near <- function(a, b, tol = 1e-6) isTRUE(all(abs(a - b) <= tol))
   stopsWith <- function(expr, class) tryCatch({ force(expr); FALSE }, m3_stop = function(e) inherits(e, class))
   # --- statistics against the Python hand values
-  add("tango_b0c0", near(tangoZ(0, 0, 100), ev("tango_z.b0_c0_n100_m0.10")), sprintf("%.6f", tangoZ(0, 0, 100)))
-  add("tango_b40c0", near(tangoZ(40, 0, 100), ev("tango_z.b40_c0_n100_m0.10")), sprintf("%.6f", tangoZ(40, 0, 100)))
-  add("bound_upper", near(tangoBound(10, 5, 100, "upper"), ev("bound_upper.b10_c5_n100")), sprintf("%.6f", tangoBound(10, 5, 100, "upper")))
-  add("bound_lower", near(tangoBound(10, 5, 100, "lower"), ev("bound_lower.b10_c5_n100")), sprintf("%.6f", tangoBound(10, 5, 100, "lower")))
-  nc <- newcombePaired(10, 5, 3, 82)
+  add("tango_b0c0", near(tangoZ(b = 0, c = 0, n = 100), ev("tango_z.b0_c0_n100_m0.10")), sprintf("%.6f", tangoZ(b = 0, c = 0, n = 100)))
+  add("tango_b40c0", near(tangoZ(b = 40, c = 0, n = 100), ev("tango_z.b40_c0_n100_m0.10")), sprintf("%.6f", tangoZ(b = 40, c = 0, n = 100)))
+  add("bound_upper", near(tangoBound(b = 10, c = 5, n = 100, side = "upper"), ev("bound_upper.b10_c5_n100")), sprintf("%.6f", tangoBound(b = 10, c = 5, n = 100, side = "upper")))
+  add("bound_lower", near(tangoBound(b = 10, c = 5, n = 100, side = "lower"), ev("bound_lower.b10_c5_n100")), sprintf("%.6f", tangoBound(b = 10, c = 5, n = 100, side = "lower")))
+  nc <- newcombePaired(a = 10, b = 5, c = 3, d = 82)
   add("newcombe_10_5_3_82", near(nc, c(ev("newcombe_lo.a10_b5_c3_d82"), ev("newcombe_hi.a10_b5_c3_d82"))), sprintf("%.6f to %.6f", nc[[1L]], nc[[2L]]))
-  nz <- newcombePaired(0, 7, 0, 3)
+  nz <- newcombePaired(a = 0, b = 7, c = 0, d = 3)
   add("newcombe_zero_marginal", near(nz, c(ev("newcombe_lo.a0_b7_c0_d3"), ev("newcombe_hi.a0_b7_c0_d3"))), sprintf("%.6f to %.6f", nz[[1L]], nz[[2L]]))
-  w <- wilson(5, 40, Z95)
+  w <- wilson(x = 5, n = 40, z = Z95)
   add("wilson_5_of_40", near(w, c(ev("wilson_lo.x5_n40"), ev("wilson_hi.x5_n40"))), sprintf("%.6f to %.6f", w[[1L]], w[[2L]]))
   d6 <- c(0.1, 0.2, 0.0, 0.3, 0.1, 0.2); t6 <- tSummary(d6)
   add("t_interval_and_bounds", near(c(t6$mean, t6$half, t6$upper, t6$lower), c(ev("t_mean.d6"), ev("t_half95.d6"), ev("t_upper_bound.d6"), ev("t_lower_bound.d6"))), sprintf("half %.6f", t6$half))
@@ -532,6 +553,9 @@ selfTest <- function(out_dir, expected_path) {
   ri1 <- fullM3(src("int-a"), fullPlan(rep(100L, 10L)), TRUE, file.path(out_dir, "case-interrupted-only"), B = 200L)
   add("interrupted_unit_dropped_then_continued", ri2$counts$missing[ri2$counts$cell == "N-r"] == 0L && ri1$counts$missing[ri1$counts$cell == "N-r"] == 1L &&
     ri1$verdicts$label[ri1$verdicts$cell == "N-r"] == "not determined (did not complete)", "99 + 1 truncated")
+  add("missing_tags_for_continuation", identical(missingTags(src("int-a"), fullPlan(rep(100L, 10L))), "c01-r100") &&
+    length(missingTags(c(src("int-a"), src("int-b")), fullPlan(rep(100L, 10L)))) == 0L &&
+    identical(missingTags(src("missing"), fullPlan(rep(100L, 10L))), sprintf("c01-r%d", 96:100)), "one interrupted unit; none after the continuation; five units of a short cell; error rows are not missing")
   # an instrument row, a row outside the plan's range, an unknown cell, a wrong seed, differing headers stop scoring
   writeSource(src("instr"), c(lapply(1:99, function(r) mkUnit("N-r", r)), list(mkUnit("N-r", 100, status = "instrument", class = "partial_match_guard", error = "constructed"))))
   add("instrument_row_stops", stopsWith(loadUnits(src("instr"), eqR), "m3_instrument"), "")
@@ -599,6 +623,16 @@ selfTest <- function(out_dir, expected_path) {
   e9u <- c(all_equal(), list(mkUnit("N-r", 1, purpose = "e9", e9 = "FALSE", e9_compared = "TRUE")))
   writeSource(src("e9"), e9u)
   add("E9_unit_false_stops", identical(fullM3(src("e9"), fullPlan(rep(100L, 10L)), TRUE, file.path(out_dir, "case-e9"), B = 50L)$outcome$outcome, "Stop"), "")
+  # the lifecycle's own seeds (9001, 9002): outside 1..R they stop a counted scoring, and are read only under an explicit `reps` (the lifecycle's
+  # blind and full runs); the full scorer then runs on two pairs per cell without error
+  writeSource(src("lc"), do.call(c, lapply(M3_IDS, function(cell) lapply(9001:9002, function(r) mkUnit(cell, r)))))
+  lcplan <- fullPlan(rep(2L, 10L))
+  lc_full <- tryCatch(fullM3(src("lc"), lcplan, TRUE, file.path(out_dir, "case-lc-full"), B = 100L, reps = c(9001L, 9002L)), error = function(e) e)
+  add("lifecycle_reps_override", stopsWith(loadUnits(src("lc"), lcplan), "m3_range") && nrow(loadUnits(src("lc"), lcplan, reps = c(9001L, 9002L))) == 20L &&
+    all(blindM3(src("lc"), lcplan, file.path(out_dir, "case-lc-blind"), reps = c(9001L, 9002L))$missing == 0L), "")
+  # with two pairs and equal arms the null cells' Tango statistic is -sqrt(2) x sqrt(0.1 / 0.9) = -0.4714, not below -1.6449: not NW, lower bound below 0
+  add("full_scorer_runs_on_two_pairs_per_cell", !inherits(lc_full, "error") && identical(lc_full$outcome$outcome, "K4") && grepl("N-r (inconclusive)", lc_full$outcome$reason, fixed = TRUE) &&
+    isTRUE(abs(lc_full$verdicts$statistic[lc_full$verdicts$cell == "N-r"] + sqrt(2) * sqrt(0.1 / 0.9)) < 1e-6), if (inherits(lc_full, "error")) conditionMessage(lc_full) else "K4 on two equal pairs: the null cells are inconclusive")
   # E6: the scorer twice on the same input, byte-identical
   fullM3(src("shifted"), fullPlan(rep(100L, 10L)), TRUE, file.path(out_dir, "case-shifted-again"), B = 200L)
   fa <- list.files(file.path(out_dir, "case-shifted")); fb <- list.files(file.path(out_dir, "case-shifted-again"))
@@ -613,13 +647,19 @@ selfTest <- function(out_dir, expected_path) {
 }
 
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) >= 3L && identical(args[[1L]], "selftest")) {
+# Sourced by m3-k262.R's lifecycle (its own first argument is an output directory): no command runs; the functions above are the interface.
+if (!length(args) || !args[[1L]] %in% c("selftest", "blind", "full", "missing")) {
+  invisible(NULL)
+} else if (length(args) >= 3L && identical(args[[1L]], "selftest")) {
   selfTest(normalizePath(file.path(getwd(), args[[2L]]), mustWork = FALSE), args[[3L]])
 } else if (length(args) >= 4L && identical(args[[1L]], "blind")) {
-  tab <- blindM3(args[-(1:3)], readPlan(args[[3L]]), normalizePath(file.path(getwd(), args[[2L]]), mustWork = FALSE))
+  tab <- blindM3(dirs = args[-(1:3)], plan = readPlan(args[[3L]]), out_dir = normalizePath(file.path(getwd(), args[[2L]]), mustWork = FALSE))
   print(tab[c("cell", "planned", "present", "ok", "error_rows", "missing", "e1_fail", "e9_fail", "e11_fail", "f2_fail", "seconds_mean")])
 } else if (length(args) >= 5L && identical(args[[1L]], "full")) {
-  res <- fullM3(args[-(1:4)], readPlan(args[[3L]]), readGainA(args[[4L]]), normalizePath(file.path(getwd(), args[[2L]]), mustWork = FALSE))
+  res <- fullM3(dirs = args[-(1:4)], plan = readPlan(args[[3L]]), a_gain = readGainA(args[[4L]]), out_dir = normalizePath(file.path(getwd(), args[[2L]]), mustWork = FALSE))
   print(res$verdicts[c("cell", "n", "label", "excluded", "missing")])
   cat(sprintf("outcome: %s\n%s\n", res$outcome$outcome, res$outcome$reason))
-} else stop("usage: score-m3-k262.R blind|full|selftest ...")
+} else if (length(args) >= 3L && identical(args[[1L]], "missing")) {
+  tags <- missingTags(dirs = args[-(1:2)], plan = readPlan(args[[2L]]))
+  cat(sprintf("units missing: %d\nK262_M3_ONLY_UNITS=%s\n", length(tags), paste(tags, collapse = ",")))
+} else stop("usage: score-m3-k262.R blind|full|missing|selftest ...")

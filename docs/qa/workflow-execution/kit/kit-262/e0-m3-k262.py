@@ -130,6 +130,9 @@ compare("reestimate writeEstimate() = reestimate.R", span(rst, "writeEstimate <-
 check("reestimate SCHEMA = reestimate.R", span(rst, "SCHEMA <- ")[0].strip() == span(re_, "SCHEMA <- ")[0].strip())
 check("reestimate has no ceiling loop (R is never reduced)", not any("t - 0.0005" in l or "while (core" in l for l in re_))
 
+check("m3Tag and m3Seed are the same function in the simulation and the scorer", span(m3, "m3Tag <- function")[0].split("<-", 1)[1].strip() == span(sc, "m3Tag <- function")[0].split("<-", 1)[1].split("#")[0].strip() and
+      span(m3, "m3Seed <- function")[0].split("<-", 1)[1].strip() == span(sc, "m3Seed <- function")[0].split("<-", 1)[1].strip())
+
 # ---- the row format is one thing ----
 def columns(text):
     start = next(i for i, l in enumerate(text) if l.startswith("M3_COLUMNS <- c("))
