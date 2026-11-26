@@ -111,3 +111,18 @@ check ran on both sides and is identical), and `g0b.R`. Plan: 2 x (32.2 + 27.5) 
 1.6 x 134 = **214 job-minutes (14.3 core-h)**. Order: kit212, kit243, kit257, kit271, kit259b, kit207, kit219, gui-entry-lipidomics.
 Predictions: all `same` (the head counts of R2b: kit212 309, kit243 246, kit257 133, kit271 78, kit259b 90, kit207 292, gui-entry-
 lipidomics 19/16) except kit219 `fixed`. G0b: as declared for R2.
+
+## Run R2d (coordinator's ruling I03 of 2026-11-26; declared before the request)
+
+One new test row, tests only, on unchanged code (`test-kit219-enrichment-files-current.R`): E9, the decided loop through the real
+entry points: a stale file is in the publication folder beside the current files; `assertWorkflowSummaryEnrichmentCurrent` raises class
+`workflow_summary_enrichment_not_current` with T2's text (by value) and the Report is refused with the notice "[error] Report
+generation failed: <T2>", nothing rendered, the bundle recorder not called; Copy again leaves the stale file out (still on disk), the
+folder holds the current files only, and the notice is T1 naming "1 enrichment file(s)" and the file; the Report then renders. E4 also
+asserts the bundle recorder is not called (`report$bundle`, a counter added to `k219Report`; an added assertion, none removed).
+Prediction on HEAD: E9 PASSES, E4 passes, every other row as in R1h. On the BASE (staging plus this test file): E9 fails: the
+function `assertWorkflowSummaryEnrichmentCurrent` is absent (its expectations are skipped), the first Report renders (render 1, not 0),
+the notice is absent, Copy again copies the stale file (the folder holds 7 files) and no T1; E4's new assertion passes on base (the
+bundle recorder is not reached only if the Report renders: on base E4 renders, so `report$bundle` is 1 and the assertion fails). If
+E9 fails on head it is a RESULT: stop and hand back, no repair. Run: the new file, base against head, 1 shard per side, no check.
+Plan 2 x (3 + 10) = 26 job-minutes; ceiling **6.0 core-hours (90 job-minutes)**. Used before it: 66.32.

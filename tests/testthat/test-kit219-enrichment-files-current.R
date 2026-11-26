@@ -221,6 +221,7 @@ k219CopyDirect <- function(fixture, env = parent.frame()) {
 k219Report <- function(fixture) {
     calls <- new.env(parent = emptyenv())
     calls$render <- 0L
+    calls$bundle <- 0L
     calls$notes <- character()
     calls$report <- file.path(fixture$root, "k219-report.html")
     notify <- function(message, type, duration) calls$notes <- c(calls$notes, paste0("[", type, "] ", message))
@@ -230,7 +231,10 @@ k219Report <- function(fixture) {
             calls$render <- calls$render + 1L
             writeLines("KIT-219 report", calls$report)
             calls$report
-        }, exportRecordFn = function(...) invisible(NULL), downloadFileFn = function(url, destfile, ...) {
+        }, exportRecordFn = function(...) {
+            calls$bundle <- calls$bundle + 1L
+            invisible(NULL)
+        }, downloadFileFn = function(url, destfile, ...) {
             writeLines("KIT-219 template", destfile)
             invisible(0L)
         }, catFn = function(...) NULL)))
@@ -350,6 +354,7 @@ test_that("KIT-219 E4 (S1): Copy, then the DA run again: the Report is refused b
     cat(sprintf("KIT-219 E4\trender=%d\tnotes=%s\theld=%s\tfile=%s\n", report$render, paste(report$notes, collapse = " | "),
         paste(held, collapse = ","), file.exists(report$report)))
     expect_identical(report$render, 0L)
+    expect_identical(report$bundle, 0L)
     expect_true(any(startsWith(report$notes, "[error] Report generation failed:") & grepl(k219Texts$t2, report$notes,
         fixed = TRUE)), info = paste(report$notes, collapse = " | "))
     expect_false(file.exists(report$report))
@@ -403,6 +408,42 @@ test_that("KIT-219 E5 (OD-2 (i)): metabolomics has no enrichment analysis, so ta
     expect_setequal(record$files, tables)
     expect_true(k219Note(rec, "[warning]", k219Texts$t1_lead, k219Texts$t1b, "metabolomics"), info = paste(rec$notes, collapse = " | "))
     expect_identical(sort(list.files(pathway)), tables)
+})
+
+test_that("KIT-219 E9 (K219-I03): the decided loop end to end: refused, Copy again leaves the file out and says so, the Report renders", {
+    fixture <- k219Journey()
+    k219Enrich(fixture)
+    product <- k219Names(fixture$contrast)
+    stale <- "C_vs_A_up_enrichment_results.tsv"
+    k219Plant(fixture, stale)
+    # What an earlier Copy (an earlier build, or the folder copy) left in the publication folder: the stale file beside the current ones.
+    folder <- k219Publication(fixture$dirs, "proteomics")
+    dir.create(folder, recursive = TRUE)
+    file.copy(file.path(fixture$pathway, c(stale, product)), folder)
+    t2 <- paste("The report was not generated: the publication folder holds enrichment results that the current",
+        "enrichment did not make. Press 'Copy to Publication Directory' again, then generate the report.")
+    if (exists("assertWorkflowSummaryEnrichmentCurrent", mode = "function")) {
+        refusal <- tryCatch(assertWorkflowSummaryEnrichmentCurrent(fixture$workflow, "proteomics", fixture$dirs$proteomics),
+            error = function(e) e)
+        expect_s3_class(refusal, "workflow_summary_enrichment_not_current")
+        expect_identical(conditionMessage(refusal), t2)
+    }
+    refused <- k219Report(fixture)
+    cat(sprintf("KIT-219 E9\trefused_render=%d\tnotes=%s\n", refused$render, paste(refused$notes, collapse = " | ")))
+    expect_identical(refused$render, 0L)
+    expect_identical(refused$bundle, 0L)
+    expect_identical(refused$notes, paste("[error] Report generation failed:", t2))
+    expect_false(file.exists(refused$report))
+    rec <- k219Copy(fixture)
+    expect_null(rec$value$error)
+    expect_setequal(k219Held(fixture$dirs, "proteomics"), product)
+    expect_true(file.exists(file.path(fixture$pathway, stale)))
+    expect_true(k219Note(rec, "[warning]", k219Texts$t1_lead, "1 enrichment file(s)", k219Texts$t1, stale),
+        info = paste(rec$notes, collapse = " | "))
+    rendered <- k219Report(fixture)
+    expect_identical(rendered$render, 1L)
+    expect_true("[message] Report generated successfully!" %in% rendered$notes, info = paste(rendered$notes, collapse = " | "))
+    expect_true(file.exists(rendered$report))
 })
 
 # ------------------------------------------------------------------------------------------------
