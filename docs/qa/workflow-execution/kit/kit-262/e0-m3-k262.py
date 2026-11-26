@@ -145,4 +145,19 @@ def columns(text):
 c3, cs = columns(m3), columns(sc)
 check("M3_COLUMNS in m3-k262.R = score-m3-k262.R (%d columns)" % len(c3), c3 == cs and len(c3) == len(set(c3)))
 
+# ---- the self-test's expected values all exist in the Python-worked table; the environment variables read are the ones documented ----
+expected_keys = set(l.split("\t")[0] for l in lines(here / "e5hand-m3-expected.tsv")[1:] if l)
+used_keys = set(re.findall(r'ev\("([^"]+)"\)', "\n".join(sc)))
+check("score self-test: every ev() key is in e5hand-m3-expected.tsv (%d keys used, %d available)" % (len(used_keys), len(expected_keys)), used_keys <= expected_keys,
+      "missing: " + ", ".join(sorted(used_keys - expected_keys)))
+header = "\n".join(l for l in m3 if l.startswith("#"))
+documented = set(re.findall(r"K262_[A-Z0-9_]+", header))
+read = set(re.findall(r'Sys\.getenv\("(K262_[A-Z0-9_]+)"', "\n".join(m3)))
+check("m3-k262.R: every environment variable it reads is documented in its header", read <= documented, "undocumented: " + ", ".join(sorted(read - documented)))
+check("m3-k262.R: every documented environment variable is read", documented <= read,
+      "documented, not read: " + ", ".join(sorted(documented - read)))
+# no global handler that stops: the partial-match guard is installed only through withCallingHandlers
+check("no globalCallingHandlers in the M3 scripts", not any("globalCallingHandlers(" in l and not l.lstrip().startswith("#") for l in m3 + sc + re_))
+check("every stop of the guard is reached through a local calling handler (withCallingHandlers present around journeys and units)", sum("withCallingHandlers(" in l for l in m3) >= 3)
+
 sys.exit(1 if failures else 0)

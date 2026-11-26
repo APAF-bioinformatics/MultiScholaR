@@ -1,0 +1,6 @@
+# KIT-262 M3 script SHA-256 (draft values at this commit; recomputed at the declaring commit)
+9631f6ec635888def80843850d9b5c8bae2edcd03237d23f39d5925c3cb063ba  m3-k262.R
+9547d350211350615a4d6f6e8f992be2307bc753e24790dfdb6cd5a1578d9d0a  rules-k262.R
+490b0848d8e26fc47c76e8015c8ccf278519db169c6e97811c5e8670e96c4a78  score-m3-k262.R
+b6d18e54c08d85480d984b40357c6256acafc4e2373b5af51fbabd2e1972e94d  reestimate-m3-k262.R
+3e78da07ee78eab1cace85636966ad4629d65aff304a945d914368d1479a13bf  e5hand-m3-expected.tsv

@@ -1,0 +1,111 @@
+# KIT-262 M3 local checks (no R on this machine; standard-library Python, python3 -I), run from the repository root
+
+## bracket balance
+PASS docs/qa/workflow-execution/kit/kit-262/m3-k262.R: 770 lines, brackets balanced
+PASS docs/qa/workflow-execution/kit/kit-262/score-m3-k262.R: 667 lines, brackets balanced
+PASS docs/qa/workflow-execution/kit/kit-262/reestimate-m3-k262.R: 148 lines, brackets balanced
+PASS docs/qa/workflow-execution/kit/kit-262/rules-k262.R: 147 lines, brackets balanced
+PASS docs/qa/workflow-execution/kit/kit-262/m2-k262.R: 400 lines, brackets balanced
+exit 0
+
+## e0-m3-k262.py
+PASS m3 e2PickCells = effect.R 8 source lines, 8 kept verbatim, 0 marked, 0 source lines replaced
+PASS m3 e2Values = effect.R (marked [L]) 37 source lines, 37 kept verbatim, 1 marked, 0 source lines replaced
+PASS m3 e2Data = effect.R (marked [L]) 20 source lines, 19 kept verbatim, 1 marked, 1 source lines replaced
+PASS m3 E2_CELLS = effect.R
+PASS m3 ALIGNED_CELLS = effect.R
+PASS m3 CUTOFF = effect.R
+PASS m3 k190Oracle = effect.R 26 source lines, 26 kept verbatim, 0 marked, 0 source lines replaced
+PASS m3 k190Candidate = effect.R 8 source lines, 8 kept verbatim, 0 marked, 0 source lines replaced
+PASS e2Data seeds 190000000 + 10000 x idx + r
+PASS m3 m2Design = m2-k262.R 6 source lines, 6 kept verbatim, 0 marked, 0 source lines replaced
+PASS m3 m2Object = m2-k262.R 16 source lines, 16 kept verbatim, 0 marked, 0 source lines replaced
+PASS m3 M2_RUV_PARAMS = m2-k262.R
+PASS m3 m2Prepare = m2-k262.R 7 source lines, 7 kept verbatim, 0 marked, 0 source lines replaced
+PASS m3 m2Sweep = m2-k262.R 3 source lines, 3 kept verbatim, 0 marked, 0 source lines replaced
+PASS m3 m3Object = kit172Object (marked [D]) 15 source lines, 13 kept verbatim, 2 marked, 2 source lines replaced
+PASS m3 m3StateMatrix = kit172StateMatrix (marked [D]) 7 source lines, 5 kept verbatim, 2 marked, 2 source lines replaced
+PASS m3StressValues: every line not in m2Values/e2Values is marked
+PASS m3StressValues: the mask comes first, then the floor values on observed cells (KIT-172's order)
+PASS m3StressValues: floor order named `after` and asserted
+PASS m3StressValues: default floor_order is the named constant
+PASS stress seeds 262200000 + 10000 x idx + r
+PASS m3StressValues: the draws before the mask are M2's (the effect-share line aside)
+PASS score tangoZ = decide.R 7 source lines, 7 kept verbatim, 0 marked, 0 source lines replaced
+PASS score bergerBoos = decide.R 16 source lines, 16 kept verbatim, 0 marked, 0 source lines replaced
+PASS score skewness = decide.R 5 source lines, 5 kept verbatim, 0 marked, 0 source lines replaced
+PASS score effectTest = decide.R 38 source lines, 37 kept verbatim, 1 marked, 1 source lines replaced
+PASS score nullTest = decide.R 7 source lines, 7 kept verbatim, 0 marked, 0 source lines replaced
+PASS score tangoZb = bounds.R tangoZ (renamed)
+PASS score alpha, margins and the sign-flip seed
+PASS decide.R's margins and alpha are the same
+PASS reestimate estimate() = reestimate.R (marked [R]) 27 source lines, 25 kept verbatim, 2 marked, 2 source lines replaced
+PASS reestimate writeEstimate() = reestimate.R 5 source lines, 5 kept verbatim, 0 marked, 0 source lines replaced
+PASS reestimate SCHEMA = reestimate.R
+PASS reestimate has no ceiling loop (R is never reduced)
+PASS m3Tag and m3Seed are the same function in the simulation and the scorer
+PASS M3_COLUMNS in m3-k262.R = score-m3-k262.R (70 columns)
+PASS score self-test: every ev() key is in e5hand-m3-expected.tsv (30 keys used, 38 available) missing: 
+PASS m3-k262.R: every environment variable it reads is documented in its header undocumented: 
+PASS m3-k262.R: every documented environment variable is read documented, not read: 
+PASS no globalCallingHandlers in the M3 scripts
+PASS every stop of the guard is reached through a local calling handler (withCallingHandlers present around journeys and units)
+exit 0
+
+## e5hand-m3-k262.py (regenerates e5hand-m3-expected.tsv)
+wrote 38 expected values to /home/doktersmol/Projects/APAF/MultiScholaR-kit-262/docs/qa/workflow-execution/kit/kit-262/e5hand-m3-expected.tsv
+tango_z.b0_c0_n100_m0.10           -3.3333333332962964
+tango_z.b40_c0_n100_m0.10          5.222329678670935
+bound_upper.b10_c5_n100            0.11859612837250408
+bound_lower.b10_c5_n100            -0.014755970667973402
+newcombe_lo.a10_b5_c3_d82          -0.04242516117230837
+newcombe_hi.a10_b5_c3_d82          0.08441621003256806
+newcombe_phi.a10_b5_c3_d82         0.6287247498836929
+newcombe_lo.a0_b7_c0_d3            0.2889428910031729
+newcombe_hi.a0_b7_c0_d3            0.8922087325936989
+wilson_lo.x5_n40                   0.05459500250945401
+wilson_hi.x5_n40                   0.2611211983885109
+t_mean.d6                          0.15
+t_sd.d6                            0.10488088481701516
+t_half95.d6                        0.11006573847080127
+t_upper_bound.d6                   0.2362792167090783
+t_lower_bound.d6                   0.06372078329092168
+johnson_skew.d170_30               1.960392117639213
+johnson_t.d170_30                  -3.2119582435749
+signflip_p.n2_003_002              0.25
+quantile7_lo.1to101                3.5
+quantile7_hi.1to101                98.5
+quantile7_lo.five                  0.010000000000000002
+quantile7_hi.five                  0.8400000000000001
+plan_R.effect_sd0.265              250.0
+plan_R.effect_sd0.350              450.0
+plan_R.effect_sd0.400              550.0
+plan_R.effect_sd0.100              200.0
+plan_R.null_share0.30              300.0
+plan_R.null_share0.01              250.0
+calib_ratio_P.third1               0.05
+calib_ratio_C1.third1              0.05
+calib_diff.third1                  0.0
+calib_ratio_P.third2               0.05
+calib_ratio_C1.third2              0.075
+calib_diff.third2                  0.024999999999999994
+calib_ratio_P.third3               0.0
+calib_ratio_C1.third3              0.075
+calib_diff.third3                  0.075
+exit 0
+
+## m3-budget-k262.py
+per-unit seconds: eight cells 57.0 (P + C1), stress 114.0 + E10 7.2
+S3 CPU-s 3363 -> 14.0 min at 4 workers (spread 1.0), 27.0 (1.93)
+S5 CPU-s 1568 -> 6.5 min, 12.6
+L3 expected 38.5 job-min = 2.57 core-h; at 1.93 58.7 = 3.91; ticket line 2.00 / 4.00
+L3 timeouts sum 100 script-min + 10 = 110 job-min = 7.33 core-h (limits for a hung script)
+stage 1 12120 CPU-s: expected 60.5 job-min = 4.03; at 1.93 107.5 = 7.16
+M3 expected 145740 CPU-s -> 657.25 job-min = 43.82 core-h (ticket 657.25 / 43.82); ceiling at R doubled, 1.93: 386540 CPU-s -> 1730.6 = 115.37 (ticket's widest 128.03)
+running line: used 87.24 of 250.32, remaining 163.08
+expected total 138.66; after L3 at ceiling 91.24; after stage 1 at 1.93 98.40; after M3 at ceiling 213.77; after scoring 215.64; with the reserves (8.77 + 7.43) 231.84; headroom 18.48
+R ~ 3,354 x SD^2: SD 0.265 -> 236, 0.35 -> 411, 0.40 -> 537; R > 400 above SD 0.345
+exit 0
+
+## git: package diff from the binding
+empty (exit 0)

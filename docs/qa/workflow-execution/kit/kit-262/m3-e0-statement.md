@@ -1,6 +1,6 @@
 # KIT-262 M3: E0 statement (what each script takes unchanged, what is new, with the marks)
 
-Checked locally by `e0-m3-k262.py` (standard library; 35 checks, all PASS at this draft; run from the repository root, output in `m3-local-checks.txt`). Rule of the check: each line of a copied function in the destination is a line of the source function (same text after stripping, in the source's order) or carries a mark `# [X]`; each source line the destination lacks is counted against the marked lines. "Verbatim" below means the check found 0 marked lines and 0 replaced lines. The sources are on the branch (it holds the binding's tree): KIT-190's `effect.R`, `decide.R`, `bounds.R`, `reestimate.R`; `tests/testthat/helper-kit172.R`; KIT-262's own `m2-k262.R`, `rules-k262.R`.
+Checked locally by `e0-m3-k262.py` (standard library; 41 checks, all PASS at this draft; run from the repository root, output in `m3-local-checks.txt`). Rule of the check: each line of a copied function in the destination is a line of the source function (same text after stripping, in the source's order) or carries a mark `# [X]`; each source line the destination lacks is counted against the marked lines. "Verbatim" below means the check found 0 marked lines and 0 replaced lines. The sources are on the branch (it holds the binding's tree): KIT-190's `effect.R`, `decide.R`, `bounds.R`, `reestimate.R`; `tests/testthat/helper-kit172.R`; KIT-262's own `m2-k262.R`, `rules-k262.R`.
 
 ## `m3-k262.R` (the simulation)
 
