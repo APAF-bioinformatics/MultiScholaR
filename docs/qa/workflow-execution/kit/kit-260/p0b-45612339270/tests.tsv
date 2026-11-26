@@ -1,0 +1,9 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-prot-norm-core.R	1548	306	0	0	28	1405.7	failed
+test-omic-norm-module.R	639	0	0	0	0	303.3	ok
+test-omics-norm-core.R	62	0	0	14	0	95.4	ok
+test-workflow-omics-declarations.R	45	23	0	0	0	75.7	failed
+test-workflow-omics-import.R	308	0	0	0	0	10.7	ok
+test-workflow-omics-owner.R	78	1	0	0	0	17.4	failed
+test-metab-00-import-detection-characterization.R	19	0	0	0	0	6.8	ok
+test-metab-import-detection-direct-shared.R	27	0	0	0	0	6.9	ok

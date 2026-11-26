@@ -578,15 +578,167 @@ omicsAssertManualItsdPresent <- function(binding, object, feature_ids) {
     invisible(TRUE)
 }
 
+#' Which internal-standard names a stored pattern matched through the alternatives the 0.9.0 MS-DIAL default carried
+#' and its correction removed (KIT-260, VAL-241, OD-3 (a)): a name containing `w/o MS2:` (MS-DIAL 4 and 5.0 to 5.1 mark
+#' so a feature annotated without an accepted MS/MS match), or a name matched only through an unanchored `IS-`
+#' alternative (a name holding "IS-" after its start, which no other alternative of the pattern matches).
+#' @param names The annotation values of the rows the pattern matched.
+#' @param regex The pattern; its top-level alternatives are split at `|`.
+#' @return Logical, one per name; FALSE for a missing name.
+#' @noRd
+omicsItsdLegacyPatternMatches <- function(names, regex) {
+    names <- as.character(names)
+    flagged <- grepl("w/o MS2:", names, fixed = TRUE)
+    alternatives <- if (is.character(regex) && length(regex) == 1L && !is.na(regex)) strsplit(regex, "|", fixed = TRUE)[[1L]]
+    if ("IS-" %in% alternatives) {
+        rest <- paste(alternatives[alternatives != "IS-"], collapse = "|")
+        other <- if (nzchar(rest)) stringr::str_detect(names, rest) %in% TRUE else rep(FALSE, length(names))
+        flagged <- flagged | (grepl("IS-", names, fixed = TRUE) & !startsWith(names, "IS-") & !other)
+    }
+    flagged & !is.na(names)
+}
+
+#' The rows an internal-standard run used, per assay (KIT-260, VAL-241, OD-2 (b); engineering E-1: carried in the
+#' step's result value): each row's identifier and annotation, read from the object before the step by the identifiers
+#' the method stored (`args$ITSDNormalization$itsd_features_per_assay`); in pattern mode also the names matched through
+#' the alternatives OD-1 removed (`omicsItsdLegacyPatternMatches`, OD-3 (a)).
+#' @param binding The omic's binding.
+#' @param before The object the step read.
+#' @param after The object the method returned.
+#' @param feature_ids The hand-picked identifiers per assay, NULL in pattern mode.
+#' @return `list(itsd_used, itsd_id_column)`, with `itsd_legacy_rows` when any name was so matched; an empty list when
+#'   no assay used a standard.
+#' @noRd
+omicsItsdRowsUsed <- function(binding, before, after, feature_ids) {
+    ids <- after@args$ITSDNormalization$itsd_features_per_assay
+    if (!length(ids)) return(list())
+    id_column <- methods::slot(before, binding$id_slot)
+    annotation <- before@annotation_id_column
+    assays <- methods::slot(before, binding$data_slot)
+    pattern_mode <- !(is.list(feature_ids) && length(feature_ids) > 0L)
+    used <- list()
+    legacy <- list()
+    for (assay in names(ids)) {
+        table <- assays[[assay]]
+        identifier <- as.character(ids[[assay]])
+        row <- match(identifier, as.character(table[[id_column]]))
+        names_used <- if (length(annotation) == 1L && !is.na(annotation) && annotation %in% names(table))
+            as.character(table[[annotation]])[row] else rep(NA_character_, length(row))
+        used[[assay]] <- list(identifier = identifier, annotation = names_used)
+        if (pattern_mode) {
+            flagged <- omicsItsdLegacyPatternMatches(names_used, before@internal_standard_regex)
+            if (any(flagged)) legacy[[assay]] <- names_used[flagged]
+        }
+    }
+    out <- list(itsd_used = used, itsd_id_column = id_column)
+    if (length(legacy)) out$itsd_legacy_rows <- legacy
+    out
+}
+
+#' The rows a pattern-mode ITSD step used, read from the stored states when its product names none (a product saved by a
+#' build before KIT-260; AUDIT-KIT-260-impl I02 (a), the coordinator's ruling of 2026-11-26): the identifiers the S4
+#' method stored in the ITSD state's `args$ITSDNormalization$itsd_features_per_assay`, their annotations read from the
+#' state the step read (its `previous_state`), two columns and only those rows, a page at a time (no assay is
+#' hydrated), and the note's rule (`omicsItsdLegacyPatternMatches`) with that state's stored pattern. Pattern mode only:
+#' the method records `itsd_pattern_columns` only then. No state's values or arguments are read or written beyond these.
+#' @param binding The omic's binding.
+#' @param context The owner's context.
+#' @param record The ITSD state's record.
+#' @return `omicsItsdRowsUsed()`'s form, or an empty list when the rows cannot be read.
+#' @noRd
+omicsItsdRowsFromStates <- function(binding, context, record) {
+    slots <- record$data$slots
+    itsd <- slots$args$ITSDNormalization
+    ids <- itsd$itsd_features_per_assay
+    if (!length(ids) || is.null(itsd$itsd_pattern_columns)) return(list())
+    previous <- record$previous_state
+    reference <- if (is.character(previous) && length(previous) == 1L && !is.na(previous)) context$snapshot$states[[previous]]
+    id_column <- slots[[binding$id_slot]]
+    annotation <- slots$annotation_id_column
+    regex <- slots$internal_standard_regex
+    if (is.null(reference) || !is.character(id_column) || length(id_column) != 1L) return(list())
+    readable <- is.character(annotation) && length(annotation) == 1L && !is.na(annotation)
+    rows <- tryCatch(omicsVisitAssays(binding, list(.context = context), reference, function(assay, scope) {
+        if (!readable || !all(c(id_column, annotation) %in% scope$metadata$columns)) return(NULL)
+        wanted <- as.character(ids[[assay]])
+        omicsReadRows(scope, c(id_column, annotation), function(page) as.character(page[[id_column]]) %in% wanted)
+    }, assays = names(ids)), error = function(error) NULL)
+    used <- list()
+    legacy <- list()
+    for (assay in names(ids)) {
+        identifier <- as.character(ids[[assay]])
+        table <- rows[[assay]]
+        names_used <- if (is.null(table)) rep(NA_character_, length(identifier)) else
+            as.character(table[[annotation]])[match(identifier, as.character(table[[id_column]]))]
+        used[[assay]] <- list(identifier = identifier, annotation = names_used)
+        flagged <- omicsItsdLegacyPatternMatches(names_used, regex)
+        if (any(flagged)) legacy[[assay]] <- names_used[flagged]
+    }
+    out <- list(itsd_used = used, itsd_id_column = id_column)
+    if (length(legacy)) out$itsd_legacy_rows <- legacy
+    out
+}
+
+#' One assay's rows used, in words: "annotation (identifier column identifier)" each (KIT-260, OD-2 (b)).
+#' @noRd
+omicsItsdRowWords <- function(rows, id_column, texts = omicGuiItsdTexts()) {
+    annotation <- as.character(rows$annotation)
+    identifier <- as.character(rows$identifier)
+    ifelse(is.na(annotation) | !nzchar(annotation), sprintf(texts[["row_no_annotation"]], id_column, identifier),
+        sprintf(texts[["row"]], annotation, id_column, identifier))
+}
+
+#' The OD-3 (a) note (KIT-260, VAL-241) for the rows a stored pattern matched through the removed alternatives, per
+#' assay or data set; NULL when there are none.
+#' @param legacy Named list: per assay or data set, the names so matched.
+#' @param unit "assay" or "data set".
+#' @noRd
+omicsItsdLegacyNote <- function(legacy, unit = "assay", texts = omicGuiItsdTexts()) {
+    legacy <- Filter(length, legacy %||% list())
+    if (!length(legacy)) return(NULL)
+    where <- paste(vapply(names(legacy), function(name) sprintf("%s %s, %d rows", unit, name, length(legacy[[name]])), ""),
+        collapse = "; ")
+    sprintf(texts[["legacy_note"]], where)
+}
+
+#' The OD-3 (a) note an analysis record carries for its last internal-standard step (KIT-260), or NULL.
+#' @param record An analysis record (`buildWorkflowAnalysisRecord`), or NULL.
+#' @noRd
+omicsItsdRecordNote <- function(record) {
+    steps <- if (is.list(record)) record$steps
+    for (step in rev(steps %||% list())) {
+        if (grepl("_itsd_normalisation$", step$operation %||% "")) {
+            note <- step$outcomes$itsd_note
+            return(if (is.character(note) && length(note) == 1L && !is.na(note)) note)
+        }
+    }
+    NULL
+}
+
+#' The notification KIT-260 adds after an internal-standard run (VAL-241, OD-2 (b)), in process and on the worker: the
+#' rows used per assay in words; the rows themselves are named in the tab's log by `omicsItsdReportResult` (KIT-242's
+#' reporter, which reads the same `itsd` element of the result value).
+#' @param value The ITSD operation's result value.
+#' @return The text, or NULL when the value names no rows (no assay used a standard, an earlier record's replay, or a
+#'   product saved before KIT-260).
+#' @noRd
+omicsItsdRowsNotice <- function(value) {
+    used <- value$itsd$rows_used
+    if (!length(used)) return(NULL)
+    sprintf(omicGuiItsdTexts()[["used_notification"]], omicsLog2CountWords(lapply(used, function(rows) length(rows$identifier))))
+}
+
 #' Internal-standard normalisation (complete sample after the mean-factor pre-pass: one aggregate standard signal per
 #' sample, the mean over all samples, each sample scaled by mean / own aggregate; the standards removed afterwards).
+#' KIT-260 (OD-2 (b), E-1): the result value also names the rows used (`omicsItsdRowsUsed`).
 #' @noRd
 omicsItsdNormalisationOperation <- function(binding) {
     newOmicsOperation(binding, paste0(binding$prefix, "_itsd_normalisation"), "complete_sample",
         parameters = c("itsd_aggregation", "itsd_feature_ids"), product_type = paste0(binding$prefix, ".itsd_normalisation_result"),
         global_statistics = c(mean_standard_factor =
             "the mean over all samples of each assay's per-sample aggregate standard signal, computed once before any sample is scaled"),
-        # KIT-242 (OD-4 (c)): records made before replay with the earlier ITSD record (`workflowReplayRuleMarkers$itsd_outcome`).
+        # KIT-242 (OD-4 (c)) and KIT-260 (VAL-276): records made before replay with the earlier ITSD record and product
+        # (`workflowReplayRuleMarkers$itsd_outcome`, one marker for both tickets).
         fixed = list(method = "ITSD", itsd_outcome = "per_assay"),
         kernel = function(object, parameters, store) {
             omicsAssertManualItsdPresent(binding, object, parameters$itsd_feature_ids)
@@ -597,14 +749,21 @@ omicsItsdNormalisationOperation <- function(binding) {
                 itsd_aggregation = parameters$itsd_aggregation, itsd_feature_ids = parameters$itsd_feature_ids),
                 omics_itsd_not_applied = function(w) invokeRestart("muffleWarning"),
                 omics_itsd_sample_without_standard = function(w) invokeRestart("muffleWarning"))
-            object <- NULL
             itsd <- normalised@args$ITSDNormalization
+            # Under the earlier record (an older record's replay) the value is as it was, so the replay is exact; KIT-260's
+            # rows used (VAL-241 OD-2 (b), E-1; VAL-276) travel in the same `itsd` element, under the same condition.
+            used <- if (!is.null(itsd$applied_per_assay)) omicsItsdRowsUsed(binding, object, normalised, parameters$itsd_feature_ids)
+            object <- NULL
             value <- list(final = store$checkpoint(normalised, paste0(binding$prefix, "-itsd-normalised")))
-            # Under the earlier record (an older record's replay) the value is as it was, so the replay is exact.
             if (!is.null(itsd$applied_per_assay)) {
                 value$itsd <- list(applied_per_assay = itsd$applied_per_assay, not_applied_reason_per_assay = itsd$not_applied_reason_per_assay,
                     counts_per_assay = itsd$itsd_counts_per_assay, samples_without_standard_per_assay = itsd$samples_without_standard_per_assay,
                     pattern = normalised@internal_standard_regex, columns = itsd$itsd_pattern_columns)
+                if (length(used$itsd_used)) {
+                    value$itsd$rows_used <- used$itsd_used
+                    value$itsd$id_column <- used$itsd_id_column
+                    if (length(used$itsd_legacy_rows)) value$itsd$legacy_rows <- used$itsd_legacy_rows
+                }
             }
             value
         })
@@ -2036,6 +2195,22 @@ omicsRouteRecordOutcomes <- function(binding, context, operation, record, outcom
             outcomes$itsd_counts_per_assay <- as.list(itsd$itsd_counts_per_assay %||% list())
             outcomes$itsd_samples_without_standard_per_assay <- as.list(itsd$samples_without_standard_per_assay %||% list())
         }
+        # KIT-260 (VAL-241; E-2): the rows used per assay, annotation and identifier (OD-2 (b)), and the note where the
+        # stored pattern matched names through the alternatives the corrected default removed (OD-3 (a)); read from the
+        # step's saved product (its `itsd` element), as the RUV outcomes are. A product saved before KIT-260 names none: the
+        # rows are then read from the stored states (AUDIT-KIT-260-impl I02 (a): "read from the state before the ITSD step").
+        product <- record$data$products[[paste0(operation, "_science")]]
+        saved <- if (isSavedWorkflowReference(product)) tryCatch({
+            hydrated <- hydrateSavedWorkflowEntity(context$store, product)
+            if (is.list(hydrated$value)) hydrated$value else hydrated
+        }, error = function(error) NULL) else NULL
+        used <- if (length(saved$itsd$rows_used)) list(itsd_used = saved$itsd$rows_used, itsd_id_column = saved$itsd$id_column,
+            itsd_legacy_rows = saved$itsd$legacy_rows) else omicsItsdRowsFromStates(binding, context, record)
+        if (length(used$itsd_used)) {
+            outcomes$itsd_features_per_assay <- lapply(used$itsd_used, omicsItsdRowWords, id_column = used$itsd_id_column)
+        }
+        note <- omicsItsdLegacyNote(used$itsd_legacy_rows)
+        if (!is.null(note)) outcomes$itsd_note <- note
     }
     if (identical(operation, paste0(binding$prefix, "_between_sample_normalisation"))) {
         # KIT-242 (VAL-242 OD-1 (c)): per assay whether it was normalised and which samples were left out of it (kept empty

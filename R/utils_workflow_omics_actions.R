@@ -342,6 +342,11 @@ omicsItsdReportResult <- function(value, addLog, warn) {
     assays <- names(itsd$applied_per_assay)
     counts <- vapply(assays, function(assay) as.integer(itsd$counts_per_assay[[assay]] %||% 0L), integer(1))
     addLog(paste("Internal standards used per assay:", paste(sprintf("%s %d", assays, counts), collapse = "; ")))
+    # KIT-260 (VAL-241 OD-2 (b)): per assay that used standards, the rows used, annotation and identifier, with their count.
+    for (assay in names(itsd$rows_used)) {
+        words <- omicsItsdRowWords(itsd$rows_used[[assay]], itsd$id_column)
+        addLog(sprintf(omicGuiItsdTexts()[["used_log"]], assay, length(words), paste(words, collapse = "; ")))
+    }
     reason_text <- function(reason) switch(reason,
         no_standard_matched = sprintf("no internal standard matched the pattern '%s' in column '%s'", itsd$pattern %||% "",
             paste(itsd$columns %||% character(), collapse = "', '")),
@@ -410,8 +415,11 @@ runWorkflowOmicsManagedNormalisation <- function(binding, runner, manager, setti
             function(result) {
                 normData$post_itsd_obj <- result$stateReference
                 addLog("ITSD normalization complete")
-                # KIT-242: standards used per assay, and any assay or sample not normalised to standards.
+                # KIT-242: standards used per assay, and any assay or sample not normalised to standards; KIT-260: the rows
+                # used, named per assay in the log, and their counts in one notification.
                 omicsItsdReportResult(result$value, addLog, function(text) shiny::showNotification(text, type = "warning"))
+                notice <- omicsItsdRowsNotice(result$value)
+                if (!is.null(notice)) shiny::showNotification(notice, type = "message")
             }, function() {
                 advance("Applying ITSD normalization...")
                 addLog(paste("Applying ITSD normalization (aggregation:", settings$itsd_aggregation, ")"))
@@ -540,8 +548,11 @@ runWorkflowOmicsInProcessNormalisation <- function(binding, manager, settings, n
             itsd_run <- runWorkflowOmicsReferenceItsdNormalisation(binding, manager, settings$itsd_aggregation, feature_ids, config)
             normData$post_itsd_obj <- itsd_run$reference
             addLog("ITSD normalization complete")
-            # KIT-242: standards used per assay, and any assay or sample not normalised to standards.
+            # KIT-242: standards used per assay, and any assay or sample not normalised to standards; KIT-260: the rows used,
+            # named per assay in the log, and their counts in one notification.
             omicsItsdReportResult(itsd_run$value, addLog, function(text) notify(text, type = "warning"))
+            notice <- omicsItsdRowsNotice(itsd_run$value)
+            if (!is.null(notice)) notify(notice, type = "message")
             itsd_run <- NULL
         } else {
             addLog("ITSD normalization skipped")

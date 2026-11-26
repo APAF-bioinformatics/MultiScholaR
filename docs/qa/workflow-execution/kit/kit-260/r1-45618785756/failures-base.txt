@@ -1,0 +1,1401 @@
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E1: neither MS-DIAL default matches MS-DIAL's 'w/o MS2:' mark, with or without the space
+kind: failure
+message:
+  Expected `stringr::str_detect(...)` to be identical to `c(FALSE, FALSE)`.
+  Differences:
+  `actual`:   TRUE  TRUE 
+  `expected`: FALSE FALSE
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E1: neither MS-DIAL default matches MS-DIAL's 'w/o MS2:' mark, with or without the space
+kind: failure
+message:
+  Expected `stringr::str_detect(...)` to be identical to `c(FALSE, FALSE)`.
+  Differences:
+  `actual`:   TRUE  TRUE 
+  `expected`: FALSE FALSE
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E2: ordinary names in capitals holding 'IS-' are not matched, on the default and on the custom preview
+kind: failure
+message:
+  Expected `stringr::str_detect(c("CIS-ACONITIC ACID", "HIS-LEU"), pattern)` to be identical to `c(FALSE, FALSE)`.
+  Differences:
+  `actual`:   TRUE  TRUE 
+  `expected`: FALSE FALSE
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E2: ordinary names in capitals holding 'IS-' are not matched, on the default and on the custom preview
+kind: failure
+message:
+  Expected `stringr::str_detect(c("CIS-ACONITIC ACID", "HIS-LEU"), pattern)` to be identical to `c(FALSE, FALSE)`.
+  Differences:
+  `actual`:   TRUE  TRUE 
+  `expected`: FALSE FALSE
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E2: ordinary names in capitals holding 'IS-' are not matched, on the default and on the custom preview
+kind: failure
+message:
+  Expected `stringr::str_detect(c("CIS-ACONITIC ACID", "HIS-LEU"), preview$updates$is_pattern)` to be identical to `c(FALSE, FALSE)`.
+  Differences:
+  `actual`:   TRUE  TRUE 
+  `expected`: FALSE FALSE
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 G1: the intended standards are matched by the default; the parenthesised label too (OD-1 (c))
+kind: failure
+message:
+  Expected `stringr::str_detect("PC 15:0_18:1(d7)", pattern)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 G1: the intended standards are matched by the default; the parenthesised label too (OD-1 (c))
+kind: failure
+message:
+  Expected `stringr::str_detect("PC 15:0_18:1(d7)", pattern)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E9: the custom-layout preview proposes the decided pattern (metabolomics and lipidomics)
+kind: failure
+message:
+  Expected `suppressWarnings(previewOmicsImport(metab, omicGuiConfig("metabolomics")$import))$updates$is_pattern` to be identical to `KIT260_HEAD`.
+  Differences:
+  `actual`:   "^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:"      
+  `expected`: "^IS_|_d[0-9]+$|ISTD|^IS-|\\(d[0-9]+\\)"
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E9: the custom-layout preview proposes the decided pattern (metabolomics and lipidomics)
+kind: failure
+message:
+  Expected `suppressWarnings(previewOmicsImport(lipid, omicGuiConfig("lipidomics")$import))$updates$is_pattern` to be identical to `KIT260_HEAD`.
+  Differences:
+  `actual`:   "^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:"      
+  `expected`: "^IS_|_d[0-9]+$|ISTD|^IS-|\\(d[0-9]+\\)"
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `after@args$ITSDNormalization$itsd_counts_per_assay` to be identical to `list(A1 = 5L, A2 = 5L)`.
+  Differences:
+    `actual$A1`: 13
+  `expected$A1`:  5
+  
+    `actual$A2`: 13
+  `expected$A2`:  5
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `all(KIT260_RETURNED %in% kept)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A1
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `any(KIT260_STANDARDS_HEAD %in% kept)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  A1
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `nrow(after_table)` to be identical to 54L.
+  Differences:
+    `actual`: 46
+  `expected`: 54
+  
+  A1
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 45
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 46
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 47
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 48
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 49
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 50
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 51
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 55
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 58
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `all(KIT260_RETURNED %in% kept)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A2
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `any(KIT260_STANDARDS_HEAD %in% kept)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  A2
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `nrow(after_table)` to be identical to 54L.
+  Differences:
+    `actual`: 46
+  `expected`: 54
+  
+  A2
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 45
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 46
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 47
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 48
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 49
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 50
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 51
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 55
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E3: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (metab)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 58
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `after@args$ITSDNormalization$itsd_counts_per_assay` to be identical to `list(A1 = 5L, A2 = 5L)`.
+  Differences:
+    `actual$A1`: 13
+  `expected$A1`:  5
+  
+    `actual$A2`: 13
+  `expected$A2`:  5
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `all(KIT260_RETURNED %in% kept)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A1
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `any(KIT260_STANDARDS_HEAD %in% kept)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  A1
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `nrow(after_table)` to be identical to 54L.
+  Differences:
+    `actual`: 46
+  `expected`: 54
+  
+  A1
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 45
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 46
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 47
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 48
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 49
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 50
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 51
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 55
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.32847798183294  [1] 
+          - 1.5287348343282   [2] 
+          - 1.01470930659758  [3] 
+          - 1.463351177515    [4] 
+          - 1.55718128817188  [5] 
+          - 0.88838029487501  [6] 
+          - 0.648596162413751 [7] 
+          - 0.929219322643401 [8] 
+          - 1.18010575059447  [9] 
+          - 0.634231987568654 [10]
+          - 1.19183605844232  [11]
+          - 0.784111230393187 [12]
+  
+  A1 58
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `all(KIT260_RETURNED %in% kept)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A2
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `any(KIT260_STANDARDS_HEAD %in% kept)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  A2
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `nrow(after_table)` to be identical to 54L.
+  Differences:
+    `actual`: 46
+  `expected`: 54
+  
+  A2
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 45
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 46
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 47
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 48
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 49
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 50
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 51
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 55
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E4: pattern-mode ITSD uses the 5 labelled standards; the 9 other rows stay and are normalised (lipid)
+kind: failure
+message:
+  Expected `ratio(id)` to equal `ordinary`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('A_1', 'A_2', 'A_3', 'A_4', 'A_5', ...)
+  
+   actual | expected              
+          - 1.81161966463137  [1] 
+          - 1.18485702385893  [2] 
+          - 1.10654973513007  [3] 
+          - 1.46939733090969  [4] 
+          - 1.82833390101208  [5] 
+          - 1.00134217980572  [6] 
+          - 0.690647293688522 [7] 
+          - 0.927088654896108 [8] 
+          - 1.0735454661042   [9] 
+          - 0.476036600782284 [10]
+          - 1.26172729991745  [11]
+          - 0.890583954206787 [12]
+  
+  A2 58
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E5: the integration input, ITSD unticked, marks exactly the decided default's rows (OD-4 (a))
+kind: failure
+message:
+  Expected `sort(...)` to be identical to `sort(KIT260_STANDARDS_HEAD)`.
+  Differences:
+       actual                 | expected              
+   [1] "CIS-ACONITIC ACID"    - "Caffeine-ISTD"    [1]
+   [2] "Caffeine-ISTD"        - "Caffeine_d9"      [2]
+   [3] "Caffeine_d9"          - "IS-Leucine"       [3]
+   [4] "HIS-LEU"              - "IS_Caffeine"      [4]
+   [5] "IS-Leucine"           - "PC 15:0_18:1(d7)" [5]
+   [6] "IS_Caffeine"          -                       
+   [7] "w/o MS2: Alanine"     -                       
+   [8] "w/o MS2: Citric acid" -                       
+   [9] "w/o MS2: Lactic acid" -                       
+  [10] "w/o MS2: Serine"      -                       
+  [11] "w/o MS2: Valine"      -                       
+  [12] "w/o MS2:Glucose"      -                       
+  [13] "w/o MS2:IS_Caffeine"  -                       
+  
+  metabolomics_A1
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E5: the integration input, ITSD unticked, marks exactly the decided default's rows (OD-4 (a))
+kind: failure
+message:
+  Expected `sort(...)` to be identical to `sort(KIT260_STANDARDS_HEAD)`.
+  Differences:
+       actual                 | expected              
+   [1] "CIS-ACONITIC ACID"    - "Caffeine-ISTD"    [1]
+   [2] "Caffeine-ISTD"        - "Caffeine_d9"      [2]
+   [3] "Caffeine_d9"          - "IS-Leucine"       [3]
+   [4] "HIS-LEU"              - "IS_Caffeine"      [4]
+   [5] "IS-Leucine"           - "PC 15:0_18:1(d7)" [5]
+   [6] "IS_Caffeine"          -                       
+   [7] "w/o MS2: Alanine"     -                       
+   [8] "w/o MS2: Citric acid" -                       
+   [9] "w/o MS2: Lactic acid" -                       
+  [10] "w/o MS2: Serine"      -                       
+  [11] "w/o MS2: Valine"      -                       
+  [12] "w/o MS2:Glucose"      -                       
+  [13] "w/o MS2:IS_Caffeine"  -                       
+  
+  metabolomics_A2
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E5: the integration input, ITSD unticked, marks exactly the decided default's rows (OD-4 (a))
+kind: error
+message:
+  Error in `integrationInternalStandardNames(object, views)`: could not find function "integrationInternalStandardNames"
+trace (first lines):
+  ▆
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E6: the tab names the rows used per assay (log and notification, both routes) and the record lists them
+kind: failure
+message:
+  Expected `sum(run$log == line)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  in_process A1
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E6: the tab names the rows used per assay (log and notification, both routes) and the record lists them
+kind: failure
+message:
+  Expected `sum(run$log == line)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  in_process A2
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E6: the tab names the rows used per assay (log and notification, both routes) and the record lists them
+kind: failure
+message:
+  Expected `sum(...)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  in_process
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E6: the tab names the rows used per assay (log and notification, both routes) and the record lists them
+kind: failure
+message:
+  Expected `unlist(step$outcomes$itsd_features_per_assay$A1)` to be identical to `strsplit(rows, "; ", fixed = TRUE)[[1L]]`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('IS_Caffeine (Alignment ID 41)', 'Caffeine_d9 (Alignment ID 42)', 'Caffeine-ISTD (Alignment ID 43)', 'IS-Leucine (Alignment ID 44)', 'PC 15:0_18:1(d7) (Alignment ID 53)')
+  
+  in_process
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E6: the tab names the rows used per assay (log and notification, both routes) and the record lists them
+kind: failure
+message:
+  Expected `sum(run$log == line)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  managed A1
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E6: the tab names the rows used per assay (log and notification, both routes) and the record lists them
+kind: failure
+message:
+  Expected `sum(run$log == line)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  managed A2
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E6: the tab names the rows used per assay (log and notification, both routes) and the record lists them
+kind: failure
+message:
+  Expected `sum(...)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  managed
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E6: the tab names the rows used per assay (log and notification, both routes) and the record lists them
+kind: failure
+message:
+  Expected `unlist(step$outcomes$itsd_features_per_assay$A1)` to be identical to `strsplit(rows, "; ", fixed = TRUE)[[1L]]`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('IS_Caffeine (Alignment ID 41)', 'Caffeine_d9 (Alignment ID 42)', 'Caffeine-ISTD (Alignment ID 43)', 'IS-Leucine (Alignment ID 44)', 'PC 15:0_18:1(d7) (Alignment ID 53)')
+  
+  managed
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E7: the pattern box's help text says where it is matched, that it is case-sensitive, and what a match does
+kind: failure
+message:
+  Expected `grepl("case-sensitive", html, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metabolomics
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E7: the pattern box's help text says where it is matched, that it is case-sensitive, and what a match does
+kind: failure
+message:
+  Expected `grepl("annotation column", html, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metabolomics
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E7: the pattern box's help text says where it is matched, that it is case-sensitive, and what a match does
+kind: failure
+message:
+  Expected `grepl("is then removed from the data", html, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metabolomics
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E7: the pattern box's help text says where it is matched, that it is case-sensitive, and what a match does
+kind: failure
+message:
+  Expected `grepl("case-sensitive", html, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipidomics
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E7: the pattern box's help text says where it is matched, that it is case-sensitive, and what a match does
+kind: failure
+message:
+  Expected `grepl("annotation column", html, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipidomics
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E7: the pattern box's help text says where it is matched, that it is case-sensitive, and what a match does
+kind: failure
+message:
+  Expected `grepl("is then removed from the data", html, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipidomics
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E8: the stored 0.9.0 pattern governs; the record and the report carry the note only when such rows matched
+kind: failure
+message:
+  Expected `step$outcomes$itsd_note` to be identical to `KIT260_NOTE`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('This project was imported with an internal-standard pattern that also matches features MS-DIAL annotated without MS/MS, or names containing \'IS-\' in capitals; such features were used as internal standards and removed (assay A1, 9 rows; assay A2, 9 rows).')
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E8: the stored 0.9.0 pattern governs; the record and the report carry the note only when such rows matched
+kind: failure
+message:
+  Expected `sum(trimws(lines) == note_line)` to be identical to `if (identical(case, "legacy")) 1L else 0L`.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  legacy
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E8: the stored 0.9.0 pattern governs; the record and the report carry the note only when such rows matched
+kind: failure
+message:
+  Expected `numbers$itsd_note` to be identical to `KIT260_NOTE`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('This project was imported with an internal-standard pattern that also matches features MS-DIAL annotated without MS/MS, or names containing \'IS-\' in capitals; such features were used as internal standards and removed (assay A1, 9 rows; assay A2, 9 rows).')
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 E8: the stored 0.9.0 pattern governs; the record and the report carry the note only when such rows matched
+kind: failure
+message:
+  Expected `grepl(KIT260_NOTE, method_text, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 G4: KIT-242's C14 object, 'w/o MS2:' rows kept as features by the default
+kind: failure
+message:
+  Expected `all(sprintf("w/o MS2: Feature %d", 1:5) %in% after[["Metabolite name"]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 G4: KIT-242's C14 object, 'w/o MS2:' rows kept as features by the default
+kind: failure
+message:
+  Expected `any(c("PC 15:0_18:1(d7)", "LPC 18:1(d7)") %in% after[["Metabolite name"]])` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
