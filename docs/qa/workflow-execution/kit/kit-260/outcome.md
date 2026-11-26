@@ -328,6 +328,48 @@ line in `test-integration-gui.R` and confirmed the 20 captures of `test-omic-nor
   values is the coordinator's to put once, with row 50. (`predictions-second.md` had predicted `test-integration-gui.R`
   `same`; it failed on KIT-240's position, handled by 513ae741.)
 
+## KIT-260 on KIT-242 (2026-11-26): one merge, the comparison against origin/kit-242 (run 45750259637)
+
+- **State before:** `kit-260` rested at 014fd530 (origin equal); no run was out; every run was recorded (the last, R2c
+  45665921270).
+- **666ace2e: one merge of origin/kit-242 8162ea52** (KIT-242 Part B on staging aa119308). Conflicts: NEWS and the ledger
+  (appends, kit-242's first); `R/utils_workflow_analysis_record.R` (the marker list: kit-242's rows, exactly one
+  `itsd_outcome` row, ending `..., correlation_exclusion, normalisation_fallback, protein_normalisation_fallback,
+  itsd_outcome, ruv_fallback`); `R/utils_workflow_omics_declarations.R` (one `fixed` entry; the kernel: KIT-242's value
+  with KIT-260's rows used added to `value$itsd` as `rows_used`, `id_column`, `legacy_rows`, under KIT-242's own
+  condition, which holds only under the marker's current token; the record outcomes: KIT-242's per-assay fields, then
+  KIT-260's rows and note read from `itsd$rows_used`, else from the stored states, then KIT-242's between-sample block);
+  `R/utils_workflow_omics_actions.R` (the in-process call site: KIT-242's `itsd_run`). Nothing else under `R/`
+  conflicted.
+- **The agreed interface:** one `omicsItsdReportResult(value, addLog, warn)` (KIT-242's), which now also logs KIT-260's
+  per-assay rows line (text unchanged: "ITSD, assay A1: 5 rows used as internal standards, then removed: ..."); KIT-260's
+  own reporter is removed; its "rows used" notification (type message) is sent at the two call sites from
+  `omicsItsdRowsNotice(value)`. CC05 on the merged tree: `itsd_outcome = list(` 1, `omicsItsdReportResult <- function` 1.
+- **No test or expectation was changed in the merge.** Failing-first by value stands from R1 45618785756 and R1b
+  45635735448.
+- **Result (observed), against `predictions-on-kit242.md`:** 127 `same`; `test-omics-norm-core.R` `count-changed` and
+  `test-omic-norm-module.R` `message-changed` (583/56 on both sides), as predicted; `test-prot-norm-core.R` 1547/307,
+  `test-gui-entry-lipidomics.R` 19/16, `test-gui-entry-metabolomics.R` 57/48 on both sides, as staging's known counts;
+  the KIT-073/KIT-094 fixtures, the pins, the declarations' `fixed` pins and `test-integration-gui.R` `same`; R CMD check
+  findings identical (6 each), nothing only on head.
+- **Not as predicted:** the new file is `only-on-head` with 156 passed and **1 failed**: the mirror test's last
+  assertion reads `product$itsd_used$A1$annotation`; under the agreed interface the rows used travel in
+  `product$itsd$rows_used`, so the path is NULL. The value is carried (the record's `itsd_features_per_assay` and the
+  tab's log, which read `itsd$rows_used`, pass in the same file). The test predates the interface; by the
+  coordinator's rule it is handed back, not edited. The one-line repair, for the coordinator's ruling:
+  `expect_identical(product$itsd$rows_used$A1$annotation, KIT260_STANDARDS_HEAD)`.
+- **Stored values that moved, by file and line (not edited; the ITSD marker's digests are covered by VAL-303 and
+  VAL-352):** `tests/testthat/test-omic-norm-module.R`, `omicNormFrozen`, keys failing on both sides whose message
+  changes because the merged tab adds KIT-260's per-assay rows lines and notification to KIT-242's lines: lipid manual
+  run `log` (:1016) and `outputs` of run (:1050), skip_correlation (:1102), reset (:1139); metab manual run `log`
+  (:1158) and `outputs` of run (:1192), skip_correlation (:1244), reset (:1281); lipid automatic run `log` (:1300) and
+  `outputs` of run (:1333), final_plot (:1371), final_plot_failing (:1388); metab automatic run `log` (:1430) and
+  `outputs` of run (:1463), final_plot (:1501), final_plot_failing (:1518). These are keys VAL-275 approved at KIT-260's
+  stand-alone values; their combined values (KIT-242 and KIT-260) are a by-file question for the coordinator to put once
+  with row 50 (CC04).
+- **Budget:** 498.8 job-minutes; running total 2,252.3 of 3,020 (150.2 of 201.33 core-hours). A further comparison of
+  this size (about 500) fits the remainder (767.7); only one correction pass remains.
+
 ## For the change report
 
 **What was wrong, and who was affected.** On `main` and in 0.9.0, every metabolomics table and every lipidomics table
