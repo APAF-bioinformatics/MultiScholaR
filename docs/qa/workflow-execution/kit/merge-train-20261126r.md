@@ -119,3 +119,14 @@ Failing on both sides and not KIT-255's, with identical lists expected: `test-pr
 - No other placeholder in `docs/qa/workflow-execution/kit/kit-255/` (searched for `<merge>`, `<commit>`, `<date>`, `<N>`).
 - Candidates and records owed (closure check C.2 (7)): KIT-255.md, DISPATCH-STATE, C1 (the DA tab and tables mark not-tested
   comparisons), the KIT-242 hand-off, I10, RC2-06, I11, I12.
+
+## Change after the run was sent (VAL-344)
+
+The owner's decision VAL-344 (staging 31a4d684) fixed the RUV sentence of KIT-255's NEWS and `wording.md` item 8 as the
+text quoted in its (OQ-A), and turned VAL-330's dated note into a pointer. Run 45726836882 was already out, so it was not
+disturbed: one documents-only commit follows the declaration on this branch (and the same on `kit-255b`, aa184024).
+**The run's head `1567f188` differs from this branch's tip by documents only**: `NEWS.md`,
+`docs/methods-decision-ledger.md` (VAL-330's note; the KIT-255 row's "Information for the owner" clause),
+`docs/qa/workflow-execution/kit/kit-255/outcome.md` and `wording.md`, plus this file. No `R/`, `tests/`, `inst/` or `man/`
+file changed. The base stays `7f17547f` (staging has only gained VAL-344's ledger row since; the merge into staging at
+landing will meet it in the ledger).
