@@ -1,7 +1,7 @@
 # KIT-262 M3 local checks (no R on this machine; standard-library Python, python3 -I), run from the repository root
 
 ## bracket balance
-PASS docs/qa/workflow-execution/kit/kit-262/m3-k262.R: 780 lines, brackets balanced
+PASS docs/qa/workflow-execution/kit/kit-262/m3-k262.R: 784 lines, brackets balanced
 PASS docs/qa/workflow-execution/kit/kit-262/score-m3-k262.R: 667 lines, brackets balanced
 PASS docs/qa/workflow-execution/kit/kit-262/reestimate-m3-k262.R: 148 lines, brackets balanced
 PASS docs/qa/workflow-execution/kit/kit-262/rules-k262.R: 147 lines, brackets balanced

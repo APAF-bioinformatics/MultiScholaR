@@ -683,7 +683,11 @@ flagcount <- function(col, rows = ok_rows) {
   v <- rows[[col]]
   data.frame(check = toupper(col), units = sum(v %in% c("TRUE", "FALSE")), passed = sum(v %in% "TRUE"), failed = sum(v %in% "FALSE"), stringsAsFactors = FALSE)
 }
-checks <- do.call(rbind, lapply(c("e1", "e7", "e9", "e10", "e11", "e8", "f2"), flagcount))
+checks <- do.call(rbind, lapply(c("e1", "e7", "e9", "e10", "e11", "e8"), flagcount))
+# S3 (audit): F2 rests on KIT-190's oracle, validated only at n = 12 with at most 3 of 6 values missing per group; in the stress cells it is OBSERVE
+# (reported as F2_STRESS, not a hard check of L3: a difference goes to the coordinator). F2 on the eight cells is hard.
+f2_stress <- ok_rows$cell %in% M3_CELLS$id[M3_CELLS$stress]
+checks <- rbind(checks, flagcount("f2", ok_rows[!f2_stress, , drop = FALSE]), transform(flagcount("f2", ok_rows[f2_stress, , drop = FALSE]), check = "F2_STRESS"))
 expected_n <- nrow(tasks)
 checks <- rbind(checks,
   data.frame(check = "COMPLETION", units = expected_n, passed = nrow(final), failed = abs(expected_n - nrow(final)), stringsAsFactors = FALSE),
