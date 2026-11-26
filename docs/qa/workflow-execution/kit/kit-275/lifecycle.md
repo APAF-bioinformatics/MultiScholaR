@@ -246,3 +246,42 @@ F3 did not fire: all six controls pass (two-sided 0.01/3 bootstrap interval of t
 | D6 | NC2 | 1.0003 | 0.9963 to 1.0043 | 1 | passes |
 
 E6 (moderated SE reading, unmoderated reading against the kernel, LX on the hand-made matrix: deviations at most 3.2e-16, 0) and E10 (kappa_c 0.1785714286, PR 3.16227766, dot product 2): 12 of 12 pass.
+
+## 16. L1 (run 45756994368, package f3c1358b; blind; run once; 122 s + 5,899 s = about 110 job-minutes with set-up = 7.35 core-hours against 9.27; `l1/`)
+
+80 units, wall 98.3 min of the 114-minute limit, none with an error. Against `declarations/l1-declaration.md`:
+
+| Declared | Observed |
+|---|---|
+| E0 and E4 | met: 38 hunks... 0 unmarked; 40 cases, 2,779 predictions, 0 differ |
+| E1, E2, E3 (with `correlation_exclusion`), E5 | met: E1 72 of 72, E2 12 of 12, E3 2 of 2, E5 1,246 of 1,246 |
+| E7 crash and refusal | met (1 and 1) |
+| E9, every repeat equal | met: 20 of 20 |
+| E11, E12 | met: 48 of 48 each |
+| `L1_status` for every journey and LX row; `G2_coverage` | met: 695 of 695; 27 of 27 |
+| no false `unit_completed` | met (no such row) |
+| blind scorer: parse, coverage, E8, `instrument_stop`, exit 0 | met: 697 rows; every arm class covered at every design; E8 15 compared, 15 equal, max deviation 0; 0 instrument rows; exit 0 |
+| `timing-l1.tsv` | written |
+
+L1 shows no failed check.
+
+## 17. G2: every counted job re-planned from L1's own completed-journey means (`budget-replan-l1.py`; nothing scaled)
+
+Mean seconds per completed journey (4 workers, mixed tiers), D3 / D4 / D6: NO 20.9 / 23.2 / 25.7; LM 27.6 / 30.5 / 33.6; LG 24.7 / 28.4 / 33.0; LA 48.1 / 49.6 / 54.1; GA 30.6 / 32.9 / 37.3; GK 29.7 / 32.6 / 36.4; GSC 34.4 / 36.1 / 38.6; PEL2 19.8 / 26.4 / 30.0; PEG2 19.8 / 28.0 / 31.9.
+Plan = seconds x data sets x 1.25 / 4 / 60; `timeout_minutes` = ceil(1.5 x plan), explicit on every request; ceiling = timeout + 10.
+
+| Job (jobs per design: D3, D4, D6) | s per data set | Plan | `timeout_minutes` | Ceiling | Expected |
+|---|---|---|---|---|---|
+| D (4 each) | 449.8, 483.2, 535.6 | 117.1, 125.8, 139.5 | 176, 189, 210 | 186, 199, 220 | 106.7, 113.7, 124.6 |
+| K (2 each) | 464.3, 515.4, 575.5 | 120.9, 134.2, 149.9 | 182, 202, 225 | 192, 212, 235 | 109.7, 120.4, 132.9 |
+| F+S (2 each) | 289.8, 309.7, 339.3 | 75.5, 80.7, 88.4 | 114, 121, 133 | 124, 131, 143 | 73.4, 77.5, 83.7 |
+| V (waits; 2 each) | 371.1, 400.7, 444.2 | 96.6, 104.3, 115.7 | 145, 157, 174 | 155, 167, 184 | 90.3, 96.5, 105.5 |
+| M (D6, R 100) | 235.7 | 122.8 | 185 | 195 | 111.2 |
+| ID (D4, R 20) | 168.8 | 17.6 | 27 | 37 | 27.1 |
+| T (R 100) | 181.6, 197.2, 220.1 | 94.6, 102.7, 114.6 | 142, 155, 172 | 152, 165, 182 | 88.7, 95.2, 104.7 |
+| E (R 100) | 121.0, 155.2, 175.2 | 63.0, 80.8, 91.2 | 95, 122, 137 | 105, 132, 147 | 63.4, 77.7, 86.0 |
+
+Counted jobs: expected 3,813.6 job-minutes, ceiling 6,621 (441.4 core-hours). With L1-V (ceiling 48), G1, SC, the reserve and the correction (largest job 235 + 40): **ceiling 7,359 job-minutes = 490.6 core-hours; expected 3,985 = 265.7 core-hours.**
+**The ceiling exceeds the owner's 350.73 by 139.9 core-hours; nothing is trimmed and R is unchanged: awaiting the owner: the ceiling.** The expected figure (265.7) is under it.
+What drives it: L1's measured times are 1.4 to 1.6 times those of smoke 2 (LA 48 to 54 s against 30 to 32; GA 31 to 37 against 20 to 22; four heavy units at once, the load a counted job also has), and the ceiling is 1.875 times the expected run (plan margin 1.25 times timeout margin 1.5); 18 of the counted jobs have a timeout above 120 minutes, all within the 280-minute limit of a script, and K's D6 plan (149.9) is just under the 150-minute split. Per request, each counted job is its own request (every plan is above half the 300-minute job limit).
+Running ceiling (`runs.tsv`): used 12.43 (smokes 4.35, G1 0.73, L1 7.35); no further request is sent. No counted job was sent.

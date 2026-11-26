@@ -1,0 +1,48 @@
+parse: sim-k275.R parses
+parse: score-k275.R parses
+parse: fixture-k275.R parses
+parse: run-selftest.R parses
+parse: all scripts parse
+replace  old 1-3  new 1-4  K275-*
+replace  old 6-10  new 7-10  header comment
+replace  old 12-40  new 12-43  K275-guard
+replace  old 62-62  new 65-65  K275-cells
+replace  old 64-64  new 67-67  K275-cells
+replace  old 80-80  new 83-92  K275-cells
+replace  old 83-83  new 95-95  K275-REFUSALS
+insert   old 109-None  new 113-113  K275-guard
+replace  old 139-139  new 144-147  K275-markers
+replace  old 164-164  new 172-172  K275-sig
+replace  old 166-166  new 174-174  K275-seed
+replace  old 183-183  new 191-191  K275-noIS
+replace  old 231-231  new 239-239  K275-C
+insert   old 286-None  new 294-315  K275-plant
+replace  old 308-308  new 338-338  K275-ret
+replace  old 315-315  new 345-345  K275-mask
+replace  old 319-319  new 349-349  K275-mask
+replace  old 430-432  new 460-462  K275-E3
+delete   old 438-444  new 468-467  K275-E3
+replace  old 446-453  new 469-476  K275-E3
+replace  old 558-559  new 581-582  K275-prefix
+replace  old 582-582  new 605-605  K275-prefix
+replace  old 591-591  new 614-614  K275-assaycols
+replace  old 632-632  new 655-655  K275-guard
+insert   old 639-None  new 662-666  K275-guard
+replace  old 659-661  new 687-689  K275-prefix
+insert   old 672-None  new 700-702  K275-pairs
+replace  old 677-679  new 708-710  K275-prefix
+replace  old 691-691  new 722-722  K275-W
+insert   old 695-None  new 726-728  K275-pairs
+replace  old 696-696  new 730-730  K275-guard
+insert   old 704-None  new 738-745  K275-pairs
+insert   old 707-None  new 749-752  K275-nogroup
+replace  old 708-708  new 754-754  K275-prefix
+insert   old 735-None  new 781-781  K275-nogroup
+replace  old 752-752  new 799-799  K275-guard
+insert   old 754-None  new 801-801  K275-guard
+replace  old 756-756  new 804-807  K275-guard
+replace  old 797-797  new 848-848  K275-prefix
+E0: 39 hunks, 0 unmarked
+make-selftest: 40 cases, 2779 predictions, 75 row columns
+selftest: 40 cases run, scorer exit codes 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 0 0 1 1 1 0 1 0
+selftest: 2779 predictions, 0 differ
