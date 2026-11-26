@@ -43,3 +43,20 @@ Notes for the owner's wording pass:
 - **I13 (standards the corrected default no longer finds; decided, informational).** Labels with "IS-" after the start
   ('Leu-IS-1') and MS-DIAL-prefixed standards ('w/o MS2:IS_Caffeine'); an assay whose only standards are written so is
   skipped (KIT-242 shows and records the skip).
+
+## The merged block, as the normalisation tab now logs it (KIT-242 + KIT-260; AUDIT-KIT-260-impl M04)
+
+After the merge with KIT-242 (666ace2e) one reporter, KIT-242's `omicsItsdReportResult`, writes these lines after the ITSD
+step, for example with standards matched in assay A1 and none in A2:
+
+```
+ITSD normalization complete
+Internal standards used per assay: A1 5; A2 0
+ITSD, assay A1: 5 rows used as internal standards, then removed: IS_Caffeine (Alignment ID 41); Caffeine_d9 (Alignment ID 42); Caffeine-ISTD (Alignment ID 43); IS-Leucine (Alignment ID 44); PC 15:0_18:1(d7) (Alignment ID 53)
+Warning: Internal-standard normalisation was not applied to assay A2: no internal standard matched the pattern '...' in column 'Metabolite name'.
+```
+
+and two notifications: KIT-242's warning (only where an assay or a sample was not normalised to standards) and
+KIT-260's message "Internal-standard normalisation used 5 (A1) rows as internal standards and removed them; the log names
+them." The count of each assay appears twice (KIT-242's count line and KIT-260's rows line); the counts agree by
+construction. A single line per assay (the ticket's planned shape, 8.3) is the owner's choice in the wording pass.

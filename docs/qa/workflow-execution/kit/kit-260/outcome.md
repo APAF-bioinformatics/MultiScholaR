@@ -166,6 +166,10 @@ step outcome, `inst/reports/shared/analysis_record_SI.rmd:55-57`; not rendered h
   `internal_standards_marked` back from the product and the record outcomes).
 - The application in a browser.
 - R3 (the merge train's full suite).
+- `test-omics-module-globals.R`: in scope by the rule, in no KIT-260 comparison; 14/0 predicted by reading, run by the
+  train (AUDIT-KIT-260-impl M06).
+- Run minutes in `runs.tsv` include each run's plan and results jobs, so they over-count by 3.7 job-minutes against a
+  count without them (R2d 498.8 against 497.9; R1c 19.9 against 17.1) (AUDIT-KIT-260-impl M09).
 
 ## The correction pass: results (runs 45635735448 and 45635740954)
 
@@ -408,7 +412,9 @@ the stored value on origin/kit-242 8162ea52 (staging's, not yet re-pinned by KIT
 | `metab automatic final_plot_failing outputs` (:1518) | 2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9 | 3704d8a5534af4a8d928fccf30ee451efa65ba801e30321ead9441c572df5018 | 295c409a7898fb8180ab1f22ae0ed6493df785b0421a9a68f5057984970ce642 |
 
 The combined head's `log` and `outputs` values differ from KIT-260's re-pin by KIT-242's lines (its count line and its
-RUV outcome line), so the owner's by-file question for these 16 keys is the combined values above, put once with row 50.
+RUV outcome line) and by the position of KIT-260's two lines, which the merged reporter logs after 'ITSD normalization
+complete' and KIT-242's count line (before the merge they came before 'ITSD normalization complete'). The owner's
+by-file question for these 16 keys is the combined values above, put once.
 
 ## For the change report
 
