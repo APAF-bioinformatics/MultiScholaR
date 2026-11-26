@@ -1,0 +1,14 @@
+id	pass	detail
+parse sim-k281.R	TRUE	parses
+parse score-k281.R	TRUE	parses
+parse l1-k281.R	TRUE	parses
+selftest	FALSE	SELFTEST: 2007 checks, 4 differ
+probe stopped as instrument	TRUE	Stop instrument
+cal105 completed	TRUE	Calibrated
+simulation task exit	TRUE	exit 0
+sim E2	TRUE	3 of 3
+sim E3	TRUE	3 of 3
+sim E7	TRUE	3 of 3
+sim E10	TRUE	3 of 3
+provenance smoke true and complete	TRUE	provenance-sim.json (the marker assertion ran at load: exit 0)
+scorer refuses the smoke directory	TRUE	exit 1

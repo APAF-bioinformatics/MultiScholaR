@@ -1,0 +1,5 @@
+SELFTEST: 2007 checks, 4 differ
+DIFFERS fields decision.tsv rho_g upper_jack: got 0.97004302221703709, predicted 0.9512715977480101
+DIFFERS fields decision.tsv G1a upper_jack: got 0.066924954290015035, predicted 0.06666666666666667
+DIFFERS fields decision.tsv G1b upper_jack: got 0.0052813207977627317, predicted 0.0033269353806781865
+DIFFERS fields decision.tsv G2 upper_jack: got -0.028997131997416679, predicted -0.033333333333333326

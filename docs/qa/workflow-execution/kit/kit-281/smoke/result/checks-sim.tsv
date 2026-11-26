@@ -1,0 +1,5 @@
+check	units	passed	max_abs_deviation	detail	pass
+E2	3	3	NA	B's and B1's kept sets equal the package filter with the threshold switched off (2 groups and 1 group)	TRUE
+E3	3	3	NA	B1's DA input is masked[H_B1, ] and its DA table holds exactly H_B1	TRUE
+E7	3	3	NA	F1's identities (O in H_S, H_S in H_B, H_B in H_B1)	TRUE
+E10	3	3	0	logFC identical across arms on identical inputs	TRUE

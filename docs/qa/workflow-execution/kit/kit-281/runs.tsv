@@ -1,3 +1,3 @@
 run_id	commit	purpose	minutes	core_hours	result
-pending	(package commit named in request kit281-smoke-*)	S09 parse-and-self-test send (smoke/declaration.md; expected 1.33, ceiling 2.00 core-h; timeout 30)			not yet run
-# running ceiling before this send: 0.00 used + 2.00 this request + 72.67 planned = 74.67 core-hours (ceiling accepted by the owner, VAL-371)
+45759150472	a352632a85dcc7b2cd7d74752f1249ab1c448324	S09 parse-and-self-test send (smoke/declaration.md; expected 1.33, ceiling 2.00 core-h; timeout 30); minutes = run created to last updated (upper bound; script 102 s)	14.1	0.94	script exit 1: three parses ok; SELFTEST 2007 checks, 4 differ (all `fields` upper_jack: prediction defect in make-selftest.py, see outcome note); probe Stop instrument ok; cal105 Calibrated ok; seed 9301 task exit 0, E2/E3/E7/E10 3 of 3 ok, provenance smoke true ok, scorer refused (smoke flag) ok
+# running total: 0.00 + 0.94 used; planned 72.67 at ceilings; ceiling 74.67 (VAL-371). No second send without the coordinator's ruling; L1 not sent.
