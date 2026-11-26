@@ -1,0 +1,21 @@
+{
+  "requested_by": "KIT-216 R2e (VAL-372 (1)): the two edited files, head 392efa32 vs base 923cc370, one shard per side, no check; ceiling 60 job-minutes",
+  "label": "KIT-216 R2e 392efa32 vs 923cc370",
+  "package_commit": "392efa32fa96af480064d75986fd4c0b9423a5ef",
+  "base_commit": "923cc37072bcb4a84b95d81499d05736280503b7",
+  "tools_ref": "",
+  "tests": [
+    "test-kit213-study-parameters-labels.R",
+    "test-omics-enrich-core.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
