@@ -1,0 +1,23 @@
+{
+  "requested_by": "KIT-269 correction pass run 2 (I01): fix a0bc43f9 against base 50077f3a (as R2 used), the KIT-269 file and the three files reading the no-record block, no check; ceiling 45 job-minutes",
+  "label": "KIT-269 corr R2 head a0bc43f9 vs base 50077f3a, four files",
+  "package_commit": "a0bc43f92e5fdaa1358d6d98ec13e2d169fb33ac",
+  "base_commit": "50077f3a6a8d30e079322874db9547b8785a21fb",
+  "tools_ref": "",
+  "tests": [
+    "test-kit269-config-vector-values.R",
+    "test-kit235-lipid-metab-report-parser.R",
+    "test-general-filemgmt-config-direct-shared.R",
+    "test-general-filemgmt-config-roundtrip-contracts.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
