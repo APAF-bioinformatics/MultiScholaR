@@ -114,9 +114,8 @@ INFERRED for files no later run covered; the train's own base run is the referen
 | test-workflow-operation-registry.R | 1107/2 | as base | same |
 | R CMD check | 0 E / 3 W / 3 N | identical | identical findings, nothing only on head |
 
-The 35 files: the new one, the binding-steps test, four message-changed, 29 `same` (the register's "the other 28" plus
-`test-lipid-01-qc-filtering-helpers.R`, `test-omics-module-globals.R` counted among its same files: 1 + 1 + 4 + 29 = 35 with
-`test-omics-module-globals.R` and the lipid-01 helpers file among the 29).
+The 35 files: 1 `only-on-head`, 4 `message-changed` (binding-steps, QC module, the two GUI-entry lanes), 30 `same` (the register's
+"other 28" plus `test-lipid-01-qc-filtering-helpers.R` and `test-omics-module-globals.R`).
 
 ### Verification of the masked comparison (planned)
 
@@ -146,3 +145,63 @@ the two records differ only in the lines naming `steps[[4]]$description` (the ol
 - The status cell of VAL-337 and of VAL-306 (the texts, AUDIT-KIT-258-impl-20261126 section 6 (T08)); the sentence of
   the branch's row about the step description (the coordinator's routing of T02: ruled inside VAL-306's intent, applied).
 - Placeholders in the branch: see the list at the end of the run's results section.
+
+## Result
+
+Run 45737029722 (request `train30-kit258-texts-bc62602f`, request commit 3d245a5b), dispatched by the dispatcher without error
+(no hand dispatch); green (infrastructure). Head bc62602f vs base 91713498. Tables: `merge-train-20261126w-compare.tsv`,
+`-tests.tsv`, `-tests-base.tsv`, `-check-compare.txt`, `-meta.txt`, `-masked-comparison.txt` (same directory).
+
+**Job-minutes 164.63 = 10.98 core-hours** (job-minutes x 4 / 60) against the ceiling of 220 (14.67 core-hours); expected about
+145 (so over the expectation, under the ceiling): plan 0.40, tests head 42.15 and 30.10, tests base 43.37 and 26.18, check head
+9.38, check base 12.48, results 0.57 (job start to end from the jobs API; skipped scripts job 0).
+
+| File | Predicted | Observed base | Observed head | Verdict |
+|---|---|---|---|---|
+| test-kit258b-duplicate-texts.R | only-on-head, 46/0 | absent | 46/0 | only-on-head: HELD |
+| test-workflow-omics-binding-steps.R | 57/2 both, message-changed (two description lines) | 57/2 | 57/2 | message-changed: HELD |
+| test-omic-qc-module.R | 156/4 both, message-changed | 156/4 | 156/4 | message-changed: HELD |
+| test-gui-entry-lipidomics.R | 19/16 both, message-changed | 19/16 | 19/16 | message-changed: HELD |
+| test-gui-entry-metabolomics.R | 57/48 both, message-changed | 57/48 | 57/48 | message-changed: HELD |
+| test-lipid-01-qc-filtering-helpers.R | 58/0 (2) same | 58/0 (2) | 58/0 (2) | same: HELD |
+| test-omics-module-globals.R | 13/1 same | 13/1 | 13/1 | same: HELD (no KIT-278 on this base) |
+| the other 28 files | same, counts as the table above | as predicted | as predicted | same: HELD (every count equals its prediction) |
+| R CMD check | identical (0 E / 3 W / 3 N) | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | identical: HELD (6 findings on both; only on head: none; only on base: none) |
+
+Totals: 35 files; 30 `same`, 4 `message-changed`, 1 `only-on-head`; no `new-failure`, no `count-changed`, no `fixed`. No
+absolute-count miss.
+
+**Masked comparison** (script: Python `-I`, kept outside the downloaded folder; output committed in
+`merge-train-20261126w-masked-comparison.txt`). 99 failure records on each side; 36 identical after temporary-path masking;
+63 differ, all in the four message-changed files: 45 (metabolomics GUI-entry), 15 (lipidomics GUI-entry), 2 (QC module), 1
+(binding-steps). GUI-entry lanes: in each of the 60 differing records the head holds one additional chunk, the `lines(actual$outputs$<omic>_workflow-qc-duplicates-resolution_results)[1:6]` block, whose only
+changed lines are `- "Rule: the row measured in the most design samples (a missing value or 0 is not measured), then the highest
+average of its measured values"` against `+ "Strategy: Keep feature with highest average intensity"`; with that chunk (header, context
+lines, the two changed lines and its blank line) removed, the head record **equals the base record exactly: 60 of 60, no residue**
+(the 4 other failing records, one in lipidomics lane's and three in metabolomics, are identical on both sides; the 45 metabolomics
+records are the 15 steps in each of three lanes). Binding-steps: the only differing lines are the two `steps[[4]]$description`
+pairs (new sentence against the snapshot's "Resolved duplicate lipid/metabolite features by keeping highest intensity"). QC
+module (checked by hand and by digest masking): `ids` and `id_counts` identical on both sides; `tabs` differs at `lipid_qc` and
+`metab_qc` digests only, the expected values unchanged; `subtabs` differs at base in `lipid_intensity` and `metab_intensity`
+(KIT-217) and on head additionally at `lipid_duplicates` and `metab_duplicates`, the expected values unchanged. Everything
+differs exactly as declared.
+
+**Decision.** Every prediction held. TRAIN GREEN for KIT-258 texts.
+
+## Rule slips
+
+None found. The run-tests worktree held other agents' untracked folders, untouched. One `fetch.sh`, one `gh run watch`
+(backgrounded by the shell after 180 s; waited for on a local process monitor, no API polling). A few `gh run list` /
+`gh run view` calls (4) were made after the push before the run appeared (the dispatcher needed about a minute). In the
+declaration, the count sentence of the predictions was first garbled and is corrected in this commit.
+
+## Placeholders for the coordinator, by file and line
+
+- `docs/methods-decision-ledger.md` line 2527: id cell `VAL-<train30-1>`; the row's last-but-one sentence ("Not changed, found: ...
+  needs a scope decision" form) is to be replaced with the coordinator's routing of T02 (applied by commit ef570448); status
+  cell "implemented on `kit-258b`; not merged ..." to be set at landing.
+- `docs/methods-decision-ledger.md` line 2528: id cell `VAL-<train30-2>`; status cell ("recorded; deferred to the end-of-project
+  re-record") stays.
+- The status cells of VAL-337 and VAL-306 (texts of the register, section (f) and T08), not edited here.
+- This record: the table in "Train" (ledger numbers) and "What the coordinator resolves at landing" (the two ids).
+- `docs/qa/workflow-execution/kit/kit-258/outcome.md:180`: "VAL-<merge>" in the A5 row (the branch's own text, historical).
