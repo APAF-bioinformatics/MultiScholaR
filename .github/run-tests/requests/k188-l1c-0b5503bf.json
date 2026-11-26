@@ -1,0 +1,49 @@
+{
+  "requested_by": "KIT-188 L1c (declaration-l1c.md; mechanics and controls only, estimands blinded; the bound commit e4a6d4ae): E16 first, then the planted cases on L12 401; own Part L allowance, ceiling 3.67",
+  "label": "KIT-188 L1c 0b5503bf",
+  "package_commit": "0b5503bfd4ff771d744f2ac8fdd51df0fa6fe28b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/e16/run-e16.R",
+      "args": [],
+      "env": {},
+      "out": "k188-l1c-e16",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "L12",
+        "401",
+        "401",
+        "k188-l1c"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_LIFECYCLE": "1",
+        "K188_JOBS": "l1c",
+        "K188_JOB": "l1c",
+        "K188_PREDICTIONS": "docs/qa/workflow-execution/kit/kit-188/predictions-l1c.tsv"
+      },
+      "out": "k188-l1c",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
