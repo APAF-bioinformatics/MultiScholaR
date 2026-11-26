@@ -1,0 +1,36 @@
+R/utils_workflow_omics_declarations.R:1447-1453 MOVED to 1710-1716
+R/utils_workflow_omics_declarations.R:1036-1044 unmoved
+R/utils_workflow_omics_declarations.R:1047-1047 unmoved
+R/utils_workflow_omics_declarations.R:692-723 unmoved
+R/utils_workflow_omics_declarations.R:965-965 unmoved
+R/utils_workflow_omics_declarations.R:988-988 unmoved
+R/func_omics_ruv_factors.R:1-8 unmoved
+R/func_omics_ruv_factors.R:180-189 unmoved
+R/func_omics_ruv_factors.R:373-373 unmoved
+R/func_omics_ruv_factors.R:356-368 unmoved
+R/func_omics_ruv_factors.R:240-240 unmoved
+R/func_omics_ruv_factors.R:151-158 unmoved
+R/func_omics_ruv_factors.R:321-326 unmoved
+R/func_omics_ruv_factors.R:137-169 unmoved
+R/func_omics_ruv_factors.R:171-171 unmoved
+R/func_omics_ruv_factors.R:470-470 unmoved
+R/func_omics_ruv_factors.R:89-107 unmoved
+R/func_omics_ruv_factors.R:139-139 unmoved
+R/func_omics_ruv_factors.R:149-149 unmoved
+R/func_omics_ruv_factors.R:75-75 unmoved
+R/func_lipid_s4_correlation_methods.R:12-12 unmoved
+R/func_lipid_s4_correlation_methods.R:341-420 CHANGED (text differs; first line candidates [12, 230, 344])
+R/func_lipid_s4_correlation_methods.R:388-388 MOVED to 397-397
+R/func_prot_norm_optimization_helpers.R:469-469 unmoved
+R/func_prot_norm_optimization_helpers.R:600-610 unmoved
+R/func_prot_norm_optimization_helpers.R:270-270 unmoved
+R/func_prot_norm_optimization_helpers.R:1167-1174 unmoved
+R/func_lipid_s4_ruv_methods.R:716-716 unmoved
+R/func_lipid_s4_ruv_methods.R:678-681 unmoved
+R/func_lipid_s4_ruv_methods.R:552-552 unmoved
+R/func_lipid_da_model.R:36-36 unmoved
+R/func_lipid_da_model.R:128-128 unmoved
+R/func_general_ruv_factor_count.R:215-216 unmoved
+R/utils_workflow_analysis_record.R:693-693 MOVED to 726-726
+R/func_lipid_s4_ruv_control_methods.R:283-283 unmoved
+R/func_lipid_s4_ruv_control_methods.R:317-317 unmoved

@@ -1,0 +1,29 @@
+KIT-275 G0 (local, git only; reading). Bound commit for every tier but V: ec27f69e0bbe970ab80fee9865b6b6d86269cb19 (v0.9-staging, origin at the time of writing).
+
+$ git diff --stat 75acd421 <bound> -- <the ticket's G0 list>
+ R/func_lipid_da_plotting.R            |   5 +
+ R/func_lipid_s4_correlation_methods.R |  13 +-
+ R/func_metab_da_heatmap.R             |   5 +
+ R/func_metab_s4_qc_methods.R          |  13 +-
+ R/utils_workflow_omics_declarations.R | 266 ++++++++++++++++++++++++++++++++++
+ 5 files changed, 298 insertions(+), 4 deletions(-)
+
+The merge that changed each file (first-parent):
+R/func_lipid_s4_correlation_methods.R: aa119308f Merge train 25 of 2026-11-26: KIT-255 (VAL-358); VAL-330 note and status; status;7f17547f9 Merge train 23 of 2026-11-26: KIT-259 second correction and third pass (VAL-342);
+R/func_metab_s4_qc_methods.R: aa119308f Merge train 25 of 2026-11-26: KIT-255 (VAL-358); VAL-330 note and status; status;7f17547f9 Merge train 23 of 2026-11-26: KIT-259 second correction and third pass (VAL-342);
+R/utils_workflow_omics_declarations.R: aa119308f Merge train 25 of 2026-11-26: KIT-255 (VAL-358); VAL-330 note and status; status;
+R/func_lipid_da_plotting.R: aa119308f Merge train 25 of 2026-11-26: KIT-255 (VAL-358); VAL-330 note and status; status;
+R/func_metab_da_heatmap.R: aa119308f Merge train 25 of 2026-11-26: KIT-255 (VAL-358); VAL-330 note and status; status;
+
+Reading (applies the ticket's G0 as far as it is reading):
+- Changed on the G0 list since 75acd421: R/func_lipid_s4_correlation_methods.R and R/func_metab_s4_qc_methods.R (KIT-255's within-assay filter, merge aa119308f,
+  and the figure-axis hunks of 7f17547f9), R/utils_workflow_omics_declarations.R (+266 lines: omicsCorrelationFilterWithinAssay and its record, KIT-255, aa119308f),
+  R/func_lipid_da_plotting.R and R/func_metab_da_heatmap.R (+5 each; heatmaps leave out a sample with no value, KIT-255). Nothing else on the list changed:
+  RUV-III-C (func_prot_norm_optimization_helpers.R, func_lipid_s4_ruv_methods.R), rule (d), the cap, the DA kernels (func_lipid_da_model.R) and the pairs kernel
+  (pearsonCorForSamplePairs, func_lipid_s4_correlation_methods.R:12) are byte-equal to 75acd421 (see step0-lines.txt).
+- KIT-255 with its I01 repair is in the bound commit: omicsCorrelationFilterWithinAssay and its not_tested record are present (R/utils_workflow_omics_declarations.R:1080-1215;
+  the correction pass is 23fe97d79, inside merge aa119308f; VAL-358).
+- KIT-210 (origin/kit-210-ruviiic-remedy) is NOT on staging at this commit (git merge-base --is-ancestor: no). The deciding tiers and the other reported tiers bind this
+  commit; tier V waits (it needs KIT-242 Parts A and B, origin/kit-242, also not on staging, and binds after KIT-210 if that is on staging first; ticket section 13).
+- Nothing in the diff changes the computation of RUV-III-C, rule (d), the cap, the DA moderation or the pairs and selection kernels beyond KIT-255's filter edits: the
+  gate does not stop the ticket.

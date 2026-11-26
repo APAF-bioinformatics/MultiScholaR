@@ -1,0 +1,300 @@
+--- sim-k188.R@0866982f (omitted ranges removed)
++++ sim-k275.R (before the added section)
+@@ -1,42 +1,31 @@
+-# KIT-188 (VAL-72, VAL-81, VAL-84): calibration of the default route with legacy RUV-III Automatic, lipidomics,
+-# metabolomics (Part L) and proteomics (Part P). Evidence code under docs/qa: no package code. Runs on a GitHub-hosted
+-# runner with MultiScholaR installed from the bound commit (run-tests `scripts`), from the package root.
++# KIT-275 (VAL-330, VAL-344, VAL-347): the sample-correlation filter after RUV and one anomalous sample (lipidomics, with a
++# metabolomics identity check). A measurement; evidence code under docs/qa; no package code. Runs on a GitHub-hosted runner with
++# MultiScholaR installed from the bound commit (run-tests `scripts`), from the package root. The generator and the journeys are a
++# copy of KIT-188's sim-k188.R at 0866982f with the marked changes of generator-diff.md (marks K275-*); nothing else of it is carried.
+ #
+ # Usage:
+-#   Rscript sim-k188.R <part> <cells> <first> <last> <out dir>       the job (parent)
+-#   Rscript sim-k188.R --unit <part> <cell> <r> <job> <scenario> <mask> <rds>   one unit (child process)
+-#   part   L (lipidomics and metabolomics: L12, L64, M12, M168) or P (proteomics: P0, P1, P16, P2, P3, P4b)
+-#   cells  one cell or a comma list
+-#   first, last  data sets (S: 1 to 400; lifecycle: 401 to 403)
++#   Rscript sim-k275.R <tiers> <design> <first> <last> <out dir>       the job (parent)
++#   Rscript sim-k275.R --unit <tier> <design> <r> <rds>                one data set of one tier (child process)
++#   tiers   one tier or a comma list of D, K, F, S, V, M, T, E, ID (tier V waits for KIT-242, section 13 of the ticket)
++#   design  D3, D4 or D6 (ID: D4); first, last  data sets (counted tiers 1 to 200 or 1 to 100; ID 1 to 20; L1 and the smoke 9101 to 9103)
+ # Environment:
+-#   K188_JOBS      comma list of job types (Part L default deciding,reported,munit,ba; Part P deciding,reported,ba):
+-#                  deciding (LA, GA, NO, OR), reported (LA, OR, LM, FP, SC, LCm in Part L; LM, OR in Part P),
+-#                  munit (Part M unit check, L12 and M12), ba (mask BA, L64, M168, P4b), lp (LP: the LA request on the
+-#                  bound commit with KIT-190's markers at their earlier tokens, 5.3; r1.21), las (LAs: the LA request with
+-#                  KIT-224's marker at its earlier token, 34), l1c (the planted cases of 35.6, L12, one data set, K188_PLANT).
+-#                  L24 (38.5, reported) runs the deciding job type only. A job type that does not apply to a cell is not run.
+-#   K188_PLANT     L1c: comma list of the planted cases (itsd, itsdpos, emptysample, ruvskip, ruvdrop, daerror, normplant,
+-#                  exitplant; default all), one child process each; needs K188_JOBS=l1c and K188_LIFECYCLE=1.
+-#   K188_PREDICTIONS  L1c and E7 (R-marked predictions of 35.6 and 7.4, read at the bound commit): absolute path of the TSV
+-#                  (columns key = "<plant or check>/<field>", expected) written into lifecycle.md before the run.
+-#   K188_LIFECYCLE 1: blind lifecycle (L1, L1p): every estimand column is written NA; the rows' SHA-256 is written; the
+-#                  checks E1 to E4, E6, E7, E9 (and E8, E2, E5r) are run and written to checks-<job>.tsv.
+-#   K188_FAULT     1: E7 (crash): one deliberate error in the first unit's first journey.
+-#   K188_WORKERS   child processes at a time (default 4).
+-#   K188_P_REPS    Part P lifecycle: comma list cell=last data set (default "P0=403,P2=403"; others run first only).
+-#   K188_JOB       a name for the job's files (default from part, cells and range).
+-#
+-# One data set (Part L: per job type) or one (data set, scenario, mask) (Part P) per Rscript child process, four at a
+-# time, so that no session owner (duckdb) is forked. Every random draw of a data set is made in generate() before any
+-# package function is called; seeds set.seed(188000000 + 100000 c + 10000 s + r, kind = "Mersenne-Twister",
+-# normal.kind = "Inversion", sample.kind = "Rejection"), c the cell (L12 1, L64 2, M12 3, M168 4, P0 5, P1 6, P16 7,
+-# P2 8, P3 9, P4b 10), s the scenario (N0 1, N1 2, E0 3, E1 4, N2 5, E2 6), r the data set.
+-# The design, estimands and reading rules are KIT-188 revision 1.4, sections 5, 7, 18 and the declaration.
+-# Construction choices this file fixes (5.2 leaves them open): each unwanted component is centred with mean square 1
+-# over the runs (population variance); components are made orthogonal to each other in the order run factor or
+-# plate/batch basis, drift, sample factor; the drift's order is, of 2,000 random orders (within plate in L64), the one
+-# whose drift has the smallest share of variance explained by the groups, and is then residualised; labelled controls
+-# draw their levels and variances as features (the variance scaled by the features' median); every draw is made in
+-# every scenario (a scenario without unwanted variation multiplies it by 0).
++#   K275_WORKERS   child processes at a time (default 4)
++#   K275_LIFECYCLE 1: blind lifecycle (L1): every estimand column of the rows is written NA, the rows' SHA-256 is written, the
++#                  checks E1 to E12 are run and written
++#   K275_REPEAT    lifecycle: the tiers whose first data set is run a second time for E9 (default all; the smoke send sets one small tier)
++#   K275_FAULT     1: E7: one deliberate error in the first journey of the first unit, and the refused journey of E7 (GK3 at D3 on VD)
++#   K275_SMOKE     1: the smoke send's flag; written to the provenance and to every row; the scorer refuses any input carrying it for an
++#                  outcome line; a counted request that sets it (without K275_LIFECYCLE=1) is refused here (SMOKE_counted_refusal)
++#   K275_JOB       a name for the job's files (default from the tiers, design and range)
++# One data set per child process, all its versions and arms; no session owner (duckdb) is forked. Every random draw of a data set is
++# made in generate() before any package function is called; seeds in section 5.3 of the ticket.
++
++# Partial-match guard (lesson of KIT-188's smoke checks 1 to 3): `$` on a list or data frame matches a name by its prefix when none is
++# exact; that warning is an error here, in every process and inside `quiet()` (which would otherwise muffle it). A stop from it is an
++# instrument defect by definition (VAL-54). Every read of a field that may be absent below uses `[[` with exact matching.
++options(warnPartialMatchDollar = TRUE)
++globalCallingHandlers(warning = function(w) {
++    if (grepl("partial match of", conditionMessage(w), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
++})
+ 
+ args <- commandArgs(TRUE)
+@@ -60,7 +49,7 @@
+ MED_VAR_L <- 0.25
+ MED_VAR_P <- 4 * 0.25^2 / stats::qchisq(0.5, 4)
+-cellDef <- function(idx, part, omic, assays, per_assay, groups, per, level, sd, unwanted, blocks = 0L, n2 = FALSE) {
++cellDef <- function(idx, part, omic, assays, per_assay, groups, per, level, sd, unwanted, blocks = 0L, n2 = FALSE, no_is = FALSE) { # K275-cells
+     list(idx = idx, part = part, omic = omic, assays = assays, per_assay = per_assay, groups = groups, per = per, level = level,
+-        sd = sd, unwanted = unwanted, blocks = blocks, n2 = n2)
++        sd = sd, unwanted = unwanted, blocks = blocks, n2 = n2, no_is = no_is) # K275-cells
+ }
+ CELLS <- list(
+@@ -78,8 +67,17 @@
+     L24 = cellDef(11L, "L", "lipid", c("LCMS_Neg", "LCMS_Pos"), 250L, 2L, 12L, 20, 2, "drift_factor"),
+     # 5.8b: KIT-172's concentration fixture, both classes, one fixed data set (reported; job k172c only)
+-    K172c = cellDef(0L, "L", "lipid", "LCMS_Pos", 515L, 2L, 6L, NA, NA, "none"))
++    K172c = cellDef(0L, "L", "lipid", "LCMS_Pos", 515L, 2L, 6L, NA, NA, "none"),
++    # K275-cells: the designs of KIT-275 (2 groups of 3, 4, 6; two assays of 250 features; one unwanted component; no internal standards), the
++    # metabolomics identity cell D4M (the same seed index as D4, so the draws are the same), and the exactness fixtures of G1 (one assay, 2,000 features)
++    D3 = cellDef(1L, "L", "lipid", c("LCMS_Neg", "LCMS_Pos"), 250L, 2L, 3L, 20, 2, "drift_one", no_is = TRUE),
++    D4 = cellDef(2L, "L", "lipid", c("LCMS_Neg", "LCMS_Pos"), 250L, 2L, 4L, 20, 2, "drift_one", no_is = TRUE),
++    D6 = cellDef(3L, "L", "lipid", c("LCMS_Neg", "LCMS_Pos"), 250L, 2L, 6L, 20, 2, "drift_one", no_is = TRUE),
++    D4M = cellDef(2L, "L", "metab", c("LCMS_Neg", "LCMS_Pos"), 250L, 2L, 4L, 20, 2, "drift_one", no_is = TRUE),
++    X3 = cellDef(5L, "L", "lipid", "LCMS_Pos", 2000L, 2L, 3L, 20, 2, "drift_one", no_is = TRUE),
++    X4 = cellDef(6L, "L", "lipid", "LCMS_Pos", 2000L, 2L, 4L, 20, 2, "drift_one", no_is = TRUE),
++    X6 = cellDef(7L, "L", "lipid", "LCMS_Pos", 2000L, 2L, 6L, 20, 2, "drift_one", no_is = TRUE))
+ scenariosOf <- function(cellname) if (isTRUE(CELLS[[cellname]]$n2)) SCENARIOS else SCENARIOS[1:4]
+ MASKS <- c("none", "vd5", "vd20")
+-REFUSALS <- c("omics_ruv_insufficient_controls", "prot_ruv_insufficient_controls", "prot_ruv_empty_result",
++REFUSALS <- c("multischolar_refusal", "multischolar_ruv_grouping_unusable", "omics_ruv_insufficient_controls", # K275-REFUSALS "prot_ruv_insufficient_controls", "prot_ruv_empty_result",
+     "workflow_execution_invalid", "ruv_factor_count_unavailable", "prot_ruv_factors_unavailable", "omics_ruv_factors_refused",
+     "omics_ruv_no_residual_df", "ruv_k_refused", "ruv_k_above_limit")
+@@ -99,4 +97,5 @@
+     }
+     invisible(utils::capture.output(value <- withCallingHandlers(expr, warning = function(w) {
++        if (grepl("partial match of", conditionMessage(w), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE) # K275-guard
+         warning_count$n <- warning_count$n + 1L
+         noteOf(w)
+@@ -129,5 +128,8 @@
+ ARM_MARKERS <- list(
+     LP = list(MultiScholaR.ruv_control_grouping = "dropped", MultiScholaR.ruv_k_bound = "none"),
+-    LAs = list(MultiScholaR.ruv_feature_levels = "shifted"))
++    LAs = list(MultiScholaR.ruv_feature_levels = "shifted"),
++    # K275-markers: the control selection before KIT-190 (positional controls; group-blind), for LG1 and LG2
++    LG1 = list(MultiScholaR.ruv_control_grouping = "dropped"),
++    LG2 = list(MultiScholaR.ruv_control_grouping = "dropped"))
+ armMarkers <- function(arm) {
+     set <- ARM_MARKERS[[arm]] %||% list()
+@@ -154,7 +156,7 @@
+ 
+ # ---- the generator (5.2, 18.3) -------------------------------------------------------------------------------------
+-generate <- function(cellname, scenario, r) {
++generate <- function(cellname, scenario, r, anomaly = NULL) { # K275-sig
+     p <- CELLS[[cellname]]
+-    set.seed(188000000 + 100000 * p$idx + 10000 * match(scenario, SCENARIOS) + r, kind = "Mersenne-Twister",
++    set.seed(275000000 + 100000 * p$idx + 10000 * match(scenario, SCENARIOS) + r, kind = "Mersenne-Twister", # K275-seed
+         normal.kind = "Inversion", sample.kind = "Rejection")
+     groups <- GROUPS[seq_len(p$groups)]
+@@ -173,5 +175,5 @@
+     n_feat <- p$per_assay * n_assays
+     n_lbl <- if (identical(omic, "prot")) 0L else 5L * n_assays
+-    n_is <- if (identical(omic, "lipid")) 5L * n_assays else 0L
++    n_is <- if (identical(omic, "lipid") && !isTRUE(p$no_is)) 5L * n_assays else 0L # K275-noIS
+     medvar <- if (identical(omic, "prot")) MED_VAR_P else MED_VAR_L
+     # 1 levels and residual variances (features, then labelled controls)
+@@ -221,5 +223,5 @@
+     factor_raw <- stats::rnorm(n_runs)
+     # 6 loadings (features, standards, labelled controls)
+-    C <- switch(p$unwanted, drift_factor = 2L, plate_drift = 2L, batch_drift = p$blocks)
++    C <- switch(p$unwanted, drift_one = 1L, drift_factor = 2L, plate_drift = 2L, batch_drift = p$blocks) # K275-C
+     sd_load <- sqrt(3 * medvar / C)
+     A_feat <- matrix(stats::rnorm(n_feat * C), n_feat, C) * sd_load
+@@ -276,4 +278,26 @@
+     feat_ids <- if (identical(omic, "prot")) sprintf("P%05d", seq_len(n_feat)) else sprintf("F%04d", seq_len(n_feat))
+     lbl_ids <- if (n_lbl > 0L) sprintf(if (identical(omic, "lipid")) "LBL_%03d" else "CTL_%03d", seq_len(n_lbl)) else character()
++    # K275-plant (section 5.3 of the ticket): the planting of one anomalous sample (two for V2) in assay LCMS_Pos, after every draw of
++    # generate(); its own stream, the session's random-number state restored, so no draw of any version differs from V0 except the planted entries
++    planted_delta <- NULL
++    if (!is.null(anomaly)) {   # anomaly = list(form = "g" | "p" | "s" | "t", samples = c(n_runs) or c(n_runs, per))
++        old <- if (exists(".Random.seed", envir = globalenv())) get(".Random.seed", envir = globalenv()) else NULL
++        set.seed(276000000 + 100000 * p$idx + r, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")
++        z_feat <- list(stats::rnorm(n_feat), stats::rnorm(n_feat)); z_lbl <- list(stats::rnorm(n_lbl), stats::rnorm(n_lbl))  # drawn in this order, all, always
++        u_feat <- stats::runif(n_feat)   # drawn last, all, always: the sparse form's choice of features
++        cm <- if (identical(anomaly$form, "p")) 0.5 else 0
++        planted_delta <- list()
++        for (s in seq_along(anomaly$samples)) {
++            col <- anomaly$samples[[s]]
++            rf <- which(feat_assay == "LCMS_Pos"); rl <- which(lbl_assay == "LCMS_Pos")
++            d_feat <- (p$level + cm * (mu[rf] - p$level) + sqrt(1 - cm^2) * p$sd * z_feat[[s]][rf]) - mu[rf]
++            if (identical(anomaly$form, "t")) d_feat[!(seq_along(rf) %in% order(u_feat[rf])[seq_len(round(0.1 * length(rf)))])] <- 0
++            y_feat[rf, col] <- y_feat[rf, col] + d_feat
++            d_lbl <- if (!anomaly$form %in% c("s", "t")) (p$level + cm * (mu_lbl[rl] - p$level) + sqrt(1 - cm^2) * p$sd * z_lbl[[s]][rl]) - mu_lbl[rl] else numeric(length(rl))
++            y_lbl[rl, col] <- y_lbl[rl, col] + d_lbl
++            planted_delta[[s]] <- c(stats::setNames(d_feat, feat_ids[rf]), stats::setNames(d_lbl, lbl_ids[rl]))
++        }
++        if (!is.null(old)) assign(".Random.seed", old, envir = globalenv()) else rm(".Random.seed", envir = globalenv())
++    }
+     is_ids <- if (n_is > 0L) sprintf("IS_%02d", seq_len(n_is)) else character()
+     is_assay <- rep(p$assays, each = 5L)[seq_len(n_is)]
+@@ -298,5 +322,5 @@
+         y = rbind(y_feat, y_lbl, y_is), oracle = rbind(oracle_feat, oracle_lbl), unwanted = rbind(unw_feat, unw_lbl),
+         l = l, theta = theta, planted = stats::setNames(c(rowSums(beta != 0) > 0, rep(FALSE, n_lbl)), c(feat_ids, lbl_ids)),
+-        U = U, order_of = order_of, ba_u = ba_u, ba_block = ba_block, Z = Z, C = C)
++        U = U, order_of = order_of, ba_u = ba_u, ba_block = ba_block, Z = Z, C = C, planted_delta = planted_delta) # K275-ret
+ }
+ 
+@@ -305,9 +329,9 @@
+     stats::uniroot(function(lod) mean(stats::plogis(lod - values)) - rate, c(min(values) - 60, max(values) + 60), tol = 1e-10)$root
+ }
+-maskOf <- function(sim, mask) {
++maskOf <- function(sim, mask, lod_values = sim$y[sim$feat_ids, , drop = FALSE]) { # K275-mask: the limit of detection is solved on `lod_values` (V0's values)
+     y <- sim$y[sim$feat_ids, , drop = FALSE]
+     if (identical(mask, "none")) return(matrix(FALSE, nrow(y), ncol(y), dimnames = dimnames(y)))
+     rate <- if (identical(mask, "ba")) 0.20 else as.numeric(sub("^vd", "", mask)) / 100
+-    out <- sim$U < stats::plogis(solveLod(y, rate) - y)
++    out <- sim$U < stats::plogis(solveLod(lod_values, rate) - y) # K275-mask
+     if (identical(mask, "ba")) {
+         with_missing <- which(rowSums(out) > 0)
+@@ -420,7 +444,7 @@
+         percentile = 1, strict = FALSE))
+ EXPECTED_DEFAULTS$metab <- EXPECTED_DEFAULTS$lipid
+-# 5.2 (r1.20; VAL-241 OD-1 (c)), the import's default pattern as KIT-260 ships it, read at the bound commit by E3 (a difference
+-# stops: the route under test changed)
+-ITSD_DEFAULT_PATTERN <- "^IS_|_d[0-9]+$|ISTD|^IS-|\\(d[0-9]+\\)"
++# K275-E3: the ticket's E3 is the route defaults of 5.2 only (ITSD is off in every journey here, so KIT-188's clauses on the ITSD
++# import pattern and on labelled names matching an ITSD pattern are not carried: at the bound commit the import pattern is still the one
++# before KIT-260, "w/o MS2:"); the replay markers hold their current token (a leak stops the unit).
+ checkE3 <- function(omic) {
+     got <- routeDefaults(omic)
+@@ -428,20 +452,8 @@
+     differ <- names(want)[!vapply(names(want), function(n) identical(got[[n]], want[[n]]) ||
+         (is.numeric(want[[n]]) && is.numeric(got[[n]]) && isTRUE(all.equal(got[[n]], want[[n]]))), logical(1L))]
+-    patterns <- c("(?i)itsd|istd|internal.?standard", "(?i)^rt_|_rt$|retention.?time", "(?i)^is_|_is$|^isd_|_isd$",
+-        "(?i)_d[0-9]+$|_13c|_15n|deuterated|labeled")
+-    names_checked <- c(sprintf("LBL_%03d", 1:10), sprintf("CTL_%03d", 1:5))
+-    matched <- names_checked[vapply(names_checked, function(x) any(vapply(patterns, grepl, logical(1L), x = x, perl = TRUE)), logical(1L))]
+-    # r1.21 (R20-P06): the cyclic-loess minimum's state is recorded and either state passes; every marker holds its current
+-    # token (40.3 (5)); 5.2 (r1.20, VAL-241 OD-1 (c)): the import's default ITSD pattern as KIT-260 ships it
+-    loess_minimum <- tryCatch(omicsCyclicLoessMinimumActive(), error = function(e) NA)
+     leaked <- markerLeaks()
+-    imported <- tryCatch(if (identical(omic, "metab")) getMetabolomicsColumnDefaults("msdial")$is_pattern else
+-        getLipidomicsColumnDefaults("msdial")$is_pattern, error = function(e) NA_character_)
+-    pattern_ok <- identical(omic, "prot") || identical(imported, ITSD_DEFAULT_PATTERN)
+-    got$cyclic_loess_minimum <- loess_minimum
+-    got$itsd_import_pattern <- imported
+-    list(pass = !length(differ) && !length(matched) && !length(leaked) && pattern_ok, got = got,
+-        note = sprintf("differ: %s; labelled names matching an ITSD pattern: %s; markers off their current token: %s; import pattern as shipped %s",
+-            paste(differ, collapse = ",") %||% "", paste(matched, collapse = ","), paste(leaked, collapse = ","), pattern_ok))
++    got$cyclic_loess_minimum <- tryCatch(omicsCyclicLoessMinimumActive(), error = function(e) NA) # recorded, either state passes (as KIT-188)
++    list(pass = !length(differ) && !length(leaked), got = got, # K275-E3
++        note = sprintf("differ: %s; markers off their current token: %s", paste(differ, collapse = ","), paste(leaked, collapse = ",")))
+ }
+ 
+@@ -548,6 +560,6 @@
+     declared <- requested && isTRUE(request$gate)
+     lapply(stats::setNames(assays, assays), function(a) {
+-        e12 <- if (!is.null(out$e12)) out$e12[out$e12$assay == a, , drop = FALSE]
+-        e13 <- if (!is.null(out$e13)) out$e13[out$e13$assay == a, , drop = FALSE]
++        e12 <- if (!is.null(out$itsd_check)) out$itsd_check[out$itsd_check$assay == a, , drop = FALSE] # K275-prefix
++        e13 <- if (!is.null(out$norm_check)) out$norm_check[out$norm_check$assay == a, , drop = FALSE] # K275-prefix
+         field <- function(x, column) if (!is.null(x) && nrow(x)) x[[column]][[1L]] else NA
+         trace <- out$optimisation[[a]]
+@@ -572,5 +584,5 @@
+         da_failed <- identical(out$error_step, "da")
+         failed_here <- if (!is.null(out$da_errors)) out$da_errors[out$da_errors$assay == a, , drop = FALSE]
+-        da_status <- if (da_failed) "failed" else if (!isTRUE(out$da_reached)) "not_reached" else
++        da_status <- if (da_failed) "failed" else if (!isTRUE(out$reached_da)) "not_reached" else # K275-prefix
+             if (is.null(out$da) || !nrow(out$da) || !a %in% out$da$assay || (!is.null(failed_here) && nrow(failed_here))) "no_da" else "ok"
+         list(itsd_is_left = field(e12, "itsd_is_left"), itsd_n_used = field(e12, "itsd_n_used"), itsd_n_expected = field(e12, "itsd_n_expected"),
+@@ -649,7 +661,7 @@
+             itsd_record <- owner$getState(paste0(prefix, "_itsd_norm"))@args$ITSDNormalization
+             out$itsd_record_fields <- paste(names(itsd_record), collapse = ",")
+-            out$e12 <- checkItsdActed(m_qc, out$m_itsd, itsd_record)
+-            if (!all(out$e12$itsd_ok)) {
+-                bad <- out$e12[!out$e12$itsd_ok, , drop = FALSE]
++            out$itsd_check <- checkItsdActed(m_qc, out$m_itsd, itsd_record) # K275-prefix
++            if (!all(out$itsd_check$itsd_ok)) {
++                bad <- out$itsd_check[!out$itsd_check$itsd_ok, , drop = FALSE]
+                 out$status <- "instrument"
+                 out$class <- paste(sprintf("itsd_not_applied:%s:%s", bad$assay, bad$itsd_failed), collapse = " | ")
+@@ -662,4 +674,7 @@
+         quiet(runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, owner, method, config))
+         out$m_in <- stateMatrices(owner, binding, paste0(prefix, "_normalized"))
++        step <- "pairs_pre" # K275-pairs
++        out$pairs_pre <- quiet(pearsonCorForSamplePairs(theObject = owner$getState(paste0(prefix, "_normalized")), correlation_group = "group")) # K275-pairs
++        step <- "between_sample"
+         out$rows_ruv_input <- vapply(out$m_in, nrow, integer(1L))
+         if (!identical(method, "none") && !identical(arm, "OR")) {
+@@ -667,7 +682,7 @@
+             # `normplant` (35.6): the matrix E13 compares is the log2 matrix for one assay; the route's output is untouched
+             if (identical(plant, "normplant")) compared[["LCMS_Pos"]] <- out$m_log2[["LCMS_Pos"]]
+-            out$e13 <- checkNormActed(compared, out$m_log2)
+-            if (!all(out$e13$norm_ok)) {
+-                bad <- out$e13[!out$e13$norm_ok, , drop = FALSE]
++            out$norm_check <- checkNormActed(compared, out$m_log2) # K275-prefix
++            if (!all(out$norm_check$norm_ok)) {
++                bad <- out$norm_check[!out$norm_check$norm_ok, , drop = FALSE]
+                 text <- paste(sprintf("norm_not_applied:%s", bad$assay), collapse = " | ")
+                 out$class <- if (identical(out$status, "instrument")) paste(out$class, text, sep = " | ") else text
+@@ -681,8 +696,11 @@
+             out$ruv_value <- run$value[setdiff(names(run$value), c("final", "optimisation", "factors", "separation_plots"))]
+             out$ruv_factors <- lapply(run$value$factors, function(f) f[intersect(names(f), c("status", "reason", "k", "control_ids",
+-                "control_count", "ruv_k_estimate"))])
++                "control_count", "ruv_k_estimate", "W"))]) # K275-W
+             out$optimisation <- lapply(run$optimisation, function(o) o[intersect(names(o), c("success", "best_k", "best_percentage",
+                 "control_genes_index", "optimization_results", "error"))])
+             out$m_out <- stateMatrices(owner, binding, paste0(prefix, "_ruv_corrected"))
++            step <- "pairs_post" # K275-pairs
++            out$pairs_post <- quiet(pearsonCorForSamplePairs(theObject = owner$getState(paste0(prefix, "_ruv_corrected")), correlation_group = "group")) # K275-pairs
++            step <- "ruv"
+             # 35.2 (3): the analysis record's fields beside the product's (they must equal it)
+             record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) NULL)
+@@ -694,9 +712,17 @@
+             out$corr_one_assay <- paste(oneAssayRemovals(out$m_out %||% out$m_in, stateMatrices(owner, binding, owner$current_state)),
+                 collapse = ";")
++            # K275-pairs: per assay, the samples that held a value before the filter and none after it (the package filter's own removed set, E5)
++            after_filter <- stateMatrices(owner, binding, owner$current_state)
++            out$corr_removed <- lapply(stats::setNames(names(after_filter), names(after_filter)), function(a) {
++                before <- (out$m_out %||% out$m_in)[[a]]
++                had <- colnames(before)[colSums(is.finite(before)) > 0L]
++                kept <- colnames(after_filter[[a]])[colSums(is.finite(after_filter[[a]])) > 0L]
++                setdiff(had, kept)
++            }) # K275-pairs
+         }
+         final <- owner$getState(owner$current_state)
+         out$runs_final <- as.character(final@design_matrix[[final@sample_id]])
+         step <- "da"
+-        out$da_reached <- TRUE
++        out$reached_da <- TRUE # K275-prefix
+         if (identical(plant, "daerror")) stop("K188 planted DA error (E15)")
+         da <- quiet(runWorkflowOmicsReferenceDaAnalysis(binding, owner, getWorkflowStateReference(owner),
