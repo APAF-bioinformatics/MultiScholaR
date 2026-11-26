@@ -252,3 +252,73 @@ no per-assay control set on the raw fixture (the optimiser then hands the whole 
 Legacy lipid/metab RUV-III-C dropped an assay it could not correct (and returned the input when every assay failed)
 while recording `ruv_applied` TRUE; on main since 2025-05-06 (metab) and 2026-01-18 (lipid). Now by cause (VAL-242,
 VAL-290), with marker `ruv_fallback`; evidence R1b-B 45714743051, R1d 45721168959, P0 45723354055.
+
+## After P0: the coordinator's rulings (2026-11-26), no run
+
+**Cost against the lines.** R1d (45721168959) was not a planned row: run as the smallest test that could falsify the fix
+before spending P0's 186 files on it (0.93 core-hours). P0 used 35.94 core-hours against its line of 28.0 expected and
+56.0 ceiling. Used to date: 148.31 of 901.33 (VAL-329).
+
+**Correction 1 (accepted).** The no-usable-controls notice reads "observed in every sample: <reason>" (was "every
+sample (<reason>)", which KIT-025's scan matched). Commit 4c8e3d87.
+
+**Correction 2: the cause, read (observed in the code, not run).** The worker fixture's assays each hold two duplicated
+feature ids (`tests/testthat/helper-workflow-lipid-declarations.R:29-31`: `ids[c(3L, 7L)]` repeated; metab twin). The
+control selection converts each assay with `tibble::column_to_rownames` (`R/func_lipid_s4_ruv_control_methods.R:148-161`;
+metab `R/func_metab_s4_design_control_methods.R:235`), which fails on duplicated row names, so the assay is skipped and
+dropped from the returned list (`:348`; metab `:431`). The Manual search then takes the whole list as that assay's
+control set (`R/func_lipid_norm_ruv_optimization_helpers.R:421-425`; `R/func_metab_norm.R:944-948`, code unchanged by
+KIT-242) and reports success. So the search really returns no per-assay control set: the stop is Q6.2 (c)'s (a failed
+search), and only the message was untruthful (it came from `omicsRuvCorrectByCause`'s control-type check). Repaired in
+4c8e3d87: `omicsRuvSearchOutcomes` stops such an assay first (reason `search_error`), with the message (draft for the
+wording pass): "RUV-III was not run: the control-feature search found no control features for assay <A>, because it
+could not read the assay. The assay has <n> duplicated feature identifiers (<first three>). Run 'Resolve Duplicates' in
+the Quality Control tab, then run the normalisation again." (the second and third sentences only when duplicates are
+present). Test row E25m (lipid and metab).
+
+**Correction 3: the two declared edits, prepared, not committed (to the owner with (i) to (iv)).**
+
+`tests/testthat/test-workflow-omics-worker.R`, after the between-sample branch (`:22`), insert:
+
+    # KIT-242 Part B (VAL-242 Q6.2 (c); declared edit, owner <date>, ledger <row>): on the raw fixture the control
+    # selection cannot read an assay with duplicated feature ids, so the RUV step stops, naming the cause and the
+    # remedy; lines 25-31 pinned the earlier completion (the assay dropped by the correction).
+    if (identical(step$operation, paste0(binding$prefix, "_ruv"))) {
+      expect_identical(result$status, "failed", info = paste(omic, step$operation))
+      expect_match(result$error %||% "", "duplicated feature identifiers.*Resolve Duplicates", info = omic)
+      next
+    }
+
+(lines 25-31 then apply to the other steps only, unchanged.)
+
+`tests/testthat/test-module-ci-metab-norm.R:200-204`, old:
+
+    failed <- run_ruv("manual", function(...) failed_results, manual_percentage = 1)
+    expect_true(is.na(failed$best_k$LCMS_Pos))
+    expect_null(extractCtrlPerAssay(failed_results)$LCMS_Pos)
+    expect_identical(failed$best_k$GCMS, 2L)
+
+new:
+
+    # KIT-242 Part B (VAL-242 Q6.2 (c); declared edit, owner <date>, ledger <row>): a failed Manual search stops the
+    # step, naming the assay, where LCMS_Pos was dropped and GCMS corrected alone.
+    failed <- run_ruv("manual", function(...) failed_results, manual_percentage = 1)
+    expect_null(extractCtrlPerAssay(failed_results)$LCMS_Pos)
+    expect_false(failed$state$result)
+    expect_true("ERROR: RUV-III was not run: the search for assay LCMS_Pos failed: too few controls" %in% failed$state$logs)
+    expect_false(failed$norm_data$ruv_complete)
+    expect_null(failed$best_k)
+
+Note for the owner: in the real Manual search `success = FALSE` arises only from an error caught at
+`R/func_lipid_norm_ruv_optimization_helpers.R:451-466` (metab twin), so a failed Manual search is a failed computation;
+the stub's text "too few controls" is the test's.
+
+**Request environment (item 4).** P0's request set `env: {}` and `extra_packages: []`. The trains set
+`MULTISCHOLAR_TRX_MANIFEST_NOTE=1` (trains 15 to 19, 22 q) and, where their files need them, `extra_packages`
+`["limpa", "mixOmics", "sva"]` and `file_timeouts` of 120 for the GUI-entry and prot-norm-core files. The 22
+transcriptomics corpus-manifest failures are therefore attributed to P0's request, not the code (inferred from the
+requests; R2 confirms). R2 and R3 will set the trains' `env`, `extra_packages` and `file_timeouts`. Of the two
+runner-library files: `lobstr` (`test-workflow-checkpoint-harness.R:187`) is not in `packaging/multischolar.lock.json`, so
+no `extra_packages` entry can supply it; `test-tech-reps-limma.R:6` calls `devtools::load_all(".")` (devtools is in the
+lock). No train request of 2026-11-26 lists either file. R2 and R3 leave both out, as the trains do, with this reason;
+neither touches a KIT-242 path.
