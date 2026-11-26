@@ -1,0 +1,40 @@
+{
+  "requested_by": "KIT-275 counted tier D job D-D4-151-200 (declaration.md at this commit; VAL-382; 1.5 x rule; timeout 151 min)",
+  "label": "KIT-275 counted D-D4-151-200 577a6f7b",
+  "package_commit": "577a6f7b9ee14b263b3e1cacd64d946c67c9130e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/sim-k275.R",
+      "args": [
+        "D",
+        "D4",
+        "151",
+        "200",
+        "k275-D-D4-151-200"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K275_WORKERS": "4",
+        "K275_JOB": "D-D4-151-200",
+        "K275_DECLARATION": "docs/qa/workflow-execution/kit/kit-275/declaration.md"
+      },
+      "out": "k275-D-D4-151-200",
+      "out_pattern": "\\.(tsv|gz|json|txt)$",
+      "timeout_minutes": 151
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
