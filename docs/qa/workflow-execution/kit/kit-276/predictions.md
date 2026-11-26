@@ -1,7 +1,7 @@
 # KIT-276 predictions (committed before R1 and before R2)
 
 R1 = the tests-only commit against itself on the runner (one job, `base_commit` none): each new row at the stated value.
-"By value" = an expectation fails with a value, no error before it. Ruling of 2026-11-27: T1 asserts the record's steps,
+"By value" = an expectation fails with a value, no error before it. Ruling of 2026-11-26: T1 asserts the record's steps,
 T2 the report-level text; T18 and T17 assert both mismatch readings.
 
 | Row | Base (tests-only commit) | Head (fix) |

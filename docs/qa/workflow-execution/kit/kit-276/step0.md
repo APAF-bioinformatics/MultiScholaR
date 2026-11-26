@@ -77,26 +77,26 @@ the newest timing).
 Note 1.5 (cancor): `removeDiaLimpaRuvMarkers` is called before both RUV runs (`:117` in process, `:395` managed);
 the file is written by the covariates publication (`R/utils_workflow_dia_products.R:1843-1845`).
 
-## Rulings of 2026-11-27 (coordinator) on the stop above; departures from the ticket's text
+## Rulings of 2026-11-26 (coordinator) on the stop above; departures from the ticket's text
 
 Each is a departure from, or an addition to, the ticket's text, and is listed again in outcome.md.
 
-- T18 (ruling of 2026-11-27): assert BOTH (i) over the history's states only (`kitReproduceMismatches` called in the
+- T18 (ruling of 2026-11-26): assert BOTH (i) over the history's states only (`kitReproduceMismatches` called in the
   test, `tools/profiling/*` not edited): empty on the fixed code, and on the base the replay is refused with the class
   captured by value; (ii) over the full origin map as `kitReplayJourney` reports it: EXACTLY `"ruv_corrected/missing"`.
   The test's comment says why (ii) is not empty (the store keeps the superseded record by design, 4.1 / VAL-346).
   Both predicted on base and head before the run. Same reading for T17: the explicit mismatch assertion
   (`"ruv_covariates/missing"` on the head) is added.
-- S-2 (ruling of 2026-11-27): flag passed only when TRUE; the stubs at `test-prot-05b-norm-module-contracts.R:2302`,
+- S-2 (ruling of 2026-11-26): flag passed only when TRUE; the stubs at `test-prot-05b-norm-module-contracts.R:2302`,
   `:2369` untouched.
-- S-3 (ruling of 2026-11-27): `ruv_covariates_summary` cleared in `runProtNormResetWorkflow`, limpa route only; a row
+- S-3 (ruling of 2026-11-26): `ruv_covariates_summary` cleared in `runProtNormResetWorkflow`, limpa route only; a row
   shows it cleared on the limpa route and not touched on the other three routes.
-- S-4 (ruling of 2026-11-27): one helper beside `removeDiaLimpaRuvMarkers`, called at the three call sites and the
+- S-4 (ruling of 2026-11-26): one helper beside `removeDiaLimpaRuvMarkers`, called at the three call sites and the
   Skip; a row per call site shows the leftover file gone.
-- S-5 (ruling of 2026-11-27): T1 asserts the record's steps, T2 the report-level text.
-- S-6 (ruling of 2026-11-27): a focused row with a recording runner asserting that the dispatched action carries
+- S-5 (ruling of 2026-11-26): T1 asserts the record's steps, T2 the report-level text.
+- S-6 (ruling of 2026-11-26): a focused row with a recording runner asserting that the dispatched action carries
   `held$rebuild` into `finish`, by value; the full managed chain stays "by reading" in "Not checked".
-- S-7 (ruling of 2026-11-27): T6 PRODUCES an enrichment first (the recipe of `test-kit213-study-parameters-labels.R`
+- S-7 (ruling of 2026-11-26): T6 PRODUCES an enrichment first (the recipe of `test-kit213-study-parameters-labels.R`
   `k213ProtJourney`: DA, `produceDIADaPublication`, `runWorkflowEnrichment` in test mode) and asserts
   `diaEnrichmentProduct` non-NULL before and NULL after the Skip.
 - Budget restated (ruling item 7), `python3 -I`, newest committed per-file timing over the 185 tracked `tests*.tsv`
