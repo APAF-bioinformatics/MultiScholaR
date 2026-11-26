@@ -1,0 +1,28 @@
+{
+  "requested_by": "KIT-216 R3 and checkpoint (merge train 35): full suite on the merge 761b4301 against staging a855e1f0, check both sides; ceiling 2,800 job-minutes, expected about 1,625",
+  "label": "KIT-216 R3 full suite 761b4301 vs a855e1f0",
+  "package_commit": "761b4301775bb54fff03a3158b122af321583083",
+  "base_commit": "a855e1f0251286061e3b65e388fe63fc83b1dc9d",
+  "tools_ref": "",
+  "tests": "all",
+  "shards": 20,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120,
+    "test-gui-entry-transcriptomics.R": 120,
+    "test-prot-norm-core.R": 120,
+    "test-workflow-saved-da.R": 90,
+    "test-kit247-design-resave.R": 100
+  },
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
