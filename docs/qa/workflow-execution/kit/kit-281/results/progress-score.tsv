@@ -1,0 +1,30 @@
+unit	status
+atoms A vd5	done
+atoms A vd10	done
+atoms A vd25	done
+atoms B vd5	done
+atoms B vd10	done
+atoms B vd25	done
+atoms C vd5	done
+atoms C vd10	done
+atoms C vd25	done
+atoms D vd5	done
+atoms D vd10	done
+atoms D vd25	done
+setting A vd5	done
+setting A vd10	done
+setting A vd25	done
+setting B vd5	done
+setting B vd10	done
+setting B vd25	done
+setting C vd5	done
+setting C vd10	done
+setting C vd25	done
+setting D vd5	done
+setting D vd10	done
+setting D vd25	done
+design A	done
+design B	done
+design C	done
+design D	done
+pool twelve settings	done

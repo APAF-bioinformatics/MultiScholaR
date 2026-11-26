@@ -1,0 +1,2 @@
+outcome	kind	reason	counted	bootstrap_B	range_source	rho_g	rho_g_upper	rho_g_state	g1a_state	g1b_state	g2_state	f5_fires	pc_pass	f1	f2	n_qmethod_fallback	notes
+Calibrated	outcome	Part C: the tab default becomes 1 (only after KIT-280 is on staging)	TRUE	10000	g3-table	1.0535139807943397	1.0716403531943854	pass	pass	pass	pass	FALSE	TRUE	0	0	0	0 metrics row(s) with a q-method other than qvalue (reported; the decision reads no q-value)

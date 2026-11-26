@@ -1,0 +1,10 @@
+check	value	pass	detail
+complete	15120	TRUE	15120 rows of 15120 expected; cells ABCD; replicates absent from the declared range: 0; duplicates FALSE; every arm and mask present TRUE
+ranges_incomplete	0	TRUE	ranges whose complete count is below the expected count
+qmethod	0	TRUE	metrics rows whose recorded q-method is not qvalue (KIT-211: 0); reported, not a stop: the decision reads no q-value
+determinism	5	TRUE	cell A, first five replicates of a range run twice, rows and metrics identical (required in a counted scoring)
+F1	0	TRUE	identity violations of F1 (O in H_S, H_S in H_B, H_B in H_B1), summed
+F2	0	TRUE	E3 failures (B1's DA input), logFC identities (E10) not exact, determinism differences, counted
+t_r_monotone	0	TRUE	replicate-masks where the count of tested p <= t_r differs from the calls (reported, not a stop)
+bootstrap_B	10000	TRUE	B is 10000 in a counted scoring; another value is a mechanics run (self-test or lifecycle)
+range_declared	g3-table	TRUE	the declared range is rule G3's table in a counted scoring; K281_RANGE is a mechanics run

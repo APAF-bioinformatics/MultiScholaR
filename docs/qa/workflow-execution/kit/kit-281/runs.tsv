@@ -16,3 +16,5 @@ run_id	commit	purpose	minutes	core_hours	result
 # check-request-k281.py on the eight requests before the push: accepted (every cell r = 401 to 715 once), exit 0
 # counted jobs total 291.8 min = 19.45 core-hours; running total 2.28 + 19.45 = 21.73 of 74.67 (ceiling line before each request 65.95)
 # scoring request: running-ceiling line before it: 21.73 used + 2.67 this request + 7.67 reserves (continuation 5.00, re-scoring 2.67) + Part C 16.00 = 48.07 <= 74.67
+45770099879	3b9e628876b3298ce08c252972049e085ba72d73	scoring once, counted data (declaration-counted.md; timeout 40)	13.0	0.87	outcome Calibrated (results/); script 38 s
+# running total 21.73 + 0.87 = 22.60 of 74.67
