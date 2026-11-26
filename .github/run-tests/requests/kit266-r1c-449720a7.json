@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-266 R1c head check of the new file before R2 (M1 path control failed, run 45743367152); predictions-r1c.md; 1 job, ceiling 45 job-minutes",
+  "label": "KIT-266 R1c head check on kit-266 449720a7",
+  "package_commit": "449720a723eea36298ec9ba686c9dd8ba0d5c37e",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit266-limpa-combined-qc-figure.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
