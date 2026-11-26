@@ -1,0 +1,35 @@
+{
+  "requested_by": "KIT-262 re-measurement counted job 3 of 4 (rm-declaration.md at 9d01f4c9; VAL-381): AD cells in KIT-172's floor order; planned 74 compute minutes; running ceiling 59.51 + 46.0 of 221.63",
+  "label": "KIT-262 re-measurement job 3 9d01f4c9",
+  "package_commit": "9d01f4c9723ee927a38c1c89a2f5deb8cf8d6ac9",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/m2-k262.R",
+      "args": ["k262-rm/j3"],
+      "env": {
+        "K262_FLOOR_ORDER": "after",
+        "K262_SEED_BASE": "263100000",
+        "K262_CELLS": "31,32,35,36,49,66,69,84,86,89,103,105,106,108,125,142,143,162,173,176,179,198",
+        "K262_REPS": "1:40",
+        "K262_WORKERS": "4"
+      },
+      "out": "k262-rm/j3",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 147
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
