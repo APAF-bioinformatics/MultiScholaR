@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit271-limpa-table-name.R	37	19	0	2	0	232.2	failed

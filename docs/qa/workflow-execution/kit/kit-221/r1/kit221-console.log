@@ -1,0 +1,127 @@
+kit221-da-several-comparisons: .123456.78
+KIT-221 W1: names(da_proteins_long) = Protein.Ids, fdr_qvalue, raw_pvalue, log2FC, comparison, numerator, denominator, log2norm.S5.B, log2norm.S6.B, log2norm.S7.B, log2norm.S8.B, log2norm.S1.A, log2norm.S2.A, log2norm.S3.A, log2norm.S4.A, raw.S5.B, raw.S6.B, raw.S7.B, raw.S8.B, raw.S1.A, raw.S2.A, raw.S3.A, raw.S4.A, gene_names
+
+KIT-221 M1: caught message: number of items to replace is not a multiple of replacement length
+9...a.....b.cde..f.....g....hijklm.nop.....q0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+....r.st.....u...vw..xyz
+KIT-221 W7: mean log2FC of P11..P16 under C_vs_A = 1.0322
+ABC
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-kit221-da-several-comparisons.R:201:5'): KIT-221 W1: two co
+Expected `sort(unique(rows$comparison))` to be identical to `both`.
+Differences:
+`actual`:   "B_vs_A"         
+`expected`: "B_vs_A" "C_vs_A"
+
+Backtrace:
+    ▆
+ 1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+ 2.   └─testthat::expect_identical(sort(unique(rows$comparison)), both) at test-kit221-da-several-comparisons.R:180:5
+
+── 2. Failure ('test-kit221-da-several-comparisons.R:201:5'): KIT-221 W1: two co
+Expected `nrow(rows)` to be identical to 120L.
+Differences:
+  `actual`:  60
+`expected`: 120
+
+Backtrace:
+    ▆
+ 1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+ 2.   └─testthat::expect_identical(nrow(rows), 120L) at test-kit221-da-several-comparisons.R:181:5
+
+── 3. Failure ('test-kit221-da-several-comparisons.R:201:5'): KIT-221 W1: two co
+Expected `nrow(value$contrasts_results_table)` to be identical to 120L.
+Differences:
+  `actual`:  60
+`expected`: 120
+
+Backtrace:
+    ▆
+ 1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+ 2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:182:5
+
+── 4. Failure ('test-kit221-da-several-comparisons.R:201:5'): KIT-221 W1: two co
+Expected `unique(value$num_sig_da_molecules$comparison)` to have the same values as `both`.
+Actual: "B_vs_A"
+Expected: "B_vs_A", "C_vs_A"
+Absent: "C_vs_A"
+Backtrace:
+    ▆
+ 1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+ 2.   └─testthat::expect_setequal(...) at test-kit221-da-several-comparisons.R:183:5
+
+── 5. Failure ('test-kit221-da-several-comparisons.R:201:5'): KIT-221 W1: two co
+Expected `unique(value$num_sig_da_molecules_first_go$table$comparison)` to have the same values as `both`.
+Actual: "B_vs_A"
+Expected: "B_vs_A", "C_vs_A"
+Absent: "C_vs_A"
+Backtrace:
+    ▆
+ 1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+ 2.   └─testthat::expect_setequal(...) at test-kit221-da-several-comparisons.R:184:5
+
+── 6. Failure ('test-kit221-da-several-comparisons.R:201:5'): KIT-221 W1: two co
+Expected `nrow(value$list_of_volcano_plots)` to be identical to 2L.
+Differences:
+  `actual`: 1
+`expected`: 2
+
+Backtrace:
+    ▆
+ 1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+ 2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:185:5
+
+── 7. Failure ('test-kit221-da-several-comparisons.R:201:5'): KIT-221 W1: two co
+Expected `all(c("log2FC:B_vs_A", "log2FC:C_vs_A") %in% names(value$da_proteins_wide))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+Backtrace:
+    ▆
+ 1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+ 2.   └─testthat::expect_true(...) at test-kit221-da-several-comparisons.R:187:5
+
+── 8. Failure ('test-kit221-da-several-comparisons.R:201:5'): KIT-221 W1: two co
+Expected `sort(unique(value$da_proteins_long$comparison))` to be identical to `both`.
+Differences:
+`actual`:   "B_vs_A"         
+`expected`: "B_vs_A" "C_vs_A"
+
+Backtrace:
+    ▆
+ 1. └─kit221ExpectBoth(run$value) at test-kit221-da-several-comparisons.R:201:5
+ 2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:188:5
+
+── 9. Failure ('test-kit221-da-several-comparisons.R:210:5'): KIT-221 W1b: two c
+Expected W1b error to be NULL.
+Differences:
+`actual` is a character vector ('number of items to replace is not a multiple of replacement length')
+`expected` is NULL
+
+Backtrace:
+    ▆
+ 1. └─kit221Completed(run, "W1b error") at test-kit221-da-several-comparisons.R:210:5
+ 2.   └─testthat::expect_null(run$error, label = label) at test-kit221-da-several-comparisons.R:153:5
+
+── 10. Failure ('test-kit221-da-several-comparisons.R:221:5'): KIT-221 W2: each 
+Expected W2 comparisons to be identical to `sort(names(refs))`.
+Differences:
+`actual`:   "B_vs_A"         
+`expected`: "B_vs_A" "C_vs_A"
+
+Backtrace:
+    ▆
+ 1. └─kit221SameRows(...) at test-kit221-da-several-comparisons.R:221:5
+ 2.   └─testthat::expect_identical(...) at test-kit221-da-several-comparisons.R:160:5
+  ... and 28 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+COUNTS test-kit221-da-several-comparisons.R pass 43 fail 38 error 0 skip 0 warn 0

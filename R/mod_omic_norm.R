@@ -596,6 +596,17 @@ completeOmicNormTab <- function(workflowData) {
     invisible(updated_status)
 }
 
+#' The notice for the samples the correlation filter set missing in one assay (KIT-255, VAL-283; DRAFT wording): read from the
+#' filtered state's exclusion record through the metadata reader, so the tab and the worker's completion both have it.
+#' @return A character vector, empty when no sample was set missing (or the record cannot be read).
+#' @noRd
+omicNormCorrelationNotice <- function(binding, manager, reference) {
+    tryCatch({
+        meta <- readWorkflowOmicsMetadata(binding, manager, reference)
+        omicsCorrelationExclusionNotice(meta$slots$args$correlation_exclusions, meta$assay_names)
+    }, error = function(error) character())
+}
+
 #' The correlation filter on the head (the normalisation's last commit): the pairs and the selection, committed under
 #' `<prefix>_correlation_filtered` (KIT-031, KIT-072); on the worker under a managed session (KIT-078).
 #' @noRd
@@ -620,6 +631,10 @@ applyOmicNormCorrelation <- function(input, workflowData, normData, addLog, conf
             normData$correlation_filtered_obj <- reference # KIT-075: the state's reference
             normData$correlation_filtering_complete <- TRUE
             completeOmicNormTab(workflowData)
+            # KIT-255 (VAL-283): the samples the filter set missing in one assay (read from the state's `args` on both routes).
+            notice <- omicNormCorrelationNotice(binding, manager, reference)
+            for (line in notice) addLog(line)
+            if (length(notice)) shiny::showNotification(paste(notice, collapse = " "), type = "warning", duration = 20)
             addLog("Correlation filtering complete")
             shiny::removeNotification("corr_working")
             shiny::showNotification("Correlation filtering complete! Ready for DE analysis.", type = "message")

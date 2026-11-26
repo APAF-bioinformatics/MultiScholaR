@@ -1,0 +1,4 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit255-omics-correlation-assays.R	103	99	5	1	1	197.7	failed
+test-metab-s4-qc-shared.R	33	2	0	0	3	8.1	failed
+test-kit254-omics-correlation-skip.R	371	8	0	0	0	553.1	failed

@@ -1,0 +1,4 @@
+head	708e5f6a7d986249a8e3c99bd1f65087d922ca3d
+R	R version 4.6.1 (2026-06-24)
+started	2026-11-25 20:18:50
+finished	2026-11-25 20:23:13

@@ -578,14 +578,16 @@ for (class in c("lipid", "metab")) {
             stats::setNames(lapply(assays, function(assay) kit254E9Pairs(runs, assay)), assays)
         }, .package = "MultiScholaR")
         expect_true(isTRUE(kit254Apply(fx, nd, threshold = 0.5)), info = paste("E9 first Apply precondition", class))
-        expect_identical(kit254Removed(kit254Runs(fx)), "A_1", info = paste("E9 first Apply precondition", class))
+        # KIT-255 (VAL-283, declared edit): A_1 fails in LCMS_Pos only, so the first Apply sets it missing there and leaves
+        # the design as it was; the second Apply is identical (no cascade: A_2 is never removed).
+        expect_identical(kit254Removed(kit254Runs(fx)), character(0), info = paste("E9 first Apply precondition", class))
         second <- kit254Apply(fx, nd, threshold = 0.5)
         runs <- kit254Runs(fx)
         kit254Line("E9", class, paste("head", kit254Head(fx)), paste("removed", paste(kit254Removed(runs), collapse = ",")),
             paste("log", paste(grep("ERROR", fx$log$lines, value = TRUE), collapse = " | ")))
         kit254ExpectHead(fx, "_correlation_filtered", paste("E9", class))
         expect_true(isTRUE(second), info = paste("E9 second Apply completes", class, paste(seen$notes, collapse = " | ")))
-        expect_identical(kit254Removed(runs), "A_1", info = paste("E9", class))
+        expect_identical(kit254Removed(runs), character(0), info = paste("E9", class))
     })
 }
 
@@ -895,13 +897,16 @@ for (class in c("lipid", "metab")) {
                     stats::setNames(lapply(assays, function(assay) kit254E9Pairs(runs, assay, both = case$both)), assays)
                 }, .package = "MultiScholaR")
                 kit254Scripted(fx, list(0.5, "skip"))
-                expect_identical(kit254Removed(kit254Runs(fx)), "A_1", info = paste("E17 precondition", class, case$name))
+                # KIT-255 (declared edit): in the `pos` case A_1 stays in the design (set missing in LCMS_Pos); in `both` it leaves.
+                expect_identical(kit254Removed(kit254Runs(fx)), if (case$both) "A_1" else character(0),
+                    info = paste("E17 precondition", class, case$name))
                 out <- kit254Replay(fx, file.path(root, paste0(case$name, "-replay")))
                 statement <- out$value$correlation_statement
                 kit254Line("E17", paste(class, case$name), paste("statement", format(statement %||% "<none>")))
                 expect_null(out$error, info = paste("E17 replay precondition", class, case$name))
-                expect_true(isTRUE(grepl(paste0("leaves out A_1 (below the threshold in ", case$assays, ")"), statement, fixed = TRUE)),
-                    info = paste("E17", class, case$name))
+                expected <- if (case$both) paste0("leaves out A_1 (below the threshold in ", case$assays, ")") else
+                    "sets A_1 missing in LCMS_Pos only (below the threshold there) and keeps it in the other assays"
+                expect_true(isTRUE(grepl(expected, statement, fixed = TRUE)), info = paste("E17", class, case$name))
             })
         }
     })
