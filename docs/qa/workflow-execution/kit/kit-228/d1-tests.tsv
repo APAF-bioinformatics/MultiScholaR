@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit228-integration-input-refused-save.R	163	16	0	0	0	118.6	failed

@@ -364,6 +364,16 @@ workflowSummaryInputRemovedText <- function(omicType, kind) {
             folder, omicType))
 }
 
+#' KIT-228 (VAL-393; DRAFT wording, VAL-41): said once when a Save that removed the omic's earlier integration input is
+#' handed to a runner that is retrying a failed publication.
+#' @param omicType The omic.
+#' @return A string.
+#' @noRd
+workflowSummaryInputRetryText <- function(omicType) {
+    sprintf(paste("This omic's earlier integration input (integration/%s/) was removed by this save. If this save only finishes",
+        "an earlier save's publication, that does not write it again: save once more before integrating."), omicType)
+}
+
 #' KIT-228 (DRAFT wording, VAL-41): the earlier integration input could not be removed at the start of the Save, and this
 #' Save wrote no new one.
 #' @param folder The omic's input folder.
@@ -443,12 +453,10 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
         # KIT-228 (VAL-201): the omic's earlier integration input is removed once, here, before anything is written: every
         # Save then either publishes a new input or leaves none, whatever ends it (a refusal, an error, the gate, a worker
         # failure whose class is lost, an interrupted Save). A removal that fails is named and the Save goes on.
-        # A Save pressed again while the runner retries a failed publication (audit I05) resumes the first request, whose
-        # worker already wrote its input: that input is the accepted request's own, not an earlier one, and nothing would
-        # write it again, so it is not removed.
-        runner <- if (!is.null(config$integration$operation)) workflowOmicsManagedActions(omicType)
-        retrying <- !is.null(runner) && is.function(runner$retrying) && isTRUE(runner$retrying())
-        if (!is.null(inputFolder) && !retrying) {
+        # Also a Save pressed again while the runner retries a failed publication (VAL-393, audit C01 and C02): the runner
+        # reports a retry for ANY step of the omic with a publication pending, and a resumed request can be dropped as
+        # superseded, so the input is removed here as on every Save; the retry path says so (below).
+        if (!is.null(inputFolder)) {
             earlier <- dir.exists(inputFolder)
             tryCatch(removeOmicIntegrationInput(earlierDir, omicType),
                 error = function(e) notify(cli::ansi_strip(conditionMessage(e)), "warning", NULL))
@@ -483,7 +491,7 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
                 reasonShown <<- TRUE # the managed step's own notice names the reason
                 summaryFailed(error)
             },
-            sourceDir = paths$source_dir, done = function(written) {
+            sourceDir = paths$source_dir, inputRemoved = earlier && !dir.exists(inputFolder), done = function(written) {
                 # F108-03: a write the gate refused shows no "Saved Integration" notice. KIT-108 W4: a route writer's
                 # notice is its own (proteomics': the native archive's, or the S4 RDS's).
                 if (!isFALSE(written)) {
@@ -511,9 +519,10 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
 #' @param done `function(written)`: `written` is FALSE when the gate refused the write (with the attribute `gate`, KIT-228:
 #'   the Save's notice names the missing export), else TRUE, or a route writer's notice.
 #' @param sourceDir The project's source directory, for a route writer (KIT-108 W4: proteomics' native archive).
+#' @param inputRemoved Whether this Save removed the omic's earlier integration input at its start (KIT-228).
 #' @noRd
 startWorkflowSummaryIntegrationExport <- function(config, workflowData, omicType, path, stateName, object, notify, done,
-    failed, saveRDSFn = saveRDS, sourceDir = NULL) {
+    failed, saveRDSFn = saveRDS, sourceDir = NULL, inputRemoved = FALSE) {
     integration <- config$integration
     requires <- integration$requires
     # KIT-136: a requirement that depends on the session (transcriptomics: the RUVIII export only when RUV was applied).
@@ -525,6 +534,11 @@ startWorkflowSummaryIntegrationExport <- function(config, workflowData, omicType
     # KIT-082: the integration object is the whole state, so a managed session's worker writes it.
     runner <- if (!is.null(integration$operation)) workflowOmicsManagedActions(omicType)
     if (!is.null(runner) && !is.null(stateName)) {
+        # VAL-393: handed to a runner that is retrying a publication, this Save may only finish the earlier request, which
+        # does not write the input again: said once.
+        if (isTRUE(inputRemoved) && is.function(runner$retrying) && isTRUE(runner$retrying())) {
+            notify(workflowSummaryInputRetryText(omicType), "warning", NULL)
+        }
         runner$run(list(omicsManagedProduct(integration$operation, list(path = path, state_name = stateName),
             function(result) invisible(NULL))), done = function() done(TRUE), failed = failed)
         return(invisible(path))
