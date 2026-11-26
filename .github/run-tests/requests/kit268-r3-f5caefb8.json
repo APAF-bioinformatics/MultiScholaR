@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-268 correction pass R3: head f5caefb8 vs staging 7f17547f, 6 files, check both sides; expected 145 job-minutes, ceiling 200",
+  "label": "KIT-268 R3 correction f5caefb8 vs 7f17547f",
+  "package_commit": "f5caefb83dfcd981c1757184095a64b1ecd2465a",
+  "base_commit": "7f17547f99f5440f1330d7e760722be994460611",
+  "tools_ref": "",
+  "tests": [
+    "test-kit268-bh-fallback-notice.R",
+    "test-omic-da-module.R",
+    "test-omic-enrich-module.R",
+    "test-kit236-report-sentences.R",
+    "test-gui-entry-lipidomics.R",
+    "test-gui-entry-metabolomics.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-lipidomics.R": 120,
+    "test-gui-entry-metabolomics.R": 120
+  },
+  "extra_packages": [
+    "sva",
+    "limpa",
+    "mixOmics"
+  ],
+  "env": {},
+  "check": true,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
