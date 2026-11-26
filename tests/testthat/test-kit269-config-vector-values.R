@@ -47,6 +47,11 @@ test_that("(KIT-269 T2) integer, logical and double vectors, and the RUV control
         formatConfigList(list(ctrl = list(assay_pos = c(TRUE, FALSE), assay_neg = c(TRUE, TRUE, FALSE)))),
         c("Ctrl:", "  Assay Pos: TRUE, FALSE", "  Assay Neg: TRUE, TRUE, FALSE")
     )
+    # The real shape of the RUV control vector: one logical per feature, named by the feature id (as the analysis
+    # record prints it, `id=value`), so the controls can be identified from the file.
+    ctrl <- c(Feat_A = TRUE, Feat_B = FALSE, Feat_C = TRUE)
+    expect_identical(formatConfigList(list(ctrl = list(assay_pos = ctrl))),
+        c("Ctrl:", "  Assay Pos: Feat_A=TRUE, Feat_B=FALSE, Feat_C=TRUE"))
 })
 
 test_that("(KIT-269 T3) scalars, pairs, empty lists and skipped names are unchanged; text vectors print in full", {

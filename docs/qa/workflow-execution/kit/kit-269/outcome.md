@@ -136,3 +136,26 @@ assigns with `<<-` and writes "The configuration settings could not be listed he
 
 Results: unchanged (display only). Evidence: runs 45707147607 (R1) and 45709024838 (R2) above; base block observed
 empty in R1 and R2's base (T5, 116 lines ending at the dashes).
+
+## Correction pass (coordinator's ruling 2026-11-26 on audit I01, option (a)): named vectors keep their names
+
+On the path without an analysis record a named vector is printed `name=value`, as the record path prints it (the RUV
+control vector `ctrl` is stored named per feature; without names the controls cannot be identified from
+`study_parameters.txt`). One change in `formatConfigList`'s vector branch; unnamed vectors print as before. Budget: at
+most 4.0 core-hours (60 job-minutes) for both runs together; KIT-269 had used 20.86 of its 99.0 ceiling.
+
+### Predictions, committed and pushed before run 1
+
+Test added (T2): `formatConfigList(list(ctrl = list(assay_pos = c(Feat_A = TRUE, Feat_B = FALSE, Feat_C = TRUE))))`
+must equal `c("Ctrl:", "  Assay Pos: Feat_A=TRUE, Feat_B=FALSE, Feat_C=TRUE")`.
+
+- Run 1: the test file alone, no base, on the commit that adds the row, with `R/` as at 9e6c3fc3 (the current head's
+  code). Predicted 33 passed, 1 failed, 0 errors, 0 skipped: the new row fails by value (the names are dropped:
+  `Assay Pos: TRUE, FALSE, TRUE`), every other expectation as in R2's head (33 passed). Ceiling 45 job-minutes
+  (expected about 11).
+- Run 2 (after the fix): base 50077f3a (the base R2 used) against the fix commit, no check, four files: the KIT-269
+  file (base 17 passed / 6 failed / 4 errors, head 34 / 0 / 0, `fixed`), `test-kit235-lipid-metab-report-parser.R`
+  (54/0, `same`), `test-general-filemgmt-config-direct-shared.R` (33/0, `same`),
+  `test-general-filemgmt-config-roundtrip-contracts.R` (24/0, `same`). Ceiling 45 job-minutes (expected about 30).
+  `test-kit213-study-parameters-labels.R` is not on this branch and is left to the train.
+- Decision: a missed prediction is a result: recorded, no repair, stop and hand back.
