@@ -139,3 +139,15 @@ test-kit216-prot-session-after-enrichment.R, test-kit206-prot-norm-export-guard.
 `same`; check identical. A miss anywhere in R2: stop, the correction pass is spent.
 Budget line: spent about 79.5 (R1..R2, three diagnostics, incl. diagnostic 3); R1 expected 7.3 (worst 10), R2 expected 56 (worst 70)
 -> at most 79.5 + 10 + 70 = 159.5 of 200.00.
+
+## R2 of the correction pass: running-ceiling line (2026-11-27, before the request is pushed)
+Used so far from runs.tsv (core-hours = job-minutes x 4 / 60): 7.73 + 2.87 + 3.0 + 1.9 + 55 + 2.5 + 2.5 + 2.45 + 8.6 = 86.55 of 200.00
+(R1 of the correction pass 45837030184: about 129 job-minutes = 8.6; it was read as predicted). R2: expected about 56 (the earlier R2 was
+about 806 job-minutes = 53.7, plus test-gui-entry-proteomics.R 14.1 minutes a side = 1.9, plus the 120-minute timeouts only if a file stalls),
+worst case 92.00 (as declared for the first R2: 8 test jobs and 2 check jobs, 4 cores each). 86.55 + 92.00 = 178.55 <= 200.00.
+Request: head 174a62db9 (R/ = the correction code; tests identical to the base), base dfffaa0b (tests-only tree, R/ = staging), 135 files,
+4 shards per side, round-robin order built from order4.json: test-gui-entry-proteomics.R joins the lightest shard of the earlier R2 (shard 1,
+69.8 minutes); to keep round-robin sizes (34, 34, 34, 33) the lightest file of that shard (test-kit247-resave-no-session.R, 4.7 minutes) moves to
+the former shard 4; shard loads after the move about 84, 95, 93, 99 minutes. File assignment does not change any result (one process per file).
+file_timeouts: 120 for test-kit247-design-resave.R and test-gui-entry-proteomics.R, 90 for the new file; default 45; env
+MULTISCHOLAR_TRX_MANIFEST_NOTE=1 only (no MULTISCHOLAR_KIT277_DIAG, no stage variable); check true.
