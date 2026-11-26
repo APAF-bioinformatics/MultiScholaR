@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-219: run R1h, head check of the new test file and G0 on the fix commit (A2: all pass on the fix; G4 with the package function); ceiling 8.0 core-h",
+  "label": "KIT-219 R1h new tests and G0 on the fix bec2de00",
+  "package_commit": "bec2de00e3ec34af4cc3531db54d8b96ce2278c1",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit219-enrichment-files-current.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-219/g0.R",
+      "args": [],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-219/g0-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 60
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
