@@ -1,0 +1,36 @@
+{
+  "requested_by": "KIT-262 re-measurement scoring (score-k262.R m2, once, unchanged scorer, on the four jobs of the AD cells in KIT-172's order); ceiling 1.0 core-hours",
+  "label": "KIT-262 re-measurement scoring 3491fd93",
+  "package_commit": "3491fd93f2e0412e2bcad595050cd8641c8752b9",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/score-k262.R",
+      "args": [
+        "m2",
+        "k262-rm-sc/m2",
+        "docs/qa/workflow-execution/kit/kit-262/rm/j1/summary.tsv",
+        "docs/qa/workflow-execution/kit/kit-262/rm/j2/summary.tsv",
+        "docs/qa/workflow-execution/kit/kit-262/rm/j3/summary.tsv",
+        "docs/qa/workflow-execution/kit/kit-262/rm/j4/summary.tsv"
+      ],
+      "env": {},
+      "out": "k262-rm-sc/m2",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
