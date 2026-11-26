@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-266 R2 correction (stop rule 3, one pass): test-kit272-prot-box-panel-text.R, head 0daa4812 against base ec6e282b (R2 base plus the declared T7 limpa edit); predictions-r2.md; ceiling 45 job-minutes per job",
+  "label": "KIT-266 R2c kit272 file",
+  "package_commit": "0daa48123ad37b5c6df9dda5e708437c93a34937",
+  "base_commit": "ec6e282bffcbf6108237b38e97d9d7f568599c57",
+  "tools_ref": "",
+  "tests": [
+    "test-kit272-prot-box-panel-text.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 40,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
