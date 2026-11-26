@@ -137,14 +137,16 @@
  * Proteomics: when 'Color by' leaves no two samples in one group, the correlation histogram says so instead of
    stopping with an error (KIT-259).
  * Lipidomics and metabolomics, normalisation QC: the Pearson correlation histogram now shows within-group
-   correlations below 0; before, they were left out without a note. The histogram also says how many sample pairs
+   correlations below 0; before, they were left out without a note. Its axis labels read as plain numbers when the lowest correlation is
+   negative (a draft build printed them in scientific notation for some ranges). The histogram also says how many sample pairs
    have no correlation and are not shown (KIT-259).
  * Proteomics, normalisation: a QC figure that cannot be drawn no longer leaves the normalisation saved but
    unfinished, with every later step refused. The step completes, a warning names the figure, and the figure is
-   replaced by a note giving the reason in the tab, the composite QC figure and the report. No warning is shown, only
-   the note, at tab entry, after a 'Color by' or 'Shape by' change, at the DIA-with-limpa RUV covariates step, and on
-   the installed application for a pre-normalisation figure redrawn because the input changed; the RUV covariates
-   step's canonical-correlation figure is not covered. This came in with the 0.9 development builds. In earlier
+   replaced by a note giving the reason in the tab, the composite QC figure and the report. The report names the
+   Figure 1 panels that the normalisation run replaced. The DIA-with-limpa RUV covariates step and, on the installed application, a
+   pre-normalisation figure redrawn because the input changed show the same warning, and the covariates step's
+   canonical-correlation figure is covered too; only tab entry and a 'Color by' or 'Shape by' change show the note
+   without a warning. This came in with the 0.9 development builds. In earlier
    releases a post-normalisation figure that could not be drawn stopped the step before saving, and an RUV-corrected
    figure that could not be drawn was skipped, leaving the earlier run's file in place (KIT-259).
  * Reports (lipidomics, metabolomics; the same corrections in the proteomics reports): the report no longer prints
@@ -390,6 +392,18 @@
  * Proteomics: the enrichment tab's 'Download All Results' now writes its archive itself. Before, it needed a separate
    `zip` program, which the installed Windows application does not have (and which some Linux computers lack), so on
    those computers the download produced no archive. This change does not alter the files in the archive (KIT-241).
+
+ * study_parameters.txt: in the analysis-record section, a parameter that names an earlier result of the same analysis
+   (the correlation filter's sample pairs; the transcriptomics logCPM and RUV choice; the proteomics enrichment's input
+   tables) now says which earlier result it is (for the correlation pairs and the transcriptomics inputs, the step
+   number that produced it; for the enrichment, each contrast's differential abundance results). Before, it showed an
+   identifier of the session's internal store, which differs between sessions and projects, so two runs of the same
+   analysis gave different files and the value looked like a checksum when it was not. The identifier is still in
+   analysis_record.json. No result changes. Limit: analysis_record.json still names each result by its identifier in the
+   project's internal store, and its identity_sha256 values are computed over those identifiers, so two projects that
+   run the same analysis write different records; a record replays inside a copy of the project that made it. The
+   integration's study parameters likewise print a 'Checksum of the model's identity' that is specific to the project
+   (KIT-213).
 
  * Proteomics: 'Export Filtered Data Session', and the session archive that 'Save Workflow Arguments' refreshes in the
    Summary tab, now refuse with a message when the current table is not the normalisation tab's last result, for

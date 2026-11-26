@@ -1,0 +1,56 @@
+Study Parameters
+================
+
+Basic Information:
+-----------------
+Workflow Name: k207
+Description: N/A
+Timestamp: 2026-11-24 19:43:34
+
+Version Information:
+--------------------
+Repository: MultiScholaR
+Branch: N/A
+Commit: c0369d5
+Commit Timestamp: 2026-11-25T06:31:35+11:00
+Source: Local Git Repository
+
+Workflow Parameters:
+-------------------
+
+  Parameters from Final S4 Object:
+  --------------------------------
+No additional configuration parameters available
+
+Analysis Record:
+----------------
+
+[2. trx_raw_data_s4: design_builder]
+  sample_id [unknown] = Run
+  group_id [unknown] = group
+  technical_replicate_id [unknown] = NA
+
+[5. trx_ruvs: trx_ruvs]
+  trx_ruv_grid.logcpm [input] = c6a3e2826934c1de33c5d07230339d20e0b70876e53b5d91782cbbea4216e00d
+  trx_ruv_grid.ruv_mode [no_shipped_default] = automatic
+  trx_ruv_grid.percentage_min [no_shipped_default] = 5
+  trx_ruv_grid.percentage_max [no_shipped_default] = 30
+  trx_ruv_grid.percentage_step [no_shipped_default] = 5
+  trx_ruv_grid.k_penalty_weight [no_shipped_default] = 0.050000000000000003
+  trx_ruv_grid.manual_k [no_shipped_default] = NA
+  trx_ruv_grid.manual_percentage [no_shipped_default] = NA
+  logcpm [input] = c6a3e2826934c1de33c5d07230339d20e0b70876e53b5d91782cbbea4216e00d
+  grid [input] = 7d9656286153208ffddf2701a32ee707a441652df100fe63aa7d01c215efdfaf
+
+[differential_abundance: trx_da_contrast]
+  formula [input] = ~ 0 + group + W_1 + W_2
+  qvalue [no_shipped_default] = 0.050000000000000003
+  lfc [no_shipped_default] = 0
+
+[trx_ruviii_export: trx_ruviii_export]
+  ruviii_m_source [no_shipped_default] = group
+
+
+Contrasts:
+----------
+   Sera_vs_RPMI=groupSera-groupRPMI

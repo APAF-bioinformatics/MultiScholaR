@@ -1682,7 +1682,7 @@ collectDIANativeGuiFiles <- function(manager, metadata) {
         add("protein_qc", paste0(final_stub, ".tsv"))
     }
     protein_names <- c("normalized_protein_matrix_pre_ruv.tsv", "remove_proteins_with_only_one_rep.tsv",
-        paste0("proteomics_composite_QC_figure.", c("png", "pdf", "rds")),
+        paste0("proteomics_composite_QC_figure.", c("png", "pdf", "rds", "placeholders")),
         paste0(rep(c("pre_norm", "post_norm", "ruv_corrected"), each = 4L), "_",
             rep(c("pca", "density", "rle", "correlation"), 3L), ".png"), "ruv_corrected_cancor.png")
     for (name in protein_names[file.exists(file.path(roots$protein_qc, protein_names))]) add("protein_qc", name)

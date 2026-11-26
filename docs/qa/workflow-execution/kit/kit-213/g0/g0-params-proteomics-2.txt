@@ -1,0 +1,124 @@
+Study Parameters
+================
+
+Basic Information:
+-----------------
+Workflow Name: k207
+Description: N/A
+Timestamp: 2026-11-24 19:44:05
+
+Version Information:
+--------------------
+Repository: MultiScholaR
+Branch: N/A
+Commit: c0369d5
+Commit Timestamp: 2026-11-25T06:31:35+11:00
+Source: Local Git Repository
+
+Enrichment Analysis - Organism Filtering:
+-----------------------------------------
+* Organism Filter Enabled: No
+
+Workflow Parameters:
+-------------------
+
+  Parameters from Final S4 Object:
+  --------------------------------
+[globalParameters]
+  workflow_type = DIA
+  use_limpa = FALSE
+  report_template = DIA_report
+[deAnalysisParameters]
+  formula_string = ~ 0 + group
+[filterSamplesFn]
+  pearson_correlation_per_pair = NULL
+  min_pearson_correlation_threshold = 0.5
+[differentialAbundanceAnalysis]
+  contrasts_tbl = table: 1 rows, columns contrasts (sha256 f03d4db094e34f4c9a76badb0a50a9e9f312c5e40ebfa37a45385553e18ccfcf)
+  formula_string = ~ 0 + group
+  da_q_val_thresh = 0.050000000000000003
+  treat_lfc_cutoff = 0
+  eBayes_trend = TRUE
+  eBayes_robust = TRUE
+  args_group_pattern = (\d+)
+  args_row_id = uniprot_acc
+  qvalue_column = fdr_qvalue
+  raw_pvalue_column = raw_pvalue
+[daAnalysisUI]
+  q_value_threshold = 0.050000000000000003
+  log_fold_change_cutoff = 0
+  formula_string = ~ 0 + group
+  timestamp = 2026-11-24 19:43:54.288098
+  User Interface Parameters:
+  -------------------------
+[Differential Expression UI Parameters]
+  q_value_threshold = 0.05
+  log_fold_change_cutoff = 0
+  treat_enabled = FALSE
+
+[Enrichment Analysis UI Parameters]
+  up_log2fc_cutoff = 0
+  down_log2fc_cutoff = 0
+  q_value_cutoff = 0.05
+  organism_selected = 9606
+  database_source = gprofiler2
+
+Additional Configuration Parameters:
+-----------------------------------
+globalParameters:
+  Workflow Type: DIA
+  Use Limpa: FALSE
+  Report Template: DIA_report
+deAnalysisParameters:
+  Formula String: ~ 0 + group
+filterSamplesFn:
+  Pearson Correlation per Pair: NULL
+  Min Pearson Correlation Threshold: 0.5
+differentialAbundanceAnalysis:
+  Contrasts Tbl: table: 1 rows, columns contrasts (sha256 f03d4db094e34f4c9a76badb0a50a9e9f312c5e40ebfa37a45385553e18ccfcf)
+  Formula String: ~ 0 + group
+  Da q Val Thresh: 0.050000000000000003
+  Treat Lfc Cutoff: 0
+  eBayes Trend: TRUE
+  eBayes Robust: TRUE
+  Args Group Pattern: (\d+)
+  Args Row Id: uniprot_acc
+  Qvalue Column: fdr_qvalue
+  Raw Pvalue Column: raw_pvalue
+daAnalysisUI:
+  q Value Threshold: 0.050000000000000003
+  log Fold Change Cutoff: 0
+  Formula String: ~ 0 + group
+  Timestamp: 2026-11-24 19:43:54.288098
+
+Analysis Record:
+----------------
+
+[3. correlation_filtered: pearson-selection]
+  pearson-pairs.group [no_shipped_default] = group
+  pearson-pairs.tech_rep_remove_regex [default] = pool
+  pairs [input] = 9f37840e32fbf4e3b95feb98c294147d3cd37a213be66fd988b52aabe99c85bb
+  threshold [no_shipped_default] = 0.5
+
+[4. enrichment_completed: enrichment]
+  taxon_id [input] = 9606
+  up_cutoff [no_shipped_default] = 0
+  down_cutoff [no_shipped_default] = 0
+  q_cutoff [no_shipped_default] = 0.050000000000000003
+  exclude_iea [no_shipped_default] = FALSE
+  correction_method [no_shipped_default] = gSCS
+  protein_id_column [input] = gene_name
+  contrast_names [input] = groupB-groupA
+  results [input] = groupB-groupA=9e52b9848abc14cd20af6e2a702573b21ae6f40765e3f1a7530652ee2f84980b
+  enrichment_background [fixed] = tested
+
+[differential_abundance: DA-contrast-output]
+  formula [default] = ~ 0 + group
+  qvalue [default] = 0.050000000000000003
+  lfc [default] = 0
+  weights [no_shipped_default] = NA
+
+
+Contrasts:
+----------
+   B_vs_A=groupB-groupA

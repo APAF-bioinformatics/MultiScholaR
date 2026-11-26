@@ -1,0 +1,234 @@
+file: test-kit259b-second-correction.R
+test: KIT-259 A3-E5 (lipid): a lowest correlation in [-0.3, -0.2) labels the x axis in plain numbers
+kind: failure
+message:
+  Expected -3.000000e-01 -2.000000e-01 -1.000000e-01 5.551115e-17 1.000000e-01 2.000000e-01 3.000000e-01 4.000000e-01 5.000000e-01 6.000000e-01 7.000000e-01 8.000000e-01 9.000000e-01 1.000000e+00 to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit259b-second-correction.R
+test: KIT-259 A3-E5 (lipid): a lowest correlation in [-0.3, -0.2) labels the x axis in plain numbers
+kind: failure
+message:
+  Expected -3.000000e-01 -2.000000e-01 -1.000000e-01 5.551115e-17 1.000000e-01 2.000000e-01 3.000000e-01 4.000000e-01 5.000000e-01 6.000000e-01 7.000000e-01 8.000000e-01 9.000000e-01 1.000000e+00 to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 A3-E5 (metab): a lowest correlation in [-0.3, -0.2) labels the x axis in plain numbers
+kind: failure
+message:
+  Expected -3.000000e-01 -2.000000e-01 -1.000000e-01 5.551115e-17 1.000000e-01 2.000000e-01 3.000000e-01 4.000000e-01 5.000000e-01 6.000000e-01 7.000000e-01 8.000000e-01 9.000000e-01 1.000000e+00 to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit259b-second-correction.R
+test: KIT-259 A3-E5 (metab): a lowest correlation in [-0.3, -0.2) labels the x axis in plain numbers
+kind: failure
+message:
+  Expected -3.000000e-01 -2.000000e-01 -1.000000e-01 5.551115e-17 1.000000e-01 2.000000e-01 3.000000e-01 4.000000e-01 5.000000e-01 6.000000e-01 7.000000e-01 8.000000e-01 9.000000e-01 1.000000e+00 to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 I05-E1: workflow_execution_stale, workflow_execution_busy and an allocation error are not replaced
+kind: failure
+message:
+  Expected `inherits(got$value, case$class) && inherits(got$value, "error")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  workflow_execution_stale
+
+file: test-kit259b-second-correction.R
+test: KIT-259 I05-E1: workflow_execution_stale, workflow_execution_busy and an allocation error are not replaced
+kind: failure
+message:
+  Expected `file.exists(file.path(dir, "post_norm_pca.png"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  workflow_execution_stale
+
+file: test-kit259b-second-correction.R
+test: KIT-259 I05-E1: workflow_execution_stale, workflow_execution_busy and an allocation error are not replaced
+kind: failure
+message:
+  Expected `inherits(got$value, case$class) && inherits(got$value, "error")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  workflow_execution_busy
+
+file: test-kit259b-second-correction.R
+test: KIT-259 I05-E1: workflow_execution_stale, workflow_execution_busy and an allocation error are not replaced
+kind: failure
+message:
+  Expected `file.exists(file.path(dir, "post_norm_pca.png"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  workflow_execution_busy
+
+file: test-kit259b-second-correction.R
+test: KIT-259 I05-E1: workflow_execution_stale, workflow_execution_busy and an allocation error are not replaced
+kind: failure
+message:
+  Expected `inherits(got$value, case$class) && inherits(got$value, "error")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  error
+
+file: test-kit259b-second-correction.R
+test: KIT-259 I05-E1: workflow_execution_stale, workflow_execution_busy and an allocation error are not replaced
+kind: failure
+message:
+  Expected `file.exists(file.path(dir, "post_norm_pca.png"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  error
+
+file: test-kit259b-second-correction.R
+test: KIT-259 I04-E1 (in process): the DIA-with-limpa RUV covariates step names a figure it replaced
+kind: failure
+message:
+  Expected [message 10] RUV-III factors appended as covariates (k = 2). Ready for differential expression analysis. to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit259b-second-correction.R
+test: KIT-259 I04-E1 (managed): the DIA-with-limpa RUV covariates step names a figure it replaced
+kind: failure
+message:
+  Expected [default NULL] Applying proteomics step ... | [default NULL] Applying proteomics step ... | [message 10] RUV-III factors appended as covariates (k = 2). Ready for differential expression analysis. to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit259b-second-correction.R
+test: KIT-259 I04-E2: managed, a pre-normalisation figure redrawn because the input changed is named in a notice
+kind: error
+message:
+  <notSubsettableError/error/condition>
+  Error in `captured$actions[[1L]]`: object of type 'closure' is not subsettable
+trace (first lines):
+      ▆
+   1. └─testthat::expect_identical(captured$actions[[1L]]$source, "source") at test-kit259b-second-correction.R:192:5
+   2.   └─testthat::quasi_label(enquo(object), label)
+   3.     └─rlang::eval_bare(expr, quo_get_env(quo))
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E1: a placeholder leaves a marker beside it, which a later drawn figure removes
+kind: failure
+message:
+  Expected `file.exists(marker)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E2: a normalisation run removes the earlier run's post-normalisation and RUV markers, not the pre ones
+kind: failure
+message:
+  Expected `file.exists(file.path(dir, names))` to be identical to `c(FALSE, FALSE, TRUE)`.
+  Differences:
+  `actual`:   TRUE  TRUE  TRUE
+  `expected`: FALSE FALSE TRUE
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (LFQ): the report names the Figure 1 panels replaced by a placeholder
+kind: failure
+message:
+  Expected `is.null(k259bChunk(file, "QC_metrics_placeholders"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-G1 (LFQ): with no placeholder the Figure 1 section knits to the same text
+kind: failure
+message:
+  Expected `knit(region)` to be identical to `knit(without)`.
+  Differences:
+  lines(actual) vs lines(expected)
+    "```"
+  - "## Warning: Composite QC figure not found at /tmp/Rtmpaihhik/file4cab5be22dc1/proteomics_composite_QC_figure.png\\n"
+  + "## Warning: Composite QC figure not found at /tmp/Rtmpaihhik/file4cab6391b93f/proteomics_composite_QC_figure.png\\n"
+    "```"
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (TMT): the report names the Figure 1 panels replaced by a placeholder
+kind: failure
+message:
+  Expected `is.null(k259bChunk(file, "QC_metrics_placeholders"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-G1 (TMT): with no placeholder the Figure 1 section knits to the same text
+kind: failure
+message:
+  Expected `knit(region)` to be identical to `knit(without)`.
+  Differences:
+  lines(actual) vs lines(expected)
+    "```"
+  - "## Warning: Composite QC figure not found at /tmp/Rtmpaihhik/file4cabf1b4844/proteomics_composite_QC_figure.png\\n"
+  + "## Warning: Composite QC figure not found at /tmp/Rtmpaihhik/file4cab1099a00f/proteomics_composite_QC_figure.png\\n"
+    "```"
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (DIANN): the report names the Figure 1 panels replaced by a placeholder
+kind: failure
+message:
+  Expected `is.null(k259bChunk(file, "QC_metrics_placeholders"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-G1 (DIANN): with no placeholder the Figure 1 section knits to the same text
+kind: failure
+message:
+  Expected `knit(region)` to be identical to `knit(without)`.
+  Differences:
+  lines(actual) vs lines(expected)
+    "```"
+  - "## Warning: Composite QC figure not found at /tmp/Rtmpaihhik/file4cab2345287e/proteomics_composite_QC_figure.png\\n"
+  + "## Warning: Composite QC figure not found at /tmp/Rtmpaihhik/file4cab211ce2c9/proteomics_composite_QC_figure.png\\n"
+    "```"
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-E3 (DIANN_limpa): the report names the Figure 1 panels replaced by a placeholder
+kind: failure
+message:
+  Expected `is.null(k259bChunk(file, "QC_metrics_placeholders"))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit259b-second-correction.R
+test: KIT-259 (ii)-G1 (DIANN_limpa): with no placeholder the Figure 1 section knits to the same text
+kind: failure
+message:
+  Expected `knit(region)` to be identical to `knit(without)`.
+  Differences:
+  lines(actual) vs lines(expected)
+    "```"
+  - "## Warning: Composite QC figure not found at /tmp/Rtmpaihhik/file4cab2e5d34bf/proteomics_composite_QC_figure.png\\n"
+  + "## Warning: Composite QC figure not found at /tmp/Rtmpaihhik/file4cab5945d52e/proteomics_composite_QC_figure.png\\n"
+    "```"
+
