@@ -110,3 +110,27 @@ expected about 190 job-minutes = about 12.7 core-hours; R1 + R2 about 14.4 core-
   newest staging record (same on both sides; a count differing from my number but equal on both sides is `same`).
 - R CMD check: identical findings base and head (the man/ edits change `\title` text only).
 - A stop: any new failure, any count change, any message change in a file not named above, or a check finding only on head.
+
+## 5. Addition ruled by the coordinator inside VAL-306's intent: the declared step's description (T02, T03, T06, T07)
+
+Tests first at `f0ca0ef4` (tests only). Predictions on the current head `8496674a` (R/ unchanged), declared before the change
+and the run:
+- New block (5), 3 expectations x 2 omics (rule's first part, its mean part, none of the earlier words): all 6 FAIL by value,
+  the assertion printing "Resolved duplicate lipid features by keeping highest intensity" (and the metabolite text); the
+  third expectation fails too because "keeping highest intensity" matches the earlier-words pattern.
+- T03, help: "(0|zero)[^.]*not measured" x 2 omics and "keeps its own name and annotation" x 2 omics: all 4 already PASS
+  on 8496674a (the applied help says "an intensity of 0 counts as not measured" and "The kept row keeps its own name and
+  annotation"); they guard a later rewording, they do not fail first.
+- T03, result text: "(0|zero)[^.]*not measured" x 2 prefixes: both already PASS ("a missing value or 0 is not measured").
+- So on 8496674a plus these tests: the file reads 34 + 6 = 40 passed ... 6 failed (the six of block 5), 40 passed; on the
+  change: 46 passed, 0 failed.
+
+Run (R3 of this follow-up): base = `8496674a`, head = the change commit; five files, 1 shard per side, no check; ceiling 60
+job-minutes, expected about 30 (about 2 core-hours):
+- `test-kit258b-duplicate-texts.R`: base 34/0, head 46/0 (`count-changed`, no failure).
+- `test-workflow-omics-binding-steps.R`: 57/2 on both sides, `message-changed`: the duplicate step's recorded `description`
+  differs in both omics (a stored laptop snapshot, `tests/testthat/fixtures/kit094-characterisation.rds`, not edited).
+- `test-kit258-duplicate-completeness.R` 162/0, `test-workflow-lipid-declarations.R` 259/0 and
+  `test-workflow-metab-declarations.R` 259/0: `same`.
+- Nothing else moves. (The register's "the two declarations files" is read as the lipid and the metabolomics declarations
+  files; `test-workflow-omics-declarations.R` is not in the run: its stored registry holds no description.)
