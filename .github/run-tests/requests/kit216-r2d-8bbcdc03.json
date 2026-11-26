@@ -1,0 +1,32 @@
+{
+  "requested_by": "KIT-216 R2d: the re-frozen files and their readers after the re-freeze, + KIT-213's file, head 8bbcdc03 vs base 923cc370 (staging 80f26158); expected 80 job-minutes",
+  "label": "KIT-216 R2d 8bbcdc03 vs 923cc370",
+  "package_commit": "8bbcdc03dbcb36f4a4cc3be8bd6f89a2a1ea81c4",
+  "base_commit": "923cc37072bcb4a84b95d81499d05736280503b7",
+  "tools_ref": "",
+  "tests": [
+    "test-gui-entry-proteomics.R",
+    "test-omic-enrich-module.R",
+    "test-omic-summary-module.R",
+    "test-omics-enrich-core.R",
+    "test-omics-summary-core.R",
+    "test-kit213-study-parameters-labels.R",
+    "test-kit216-prot-session-after-enrichment.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-gui-entry-proteomics.R": 120,
+    "test-omic-enrich-module.R": 90,
+    "test-omic-summary-module.R": 90
+  },
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
