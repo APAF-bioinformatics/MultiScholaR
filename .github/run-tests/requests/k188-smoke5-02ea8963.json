@@ -1,0 +1,49 @@
+{
+  "requested_by": "KIT-188 guard send (smoke/declaration-5.md; allowed by the coordinator's ruling; judges nothing): parse, E16, the planted guard and crashnet units on M12; charged to L1r's line",
+  "label": "KIT-188 smoke5 02ea8963",
+  "package_commit": "02ea8963a3c382d705c73c341a4aa81a0da8d349",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/e16/run-e16.R",
+      "args": [],
+      "env": {},
+      "out": "k188-smoke-e16",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 25
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "M12",
+        "401",
+        "401",
+        "k188-smoke5-g"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_LIFECYCLE": "1",
+        "K188_SMOKE": "1",
+        "K188_JOBS": "guard",
+        "K188_JOB": "smoke5-g"
+      },
+      "out": "k188-smoke5-g",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 10
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
