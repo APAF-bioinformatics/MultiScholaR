@@ -204,7 +204,10 @@ getMetabolomicsColumnDefaults <- function(format) {
             , area = c("Area", "area")
             , formula = c("Formula", "formula")
             , ontology = c("Ontology", "ontology")
-            , is_pattern = "^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:"
+            # KIT-260 (VAL-241, OD-1 (c)): labelled standards only. `w/o MS2:` (MS-DIAL's mark of a feature annotated
+            # without an accepted MS/MS match) is not a standard's label; `IS-` matches at the start of a name only;
+            # MS-DIAL's parenthesised deuterium label `(d7)` is recognised.
+            , is_pattern = "^IS_|_d[0-9]+$|ISTD|^IS-|\\(d[0-9]+\\)"
         )
         , "progenesis" = list(
             metabolite_id = c("Compound", "compound")

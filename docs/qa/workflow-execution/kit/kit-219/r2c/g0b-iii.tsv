@@ -1,0 +1,12 @@
+case	reference_state_owner	checked	pathway_files	kit212_guard_lets_copy_run	omitted_if_copy_runs	omitted_names	listed_leaf
+lipid complete	TRUE	TRUE	0	FALSE	0		FALSE
+lipid optional_missing	TRUE	TRUE	0	FALSE	0		FALSE
+lipid none	TRUE	TRUE	0	TRUE	0		FALSE
+metab complete	TRUE	TRUE	2	FALSE	0	KO_vs_WT_down_enrichment_results.tsv,KO_vs_WT_up_enrichment_results.tsv	FALSE
+metab optional_missing	TRUE	TRUE	2	FALSE	0	KO_vs_WT_down_enrichment_results.tsv,KO_vs_WT_up_enrichment_results.tsv	FALSE
+metab none	TRUE	TRUE	0	TRUE	0		FALSE
+prot in-memory DIA	FALSE	FALSE	2	TRUE	0		FALSE
+prot in-memory DIA_limpa	FALSE	FALSE	2	TRUE	0		FALSE
+prot in-memory TMT	FALSE	FALSE	2	TRUE	0		FALSE
+prot in-memory MaxQuant_LFQ	FALSE	FALSE	2	TRUE	0		FALSE
+prot owner DIA	TRUE	TRUE	2	FALSE	0	B_vs_A_down_enrichment_results.tsv,B_vs_A_up_enrichment_results.tsv	FALSE

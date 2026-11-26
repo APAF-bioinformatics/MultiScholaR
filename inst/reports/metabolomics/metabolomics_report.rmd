@@ -414,6 +414,9 @@ ExtractStudyParametersNew <- function(study_params) {
     itsd_aggregation = itsd_info$"Aggregation" %||% NA,
     itsd_removed = parse_yes_no(itsd_info$"ITSD Removed After Normalization", FALSE),
     itsd_features_per_assay = itsd_info$"ITSD Features Per Assay" %||% NA,
+    # KIT-260 (OD-3 (a)): the note the study-parameters file carries when the stored pattern matched names through
+    # the alternatives the corrected MS-DIAL default removed.
+    itsd_note = itsd_info$"Note" %||% NA,
 
     # Log Transformation
     log_transform_applied = parse_yes_no(log_transform_info$"Applied", TRUE),
@@ -526,10 +529,16 @@ FormatMethodDetails <- function(numbers) {
       )
     }
 
+    itsd_note_text <- if (!is.null(numbers$itsd_note) && !is.na(numbers$itsd_note) && nzchar(numbers$itsd_note)) {
+      paste0(" ", numbers$itsd_note)
+    } else {
+      ""
+    }
+
     glue::glue(
       "Internal standard (ITSD) normalization was applied using the ",
       "{itsd_method} method with {itsd_agg} aggregation across ITSD features. ",
-      "{removal_text}{itsd_feature_details}"
+      "{removal_text}{itsd_feature_details}{itsd_note_text}"
     )
   } else {
     "Internal standard normalization was not applied."
@@ -1583,11 +1592,16 @@ cat("*Figure 3: Volcano plots of differentially abundant metabolites in alphabet
 
 `r results_data$content$opinions`
 
-# Pathway Enrichment Analysis
+```{r enrichment_presence, echo=FALSE, results='asis'}
+# KIT-219 (VAL-187; the proteomics reports' rule, KIT-055): this application has no enrichment analysis for this omic, so
+# the section is printed only when the publication folder holds an enrichment file.
+enrichment_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots")
+enrichment_ran <- dir.exists(enrichment_plots_dir) && length(list.files(enrichment_plots_dir, recursive = TRUE)) > 0
+cat("# Pathway Enrichment Analysis\n\n")
+if (enrichment_ran) cat(results_data$content$pathway_enrichment, "\n\n") else cat("No enrichment analysis was run for this project.\n\n")
+```
 
-`r results_data$content$pathway_enrichment`
-
-```{r Enrichment Plots, echo=FALSE, out.width="49%", out.height="49%", fig.align='center', fig.ncol=2, fig.show='hold'}
+```{r Enrichment Plots, echo=FALSE, eval=enrichment_ran, out.width="49%", out.height="49%", fig.align='center', fig.ncol=2, fig.show='hold'}
 enrichment_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots")
 if(dir.exists(enrichment_plots_dir)) {
   all_enrichment_files <- list.files(enrichment_plots_dir, full.names = TRUE, recursive = FALSE)
@@ -1595,13 +1609,13 @@ if(dir.exists(enrichment_plots_dir)) {
   if(length(enrichment_plot_files) > 0) {
     knitr::include_graphics(enrichment_plot_files)
   } else {
-     cat(glue::glue("Warning: No Enrichment Plot images found in {enrichment_plots_dir}\n"))
+     message(glue::glue("Warning: No Enrichment Plot images found in {enrichment_plots_dir}\n"))
   }
 } else {
-  cat(glue::glue("Warning: Enrichment Plots directory not found at {enrichment_plots_dir}\n"))
+  message(glue::glue("Warning: Enrichment Plots directory not found at {enrichment_plots_dir}\n"))
 }
 ```
 
-```{r Enrichment Caption, echo=FALSE, results='asis'}
+```{r Enrichment Caption, echo=FALSE, eval=enrichment_ran, results='asis'}
 cat("*Figure 4: Pathway enrichment analysis showing pathways enriched in differentially abundant metabolites. Plots are ordered alphabetically by comparison and direction.*\n\n")
 ```

@@ -1,0 +1,23 @@
+-------------------------------------------------------------------
+Welcome to MultiScholaR!
+
+IMPORTANT: Please run MultiScholaR::loadDependencies() 
+           to ensure all required packages are installed and loaded.
+-------------------------------------------------------------------
+g0b-survey: W1
+
+══ Warnings ════════════════════════════════════════════════════════════════════
+1. (code run outside of `test_that()`) ('g0b-survey.R:5:1') - cannot open file 'tests/testthat/test-omic-summary-module.R': No such file or directory
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('g0b-survey.R:5:1'): (code run outside of `test_that()`) ──────────
+Error in `file(filename, "r")`: cannot open the connection
+Backtrace:
+    ▆
+ 1. └─base::parse(file.path("tests", "testthat", "test-omic-summary-module.R")) at g0b-survey.R:5:1
+ 2.   └─base::file(filename, "r")
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+  test failed skipped error
+1 <NA>      0   FALSE  TRUE
+g0b done

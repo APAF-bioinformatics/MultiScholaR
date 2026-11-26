@@ -577,10 +577,45 @@ Test conditions, deviations from the method and critical reagent details: [to be
 ```{r Result Section, echo=FALSE}
 # Results function - focuses on correlation data
 FormatResults <- function(correlation_data, figures_dir = file.path(results_dir, "protein_qc"), ruv_applied = TRUE,
-                          ruv_column = "after RUVIII-C correction", stages_known = TRUE) {
+                          ruv_column = "after RUVIII-C correction", stages_known = TRUE, limpa_norm = NULL) {
   # KIT-227: ruv_applied NA = not recorded; stages_known FALSE when the figure's column layout is not known (the limpa
   # route without RUV).
   ruv_state <- if (isTRUE(ruv_applied)) TRUE else if (isFALSE(ruv_applied)) FALSE else NA
+  # KIT-266 (VAL-308, VAL-316): on DIA with limpa (`limpa_norm` given: the recorded between-sample method, "none" when absent)
+  # Figure 1's columns are DPC-Quant's estimates, the table after the peptide count filter (and the recorded between-sample
+  # normalisation), both before the sample-correlation filter, and, with a RUV step, the RUV-III result after that filter. The
+  # figure has two columns in every state without a RUV step applied (RUV_applied FALSE) and three with one.
+  if (!is.null(limpa_norm)) {
+    left <- "DPC-Quant's protein estimates (a complete log2 matrix; model-based where peptides were not detected)"
+    centre <- if (identical(limpa_norm, "none")) "after the peptide count filter, with no between-sample normalisation applied" else
+      paste0("after the ", switch(limpa_norm, cyclicloess = "cyclic loess", limpa_norm), " normalisation and the peptide count filter")
+    if (isTRUE(ruv_state)) {
+      return(glue::glue("
+Quality Control  
+
+Figure 1 shows four quality-control views at three stages of processing: {left} (left column: panels a, d, g, j); {centre}, before the sample-correlation filter (centre column: b, e, h, k); and {ruv_column} (right column: c, f, i, l).  
+• Principal component analysis (panels a-c): samples plotted on the first two principal components of the log2 protein values (centred, not scaled), computed at each stage from the tenth of the proteins with the largest ratio of standard deviation to mean of their log2 values; coloured by experimental group.  
+• Principal component scores by group (panels d-f): for each experimental group, a box plot of the samples' scores on principal component 1 (upper plot) and principal component 2 (lower plot), the same scores that panels a-c plot as points. The line in each box is the median, the box spans the first to the third quartile, the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box, and scores beyond them are drawn as points. The notch spans the median plus and minus 1.58 times the interquartile range divided by the square root of the number of samples in the group: as a rough guide, two groups whose notches do not overlap have medians that differ at about the 5% level (McGill, Tukey and Larsen, 1978). With fewer than about ten samples in a group the notch extends beyond the box and should not be read. Each stage is a separate analysis, so the scores of different panels are not on a common scale and their signs are arbitrary.  
+• Relative log expression (panels g-i): per-sample deviations from the protein-wise median.  
+• Pearson correlation (panels j-l): the distribution of between-sample correlations within groups.  
+
+Whether technical variation was reduced and biological signal retained is assessed from these panels
+by the analyst; this report draws no automated conclusion from them. ",
+.trim = FALSE))
+    }
+    return(glue::glue("
+Quality Control  
+
+Figure 1 shows four quality-control views at two stages of processing: {left} (left column: panels a, c, e, g) and {centre}, before the sample-correlation filter (right column: b, d, f, h). RUV-III correction was not applied to this dataset.  
+• Principal component analysis (panels a-b): samples plotted on the first two principal components of the log2 protein values (centred, not scaled), computed at each stage from the tenth of the proteins with the largest ratio of standard deviation to mean of their log2 values; coloured by experimental group.  
+• Principal component scores by group (panels c-d): for each experimental group, a box plot of the samples' scores on principal component 1 (upper plot) and principal component 2 (lower plot), the same scores that panels a-b plot as points. The line in each box is the median, the box spans the first to the third quartile, the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box, and scores beyond them are drawn as points. The notch spans the median plus and minus 1.58 times the interquartile range divided by the square root of the number of samples in the group: as a rough guide, two groups whose notches do not overlap have medians that differ at about the 5% level (McGill, Tukey and Larsen, 1978). With fewer than about ten samples in a group the notch extends beyond the box and should not be read. Each stage is a separate analysis, so the scores of different panels are not on a common scale and their signs are arbitrary.  
+• Relative log expression (panels e-f): per-sample deviations from the protein-wise median.  
+• Pearson correlation (panels g-h): the distribution of between-sample correlations within groups.  
+
+Whether technical variation was reduced and biological signal retained is assessed from these panels
+by the analyst; this report draws no automated conclusion from them. ",
+.trim = FALSE))
+  }
   # KIT-055: the text describes what Figure 1 contains; it makes no claim about what this dataset's panels show.
   # Interpretation belongs to the analyst (see "Analyst interpretation").
   if (isTRUE(ruv_state) && isTRUE(stages_known)) {
@@ -1429,11 +1464,16 @@ Main <- function() {
       results        = if (!is.null(analysis_results$numbers$dpc_engine) &&
         !identical(analysis_results$numbers$dpc_engine, "not recorded") && !all(is.na(analysis_results$numbers$dpc_engine))) {
         ruvcov_k <- analysis_results$numbers$ruvcov_k
-        if (is.null(ruvcov_k) || identical(ruvcov_k, "not recorded") || all(is.na(ruvcov_k)))
-          FormatResults(correlation_data, ruv_applied = FALSE, stages_known = FALSE) else
-          FormatResults(correlation_data, ruv_column = if (identical(analysis_results$numbers$ruvcov_mode, "correction"))
-            "after RUV-III correction (the corrected matrix entered the differential abundance model)" else
-            "for the RUV-III-adjusted matrix (drawn for quality control only; the differential abundance model carried the RUV-III factors as covariates)")
+        # KIT-266 (VAL-316 (1), (4)): the recorded between-sample method (absent = none, as the Methods read it), and every
+        # state without an applied RUV step (no covariates step, a record without the factor count, k = 0) has the two-column figure.
+        limpa_norm <- analysis_results$numbers$limpa_norm_method
+        if (is.null(limpa_norm) || identical(limpa_norm, "not recorded") || all(is.na(limpa_norm))) limpa_norm <- "none"
+        if (is.null(ruvcov_k) || identical(ruvcov_k, "not recorded") || all(is.na(ruvcov_k)) ||
+            identical(analysis_results$numbers$ruvcov_mode, "none") || isTRUE(suppressWarnings(as.numeric(ruvcov_k[[1L]])) == 0))
+          FormatResults(correlation_data, ruv_applied = FALSE, limpa_norm = limpa_norm) else
+          FormatResults(correlation_data, limpa_norm = limpa_norm, ruv_column = if (identical(analysis_results$numbers$ruvcov_mode, "correction"))
+            "after RUV-III correction (the corrected matrix entered the differential abundance model), applied after the sample-correlation filter" else
+            "for the RUV-III-adjusted matrix after the sample-correlation filter (drawn for quality control only; the differential abundance model carried the RUV-III factors as covariates)")
       } else FormatResults(correlation_data, ruv_applied = analysis_results$numbers$ruv_applied %||% NA,
         ruv_column = "after RUVIII-C correction"),
       interpretation = FormatAnalystInterpretation(),
@@ -1475,7 +1515,7 @@ results_data <- tryCatch({
 
 `r results_data$content$results`
 
-```{r QC_metrics, echo=FALSE, warning=FALSE, out.height="8.5in", fig.align="center", fig.cap="Figure 1: QC metrics across normalisation stages"}
+```{r QC_metrics, echo=FALSE, warning=FALSE, out.height="8.5in", fig.align="center", fig.cap="Figure 1: QC metrics across normalisation stages. On DIA with limpa the first two columns are before the sample-correlation filter, and a third column, when the figure has one, is after it."}
 # Use NEW path variable
 composite_qc_fig_path <- file.path(report_qc_figures_dir, paste0(params$omic_type, "_composite_QC_figure.png"))
 if(file.exists(composite_qc_fig_path)) {
@@ -1497,12 +1537,15 @@ FormatPlaceholderPanels <- function(qc_figures_dir, omic_type) {
   rows <- strsplit(readLines(list_path, warn = FALSE), "\t", fixed = TRUE)
   rows <- Filter(function(row) length(row) == 2L && nzchar(row[[1L]]), rows)
   if (!length(rows)) return("")
-  stages <- c(pre_norm = "after log2 transformation", post_norm = "after between-sample normalisation",
-    ruv_corrected = "after RUVIII-C correction")
+  # KIT-266 (VAL-308): on DIA with limpa the columns of Figure 1 are DPC-Quant's estimates, the table after the peptide count
+  # filter (and any between-sample normalisation) and the RUV-III result after the sample-correlation filter.
+  stages <- c(pre_norm = "of DPC-Quant's protein estimates",
+    post_norm = "after the peptide count filter and any between-sample normalisation",
+    ruv_corrected = "of the RUV-III-adjusted matrix after the sample-correlation filter")
   kinds <- c(pca = "principal component analysis", density = "principal component scores by group", rle = "relative log expression",
     correlation = "Pearson correlation")
   describe <- function(figure) {
-    if (identical(figure, "ruv_corrected_cancor")) return("RUV-III canonical correlation")
+    if (figure %in% c("ruv_corrected_cancor", "ruv_covariates_cancor")) return("RUV-III canonical correlation")
     stage <- sub("_(pca|density|rle|correlation)$", "", figure)
     kind <- sub("^.*_", "", figure)
     if (!stage %in% names(stages) || !kind %in% names(kinds)) return(figure)
@@ -1549,10 +1592,10 @@ cat("*Figure 2: Volcano plots of differentially expressed proteins one per compa
 
 ```{r enrichment_presence, echo=FALSE, results='asis'}
 # KIT-055: the enrichment section renders only when an enrichment analysis produced outputs for this project.
+# KIT-219: the flag reads the publication folder only: Copy puts there the files of the current enrichment, and the
+# Report refuses a folder that holds others.
 enrichment_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots")
-pathway_dir <- tryCatch(current_project_paths$pathway_dir, error = function(e) NULL)
-enrichment_ran <- length(list.files(enrichment_plots_dir, pattern = "[.](png|jpg|jpeg)$", ignore.case = TRUE)) > 0 ||
-  (!is.null(pathway_dir) && dir.exists(pathway_dir) && length(list.files(pathway_dir, recursive = TRUE)) > 0)
+enrichment_ran <- dir.exists(enrichment_plots_dir) && length(list.files(enrichment_plots_dir, recursive = TRUE)) > 0
 cat("# GO Enrichment Analysis
 
 ")
@@ -1586,14 +1629,14 @@ cat("*Figure 3: GO enrichment analysis showing pathways enriched in differential
 ```{r stringdb_presence, echo=FALSE, results='asis'}
 # KIT-053: the STRING section renders only when a STRING enrichment produced outputs for this project (KIT-055's
 # rule for the GO section; this template's extra STRING section was not covered and stated a query that never ran).
-stringdb_plots_dir <- file.path(current_project_paths$pathway_dir %||% "", "string_db")
+stringdb_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots", "string_db")
 stringdb_ran <- dir.exists(stringdb_plots_dir) && length(list.files(stringdb_plots_dir, recursive = TRUE)) > 0
 if (stringdb_ran) cat("# STRING DB Functional Enrichment Analysis\n\n", results_data$content$stringdb_enrichment, "\n\n")
 ```
 
 ```{r STRING DB Enrichment Plots, echo=FALSE, eval=stringdb_ran, out.width="100%", fig.align='center'}
-# Use pathway_dir for STRING DB results
-stringdb_plots_dir <- file.path(current_project_paths$pathway_dir, "string_db")
+# KIT-219: the STRING results as Copy put them in the publication folder
+stringdb_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots", "string_db")
 if(dir.exists(stringdb_plots_dir)) {
   all_stringdb_files <- list.files(stringdb_plots_dir, full.names = TRUE, recursive = FALSE)
   stringdb_plot_files <- sort(grep(pattern = "enrichment_summary_.*\\.(png|jpg|jpeg)$", 

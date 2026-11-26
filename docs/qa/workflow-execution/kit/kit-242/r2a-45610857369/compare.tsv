@@ -1,0 +1,139 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-gui-entry-lipidomics.R	35	0	0	0	ok	25	10	0	0	failed	new-failure	new-failure: KIT-101 entry lane lipid_canonical: two LipidSearch assays; counts: KIT-101 entry lane lipid_canonical: two LipidSearch assays (passed 35 -> 25, skipped 0 -> 0)	
+test-gui-entry-metabolomics.R	105	0	0	0	ok	75	30	0	0	failed	new-failure	new-failure: KIT-101 entry lane metab_lc: LC-MS positive and negative assays (custom format); new-failure: KIT-101 entry lane metab_gc: one GC-MS assay (custom format); new-failure: KIT-101 entry lane metab_combined: LC-MS and GC-MS assays (custom format); counts: KIT-101 entry lane metab_combined: LC-MS and GC-MS assays (custom format) (passed 35 -> 25, skipped 0 -> 0); counts: KIT-101 entry lane metab_gc: one GC-MS assay (custom format) (passed 35 -> 25, skipped 0 -> 0); counts: KIT-101 entry lane metab_lc: LC-MS positive and negative assays (custom format) (passed 35 -> 25, skipped 0 -> 0)	
+test-gui-entry-proteomics.R	189	4	0	0	failed	174	19	0	0	failed	new-failure	new-failure: KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route; counts: KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route (passed 38 -> 23, skipped 0 -> 0)	
+test-dia-limpa-ruv-rules.R	333	1	0	0	failed	333	1	0	0	failed	same		
+test-e2e-browser-harness.R	126	0	0	1	ok	126	0	0	1	ok	same		
+test-general-filemgmt-config-contracts.R	52	0	0	0	ok	52	0	0	0	ok	same		
+test-general-filemgmt-config-direct-shared.R	33	0	0	0	ok	33	0	0	0	ok	same		
+test-general-filemgmt-report-helpers-shared.R	85	0	0	1	ok	85	0	0	1	ok	same		
+test-general-filemgmt-s4-contracts.R	30	0	0	0	ok	30	0	0	0	ok	same		
+test-general-plotting-utils-direct-shared.R	24	0	0	0	ok	24	0	0	0	ok	same		
+test-integration-gui.R	397	0	0	0	ok	397	0	0	0	ok	same		
+test-integration-input-lipid-metab.R	208	0	0	0	ok	208	0	0	0	ok	same		
+test-integration-input-matrix.R	84	0	0	0	ok	84	0	0	0	ok	same		
+test-integration-model.R	263	0	0	0	ok	263	0	0	0	ok	same		
+test-integration-record.R	133	0	0	0	ok	133	0	0	0	ok	same		
+test-integration-results.R	169	0	0	0	ok	169	0	0	0	ok	same		
+test-kit127-omics-ruv-factors.R	421	1	0	0	failed	421	1	0	0	failed	same		
+test-kit129-run-path.R	687	6	0	1	failed	687	6	0	1	failed	same		
+test-kit172-downstream.R	84	0	0	0	ok	70	14	0	0	failed	new-failure	new-failure: KIT-172 T10: lipid scale on log2 values below 0 is warned once in the log and once as a notification; new-failure: KIT-172 T10: lipid no scale warning with cyclic loess, on intensity-scale data or at a supplied offset of 1; new-failure: KIT-172 T10: metab scale on log2 values below 0 is warned once in the log and once as a notification; new-failure: KIT-172 T10: metab no scale warning with cyclic loess, on intensity-scale data or at a supplied offset of 1; counts: KIT-172 T10: lipid no scale warning with cyclic loess, on intensity-scale data or at a supplied offset of 1 (passed 9 -> 6, skipped 0 -> 0); counts: KIT-172 T10: lipid scale on log2 values below 0 is warned once in the log and once as a notification (passed 12 -> 8, skipped 0 -> 0); counts: KIT-172 T10: metab no scale warning with cyclic loess, on intensity-scale data or at a supplied offset of 1 (passed 9 -> 6, skipped 0 -> 0); counts: KIT-172 T10: metab scale on log2 values below 0 is warned once in the log and once as a notification (passed 12 -> 8, skipped 0 -> 0)	
+test-kit172-log2-rule.R	212	0	0	0	ok	212	0	0	0	ok	same		
+test-kit172-reopen.R	14	0	0	0	ok	12	2	0	0	failed	new-failure	new-failure: KIT-172 T9: lipid a project saved by the base commit reopens, replays exactly and shows its recorded offset; new-failure: KIT-172 T9: metab a project saved by the base commit reopens, replays exactly and shows its recorded offset; counts: KIT-172 T9: lipid a project saved by the base commit reopens, replays exactly and shows its recorded offset (passed 5 -> 4, skipped 0 -> 0); counts: KIT-172 T9: metab a project saved by the base commit reopens, replays exactly and shows its recorded offset (passed 5 -> 4, skipped 0 -> 0)	
+test-kit172-unit-equivariance.R	350	0	0	0	ok	350	0	0	0	ok	same		
+test-kit174-ruv-grouping.R	77	0	0	0	ok	77	0	0	0	ok	same		
+test-kit200-prot-da-no-value-proteins.R	538	0	0	0	ok	538	0	0	0	ok	same		
+test-kit202-intensity-filter-samples.R	163	0	0	0	ok	163	0	0	0	ok	same		
+test-kit206-prot-norm-export-guard.R	116	0	0	0	ok	116	0	0	0	ok	same		
+test-kit207-summary-head-guard.R	292	0	0	0	ok	292	0	0	0	ok	same		
+test-kit212-da-current.R	309	0	0	0	ok	309	0	0	0	ok	same		
+test-kit222-replicate-keys.R	456	0	0	0	ok	456	0	0	0	ok	same		
+test-kit225-prot-norm-reset-source.R	56	0	0	0	ok	56	0	0	0	ok	same		
+test-kit227-report-ruv-sentences.R	166	0	0	0	ok	166	0	0	0	ok	same		
+test-kit235-lipid-metab-report-parser.R	50	0	0	0	ok	50	0	0	0	ok	same		
+test-kit242-normalisation-fallback.R	85	113	5	0	failed	247	0	0	0	ok	fixed	fixed: KIT-242 E1: lipid cyclicloess normalises A2 without the empty sample and leaves it empty in A2 only; fixed: KIT-242 E1: lipid quantile normalises A2 without the empty sample and leaves it empty in A2 only; fixed: KIT-242 E1: lipid scale normalises A2 without the empty sample and leaves it empty in A2 only; fixed: KIT-242 E2: lipid quantile on a sample holding one value stops with omics_normalisation_failed; fixed: KIT-242 E3: lipid an assay with no sample columns stops with omics_normalisation_failed (malformed_assay); fixed: KIT-242 E4: lipid ITSD with no standard matched in A2: not applied there, recorded with 0 standards; fixed: KIT-242 E5: lipid ITSD with no standard in any assay: not applied, recorded FALSE; fixed: KIT-242 E6: lipid a sample without standard signal is missing in A2 only and A2 is normalised without it; fixed: KIT-242 E7: lipid the between-sample step records per assay what it normalised and left out; fixed: KIT-242 E8: lipid managed tab names A2 and B_6 and warns; fixed: KIT-242 E8: lipid in process tab names A2 and B_6 and warns; fixed: KIT-242 E9: lipid the session summary names ITSD per assay; the session field keeps the checkbox; fixed: KIT-242 E10: lipid the record's DA entries carry fdr_method, BH with its reason after the q-value fallback; fixed: KIT-242 E11: lipid the normalisation marker: current 'exclude', earlier 'warn' reproduces the earlier result, and replays; fixed: KIT-242 E13: lipid with the cyclic-loess guard on, the empty sample is left out before the guard counts; fixed: KIT-242 E26: lipid a sample with no value in any assay is removed from the design and every assay; fixed: KIT-242 NA1: lipid the record states between-sample normalisation per assay, FALSE where the assay is unchanged; fixed: KIT-242 NA2: lipid the record states ITSD per assay, FALSE where no standard was matched; fixed: KIT-242 E1: metab cyclicloess normalises A2 without the empty sample and leaves it empty in A2 only; fixed: KIT-242 E1: metab quantile normalises A2 without the empty sample and leaves it empty in A2 only; fixed: KIT-242 E1: metab scale normalises A2 without the empty sample and leaves it empty in A2 only; fixed: KIT-242 E2: metab quantile on a sample holding one value stops with omics_normalisation_failed; fixed: KIT-242 E3: metab an assay with no sample columns stops with omics_normalisation_failed (malformed_assay); fixed: KIT-242 E4: metab ITSD with no standard matched in A2: not applied there, recorded with 0 standards; fixed: KIT-242 E5: metab ITSD with no standard in any assay: not applied, recorded FALSE; fixed: KIT-242 E6: metab a sample without standard signal is missing in A2 only and A2 is normalised without it; fixed: KIT-242 E7: metab the between-sample step records per assay what it normalised and left out; fixed: KIT-242 E8: metab managed tab names A2 and B_6 and warns; fixed: KIT-242 E8: metab in process tab names A2 and B_6 and warns; fixed: KIT-242 E9: metab the session summary names ITSD per assay; the session field keeps the checkbox; fixed: KIT-242 E10: metab the record's DA entries carry fdr_method, BH with its reason after the q-value fallback; fixed: KIT-242 E11: metab the normalisation marker: current 'exclude', earlier 'warn' reproduces the earlier result, and replays; fixed: KIT-242 E13: metab with the cyclic-loess guard on, the empty sample is left out before the guard counts; fixed: KIT-242 E26: metab a sample with no value in any assay is removed from the design and every assay; fixed: KIT-242 NA1: metab the record states between-sample normalisation per assay, FALSE where the assay is unchanged; fixed: KIT-242 NA2: metab the record states ITSD per assay, FALSE where no standard was matched; fixed: KIT-242 E17: proteomics cyclicloess removes a sample with no value from the table and the design, the others normalised without it; fixed: KIT-242 E17: proteomics quantile removes a sample with no value from the table and the design, the others normalised without it; fixed: KIT-242 E17: proteomics scale removes a sample with no value from the table and the design, the others normalised without it; fixed: KIT-242 E17: proteomics quantile on a sample holding one value stops with omics_normalisation_failed; counts: KIT-242 E1: lipid cyclicloess normalises A2 without the empty sample and leaves it empty in A2 only (passed 3 -> 8, skipped 0 -> 0); counts: KIT-242 E1: lipid quantile normalises A2 without the empty sample and leaves it empty in A2 only (passed 3 -> 8, skipped 0 -> 0); counts: KIT-242 E1: lipid scale normalises A2 without the empty sample and leaves it empty in A2 only (passed 3 -> 8, skipped 0 -> 0); counts: KIT-242 E1: metab cyclicloess normalises A2 without the empty sample and leaves it empty in A2 only (passed 3 -> 8, skipped 0 -> 0); counts: KIT-242 E1: metab quantile normalises A2 without the empty sample and leaves it empty in A2 only (passed 3 -> 8, skipped 0 -> 0); counts: KIT-242 E1: metab scale normalises A2 without the empty sample and leaves it empty in A2 only (passed 3 -> 8, skipped 0 -> 0); counts: KIT-242 E10: lipid the record's DA entries carry fdr_method, BH with its reason after the q-value fallback (passed 1 -> 6, skipped 0 -> 0); counts: KIT-242 E10: metab the record's DA entries carry fdr_method, BH with its reason after the q-value fallback (passed 1 -> 6, skipped 0 -> 0); counts: KIT-242 E11: lipid the normalisation marker: current 'exclude', earlier 'warn' reproduces the earlier result, and replays (passed 8 -> 13, skipped 0 -> 0); counts: KIT-242 E11: metab the normalisation marker: current 'exclude', earlier 'warn' reproduces the earlier result, and replays (passed 8 -> 13, skipped 0 -> 0); counts: KIT-242 E13: lipid with the cyclic-loess guard on, the empty sample is left out before the guard counts (passed 0 -> 3, skipped 0 -> 0); counts: KIT-242 E13: metab with the cyclic-loess guard on, the empty sample is left out before the guard counts (passed 0 -> 3, skipped 0 -> 0); counts: KIT-242 E17: proteomics cyclicloess removes a sample with no value from the table and the design, the others normalised without it (passed 1 -> 5, skipped 0 -> 0); counts: KIT-242 E17: proteomics quantile on a sample holding one value stops with omics_normalisation_failed (passed 0 -> 2, skipped 0 -> 0); counts: KIT-242 E17: proteomics quantile removes a sample with no value from the table and the design, the others normalised without it (passed 0 -> 5, skipped 0 -> 0); counts: KIT-242 E17: proteomics scale removes a sample with no value from the table and the design, the others normalised without it (passed 0 -> 5, skipped 0 -> 0); counts: KIT-242 E2: lipid quantile on a sample holding one value stops with omics_normalisation_failed (passed 0 -> 8, skipped 0 -> 0); counts: KIT-242 E2: metab quantile on a sample holding one value stops with omics_normalisation_failed (passed 0 -> 8, skipped 0 -> 0); counts: KIT-242 E26: lipid a sample with no value in any assay is removed from the design and every assay (passed 0 -> 5, skipped 0 -> 0); counts: KIT-242 E26: metab a sample with no value in any assay is removed from the design and every assay (passed 0 -> 5, skipped 0 -> 0); counts: KIT-242 E3: lipid an assay with no sample columns stops with omics_normalisation_failed (malformed_assay) (passed 0 -> 3, skipped 0 -> 0); counts: KIT-242 E3: metab an assay with no sample columns stops with omics_normalisation_failed (malformed_assay) (passed 0 -> 3, skipped 0 -> 0); counts: KIT-242 E4: lipid ITSD with no standard matched in A2: not applied there, recorded with 0 standards (passed 3 -> 12, skipped 0 -> 0); counts: KIT-242 E4: metab ITSD with no standard matched in A2: not applied there, recorded with 0 standards (passed 3 -> 12, skipped 0 -> 0); counts: KIT-242 E5: lipid ITSD with no standard in any assay: not applied, recorded FALSE (passed 0 -> 5, skipped 0 -> 0); counts: KIT-242 E5: metab ITSD with no standard in any assay: not applied, recorded FALSE (passed 0 -> 5, skipped 0 -> 0); counts: KIT-242 E6: lipid a sample without standard signal is missing in A2 only and A2 is normalised without it (passed 2 -> 6, skipped 0 -> 0); counts: KIT-242 E6: metab a sample without standard signal is missing in A2 only and A2 is normalised without it (passed 2 -> 6, skipped 0 -> 0); counts: KIT-242 E7: lipid the between-sample step records per assay what it normalised and left out (passed 0 -> 3, skipped 0 -> 0); counts: KIT-242 E7: metab the between-sample step records per assay what it normalised and left out (passed 0 -> 3, skipped 0 -> 0); counts: KIT-242 E8: lipid in process tab names A2 and B_6 and warns (passed 1 -> 3, skipped 0 -> 0); counts: KIT-242 E8: lipid managed tab names A2 and B_6 and warns (passed 1 -> 3, skipped 0 -> 0); counts: KIT-242 E8: metab in process tab names A2 and B_6 and warns (passed 1 -> 3, skipped 0 -> 0); counts: KIT-242 E8: metab managed tab names A2 and B_6 and warns (passed 1 -> 3, skipped 0 -> 0); counts: KIT-242 E9: lipid the session summary names ITSD per assay; the session field keeps the checkbox (passed 1 -> 2, skipped 0 -> 0); counts: KIT-242 E9: metab the session summary names ITSD per assay; the session field keeps the checkbox (passed 1 -> 2, skipped 0 -> 0); counts: KIT-242 NA1: lipid the record states between-sample normalisation per assay, FALSE where the assay is unchanged (passed 2 -> 3, skipped 0 -> 0); counts: KIT-242 NA1: metab the record states between-sample normalisation per assay, FALSE where the assay is unchanged (passed 2 -> 3, skipped 0 -> 0); counts: KIT-242 NA2: lipid the record states ITSD per assay, FALSE where no standard was matched (passed 2 -> 4, skipped 0 -> 0); counts: KIT-242 NA2: metab the record states ITSD per assay, FALSE where no standard was matched (passed 2 -> 4, skipped 0 -> 0)	
+test-lipid-01b-qc-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-01e-qc-itsd-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-lipid-01i-qc-itsd-wrapper-characterization.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-lipid-01j-qc-orchestrator-shared.R	3	0	0	3	ok	3	0	0	3	ok	same		
+test-lipid-02-da-core-helpers.R	16	0	0	0	ok	16	0	0	0	ok	same		
+test-lipid-03-s4-duplicate-helpers.R	26	0	0	0	ok	26	0	0	0	ok	same		
+test-lipid-09-s4-normalization-methods.R	39	0	0	0	ok	39	0	0	0	ok	same		
+test-lipid-12a-norm-module-characterization.R	5	0	0	5	ok	5	0	0	5	ok	same		
+test-lipid-12c-ruv-s4-characterization.R	59	0	0	0	ok	59	0	0	0	ok	same		
+test-lipid-12-norm-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-01o-qc-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-01r-qc-itsd-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-01t-qc-s4-module-characterization.R	2	0	0	7	ok	2	0	0	7	ok	same		
+test-metab-01v-qc-itsd-wrapper-characterization.R	3	0	0	0	ok	3	0	0	0	ok	same		
+test-metab-01w-qc-orchestrator-shared.R	3	0	0	3	ok	3	0	0	3	ok	same		
+test-metab-02h-da-orchestration-characterization.R	26	0	0	0	ok	26	0	0	0	ok	same		
+test-metab-02s-normalise-untransformed-data-characterization.R	18	0	0	0	ok	18	0	0	0	ok	same		
+test-metab-02u-resolve-duplicate-features-characterization.R	17	0	0	0	ok	17	0	0	0	ok	same		
+test-metab-02w-normalise-between-samples-characterization.R	16	0	0	0	ok	13	3	0	0	failed	new-failure	new-failure: metabolomics S4 between-sample normalization preserves all-NA sample fallback; counts: metabolomics S4 between-sample normalization preserves all-NA sample fallback (passed 4 -> 1, skipped 0 -> 0)	
+test-metab-02y-get-neg-ctrl-metab-anova-characterization.R	26	0	0	0	ok	26	0	0	0	ok	same		
+test-metab-03a-ruviii-c-varying-characterization.R	32	0	0	0	ok	32	0	0	0	ok	same		
+test-metab-03b-norm-module-helper-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-03c-norm-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-03d-norm-module-characterization.R	13	0	0	3	ok	13	0	0	3	ok	same		
+test-metab-03-norm-support-characterization.R	41	0	0	0	ok	41	0	0	0	ok	same		
+test-metab-da-core-engine-direct-shared.R	10	0	0	0	ok	10	0	0	0	ok	same		
+test-metab-da-orchestration-direct-shared.R	31	0	0	0	ok	31	0	0	0	ok	same		
+test-metab-qc-itsd-direct-shared.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-metab-s4-norm-core-shared.R	25	0	0	0	ok	25	0	0	0	ok	same		
+test-metab-s4-qc-shared.R	32	0	0	0	ok	32	0	0	0	ok	same		
+test-module-ci-lipid-norm.R	156	0	0	0	ok	156	0	0	0	ok	same		
+test-module-ci-lipid-qc.R	68	0	0	0	ok	68	0	0	0	ok	same		
+test-module-ci-lipid-summary.R	14	0	0	6	ok	14	0	0	6	ok	same		
+test-module-ci-manifest.R	33	0	0	0	ok	33	0	0	0	ok	same		
+test-module-ci-metab-norm.R	156	0	0	0	ok	156	0	0	0	ok	same		
+test-module-ci-metab-qc.R	63	0	0	1	ok	63	0	0	1	ok	same		
+test-module-ci-metab-summary.R	12	0	0	6	ok	12	0	0	6	ok	same		
+test-module-ci-prot-da.R	250	0	0	1	ok	250	0	0	1	ok	same		
+test-module-ci-prot-dia-limpa.R	38	0	0	2	ok	38	0	0	2	ok	same		
+test-module-ci-prot-norm.R	60	0	0	4	ok	60	0	0	4	ok	same		
+test-module-ci-prot-summary.R	20	0	0	5	ok	20	0	0	5	ok	same		
+test-module-ci-sentinels.R	56	0	0	0	ok	56	0	0	0	ok	same		
+test-module-ci-trx-norm.R	59	2	0	0	failed	59	2	0	0	failed	same		
+test-module-ui-wrapper-direct-shared.R	45	0	0	0	ok	45	0	0	0	ok	same		
+test-multiomics-enrich-shared.R	108	0	0	0	ok	108	0	0	0	ok	same		
+test-omic-da-module.R	1316	53	0	0	failed	1316	53	0	0	failed	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-omic-norm-module.R	639	0	0	0	ok	583	56	0	0	failed	new-failure	new-failure: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset; new-failure: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset; new-failure: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset; new-failure: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset; new-failure: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing; new-failure: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing; counts: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing (passed 52 -> 41, skipped 0 -> 0); counts: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing (passed 52 -> 41, skipped 0 -> 0); counts: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset (passed 52 -> 40, skipped 0 -> 0); counts: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset (passed 116 -> 111, skipped 0 -> 0); counts: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset (passed 52 -> 40, skipped 0 -> 0); counts: (b) metab, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset (passed 116 -> 111, skipped 0 -> 0)	
+test-omic-norm-ruv-design.R	1153	0	0	0	ok	1153	0	0	0	ok	same		
+test-omic-qc-module.R	160	0	0	0	ok	160	0	0	0	ok	same		
+test-omics-cyclic-loess-minimum.R	72	0	0	0	ok	72	0	0	0	ok	same		
+test-omics-norm-core.R	62	0	0	14	ok	62	0	0	14	ok	same		
+test-omics-norm-itsd-selection.R	22	0	0	0	ok	22	0	0	0	ok	same		
+test-omics-norm-state-guards.R	647	0	0	0	ok	647	0	0	0	ok	same		
+test-omics-qc-core.R	115	0	0	0	ok	115	0	0	0	ok	same		
+test-omic-summary-module.R	1675	28	0	0	failed	1675	28	0	0	failed	same		
+test-prot-04-design.R	488	0	0	118	ok	488	0	0	118	ok	same		
+test-prot-04d-peptide-s4-normalization-characterization.R	112	0	0	0	ok	112	0	0	0	ok	same		
+test-prot-05b-norm-module-contracts.R	440	0	0	22	ok	440	0	0	22	ok	same		
+test-prot-05d-norm-module-characterization.R	82	0	0	10	ok	82	0	0	10	ok	same		
+test-prot-06-ruv.R	35	0	0	1	ok	35	0	0	1	ok	same		
+test-prot-07b-da-handlers-compat.R	35	0	0	2	ok	35	0	0	2	ok	same		
+test-prot-07d-da-model-stats-shared.R	60	0	0	1	ok	60	0	0	1	ok	same		
+test-prot-missing-value-counts.R	67	0	0	0	ok	67	0	0	0	ok	same		
+test-prot-norm-core.R	1548	306	0	0	failed	1548	306	0	0	failed	message-changed	message-changed: KIT-111 W1 (a): the DIA normalisation and correlation clicks give the recorded states, products, provenance, files and display; message-changed: KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and RUV covariates in both modes give the recorded values; message-changed: KIT-111 W2 (W1 (b)): the DIA normalisation and correlation clicks through the worker give W1 (a)'s values; message-changed: KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covariates through the worker give W1 (a)'s values; message-changed: KIT-111 W2 (R7): a managed publication that fails is completed by the repeated click, a hit that commits nothing	
+test-prot-norm-input-current.R	321	0	0	0	ok	321	0	0	0	ok	same		
+test-prot-norm-optimization-direct-shared.R	93	0	0	0	ok	93	0	0	0	ok	same		
+test-prot-norm-worker-figures.R	71	0	0	0	ok	71	0	0	0	ok	same		
+test-prot-ruv-factors-in-model.R	306	1	0	0	failed	306	1	0	0	failed	same		
+test-prot-ruv-levels.R	36	0	0	0	ok	36	0	0	0	ok	same		
+test-prot-ruv-replicate-structure.R	21	0	0	0	ok	21	0	0	0	ok	same		
+test-prot-ruv-sweep-imputation.R	25	0	0	0	ok	25	0	0	0	ok	same		
+test-prot-s4-norm-methods-direct-shared.R	11	0	0	1	ok	11	0	0	1	ok	same		
+test-prot-s4-qc-direct-shared.R	72	0	0	0	ok	72	0	0	0	ok	same		
+test-tech-reps-limma.R	0	0	1	0	failed	0	0	1	0	failed	same		
+test-trx-da-without-ruv.R	95	2	0	0	failed	95	2	0	0	failed	same		
+test-trx-norm-core.R	58	0	0	0	ok	58	0	0	0	ok	same		
+test-trx-norm-module.R	109	0	0	0	ok	109	0	0	0	ok	same		
+test-trx-ruv-designs.R	344	6	0	0	failed	344	6	0	0	failed	same		
+test-workflow-analysis-record.R	351	0	0	0	ok	351	0	0	0	ok	same		
+test-workflow-dia-products.R	191	0	0	0	ok	191	0	0	0	ok	same		
+test-workflow-gui-memory-lifetimes.R	81	0	0	11	ok	81	0	0	11	ok	same		
+test-workflow-integration-input.R	241	0	0	0	ok	241	0	0	0	ok	same		
+test-workflow-kit-harness.R	734	1	0	0	failed	734	1	0	0	failed	same		
+test-workflow-lipid-declarations.R	259	0	0	0	ok	257	2	0	0	failed	new-failure	new-failure: KIT-031: the lipid journey on the owner commits every state with its declaration, records completely, resolves its DA manifest, overlays the report and replays exact; counts: KIT-031: the lipid journey on the owner commits every state with its declaration, records completely, resolves its DA manifest, overlays the report and replays exact (passed 73 -> 71, skipped 0 -> 0)	
+test-workflow-metab-declarations.R	259	0	0	0	ok	257	2	0	0	failed	new-failure	new-failure: KIT-032: the metabolomics journey on the owner commits every state with its declaration, records completely, resolves its DA manifest, overlays the report and replays exact; counts: KIT-032: the metabolomics journey on the owner commits every state with its declaration, records completely, resolves its DA manifest, overlays the report and replays exact (passed 73 -> 71, skipped 0 -> 0)	
+test-workflow-native-session.R	734	0	0	2	ok	734	0	0	2	ok	same		
+test-workflow-omics-application-reads.R	230	0	0	0	ok	230	0	0	0	ok	same		
+test-workflow-omics-binding-steps.R	58	1	0	0	failed	58	1	0	0	failed	message-changed	message-changed: KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit	
+test-workflow-omics-da-contrasts.R	138	0	0	0	ok	138	0	0	0	ok	same		
+test-workflow-omics-declarations.R	45	23	0	0	failed	43	25	0	0	failed	message-changed	message-changed: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced; counts: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced (passed 36 -> 34, skipped 0 -> 0)	
+test-workflow-omics-ruv-complete-controls.R	28	0	0	0	ok	28	0	0	0	ok	same		
+test-workflow-omics-sessions.R	150	0	0	0	ok	150	0	0	0	ok	same		
+test-workflow-omics-worker.R	289	0	0	0	ok	275	14	0	0	failed	new-failure	new-failure: KIT-078: every omics compute declaration runs from a frozen request through the worker's entry point; counts: KIT-078: every omics compute declaration runs from a frozen request through the worker's entry point (passed 120 -> 106, skipped 0 -> 0)	
+test-workflow-operation-registry.R	1095	2	0	0	failed	1094	3	0	0	failed	new-failure	new-failure: no registered DIA kernel draws random numbers; randomness would be a declared seed parameter (KIT-025); counts: no registered DIA kernel draws random numbers; randomness would be a declared seed parameter (KIT-025) (passed 3 -> 2, skipped 0 -> 0)	
+test-workflow-operations.R	75	0	0	0	ok	75	0	0	0	ok	same		
+test-workflow-partitions.R	439	0	0	2	ok	439	0	0	2	ok	same		
+test-workflow-prot-declarations.R	303	0	0	2	ok	303	0	0	2	ok	same		
+test-workflow-ruv-pearson-diagnostic.R	301	0	2	5	failed	301	0	2	5	failed	same		
+test-workflow-saved-consumers.R	47	0	0	0	ok	47	0	0	0	ok	same		
+test-workflow-saved-da.R	780	171	0	0	failed	780	171	0	0	failed	same		
+test-workflow-saved-exports.R	271	0	1	4	failed	271	0	1	4	failed	same		
+test-workflow-saved-installed.R	0	0	0	1	ok	0	0	0	1	ok	same		
+test-workflow-saved-qc.R	120	0	0	0	ok	120	0	0	0	ok	same		
+test-workflow-trx-declarations.R	285	39	0	0	failed	285	39	0	0	failed	same		

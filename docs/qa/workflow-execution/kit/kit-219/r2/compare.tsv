@@ -1,0 +1,51 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit266-limpa-combined-qc-figure.R	210	0	0	0	ok	210	0	0	0	ok	same		
+test-gui-entry-proteomics.R	92	101	0	0	failed	92	101	0	0	failed	same		
+test-kit212-da-current.R	309	0	0	0	ok	309	0	0	0	ok	same		
+test-kit216-prot-session-after-enrichment.R	152	0	0	1	ok	152	0	0	1	ok	same		
+test-general-filemgmt-path-contracts.R	89	0	0	0	ok	89	0	0	0	ok	same		
+test-gui-entry-metabolomics.R	57	48	0	0	failed	57	48	0	0	failed	same		
+test-omic-enrich-module.R	1011	59	0	0	failed	1011	59	0	0	failed	same		identical message without the actual digest value: (KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step
+test-kit243-summary-current-outputs.R	246	0	0	0	ok	246	0	0	0	ok	same		
+test-module-ci-prot-summary.R	20	0	0	5	ok	20	0	0	5	ok	same		
+test-kit259b-second-correction.R	90	0	0	0	ok	90	0	0	0	ok	same		
+test-kit257-norm-own-files.R	133	0	0	0	ok	133	0	0	0	ok	same		
+test-kit273-limpa-ruv-delivery.R	130	0	0	0	ok	130	0	0	0	ok	same		
+test-workflow-memory-mechanism-member.R	0	0	0	13	ok	0	0	0	13	ok	same		
+test-omics-summary-core.R	676	25	0	2	failed	667	34	0	2	failed	new-failure	new-failure: (W3, core side) lipid_required_missing: each entry gives W1 (b)'s notifications, progress, arguments, global and files; new-failure: (W3, core side) metab_required_missing: each entry gives W1 (b)'s notifications, progress, arguments, global and files; message-changed: (W3, core side) trx_main: each entry gives W1 (b)'s notifications, progress, arguments, global and files; counts: (W3, core side) lipid_required_missing: each entry gives W1 (b)'s notifications, progress, arguments, global and files (passed 9 -> 6, skipped 0 -> 0); counts: (W3, core side) metab_required_missing: each entry gives W1 (b)'s notifications, progress, arguments, global and files (passed 9 -> 6, skipped 0 -> 0); counts: (W3, core side) trx_main: each entry gives W1 (b)'s notifications, progress, arguments, global and files (passed 56 -> 53, skipped 0 -> 0)	
+test-omic-summary-module.R	1675	28	0	0	failed	1649	54	0	0	failed	new-failure	new-failure: (b) lipid_required_missing: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's; new-failure: (b) metab_required_missing: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's; message-changed: (b) trx_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's; counts: (b) lipid_required_missing: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's (passed 43 -> 38, skipped 0 -> 0); counts: (b) metab_required_missing: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's (passed 43 -> 38, skipped 0 -> 0); counts: (b) trx_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's (passed 139 -> 123, skipped 0 -> 0)	
+test-kit271-limpa-table-name.R	78	0	0	0	ok	78	0	0	0	ok	same		
+test-lipid-15-summary-module-seams.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-enrichment-significance.R	181	0	0	0	ok	181	0	0	0	ok	same		
+test-workflow-analysis-record.R	351	0	0	0	ok	351	0	0	0	ok	same		
+test-kit207-summary-head-guard.R	292	0	0	0	ok	292	0	0	0	ok	same		
+test-lipid-14a-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-go-propagation.R	321	0	0	1	ok	321	0	0	1	ok	same		
+test-workflow-omics-figures.R	109	0	0	0	ok	109	0	0	0	ok	same		
+test-kit205-enrichment-background.R	228	0	0	0	ok	228	0	0	0	ok	same		
+test-module-ci-sentinels.R	56	0	0	0	ok	56	0	0	0	ok	same		
+test-kit215-not-tested-lists.R	112	0	0	0	ok	112	0	0	0	ok	same		
+test-gui-entry-lipidomics.R	19	16	0	0	failed	19	16	0	0	failed	same		
+test-kit219-enrichment-files-current.R	64	43	4	0	failed	141	0	0	0	ok	fixed	fixed: KIT-219 E1 (S2): a planted earlier run's files are left out of the workbook and the folder, and Copy says so; fixed: KIT-219 E2 (S1): after the DA is run again the earlier enrichment is not copied and Copy names every file; fixed: KIT-219 E3 (S3): with no enrichment in the store, tables left in the enrichment folder are not copied; fixed: KIT-219 E4 (S1): Copy, then the DA run again: the Report is refused before anything is rendered; fixed: KIT-219 E6 (S6): Copy, then the enrichment run again with other content, then the Report: refused; fixed: KIT-219 E5 (OD-2 (i)): metabolomics has no enrichment analysis, so tables in its enrichment folder are not copied; fixed: KIT-219 E7a (OD-5 (i)): the lipidomics and metabolomics templates print the enrichment section only when files exist; fixed: KIT-219 E7b (OD-5 (i)): the enrichment_presence chunk of each template, run on three publication folders; fixed: KIT-219 E8 (3.1 item 5): the proteomics templates' flag reads the publication folder only; fixed: KIT-219 G5 (P07): the limpa template's STRING chunks read the publication folder, not the enrichment folder; counts: KIT-219 E1 (S2): a planted earlier run's files are left out of the workbook and the folder, and Copy says so (passed 4 -> 16, skipped 0 -> 0); counts: KIT-219 E2 (S1): after the DA is run again the earlier enrichment is not copied and Copy names every file (passed 5 -> 10, skipped 0 -> 0); counts: KIT-219 E3 (S3): with no enrichment in the store, tables left in the enrichment folder are not copied (passed 2 -> 6, skipped 0 -> 0); counts: KIT-219 E4 (S1): Copy, then the DA run again: the Report is refused before anything is rendered (passed 4 -> 7, skipped 0 -> 0); counts: KIT-219 E5 (OD-2 (i)): metabolomics has no enrichment analysis, so tables in its enrichment folder are not copied (passed 2 -> 8, skipped 0 -> 0); counts: KIT-219 E6 (S6): Copy, then the enrichment run again with other content, then the Report: refused (passed 5 -> 8, skipped 0 -> 0); counts: KIT-219 E7a (OD-5 (i)): the lipidomics and metabolomics templates print the enrichment section only when files exist (passed 0 -> 10, skipped 0 -> 0); counts: KIT-219 E7b (OD-5 (i)): the enrichment_presence chunk of each template, run on three publication folders (passed 0 -> 22, skipped 0 -> 0); counts: KIT-219 E8 (3.1 item 5): the proteomics templates' flag reads the publication folder only (passed 12 -> 20, skipped 0 -> 0); counts: KIT-219 G5 (P07): the limpa template's STRING chunks read the publication folder, not the enrichment folder (passed 4 -> 8, skipped 0 -> 0)	
+test-prot-summary-report-templates.R	123	0	0	0	ok	123	0	0	0	ok	same		
+test-workflow-dia-products.R	191	0	0	0	ok	191	0	0	0	ok	same		
+test-kit208-gprofiler-identifiers.R	60	0	0	0	ok	60	0	0	0	ok	same		
+test-kit213-study-parameters-labels.R	56	0	0	0	ok	56	0	0	0	ok	same		
+test-e2e-proteomics-enrichment.R	0	0	0	2	ok	0	0	0	2	ok	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-omics-enrich-core.R	222	20	0	1	failed	222	20	0	1	failed	same		
+test-gui-entry-transcriptomics.R	16	13	0	0	failed	16	13	0	0	failed	same		
+test-prot-12-summary-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-general-enrichment-shared.R	139	0	0	2	ok	139	0	0	2	ok	same		
+test-omic-design-module.R	160	0	0	0	ok	160	0	0	0	ok	same		
+test-module-ci-metab-da.R	138	0	0	0	ok	138	0	0	0	ok	same		
+test-prot-11a-enrichment-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-module-ci-metab-summary.R	12	0	0	6	ok	12	0	0	6	ok	same		
+test-workflow-gui-diagnostic.R	65	0	3	3	failed	65	0	3	3	failed	same		
+test-multiomics-enrich-shared.R	108	0	0	0	ok	108	0	0	0	ok	same		
+test-metab-05-summary-module-characterization.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-module-ci-prot-enrich.R	79	0	0	2	ok	79	0	0	2	ok	same		
+test-module-ci-lipid-summary.R	14	0	0	6	ok	14	0	0	6	ok	same		
+test-general-filemgmt-report-helpers-shared.R	85	0	0	1	ok	85	0	0	1	ok	same		
+test-prot-11-enrichment-module-contracts.R	0	0	0	0	ok	0	0	0	0	ok	same		
+test-kit226-gprofiler-columns.R	38	0	0	0	ok	38	0	0	0	ok	same		

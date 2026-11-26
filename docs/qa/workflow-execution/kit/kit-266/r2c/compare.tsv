@@ -1,0 +1,2 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit272-prot-box-panel-text.R	372	1	0	0	failed	373	0	0	0	ok	fixed	fixed: KIT-272 T7 (DIANN_limpa): a replaced panel d is named by what it plots; counts: KIT-272 T7 (DIANN_limpa): a replaced panel d is named by what it plots (passed 1 -> 2, skipped 0 -> 0)	

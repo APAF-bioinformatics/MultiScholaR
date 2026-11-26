@@ -1,0 +1,300 @@
+# blocks cut at 4,000 characters; test-prot-norm-core.R blocks left out (identical failures)
+== test-omic-norm-module.R | new-failure | (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+-- base:
+  <passes>
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "5fb69439ca6f755c340b20d38d5ffec9c5a2061349a7f8c5f198afe98924079f"
+  `expected`: "1ab8a05076a605820dc0d14e237215f9abfaa251d04c7076ca03825877e57dc2"
+  
+  lipid manual run provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "6c1bc031bc84407f9885c22dd5d36832fbbdda02c0a96bfb9e1ed6e0a4415f0b"
+  `expected`: "0b68624dba919ae6e6852528493ba338d672d75d235b8437c2895e8c6f724bf5"
+  
+  lipid manual skip_correlation provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "d675df2b63edd2a834774dd9f4c2261228d6aa35460ae436cda34c966da40c28"
+  `expected`: "6f03ec2fff1c90a3a1728422205f6ebe8d929a0e97a02b42dc0e053b026e5942"
+  
+  lipid manual reset provenance
+
+== test-omic-norm-module.R | new-failure | (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+-- base:
+  <passes>
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "29b24751a67690c1827837ad097d4f5fd5435fa7a9a6e02c57362f505afc2c45"
+  `expected`: "279b01b63aa09b94e9ccaa8e085154e7b281eb0fd48361548782ceead23456e3"
+  
+  metab manual reset provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "9424d6af9de6e2ec5323a33ccb1a2f5fd96390ad2597f0734d6d368dbd7aa300"
+  `expected`: "24204497ce33beb525005c4869fd60e6f560a7c1f6eb2293cc928049e1410ba2"
+  
+  metab manual run provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "a586d6828e1ba97bcd7b3f4fe9161c1480589c1e1b9466d96e843b44950bfc87"
+  `expected`: "667cc9562bd90c598ef04d93d5fe30d6ad1818b89c02f50d86dcfec344a11371"
+  
+  metab manual skip_correlation provenance
+
+== test-omic-norm-module.R | new-failure | (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+-- base:
+  <passes>
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "846c6b2c3242fdcbf84e906b76f7026a87afb5e23dad2c0f4379c586c43445cd"
+  `expected`: "024a3e8b9582da5526ed27f5f48f518ccda26236c0eeb37c4ddd94ad294e955a"
+  
+  lipid automatic final_plot provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "846c6b2c3242fdcbf84e906b76f7026a87afb5e23dad2c0f4379c586c43445cd"
+  `expected`: "024a3e8b9582da5526ed27f5f48f518ccda26236c0eeb37c4ddd94ad294e955a"
+  
+  lipid automatic final_plot_failing provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "846c6b2c3242fdcbf84e906b76f7026a87afb5e23dad2c0f4379c586c43445cd"
+  `expected`: "024a3e8b9582da5526ed27f5f48f518ccda26236c0eeb37c4ddd94ad294e955a"
+  
+  lipid automatic run provenance
+
+== test-omic-norm-module.R | new-failure | (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+-- base:
+  <passes>
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "96cbc0f23bdb70283b02662cab7d48cb60b4156c44dde8b167700d06a426e64f"
+  `expected`: "6858408bb39aa5c6a558ccd712b51e5ad5ce9aca6ddf7abd28832b96d50a8848"
+  
+  metab automatic final_plot provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "96cbc0f23bdb70283b02662cab7d48cb60b4156c44dde8b167700d06a426e64f"
+  `expected`: "6858408bb39aa5c6a558ccd712b51e5ad5ce9aca6ddf7abd28832b96d50a8848"
+  
+  metab automatic final_plot_failing provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "96cbc0f23bdb70283b02662cab7d48cb60b4156c44dde8b167700d06a426e64f"
+  `expected`: "6858408bb39aa5c6a558ccd712b51e5ad5ce9aca6ddf7abd28832b96d50a8848"
+  
+  metab automatic run provenance
+
+== test-integration-gui.R | new-failure | KIT-139: internal standards, features seen once and few samples are stated with their counts
+-- base:
+  <passes>
+-- head:
+  Expected `facts[[6L]]` to match string "proteomics: 1 features measured in fewer than 3 of the 5 biological samples".
+  Actual text:
+  x | proteomics: 5 runs, one per biological sample; nothing to average.
+
+== test-workflow-omics-binding-steps.R | message-changed | KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit
+-- base:
+  Expected `stripped[[part]]` to be identical to `expected[[part]]`.
+  Differences:
+  actual$lipidomics$inputs[[1]]$sha256 vs expected$lipidomics$inputs[[1]]$sha256
+  - "0277c42d0417078581a8e6f4be316ab7c2d0afe1d4f742ac05da9a776404d8d2"
+  + "dc765573cc92f0806f7e05f47dc93054526e221dc62306773f3a2a9ef0c275f8"
+  
+  actual$lipidomics$inputs[[2]]$sha256 vs expected$lipidomics$inputs[[2]]$sha256
+  - "f64513345927a35a63a86f95f3ec977f575f65e91b446409fbbdc5b1b3976dd8"
+  + "7362bf37081143e370278a1b538fdfb6848e60bd4f1bf26382a87b62fd7e59fc"
+  
+  `actual$lipidomics$steps[[3]]$parameters` is length 3
+  `expected$lipidomics$steps[[3]]$parameters` is length 2
+  
+  `actual$lipidomics$steps[[3]]$parameters[[3]]` is a list
+  `expected$lipidomics$steps[[3]]$parameters[[3]]` is absent
+  
+  `actual$lipidomics$steps[[4]]$parameters` is length 1
+  `expected$lipidomics$steps[[4]]$parameters` is length 0
+  
+  `actual$lipidomics$steps[[4]]$parameters[[1]]` is a list
+  `expected$lipidomics$steps[[4]]$parameters[[1]]` is absent
+  
+  `actual$lipidomics$steps[[9]]$parameters` is length 10
+  `expected$lipidomics$steps[[9]]$parameters` is length 9
+  
+  `actual$lipidomics$steps[[9]]$parameters[[10]]` is a list
+  `expected$lipidomics$steps[[9]]$parameters[[10]]` is absent
+  
+  actual$metabolomics$inputs[[1]]$sha256 vs expected$metabolomics$inputs[[1]]$sha256
+  - "ff2586bf11cb9e60c7bb9251fcb76cedf9671d0b2bf45cf891112fb64e06f26e"
+  + "383c7dc1cb4dc559629fc4fe2ed490e8252070519e03b1690cd540509c6b2edf"
+  
+  actual$metabolomics$inputs[[2]]$sha256 vs expected$metabolomics$inputs[[2]]$sha256
+  - "e72e8d4f10cf4f58b16df6a50e9f64d4432dc33082db3a26a6795815ac4854ac"
+  + "6391cf5eefef8c1ed00217190b2a4886e38f2a5ccabf7e8b9a4eb58b529d1d04"
+  
+  `actual$metabolomics$steps[[3]]$parameters` is length 3
+  `expected$metabolomics$steps[[3]]$parameters` is length 2
+  
+  `actual$metabolomics$steps[[3]]$parameters[[3]]` is a list
+  `expected$metabolomics$steps[[3]]$parameters[[3]]` is absent
+  
+  `actual$metabolomics$steps[[4]]$parameters` is length 1
+  `expected$metabolomics$steps[[4]]$parameters` is length 0
+  
+  `actual$metabolomics$steps[[4]]$parameters[[1]]` is a list
+  `expected$metabolomics$steps[[4]]$parameters[[1]]` is absent
+  
+  `actual$metabolomics$steps[[9]]$parameters` is length 10
+  `expected$metabolomics$steps[[9]]$parameters` is length 9
+  
+  `actual$metabolomics$steps[[9]]$parameters[[10]]` is a list
+  `expected$metabolomics$steps[[9]]$parameters[[10]]` is absent
+  
+  records
+-- head:
+  Expected `stripped[[part]]` to be identical to `expected[[part]]`.
+  Differences:
+  actual$lipidomics$inputs[[1]]$sha256 vs expected$lipidomics$inputs[[1]]$sha256
+  - "0277c42d0417078581a8e6f4be316ab7c2d0afe1d4f742ac05da9a776404d8d2"
+  + "dc765573cc92f0806f7e05f47dc93054526e221dc62306773f3a2a9ef0c275f8"
+  
+  actual$lipidomics$inputs[[2]]$sha256 vs expected$lipidomics$inputs[[2]]$sha256
+  - "f64513345927a35a63a86f95f3ec977f575f65e91b446409fbbdc5b1b3976dd8"
+  + "7362bf37081143e370278a1b538fdfb6848e60bd4f1bf26382a87b62fd7e59fc"
+  
+  `actual$lipidomics$steps[[3]]$parameters` is length 3
+  `expected$lipidomics$steps[[3]]$parameters` is length 2
+  
+  `actual$lipidomics$steps[[3]]$parameters[[3]]` is a list
+  `expected$lipidomics$steps[[3]]$parameters[[3]]` is absent
+  
+  `actual$lipidomics$steps[[4]]$parameters` is length 1
+  `expected$lipidomics$steps[[4]]$parameters` is length 0
+  
+  `actual$lipidomics$steps[[4]]$parameters[[1]]` is a list
+  `expected$lipidomics$steps[[4]]$parameters[[1]]` is absent
+  
+  `actual$lipidomics$steps[[6]]$parameters` is length 4
+  `expected$lipidomics$steps[[6]]$parameters` is length 3
+  
+  `actual$lipidomics$steps[[6]]$parameters[[4]]` is a list
+  `expected$lipidomics$steps[[6]]$parameters[[4]]` is absent
+  
+  `actual$lipidomics$steps[[9]]$parameters` is length 10
+  `expected$lipidomics$steps[
+== test-workflow-metab-declarations.R | new-failure | KIT-032: the metabolomics declarations are registered with the units, merges and statistics of the step map
+-- base:
+  <passes>
+-- head:
+  Expected `declarations$metab_itsd_normalisation$fixed` to be identical to `list(method = "ITSD")`.
+  Differences:
+  `actual` is length 2
+  `expected` is length 1
+  
+  `names(actual)`:   "method" "itsd_outcome"
+  `names(expected)`: "method"               
+  
+  `actual$itsd_outcome` is a character vector ('per_assay')
+  `expected$itsd_outcome` is absent
+
+== test-workflow-lipid-declarations.R | new-failure | KIT-031: the lipidomics declarations are registered with the units, merges and statistics of the step map
+-- base:
+  <passes>
+-- head:
+  Expected `declarations$lipid_itsd_normalisation$fixed` to be identical to `list(method = "ITSD")`.
+  Differences:
+  `actual` is length 2
+  `expected` is length 1
+  
+  `names(actual)`:   "method" "itsd_outcome"
+  `names(expected)`: "method"               
+  
+  `actual$itsd_outcome` is a character vector ('per_assay')
+  `expected$itsd_outcome` is absent
+
+== test-workflow-omics-declarations.R | message-changed | KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+-- base:
+  Expected `current[[omic]]$correlations` to be identical to `frozen[[omic]]$correlations`.
+  Differences:
+  actual$LCMS_Pos vs expected$LCMS_Pos
+                             pearson_correlation
+  - actual$LCMS_Pos[1, ]               0.9896394
+  + expected$LCMS_Pos[1, ]             0.9940490
+  - actual$LCMS_Pos[2, ]               0.9828113
+  + expected$LCMS_Pos[2, ]             0.9902811
+  - actual$LCMS_Pos[3, ]               0.9828420
+  + expected$LCMS_Pos[3, ]             0.9898231
+  - actual$LCMS_Pos[4, ]               0.9901574
+  + expected$LCMS_Pos[4, ]             0.9943541
+  - actual$LCMS_Pos[5, ]               0.9903166
+  + expected$LCMS_Pos[5, ]             0.9943048
+  - actual$LCMS_Pos[6, ]               0.9857631
+  + expected$LCMS_Pos[6, ]             0.9915199
+  - actual$LCMS_Pos[7, ]               0.9890728
+  + expected$LCMS_Pos[7, ]             0.9943298
+  - actual$LCMS_Pos[8, ]               0.9881651
+  + expected$LCMS_Pos[8, ]             0.9932941
+  - actual$LCMS_Pos[9, ]               0.9905134
+  + expected$LCMS_Pos[9, ]             0.9939092
+  - actual$LCMS_Pos[10, ]              0.9892299
+  + expected$LCMS_Pos[10, ]            0.9938415
+  - actual$LCMS_Pos[11, ]              0.9878970
+  + expected$LCMS_Pos[11, ]            0.9929633
+  - actual$LCMS_Pos[12, ]              0.9921422
+  + expected$LCMS_Pos[12, ]            0.9953084
+  - actual$LCMS_Pos[13, ]              0.9861065
+  + expected$LCMS_Pos[13, ]            0.9916455
+  - actual$LCMS_Pos[14, ]              0.9913420
+  + expected$LCMS_Pos[14, ]            0.9948109
+  - actual$LCMS_Pos[15, ]              0.9902608
+  + expected$LCMS_Pos[15, ]            0.9943748
+  - actual$LCMS_Pos[16, ]              0.9881252
+  + expected$LCMS_Pos[16, ]            0.9932958
+  - actual$LCMS_Pos[17, ]              0.9870242
+  + expected$LCMS_Pos[17, ]            0.9927266
+  - actual$LCMS_Pos[18, ]              0.9772392
+  + expected$LCMS_Pos[18, ]            0.9873326
+  - actual$LCMS_Pos[19, ]              0.9862809
+  + expected$LCMS_Pos[19, ]            0.9923099
+  - actual$LCMS_Pos[20, ]              0.9825283
+  + expected$LCMS_Pos[20, ]            0.9908104
+  - actual$LCMS_Pos[21, ]              0.9850448
+  + expected$LCMS_Pos[21, ]            0.9914948
+  - actual$LCMS_Pos[22, ]              0.9894397
+  + expected$LCMS_Pos[22, ]            0.9939291
+  - actual$LCMS_Pos[23, ]              0.9922353
+  + expected$LCMS_Pos[23, ]            0.9954703
+  - actual$LCMS_Pos[24, ]              0.9837382
+  + expected$LCMS_Pos[24, ]            0.9904842
+  - actual$LCMS_Pos[25, ]              0.9912820
+  + expected$LCMS_Pos[25, ]            0.9949001
+  - actual$LCMS_Pos[26, ]              0.9857551
+  + expected$LCMS_Pos[26, ]            0.9919388
+  - actual$LCMS_Pos[27, ]              0.9894866
+  + expected$LCMS_Pos[27, ]            0.9937629
+  - actual$LCMS_Pos[28, ]              0.9872639
+  + expected$LCMS_Pos[28, ]            0.9928458
+  - actual$LCMS_Pos[29, ]              0.9888915
+  + expected$LCMS_Pos[29, ]            0.9936347
+  - actual$LCMS_Pos[30, ]              0.9896288
+  + expected$LCMS_Pos[30, ]            0.9938045
+  - actual$LCMS_Pos[31, ]              0.9891803
+  + expected$LCMS_Pos[31, ]            0.9932901
+  - actual$LCMS_Pos[32, ]              0.9894554
+  + expected$LCMS_Pos[32, ]            0.9936511
+  - actual$LCMS_Pos[33, ]              0.9914340
+  + expected$LCMS_Pos[33, ]            0.9947995
+  - actual$LCMS_Pos[34, ]              0.9873731
+  + expected$LCMS_Pos[34, ]            0.9923272
+  - actual$LCMS_Pos[35, ]              0.9815457
+  + expected$LCMS_Pos[35, ]            0.9895562
+  - actual$LCMS_Pos[36, ]              0.9895396
+  + expected$LCMS_Pos[36, ]            0.9938090
+  - actual$LCMS_Pos[37, ]              0.9874044
+  + expected$LCMS_Pos[37, ]            0.9926484
+  - 

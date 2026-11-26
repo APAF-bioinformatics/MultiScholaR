@@ -1,0 +1,952 @@
+== test-omics-summary-core.R | new-failure | (W3, core side) lipid_required_missing: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+-- base:
+  <passes>
+-- head:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual vs expected
+  - "[error 10 -] Copy error: unused argument (enrichment_files = enrichmentFiles)"
+  + "[error 10 -] Copy error: Required publication artifacts missing: Contrasts Table, Design Matrix"
+  
+  lipid_required_missing copy notes
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual vs expected
+  + "copyToResultsSummary(omic_type=lipidomics, experiment_label=kit108, contrasts_tbl=<NULL>, design_matrix=<NULL>, force=TRUE, current_rmd=<NULL>, project_dirs_object_name=project_dirs, global=the session's)"
+  + "  copyToResultsSummary returned: Contrasts Table | Design Matrix | DA Heatmaps | Num Sig DE Molecules"
+  
+  lipid_required_missing copy calls
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "source/study_parameters.txt"
+  + "results_summary/Publication_tables/DA_results_lipidomics.xlsx"
+  + "results_summary/Publication_tables/Pathway_enrichment_results_lipidomics.xlsx"
+  + "results_summary/Study_report/study_parameters.txt"
+  + "source/study_parameters.txt"
+  
+  `actual`:   "<present>"                                    
+  `expected`: "<present>" "<present>" "<present>" "<present>"
+  
+  lipid_required_missing copy files
+
+== test-omics-summary-core.R | new-failure | (W3, core side) metab_required_missing: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+-- base:
+  <passes>
+-- head:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual vs expected
+  - "[error 10 -] Copy error: unused argument (enrichment_files = enrichmentFiles)"
+  + "[error 10 -] Copy error: Required publication artifacts missing: Contrasts Table, Design Matrix"
+  
+  metab_required_missing copy notes
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual vs expected
+  + "copyToResultsSummary(omic_type=metabolomics, experiment_label=kit108, contrasts_tbl=<NULL>, design_matrix=<NULL>, force=TRUE, current_rmd=<NULL>, project_dirs_object_name=project_dirs, global=the session's)"
+  + "  copyToResultsSummary returned: Contrasts Table | Design Matrix | Composite QC (PNG) | DA Heatmaps"
+  
+  metab_required_missing copy calls
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "source/study_parameters.txt"
+  + "results_summary/Publication_tables/DA_results_metabolomics.xlsx"
+  + "results_summary/Publication_tables/Pathway_enrichment_results_metabolomics.xlsx"
+  + "results_summary/Study_report/study_parameters.txt"
+  + "source/study_parameters.txt"
+  
+  `actual`:   "<present>"                                    
+  `expected`: "<present>" "<present>" "<present>" "<present>"
+  
+  metab_required_missing copy files
+
+== test-omics-summary-core.R | message-changed | (W3, core side) trx_main: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+-- base:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>"        "e0e8d896c713261d"
+  `expected`: "7b9d35dbf33331d1"                   
+  
+  trx_main save integration
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual[9:15] vs expected[9:15]
+    results_summary/transcriptomics/Publication_tables/canonical_correlation_optimization_summary.xlsx"<present>"
+    results_summary/transcriptomics/Publication_tables/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results_summary/transcriptomics/Publication_tables/ruv_normalised_log_values.tsv"83de1dbdd1018161c5ec6c1dac4dc179b0c1d0340fd2fe826d4b3c9b4ae93387"
+  - results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.pdf"<present>"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.png"<present>"
+    results_summary/transcriptomics/QC_figures/ruviii_before_and_after.pdf"<present>"
+  
+  trx_main copy files
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/removed_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+  
+  actual vs expected
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/removed_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+  - integration/transcriptomics_normalized_data.tsv"e0e8d896c713261d93c210456cc3fdd074e055df349b25d2502fbaa9ea0fc4b7"
+  + integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+  
+  trx_main save files
+-- head:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('results_summary/transcriptomics/Publication_figures/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf', 'results_summary/transcriptomics/Publication_figures/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png', 'results_summary/transcriptomics/Publication_figures/Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf', 'results_summary/transcriptomics/Publication_figures/Volcano_Plots/volcano_plot_Sera_vs_RPMI.png', 'results_summary/transcriptomics/Publication_figures/canonical_correlation_panels.pdf', ...)
+  
+  actual vs expected
+  - "<unchanged>"
+  + results_summary/transcriptomics/Publication_figures/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf"<present>"
+  + results_summary/transcriptomics/Publication_figures/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png"<present>"
+  + results_summary/transcriptomics/Publication_figures/Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf"<present>"
+  + results_summary/transcriptomics/Publication_figures/Volcano_Plots/volcano_plot_Sera_vs_RPMI.png"<present>"
+  + results_summary/transcriptomics/Publication_figures/canonical_correlation_panels.pdf"<present>"
+  + results_summary/transcriptomics/Publication_figures/canonical_correlation_panels.png"<present>"
+  + results_summary/transcriptomics/Publication_tables/DA_results_transcriptomics.xlsx"<present>"
+  + results_summary/transcriptomics/Publication_tables/Pathway_enrichment_results_transcriptomics.xlsx"<present>"
+  + results_summary/transcriptomics/Publication_tables/canonical_correlation_optimization_summary.xlsx"<present>"
+  + results_summary/transcriptomics/Publication_tables/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+  + results_summary/transcriptomics/Publication_tables/ruv_normalised_log_values.tsv"83de1dbdd1018161c5ec6c1dac4dc179b0c1d0340fd2fe826d4b3c9b4ae93387"
+  + results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+  + results_summary/transcriptomics/QC_figures/normalization_comparison_grid.pdf"<present>"
+  + results_summary/transcriptomics/QC_figures/normalization_comparison_grid.png"<present>"
+  + results_summary/transcriptomics/QC_figures/ruviii_before_and_after.pdf"<present>"
+  + results_summary/transcriptomics/QC_figures/ruviii_before_and_after.png"<present>"
+  + results_summary/transcriptomics/Study_report/contrasts_tbl.tab"4c9856ae0044c3e20d9ae4722742e7eab0f2dabb11b18668162461912fd69d87"
+  + results_summary/transcriptomics/Study_report/design_matrix.tab"e3b6f40550967e975506c582126b035f5fcc887aae4ffe97e3200f3999a3584e"
+  + results_summary/transcriptomics/Study_report/study_parameters.txt"<present>"
+  
+  trx_main copy files
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>"        "e0e8d896c713261d"
+  `expected`: "7b9d35dbf33331d1"                   
+  
+  trx_main save integration
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual vs expected
+  - "[error 10 -] Copy error: unused argument (enrichment_files = enrichmentFiles)"
+  + "[message 5 -] Publication files copied"
+  
+  trx_main copy notes
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual vs expected
+  + "copyToResultsSummary(omic_type=transcriptomics, experiment_label=kit108, contrasts_tbl=<table 1x3 ba384cec7aecd593>, design_matrix=<table 12x3 440a505e731ef388>, force=TRUE, current_rmd=<NULL>, project_dirs_object_name=project_dirs, global=the session's)"
+  + "  copyToResultsSummary returned: "
+  
+  trx_main copy calls
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual[3:9] vs expected[3:9]
+    timestamp"<time>"
+    omic_type"transcriptomics"
+    workflow_args_saved"TRUE"
+  - files_copied"FALSE"
+  + files_copied"TRUE"
+    report_generated"TRUE"
+    report_path"<ROOT>/results_summary/transcriptomics/transcriptomics_report_transcriptomics_kit108.docx"
+    project_dirs"<digest> 9e585ab288403615"
+  
+  trx_main export session_state
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/removed_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+  
+  actual vs expected
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/removed_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+  - integration/transcriptomics_normalized_data.tsv"e0e8d896c713261d93c210456cc3fdd074e055df349b25d2502fbaa9ea0fc4b7"
+  + integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+  
+  trx_main save files
+
+== test-omic-summary-module.R | new-failure | (b) lipid_required_missing: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+-- base:
+  <passes>
+-- head:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "[error 10 -] Copy error: unused argument (enrichment_files = enrichmentFiles)"
+  + "[error 10 -] Copy error: Required publication artifacts missing: Contrasts Table, Design Matrix"
+  
+  lipid_required_missing copy notes
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - copy_status"Error: unused argument (enrichment_files = enrichmentFiles)"
+  + copy_status"Error: Required publication artifacts missing: Contrasts Table, Design Matrix"
+    report_ready"<error> unused arguments (self, name)"
+    session_summary"Ready to save workflow parameters and generate report"
+    template_status"[WARNING] Report template will be downloaded when generating report"
+  
+  lipid_required_missing copy values
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - copy_status"Error: unused argument (enrichment_files = enrichmentFiles)"
+  + copy_status"Error: Required publication artifacts missing: Contrasts Table, Design Matrix"
+    report_ready"<error> unused arguments (self, name)"
+    session_summary"Ready to save workflow parameters and generate report"
+    template_status"[WARNING] Report template will be downloaded when generating report"
+  
+  lipid_required_missing report values
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  + "copyToResultsSummary(omic_type=lipidomics, experiment_label=kit108, contrasts_tbl=<NULL>, design_matrix=<NULL>, force=TRUE, current_rmd=<NULL>, project_dirs_object_name=project_dirs, global=the session's)"
+  + "  copyToResultsSummary returned: Contrasts Table | Design Matrix | DA Heatmaps | Num Sig DE Molecules"
+  
+  lipid_required_missing copy calls
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "source/study_parameters.txt"
+  + "results_summary/Publication_tables/DA_results_lipidomics.xlsx"
+  + "results_summary/Publication_tables/Pathway_enrichment_results_lipidomics.xlsx"
+  + "results_summary/Study_report/study_parameters.txt"
+  + "source/study_parameters.txt"
+  
+  `actual`:   "<present>"                                    
+  `expected`: "<present>" "<present>" "<present>" "<present>"
+  
+  lipid_required_missing copy files
+
+== test-omic-summary-module.R | new-failure | (b) metab_required_missing: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+-- base:
+  <passes>
+-- head:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "[error 10 -] Copy error: unused argument (enrichment_files = enrichmentFiles)"
+  + "[error 10 -] Copy error: Required publication artifacts missing: Contrasts Table, Design Matrix"
+  
+  metab_required_missing copy notes
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - copy_status"Error: unused argument (enrichment_files = enrichmentFiles)"
+  + copy_status"Error: Required publication artifacts missing: Contrasts Table, Design Matrix"
+    report_ready"<error> unused arguments (self, name)"
+    session_summary"Ready to save workflow parameters and generate report"
+    template_status"[WARNING] Report template will be downloaded when generating report"
+  
+  metab_required_missing copy values
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - copy_status"Error: unused argument (enrichment_files = enrichmentFiles)"
+  + copy_status"Error: Required publication artifacts missing: Contrasts Table, Design Matrix"
+    report_ready"<error> unused arguments (self, name)"
+    session_summary"Ready to save workflow parameters and generate report"
+    template_status"[WARNING] Report template will be downloaded when generating report"
+  
+  metab_required_missing report values
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  + "copyToResultsSummary(omic_type=metabolomics, experiment_label=kit108, contrasts_tbl=<NULL>, design_matrix=<NULL>, force=TRUE, current_rmd=<NULL>, project_dirs_object_name=project_dirs, global=the session's)"
+  + "  copyToResultsSummary returned: Contrasts Table | Design Matrix | Composite QC (PNG) | DA Heatmaps"
+  
+  metab_required_missing copy calls
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "source/study_parameters.txt"
+  + "results_summary/Publication_tables/DA_results_metabolomics.xlsx"
+  + "results_summary/Publication_tables/Pathway_enrichment_results_metabolomics.xlsx"
+  + "results_summary/Study_report/study_parameters.txt"
+  + "source/study_parameters.txt"
+  
+  `actual`:   "<present>"                                    
+  `expected`: "<present>" "<present>" "<present>" "<present>"
+  
+  metab_required_missing copy files
+
+== test-omic-summary-module.R | message-changed | (b) trx_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+-- base:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>"        "e0e8d896c713261d"
+  `expected`: "7b9d35dbf33331d1"                   
+  
+  trx_main save integration
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual[5:11] vs expected[5:11]
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>"1"
+    results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results/transcriptomics/da_genes/ruv_optimization_summary.txt"<present>"
+  - results/transcriptomics/da_genes/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results/transcriptomics/da_genes/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf"<present>"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png"<present>"
+    results/transcriptomics/publication_graphs/Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf"<present>"
+  
+  trx_main da files
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual[9:15] vs expected[9:15]
+    results_summary/transcriptomics/Publication_tables/canonical_correlation_optimization_summary.xlsx"<present>"
+    results_summary/transcriptomics/Publication_tables/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results_summary/transcriptomics/Publication_tables/ruv_normalised_log_values.tsv"83de1dbdd1018161c5ec6c1dac4dc179b0c1d0340fd2fe826d4b3c9b4ae93387"
+  - results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.pdf"<present>"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.png"<present>"
+    results_summary/transcriptomics/QC_figures/ruviii_before_and_after.pdf"<present>"
+  
+  trx_main copy files
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/removed_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+  
+  actual vs expected
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/removed_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+  - integration/transcriptomics_normalized_data.tsv"e0e8d896c713261d93c210456cc3fdd074e055df349b25d2502fbaa9ea0fc4b7"
+  + integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+  
+  trx_main save files
+-- head:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+      actual                | expected                 
+  [1] "copy_status"         | "copy_status"         [1]
+                            - "download_report"     [2]
+  [2] "report_ready"        | "report_ready"        [3]
+  [3] "ruviii_before_after" | "ruviii_before_after" [4]
+  [4] "ruviii_m_ui"         | "ruviii_m_ui"         [5]
+  
+  trx_main export outputs
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+      actual                | expected                 
+  [1] "copy_status"         | "copy_status"         [1]
+                            - "download_report"     [2]
+  [2] "report_ready"        | "report_ready"        [3]
+  [3] "ruviii_before_after" | "ruviii_before_after" [4]
+  [4] "ruviii_m_ui"         | "ruviii_m_ui"         [5]
+  
+  trx_main report outputs
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+      names(actual)         | names(expected)          
+  [1] "copy_status"         | "copy_status"         [1]
+                            - "download_report"     [2]
+  [2] "report_ready"        | "report_ready"        [3]
+  [3] "ruviii_before_after" | "ruviii_before_after" [4]
+  [4] "ruviii_m_ui"         | "ruviii_m_ui"         [5]
+  
+  lines(actual[[1]]) vs lines(expected[[1]])
+  - "Error: unused argument (enrichment_files = enrichmentFiles)"
+  + "Files copied to publication directory successfully [OK]"
+  
+  `lines(actual[[2]])`:   "<error> unused arguments (self, name)"
+  `lines(expected[[2]])`: "<download>"                           
+  
+  `lines(actual[[3]])`:   "<plot> alt=RUVIII before and after"   
+  `lines(expected[[3]])`: "<error> unused arguments (self, name)"
+  
+  lines(actual[[4]]) vs lines(expected[[4]])
+  - "<ui> e7ae5dc12fe193d9706149295d232a88b3b7a9e15fced503f10f12bc405b104f"
+  + "<plot> alt=RUVIII before and after"
+  
+  lines(actual[[5]]) vs lines(expected[[5]])
+  - "RUVIII export complete (integration only; DA results unchanged)."
+  - "M = group"
+  - "k = 2, 18 inferred negative controls"
+  + "<ui> e7ae5dc12fe193d9706149295d232a88b3b7a9e15fced503f10f12bc405b104f"
+  
+  lines(actual[[6]]) vs lines(expected[[6]])
+  - "Study parameters created for: kit108 "
+  - "Description: Full transcriptomics analysis workflow with normalization, DE and the RUVIII integration export "
+  - "Timestamp: <TIME> "
+  - "File: <ROOT>/scripts/transcriptomics/study_parameters.txt "
+  - "Source: Final S4 object @args + config_list "
+  - "Integration Object: transcriptomics_normalized_data.tsv "
+  - "Status: Parameters saved [OK]"
+  + "RUVIII export complete (integration only; DA results unchanged)."
+  + "M = group"
+  + "k = 2, 18 inferred negative controls"
+  
+  lines(actual[[7]]) vs lines(expected[[7]])
+  - "[WARNING] Report template will be downloaded when generating report"
+  + "Workflow args created for: kit108 "
+  + "Description: Full transcriptomics analysis workflow with normalization, DE and the RUVIII integration export "
+  + "Timestamp: <TIME> "
+  + "Status: Arguments saved [OK], Files copied [OK], Report generated [OK] "
+  + "Report location: <ROOT>/results_summary/transcriptomics/transcriptomics_report_transcriptomics_kit108.docx"
+  
+  `lines(actual[[8]])` is absent
+  `lines(expected[[8]])` is a character vector ('[WARNING] Report template will be downloaded when generating report')
+  
+  trx_main export values
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+      names(actual)         | names(expected)          
+  [1] "copy_status"         | "copy_status"         [1]
+                            - "download_report"     [2]
+  [2] "report_ready"        | "report_ready"        [3]
+  [3] "ruviii_before_after" | "ruviii_before_after" [4]
+  [4] "ruviii_m_ui"         | "ruviii_m_ui"         [5]
+  
+  lines(actual[[1]]) vs lines(expected[[1]])
+  - "Error: unused argument (enrichment_files = enrichmentFiles)"
+  + "Files copied to publication directory successfully [OK]"
+  
+  `lines(actual[[2]])`:   "<error> unused arguments (self, name)"
+  `lines(expected[[2]])`: "<download>"                           
+  
+  `lines(actual[[3]])`:   "<plot> alt=RUVIII before and after"   
+  `lines(expected[[3]])`: "<error> unused arguments (self, name)"
+  
+  lines(actual[[4]]) vs lines(expected[[4]])
+  - "<ui> e7ae5dc12fe193d9706149295d232a88b3b7a9e15fced503f10f12bc405b104f"
+  + "<plot> alt=RUVIII before and after"
+  
+  lines(actual[[5]]) vs lines(expected[[5]])
+  - "RUVIII export complete (integration only; DA results unchanged)."
+  - "M = group"
+  - "k = 2, 18 inferred negative controls"
+  + "<ui> e7ae5dc12fe193d9706149295d232a88b3b7a9e15fced503f10f12bc405b104f"
+  
+  lines(actual[[6]]) vs lines(expected[[6]])
+  - "Study parameters created for: kit108 "
+  - "Description: Full transcriptomics analysis workflow with normalization, DE and the RUVIII integration export "
+  - "Timestamp: <TIME> "
+  - "File: <ROOT>/scripts/transcriptomics/study_parameters.txt "
+  - "Source: Final S4 object @args + config_list "
+  - "Integration Object: transcriptomics_normalized_data.tsv "
+  - "Status: Parameters saved [OK]"
+  + "RUVIII export complete (integration only; DA results unchanged)."
+  + "M = group"
+  + "k = 2, 18 inferred negative controls"
+  
+  lines(actual[[7]]) vs lines(expected[[7]])
+  - "[WARNING] Report template will be downloaded when generating report"
+  + "Workflow args created for: kit108 "
+  + "Description: Full transcriptomics analysis workflow with normalization, DE and the RUVIII integration export "
+  + "Timestamp: <TIME> "
+  + "Status: Arguments saved [OK], Files copied [OK], Report generated [OK] "
+  + "Report location: <ROOT>/results_summary/transcriptomics/transcriptomics_report_transcriptomics_kit108.docx"
+  
+  `lines(actual[[8]])` is absent
+  `lines(expected[[8]])` is a character vector ('[WARNING] Report template will be downloaded when generating report')
+  
+  trx_main report values
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+   actual | expected                                                     
+          - "start Generating report... 0.1"                          [1]
+          - "0.2 Checking for transcriptomics_report.rmd template..." [2]
+          - "0.5 Rendering report..."                                 [3]
+          - "0.9 Exporting the analysis record..."                    [4]
+  
+  trx_main report progress
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `actual`:                                              
+  `expected`: "<unhandled> unused arguments (self, name)"
+  
+  trx_main report errors
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `actual`:   "FALSE" "FALSE" "<NULL>" "TRUE"
+  `expected`: "TRUE"  "FALSE" "<NULL>" "TRUE"
+  
+  trx_main copy reactive_values
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('results_summary/transcriptomics/Publication_figures/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf', 'results_summary/transcriptomics/Publication_figures/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png', 'results_summary/transcriptomics/Publication_figures/Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf', 'results_summary/transcriptomics/Publication_figures/Volcano_Plots/volcano_plot_Sera_vs_RPMI.png', 'results_summary/transcriptomics/Publication_figures/canonical_correlation_panels.pdf', ...)
+  
+  actual vs expected
+  - "<unchanged>"
+  + results_summary/transcriptomics/Publication_figures/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf"<present>"
+  + results_summary/transcriptomics/Publication_figures/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png"<present>"
+  + results_summary/transcriptomics/Publication_figures/Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf"<present>"
+  + results_summary/transcriptomics/Publication_figures/Volcano_Plots/volcano_plot_Sera_vs_RPMI.png"<present>"
+  + results_summary/transcriptomics/Publication_figures/canonical_correlation_panels.pdf"<present>"
+  + results_summary/transcriptomics/Publication_figures/canonical_correlation_panels.png"<present>"
+  + results_summary/transcriptomics/Publication_tables/DA_results_transcriptomics.xlsx"<present>"
+  + results_summary/transcriptomics/Publication_tables/Pathway_enrichment_results_transcriptomics.xlsx"<present>"
+  + results_summary/transcriptomics/Publication_tables/canonical_correlation_optimization_summary.xlsx"<present>"
+  + results_summary/transcriptomics/Publication_tables/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+  + results_summary/transcriptomics/Publication_tables/ruv_normalised_log_values.tsv"83de1dbdd1018161c5ec6c1dac4dc179b0c1d0340fd2fe826d4b3c9b4ae93387"
+  + results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+  + results_summary/transcriptomics/QC_figures/normalization_comparison_grid.pdf"<present>"
+  + results_summary/transcriptomics/QC_figures/normalization_comparison_grid.png"<present>"
+  + results_summary/transcriptomics/QC_figures/ruviii_before_and_after.pdf"<present>"
+  + results_summary/transcriptomics/QC_figures/ruviii_before_and_after.png"<present>"
+  + results_summary/transcriptomics/Study_report/contrasts_tbl.tab"4c9856ae0044c3e20d9ae4722742e7eab0f2dabb11b18668162461912fd69d87"
+  + results_summary/transcriptomics/Study_report/design_matrix.tab"e3b6f40550967e975506c582126b035f5fcc887aae4ffe97e3200f3999a3584e"
+  + results_summary/transcriptomics/Study_report/study_parameters.txt"<present>"
+  
+  trx_main copy files
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)` is absent
+  `names(expected)` is a character vector ('results_summary/transcriptomics/Study_report/analysis_record.docx', 'results_summary/transcriptomics/Study_report/analysis_record.json', 'results_summary/transcriptomics/Study_report/analysis_record.xlsx', 'results_summary/transcriptomics/transcriptomics_report_transcriptomics_kit108.docx', 'scripts/transcriptomics/transcriptomics_report.rmd')
+  
+  `actual`:   "<unchanged>"                                                
+  `expected`: "<present>"   "<present>" "<present>" "<present>" "<present>"
+  
+  trx_main report files
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>"        "e0e8d896c713261d"
+  `expected`: "7b9d35dbf33331d1"                   
+  
+  trx_main save integration
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "[error 10 -] Copy error: unused argument (enrichment_files = enrichmentFiles)"
+  + "[message 5 -] Publication files copied"
+  
+  trx_main copy notes
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "[warning 5 -] Please copy the results to the publication directory before generating the report (Copy to Publication Directory)."
+  + "[message 5 -] transcriptomics_report.rmd template copied from package"
+  + "[message 5 -] Report generated successfully!"
+  
+  trx_main report notes
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - files_copied"FALSE"
+  + files_copied"TRUE"
+  - report_generated"FALSE"
+  + report_generated"TRUE"
+  - report_path"<NULL>"
+  + report_path"<ROOT>/results_summary/transcriptomics/transcriptomics_report_transcriptomics_kit108.docx"
+    workflow_args_saved"TRUE"
+  
+  trx_main export reactive_values
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - files_copied"FALSE"
+  + files_copied"TRUE"
+  - report_generated"FALSE"
+  + report_generated"TRUE"
+  - report_path"<NULL>"
+  + report_path"<ROOT>/results_summary/transcriptomics/transcriptomics_report_transcriptomics_kit108.docx"
+    workflow_args_saved"TRUE"
+  
+  trx_main report reactive_values
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  + "copyToResultsSummary(omic_type=transcriptomics, experiment_label=kit108, contrasts_tbl=<table 1x3 ba384cec7aecd593>, design_matrix=<table 12x3 440a505e731ef388>, force=TRUE, current_rmd=<NULL>, project_dirs_object_name=project_dirs, global=the session's)"
+  + "  copyToResultsSummary returned: "
+  
+  trx_main copy calls
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  + "RenderReport(omic_type=transcriptomics, experiment_label=kit108, rmd_filename=transcriptomics_report.rmd, project_dirs_object_name=project_dirs, output_format=<NULL>, global=the session's)"
+  + "exportWorkflowAnalysisRecordBundle(manager=<WorkflowStateOwner>, directory=<ROOT>/results_summary/transcriptomics/Study_report)"
+  + "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/results_summary/transcriptomics/Study_report/analysis_record.json)"
+  
+  trx_main report calls
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual[3:11] vs expected[3:11]
+    timestamp"<time>"
+    omic_type"transcriptomics"
+    workflow_args_saved"TRUE"
+  - files_copied"FALSE"
+  + files_copied"TRUE"
+  - report_generated"FALSE"
+  + report_generated"TRUE"
+  - report_path"<NULL>"
+  + report_path"<ROOT>/results_summary/transcriptomics/transcriptomics_report_transcriptomics_kit108.docx"
+    project_dirs"<digest> 9e585ab288403615"
+    workflow_type"transcriptomics"
+    report_template"transcriptomics_report.rmd"
+  
+  trx_main export session_state
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual[5:11] vs expected[5:11]
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>"1"
+    results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results/transcriptomics/da_genes/ruv_optimization_summary.txt"<present>"
+  - results/transcriptomics/da_genes/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results/transcriptomics/da_genes/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf"<present>"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png"<present>"
+    results/transcriptomics/publication_graphs/Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf"<present>"
+  
+  trx_main da files
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  lines(actual[[1]]) vs lines(expected[[1]])
+  - "Error: unused argument (enrichment_files = enrichmentFiles)"
+  + "Files copied to publication directory successfully [OK]"
+  
+  lines(actual[[6]]) vs lines(expected[[6]])
+  - "Study parameters created for: kit108 "
+  + "Workflow args created for: kit108 "
+    "Description: Full transcriptomics analysis workflow with normalization, DE and the RUVIII integration export "
+    "Timestamp: <TIME> "
+  - "File: <ROOT>/scripts/transcriptomics/study_parameters.txt "
+  - "Source: Final S4 object @args + config_list "
+  - "Integration Object: transcriptomics_normalized_data.tsv "
+  - "Status: Parameters saved [OK]"
+  + "Status: Arguments saved [OK], Files copied [OK]"
+  
+  trx_main copy values
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/removed_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+  
+  actual vs expected
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/removed_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+  - integration/transcriptomics_normalized_data.tsv"e0e8d896c713261d93c210456cc3fdd074e055df349b25d2502fbaa9ea0fc4b7"
+  + integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+  
+  trx_main save files
+
+== test-kit219-enrichment-files-current.R | fixed | KIT-219 E1 (S2): a planted earlier run's files are left out of the workbook and the folder, and Copy says so
+-- base:
+  Error in `expect_setequal(record$files, planted)`: `object` must be a vector, not `NULL`.
+  Expected `held` to have the same values as `product`.
+  Actual: "C_vs_A_up_enrichment_plot.png", "C_vs_A_up_enrichment_results.tsv", "grouptreated-groupcontrol_down_enrichment_plot.html", "grouptreated-groupcontrol_down_enrichment_plot.png", "grouptreated-groupcontrol_down_enrichment_results.tsv", "grouptreated-groupcontrol_up_enrichment_plot.html", "grouptreated-groupcontrol_up_enrichment_plot.png", "grouptreated-groupcontrol_up_enrichment_results.tsv"
+  Expected: "grouptreated-groupcontrol_up_enrichment_results.tsv", "grouptreated-groupcontrol_up_enrichment_plot.html", "grouptreated-groupcontrol_up_enrichment_plot.png", "grouptreated-groupcontrol_down_enrichment_results.tsv", "grouptreated-groupcontrol_down_enrichment_plot.html", "grouptreated-groupcontrol_down_enrichment_plot.png"
+  Needs: "C_vs_A_up_enrichment_plot.png", "C_vs_A_up_enrichment_results.tsv"
+  Expected `is.null(record)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `workbook$n` to be identical to 2L.
+  Differences:
+    `actual`: 3
+  `expected`: 2
+  Expected `workbook$pairs` to have the same values as `paste(fixture$contrast, c("up", "down"))`.
+  Actual: "C_vs_A up", "grouptreated-groupcontrol down", "grouptreated-groupcontrol up"
+  Expected: "grouptreated-groupcontrol up", "grouptreated-groupcontrol down"
+  Needs: "C_vs_A up"
+-- head:
+  <passes>
+
+== test-kit219-enrichment-files-current.R | fixed | KIT-219 E2 (S1): after the DA is run again the earlier enrichment is not copied and Copy names every file
+-- base:
+  Error in `expect_setequal(record$files, on_disk)`: `object` must be a vector, not `NULL`.
+  Expected `held` to have length 0.
+  Actual length: 6.
+  Expected `is.null(record)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `workbook$n` to be identical to 0L.
+  Differences:
+    `actual`: 2
+  `expected`: 0
+-- head:
+  <passes>
+
+== test-kit219-enrichment-files-current.R | fixed | KIT-219 E3 (S3): with no enrichment in the store, tables left in the enrichment folder are not copied
+-- base:
+  Error in `expect_setequal(record$files, tables)`: `object` must be a vector, not `NULL`.
+  Expected `held` to have length 0.
+  Actual length: 2.
+  Expected `is.null(record)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `workbook$n` to be identical to 0L.
+  Differences:
+    `actual`: 2
+  `expected`: 0
+-- head:
+  <passes>
+
+== test-kit219-enrichment-files-current.R | fixed | KIT-219 E4 (S1): Copy, then the DA run again: the Report is refused before anything is rendered
+-- base:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  [message] DIANN_report.rmd template copied from package | [message] Report generated successfully!
+  Expected `file.exists(report$report)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `report$render` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+-- head:
+  <passes>
+
+== test-kit219-enrichment-files-current.R | fixed | KIT-219 E6 (S6): Copy, then the enrichment run again with other content, then the Report: refused
+-- base:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  [message] DIANN_report.rmd template copied from package | [message] Report generated successfully!
+  Expected `file.exists(report$report)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `report$render` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+-- head:
+  <passes>
+
+== test-kit219-enrichment-files-current.R | fixed | KIT-219 E5 (OD-2 (i)): metabolomics has no enrichment analysis, so tables in its enrichment folder are not copied
+-- base:
+  Error in `expect_setequal(record$files, tables)`: `object` must be a vector, not `NULL`.
+  Expected `held` to have length 0.
+  Actual length: 2.
+  Expected `is.null(record)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  Expected `workbook$n` to be identical to 0L.
+  Differences:
+    `actual`: 2
+  `expected`: 0
+-- head:
+  <passes>
+
+== test-kit219-enrichment-files-current.R | fixed | KIT-219 E7a (OD-5 (i)): the lipidomics and metabolomics templates print the enrichment section only when files exist
+-- base:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipidomics_report.rmd
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metabolomics_report.rmd
+  Expected `any(grepl("enrichment_ran <- ", lines, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipidomics_report.rmd
+  Expected `any(grepl("enrichment_ran <- ", lines, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metabolomics_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipidomics_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipidomics_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metabolomics_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metabolomics_report.rmd
+  Expected `length(plots) > 0L && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipidomics_report.rmd
+  Expected `length(plots) > 0L && ...` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metabolomics_report.rmd
+-- head:
+  <passes>
+
+== test-kit219-enrichment-files-current.R | fixed | KIT-219 E7b (OD-5 (i)): the enrichment_presence chunk of each template, run on three publication folders
+-- base:
+  Expected `length(code) > 0L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipidomics_report.rmd chunk enrichment_presence exists
+  Expected `length(code) > 0L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metabolomics_report.rmd chunk enrichment_presence exists
+-- head:
+  <passes>
+
+== test-kit219-enrichment-files-current.R | fixed | KIT-219 E8 (3.1 item 5): the proteomics templates' flag reads the publication folder only
+-- base:
+  Expected `empty$ran` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_limpa_report.rmd
+  Expected `empty$ran` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN_report.rmd
+  Expected `empty$ran` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ_report.rmd
+  Expected `empty$ran` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ_report.rmd
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT_report.rmd
+-- head:
+  <passes>
+
+== test-kit219-enrichment-files-current.R | fixed | KIT-219 G5 (P07): the limpa template's STRING chunks read the publication folder, not the enrichment folder
+-- base:
+  Expected `all(grepl("report_publication_figures_dir", defined, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  STRING DB Enrichment Plots
+  Expected `all(grepl("report_publication_figures_dir", defined, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  stringdb_presence
+  Expected `any(grepl("pathway_dir", code, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  STRING DB Enrichment Plots
+  Expected `any(grepl("pathway_dir", code, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  stringdb_presence
+-- head:
+  <passes>
+

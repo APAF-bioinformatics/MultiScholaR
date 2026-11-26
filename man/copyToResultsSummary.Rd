@@ -12,7 +12,8 @@ copyToResultsSummary(
   design_matrix = NULL,
   force = FALSE,
   current_rmd = NULL,
-  project_dirs_object_name = "project_dirs"
+  project_dirs_object_name = "project_dirs",
+  enrichment_files = NULL
 )
 }
 \arguments{
@@ -30,9 +31,15 @@ copyToResultsSummary(
 the function will attempt to detect and save the currently active .Rmd file in RStudio.}
 
 \item{project_dirs_object_name}{The name of the list object in the global environment that holds the directory structures (typically the output of setupDirectories). Defaults to "project_dirs".}
+
+\item{enrichment_files}{NULL (the default: every file of the pathway enrichment folder is copied and every enrichment
+table is put in the enrichment workbook), or a character vector of file names: only those files of the folder are
+copied and read into the workbook; the others stay on disk and are listed in the returned record
+\code{enrichment_not_current}.}
 }
 \value{
-Invisible list of failed copies for error handling.
+Invisible list of failed copies for error handling. With \code{enrichment_files} and at least one file of the
+pathway enrichment folder left out, it also holds one record \code{list(type = "enrichment_not_current", files = ..., display_name = ...)} naming the files left out; it is not a failure.
 }
 \description{
 Copies specified files to results summary directory and displays copy status.

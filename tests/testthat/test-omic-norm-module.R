@@ -1017,6 +1017,8 @@ omicNormFrozen[["lipid"]][["manual"]] <- list(
                 "Starting normalization pipeline...", "Post-filtering state captured",
                 "Pre-normalization QC plots generated", "Applying ITSD normalization (aggregation: median )",
                 "Assay LCMS_Pos : 1 ITSD features selected", "Assay GCMS : 1 ITSD features selected",
+                "ITSD, assay LCMS_Pos: 1 rows used as internal standards, then removed: IS_A (lipid_id IS_A)",
+                "ITSD, assay GCMS: 1 rows used as internal standards, then removed: IS_B (lipid_id IS_B)",
                 "ITSD normalization complete", "Applying log2 transformation", "Log2 transformation complete",
                 "Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; GCMS 0 non-positive, 0 non-finite",
                 "Applying between-sample normalization (method: quantile )",
@@ -1026,7 +1028,8 @@ omicNormFrozen[["lipid"]][["manual"]] <- list(
                 "RUV-III correction applied", "RUV QC plots generated", "Generating composite QC figure...",
                 "Composite QC figure saved to: <ROOT>/qc/composite_QC_figure",
                 "Normalization pipeline complete!"),
-            notes = "[message] Normalization pipeline complete!",
+            notes = c("[message] Internal-standard normalisation used 1 (LCMS_Pos) and 1 (GCMS) rows as internal standards and removed them; the log names them.",
+                "[message] Normalization pipeline complete!"),
             norm = c(
                 normalization_complete = "TRUE", ruv_complete = "TRUE",
                 correlation_filtering_complete = "FALSE", pre_norm_qc_generated = "FALSE",
@@ -1044,7 +1047,7 @@ omicNormFrozen[["lipid"]][["manual"]] <- list(
             normdata = "d73553f170cf0ca694467a4ff6e7a214cd714c4e50778c6182bb0b4964d8070e",
             images = "c64a1c2a13649637d602c3406a6f3865984a274768deb19baab9285e6bb1b398",
             labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
-            outputs = "a8a2cb84e449727a31e0dc2112ec3cf9faa4a4fb81bf734ea0b31536ec285c6c",
+            outputs = "d3cc98f4ee7167dee0764a30300f87b96c7f394c3fb464d70cce6590934892d5",
             final_pca = list(
                 list(
                     class = "LipidomicsAssayData",
@@ -1096,7 +1099,7 @@ omicNormFrozen[["lipid"]][["manual"]] <- list(
             normdata = "d73553f170cf0ca694467a4ff6e7a214cd714c4e50778c6182bb0b4964d8070e",
             images = "c64a1c2a13649637d602c3406a6f3865984a274768deb19baab9285e6bb1b398",
             labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
-            outputs = "701a6ac1d87ea09b693aac28f20a465e43f8c30008b3c50d175c8b49582187f8",
+            outputs = "e1058a016b6290767718154fea3003b12384442225ca601b158afa38b1a02ffd",
             final_pca = list(
                 list(
                     class = "LipidomicsAssayData",
@@ -1133,7 +1136,7 @@ omicNormFrozen[["lipid"]][["manual"]] <- list(
             normdata = "a1e8493f5e12162b1d94c08c2995c23fcdc9c9deece0d43cc697982c9c3975ec",
             images = "c64a1c2a13649637d602c3406a6f3865984a274768deb19baab9285e6bb1b398",
             labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
-            outputs = "3a4f085c66ea18873418f52fa26eb53d66b7b88bcad7ecf7f680d0c6cb248b6f",
+            outputs = "1c3646ad814d6ae58bf628301f6aeae3b1ee8f3a751ddca396a3682a1114a0d1",
             final_pca = list(),
             annotations = c("No data [6]", "No data [6]"),
             qc_files = "<unchanged>",
@@ -1156,6 +1159,8 @@ omicNormFrozen[["metab"]][["manual"]] <- list(
                 "Starting normalization pipeline...", "Post-filtering state captured",
                 "Pre-normalization QC plots generated", "Applying ITSD normalization (aggregation: median )",
                 "Assay LCMS_Pos : 1 ITSD features selected", "Assay GCMS : 1 ITSD features selected",
+                "ITSD, assay LCMS_Pos: 1 rows used as internal standards, then removed: IS_A (database_identifier IS_A)",
+                "ITSD, assay GCMS: 1 rows used as internal standards, then removed: IS_B (database_identifier IS_B)",
                 "ITSD normalization complete", "Applying log2 transformation", "Log2 transformation complete",
                 "Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; GCMS 0 non-positive, 0 non-finite",
                 "Applying between-sample normalization (method: quantile )",
@@ -1165,7 +1170,8 @@ omicNormFrozen[["metab"]][["manual"]] <- list(
                 "RUV-III correction applied", "RUV QC plots generated", "Generating composite QC figure...",
                 "Composite QC figure saved to: <ROOT>/qc/composite_QC_figure",
                 "Normalization pipeline complete!"),
-            notes = "[message] Normalization pipeline complete!",
+            notes = c("[message] Internal-standard normalisation used 1 (LCMS_Pos) and 1 (GCMS) rows as internal standards and removed them; the log names them.",
+                "[message] Normalization pipeline complete!"),
             norm = c(
                 normalization_complete = "TRUE", ruv_complete = "TRUE",
                 correlation_filtering_complete = "FALSE", pre_norm_qc_generated = "FALSE",
@@ -1183,7 +1189,7 @@ omicNormFrozen[["metab"]][["manual"]] <- list(
             normdata = "6b1b9c5dcdc5e0469b79aed84a3e0a6dfd8ba98b9a936a9a33e23be4889180b0",
             images = "c64a1c2a13649637d602c3406a6f3865984a274768deb19baab9285e6bb1b398",
             labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
-            outputs = "a8a2cb84e449727a31e0dc2112ec3cf9faa4a4fb81bf734ea0b31536ec285c6c",
+            outputs = "45624e015319acf091d92ea85574964e93ebe9e350ab00b2e473cfd4bf939690",
             final_pca = list(
                 list(
                     class = "MetaboliteAssayData",
@@ -1235,7 +1241,7 @@ omicNormFrozen[["metab"]][["manual"]] <- list(
             normdata = "6b1b9c5dcdc5e0469b79aed84a3e0a6dfd8ba98b9a936a9a33e23be4889180b0",
             images = "c64a1c2a13649637d602c3406a6f3865984a274768deb19baab9285e6bb1b398",
             labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
-            outputs = "701a6ac1d87ea09b693aac28f20a465e43f8c30008b3c50d175c8b49582187f8",
+            outputs = "9d473dbca0ede8af25475634752283310652012facc2cf169780a2303873f12b",
             final_pca = list(
                 list(
                     class = "MetaboliteAssayData",
@@ -1272,7 +1278,7 @@ omicNormFrozen[["metab"]][["manual"]] <- list(
             normdata = "ca1f0c4aeca22e0dd27fbea0183feb769fa43a36f40a40846f46eecefac62a7d",
             images = "c64a1c2a13649637d602c3406a6f3865984a274768deb19baab9285e6bb1b398",
             labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
-            outputs = "3a4f085c66ea18873418f52fa26eb53d66b7b88bcad7ecf7f680d0c6cb248b6f",
+            outputs = "962bce5d0ee602e1b52a4204061fa1396a7922e70baf4d6aa93d5df95d6fe7e7",
             final_pca = list(),
             annotations = c("No data [6]", "No data [6]"),
             qc_files = "<unchanged>",
@@ -1294,6 +1300,8 @@ omicNormFrozen[["lipid"]][["automatic"]] <- list(
             log = c(
                 "Starting normalization pipeline...", "Post-filtering state captured",
                 "Pre-normalization QC plots generated", "Applying ITSD normalization (aggregation: median )",
+                "ITSD, assay LCMS_Pos: 2 rows used as internal standards, then removed: IS_A (lipid_id IS_A); IS_B (lipid_id IS_B)",
+                "ITSD, assay GCMS: 2 rows used as internal standards, then removed: IS_A (lipid_id IS_A); IS_B (lipid_id IS_B)",
                 "ITSD normalization complete", "Applying log2 transformation", "Log2 transformation complete",
                 "Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; GCMS 0 non-positive, 0 non-finite",
                 "Applying between-sample normalization (method: cyclicloess )",
@@ -1303,7 +1311,8 @@ omicNormFrozen[["lipid"]][["automatic"]] <- list(
                 "RUV-III correction applied", "RUV QC plots generated", "Generating composite QC figure...",
                 "Composite QC figure saved to: <ROOT>/qc/composite_QC_figure",
                 "Normalization pipeline complete!"),
-            notes = "[message] Normalization pipeline complete!",
+            notes = c("[message] Internal-standard normalisation used 2 (LCMS_Pos) and 2 (GCMS) rows as internal standards and removed them; the log names them.",
+                "[message] Normalization pipeline complete!"),
             norm = c(
                 normalization_complete = "TRUE", ruv_complete = "TRUE",
                 correlation_filtering_complete = "FALSE", pre_norm_qc_generated = "FALSE",
@@ -1321,7 +1330,7 @@ omicNormFrozen[["lipid"]][["automatic"]] <- list(
             normdata = "b2502fa3988a015890ef4adc797513da5d000e55d29c5edb15068f6ebdd557ac",
             images = "422c5931e587d69abdb910d0a29b9e5c5e70bf48f9de038b1d8dbea73f03c50b",
             labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
-            outputs = "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9",
+            outputs = "b024bcd03404063dad170d139517809a5d00a445de94f5ca3949225003e3a1f3",
             final_pca = list(
                 list(
                     class = "LipidomicsAssayData",
@@ -1359,7 +1368,7 @@ omicNormFrozen[["lipid"]][["automatic"]] <- list(
             normdata = "b2502fa3988a015890ef4adc797513da5d000e55d29c5edb15068f6ebdd557ac",
             images = "422c5931e587d69abdb910d0a29b9e5c5e70bf48f9de038b1d8dbea73f03c50b",
             labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
-            outputs = "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9",
+            outputs = "b024bcd03404063dad170d139517809a5d00a445de94f5ca3949225003e3a1f3",
             final_pca = list(),
             annotations = NULL,
             qc_files = "<unchanged>",
@@ -1376,7 +1385,7 @@ omicNormFrozen[["lipid"]][["automatic"]] <- list(
             normdata = "b2502fa3988a015890ef4adc797513da5d000e55d29c5edb15068f6ebdd557ac",
             images = "422c5931e587d69abdb910d0a29b9e5c5e70bf48f9de038b1d8dbea73f03c50b",
             labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
-            outputs = "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9",
+            outputs = "b024bcd03404063dad170d139517809a5d00a445de94f5ca3949225003e3a1f3",
             final_pca = list(),
             annotations = "Error: kit105: the final PCA is refused [4]",
             qc_files = "<unchanged>",
@@ -1421,6 +1430,8 @@ omicNormFrozen[["metab"]][["automatic"]] <- list(
             log = c(
                 "Starting normalization pipeline...", "Post-filtering state captured",
                 "Pre-normalization QC plots generated", "Applying ITSD normalization (aggregation: median )",
+                "ITSD, assay LCMS_Pos: 2 rows used as internal standards, then removed: IS_A (database_identifier IS_A); IS_B (database_identifier IS_B)",
+                "ITSD, assay GCMS: 2 rows used as internal standards, then removed: IS_A (database_identifier IS_A); IS_B (database_identifier IS_B)",
                 "ITSD normalization complete", "Applying log2 transformation", "Log2 transformation complete",
                 "Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; GCMS 0 non-positive, 0 non-finite",
                 "Applying between-sample normalization (method: cyclicloess )",
@@ -1430,7 +1441,8 @@ omicNormFrozen[["metab"]][["automatic"]] <- list(
                 "RUV-III correction applied", "RUV QC plots generated", "Generating composite QC figure...",
                 "Composite QC figure saved to: <ROOT>/qc/composite_QC_figure",
                 "Normalization pipeline complete!"),
-            notes = "[message] Normalization pipeline complete!",
+            notes = c("[message] Internal-standard normalisation used 2 (LCMS_Pos) and 2 (GCMS) rows as internal standards and removed them; the log names them.",
+                "[message] Normalization pipeline complete!"),
             norm = c(
                 normalization_complete = "TRUE", ruv_complete = "TRUE",
                 correlation_filtering_complete = "FALSE", pre_norm_qc_generated = "FALSE",
@@ -1448,7 +1460,7 @@ omicNormFrozen[["metab"]][["automatic"]] <- list(
             normdata = "260bfecdd01ac4fb72a07ca8fdd80bc9591bf1f371010c75110d292c5e16f754",
             images = "422c5931e587d69abdb910d0a29b9e5c5e70bf48f9de038b1d8dbea73f03c50b",
             labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
-            outputs = "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9",
+            outputs = "3704d8a5534af4a8d928fccf30ee451efa65ba801e30321ead9441c572df5018",
             final_pca = list(
                 list(
                     class = "MetaboliteAssayData",
@@ -1486,7 +1498,7 @@ omicNormFrozen[["metab"]][["automatic"]] <- list(
             normdata = "260bfecdd01ac4fb72a07ca8fdd80bc9591bf1f371010c75110d292c5e16f754",
             images = "422c5931e587d69abdb910d0a29b9e5c5e70bf48f9de038b1d8dbea73f03c50b",
             labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
-            outputs = "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9",
+            outputs = "3704d8a5534af4a8d928fccf30ee451efa65ba801e30321ead9441c572df5018",
             final_pca = list(),
             annotations = NULL,
             qc_files = "<unchanged>",
@@ -1503,7 +1515,7 @@ omicNormFrozen[["metab"]][["automatic"]] <- list(
             normdata = "260bfecdd01ac4fb72a07ca8fdd80bc9591bf1f371010c75110d292c5e16f754",
             images = "422c5931e587d69abdb910d0a29b9e5c5e70bf48f9de038b1d8dbea73f03c50b",
             labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
-            outputs = "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9",
+            outputs = "3704d8a5534af4a8d928fccf30ee451efa65ba801e30321ead9441c572df5018",
             final_pca = list(),
             annotations = "Error: kit105: the final PCA is refused [4]",
             qc_files = "<unchanged>",

@@ -1,0 +1,4 @@
+go run1: error=<none> written=6 derived=6 written_not_derived=<none> derived_not_written=<none>
+gprofiler run1: error=<none> written=6 derived=6 written_not_derived=<none> derived_not_written=<none>
+go run2: error=<none> written=6 derived=3 written_not_derived=groupB-groupA_down_enrichment_plot.html,groupB-groupA_down_enrichment_plot.png,groupB-groupA_down_enrichment_results.tsv derived_not_written=<none>
+gprofiler run2: error=<none> written=6 derived=3 written_not_derived=groupB-groupA_down_enrichment_plot.html,groupB-groupA_down_enrichment_plot.png,groupB-groupA_down_enrichment_results.tsv derived_not_written=<none>

@@ -1,0 +1,122 @@
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E17 (VAL-373 Q-C): the DIA normalisation step records and tells a sample removed for having no value
+kind: failure
+message:
+  Expected `run$kept` to have length 0.
+  Actual length: 1.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E17 (VAL-373 Q-C): the DIA normalisation step records and tells a sample removed for having no value
+kind: failure
+message:
+  Expected `run$value$samples_removed` to be identical to "B_6".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('B_6')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E17 (VAL-373 Q-C): the DIA normalisation step records and tells a sample removed for having no value
+kind: failure
+message:
+  Expected `commit$config$outcomes$samples_removed` to be identical to "B_6".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('B_6')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E17 (VAL-373 Q-C): the DIA normalisation step records and tells a sample removed for having no value
+kind: failure
+message:
+  Expected `any(grepl("^warning .*B_6.*removed from the design", notes))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  message Normalization completed (RUV skipped)! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E27 (VAL-373 Q-A): lipid automatic A2 with group B left with one sample keeps its values without RUV, A1 corrected
+kind: failure
+message:
+  Expected `inherits(run, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  i In index: 2.
+  i With name: A2.
+  Caused by error in `purrr::map()`:
+  i In index: 1.
+  Caused by error in `sum()`:
+  ! invalid 'type' (list) of argument
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E27 (VAL-373 Q-A): lipid manual A2 with group B left with one sample keeps its values without RUV, A1 corrected
+kind: failure
+message:
+  Expected `inherits(run, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  RUV-III was not run: the control-feature search found no control features for assay A2, because it could not read the assay.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E27 (VAL-373 Q-A): lipid KIT-275's VE shape: group B with one sample in every assay keeps every assay without RUV
+kind: failure
+message:
+  Expected `inherits(run, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  i In index: 1.
+  i With name: A1.
+  Caused by error in `purrr::map()`:
+  i In index: 1.
+  Caused by error in `sum()`:
+  ! invalid 'type' (list) of argument
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E27 (VAL-373 Q-A): metab automatic A2 with group B left with one sample keeps its values without RUV, A1 corrected
+kind: failure
+message:
+  Expected `inherits(run, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  i In index: 2.
+  i With name: A2.
+  Caused by error in `purrr::map()`:
+  i In index: 1.
+  Caused by error in `sum()`:
+  ! invalid 'type' (list) of argument
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E27 (VAL-373 Q-A): metab manual A2 with group B left with one sample keeps its values without RUV, A1 corrected
+kind: failure
+message:
+  Expected `inherits(run, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  RUV-III was not run: the control-feature search found no control features for assay A2, because it could not read the assay.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E27 (VAL-373 Q-A): metab KIT-275's VE shape: group B with one sample in every assay keeps every assay without RUV
+kind: failure
+message:
+  Expected `inherits(run, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  i In index: 1.
+  i With name: A1.
+  Caused by error in `purrr::map()`:
+  i In index: 1.
+  Caused by error in `sum()`:
+  ! invalid 'type' (list) of argument
+

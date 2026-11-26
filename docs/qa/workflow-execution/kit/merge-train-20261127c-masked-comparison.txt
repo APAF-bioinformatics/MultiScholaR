@@ -1,0 +1,33 @@
+records base 671 head 671
+identical 660 differing 11
+DIFF ('test-gui-entry-proteomics.R', 'KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route')
+DIFF ('test-gui-entry-proteomics.R', 'KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route')
+DIFF ('test-gui-entry-proteomics.R', 'KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route')
+DIFF ('test-gui-entry-proteomics.R', 'KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route')
+DIFF ('test-gui-entry-proteomics.R', 'KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route')
+DIFF ('test-gui-entry-proteomics.R', 'KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route')
+DIFF ('test-gui-entry-proteomics.R', 'KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route')
+DIFF ('test-gui-entry-proteomics.R', 'KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route')
+DIFF ('test-gui-entry-proteomics.R', 'KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route')
+DIFF ('test-gui-entry-proteomics.R', 'KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route')
+DIFF ('test-gui-entry-proteomics.R', 'KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route')
+== KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA rou head-only 67 base-only 0 residue 0
+== KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA rou head-only 64 base-only 9 residue 8
+   RES   + "results/proteomics/protein_qc/post_norm_correlation.png"
+   RES   - "results/proteomics/protein_qc/post_norm_correlation.png"
+   RES   + "results/proteomics/protein_qc/post_norm_density.png"
+   RES   - "results/proteomics/protein_qc/post_norm_density.png"
+   RES   + "results/proteomics/protein_qc/post_norm_pca.png"
+   RES   - "results/proteomics/protein_qc/post_norm_pca.png"
+   RES   + "results/proteomics/protein_qc/post_norm_rle.png"
+   RES   - "results/proteomics/protein_qc/post_norm_rle.png"
+== KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA rou head-only 37 base-only 1 residue 0
+== KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA rou head-only 37 base-only 1 residue 0
+== KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA rou head-only 37 base-only 1 residue 0
+== KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA rou head-only 37 base-only 1 residue 0
+== KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA rou head-only 37 base-only 1 residue 0
+== KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA rou head-only 37 base-only 1 residue 0
+== KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA rou head-only 44 base-only 3 residue 0
+== KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA rou head-only 44 base-only 3 residue 0
+== KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA rou head-only 44 base-only 3 residue 0
+total residue 8
