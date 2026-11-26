@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-277 diagnostic of O4's miss (coordinator-authorised, outside the correction pass, nothing judged): log output only; base 17045564 (diagnostic file on staging R) vs head 2044cdba; ceiling 5.0 core-hours (worst 4.67); running total about 71 + 4.67 of 200.00",
+  "label": "KIT-277 O4 diagnostic 2044cdba",
+  "package_commit": "2044cdba8f7591c78806d799fb92b8029f067a0a",
+  "base_commit": "17045564011dded32d97812ee4c838062a53b9e8",
+  "tools_ref": "",
+  "tests": [
+    "test-kit277-resave-carried-through.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 25,
+  "file_timeouts": {
+    "test-kit277-resave-carried-through.R": 25
+  },
+  "extra_packages": [
+    "sva",
+    "limpa",
+    "mixOmics"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1",
+    "MULTISCHOLAR_KIT277_STAGE": "2",
+    "MULTISCHOLAR_KIT277_DIAG": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
