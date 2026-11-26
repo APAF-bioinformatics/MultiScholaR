@@ -9,7 +9,13 @@
 #' @param current_rmd Optional path to the current .Rmd file being worked on; if NULL (default),
 #'                    the function will attempt to detect and save the currently active .Rmd file in RStudio.
 #' @param project_dirs_object_name The name of the list object in the global environment that holds the directory structures (typically the output of setupDirectories). Defaults to "project_dirs".
-#' @return Invisible list of failed copies for error handling.
+#' @param enrichment_files NULL (the default: every file of the pathway enrichment folder is copied and every enrichment
+#'   table is put in the enrichment workbook), or a character vector of file names: only those files of the folder are
+#'   copied and read into the workbook; the others stay on disk and are listed in the returned record
+#'   `enrichment_not_current`.
+#' @return Invisible list of failed copies for error handling. With `enrichment_files` and at least one file of the
+#'   pathway enrichment folder left out, it also holds one record `list(type = "enrichment_not_current", files = ...,
+#'   display_name = ...)` naming the files left out; it is not a failure.
 #' @importFrom rlang abort
 #' @importFrom tools file_path_as_absolute
 #' @export
@@ -19,13 +25,18 @@ copyToResultsSummary <- function(omic_type,
                                  design_matrix = NULL,
                                  force = FALSE,
                                  current_rmd = NULL,
-                                 project_dirs_object_name = "project_dirs") {
+                                 project_dirs_object_name = "project_dirs",
+                                 enrichment_files = NULL) {
     # --- Start: Path Derivation and Validation --- #
     if (missing(omic_type) || !is.character(omic_type) || length(omic_type) != 1 || omic_type == "") {
         rlang::abort("`omic_type` must be a single non-empty character string.")
     }
     if (missing(experiment_label) || !is.character(experiment_label) || length(experiment_label) != 1 || experiment_label == "") {
         rlang::abort("`experiment_label` must be a single non-empty character string.")
+    }
+
+    if (!is.null(enrichment_files) && !(is.character(enrichment_files) && !anyNA(enrichment_files))) {
+        rlang::abort("`enrichment_files` must be NULL or a character vector of file names.")
     }
 
     # Use the new helper function with automatic fallback
@@ -361,6 +372,22 @@ copyToResultsSummary <- function(omic_type,
         files_to_copy <- c(files_to_copy, list(
             list(source = current_paths$pathway_dir, dest = "Publication_figures/Enrichment_Plots", is_dir = TRUE, display_name = "Pathway Enrichment Plots")
         ))
+    }
+
+    # KIT-219 (VAL-187): with `enrichment_files` only those files of the enrichment folder are copied (file by file, in
+    # place of the folder); every other file stays on disk and is named in the record returned at the end.
+    enrichment_left_out <- character()
+    if (!is.null(enrichment_files)) {
+        is_enrichment_folder <- vapply(files_to_copy, function(spec) identical(spec$display_name, "Pathway Enrichment Plots"),
+            logical(1))
+        files_to_copy <- files_to_copy[!is_enrichment_folder]
+        on_disk <- if (dir.exists(current_paths$pathway_dir)) sort(list.files(current_paths$pathway_dir, recursive = TRUE)) else
+            character()
+        enrichment_left_out <- setdiff(on_disk, enrichment_files)
+        files_to_copy <- c(files_to_copy, lapply(intersect(enrichment_files, on_disk), function(name) {
+            list(source = file.path(current_paths$pathway_dir, name), dest = "Publication_figures/Enrichment_Plots",
+                is_dir = FALSE, display_name = paste("Pathway Enrichment:", name))
+        }))
     }
 
     # Logic to find and copy the num_sig_da_molecules tab file to Publication_tables
@@ -716,9 +743,11 @@ copyToResultsSummary <- function(omic_type,
     enrichment_wb <- openxlsx::createWorkbook()
     openxlsx::addWorksheet(enrichment_wb, "Enrichment_Index")
     enrichment_index_data <- data.frame(Sheet = character(), Contrast = character(), Direction = character(), stringsAsFactors = FALSE)
-    enrichment_files <- list.files(path = current_paths$pathway_dir, pattern = "_enrichment_results\\.tsv$", full.names = TRUE)
+    enrichment_tsv_files <- list.files(path = current_paths$pathway_dir, pattern = "_enrichment_results\\.tsv$", full.names = TRUE)
+    # KIT-219: with `enrichment_files` only those tables are read into the workbook (an index only when none is).
+    if (!is.null(enrichment_files)) enrichment_tsv_files <- enrichment_tsv_files[basename(enrichment_tsv_files) %in% enrichment_files]
 
-    purrr::imap(enrichment_files, \(file, idx) {
+    purrr::imap(enrichment_tsv_files, \(file, idx) {
         base_name <- basename(file) |> stringr::str_remove("_enrichment_results\\.tsv$")
         direction <- ifelse(stringr::str_ends(base_name, "_up"), "up", ifelse(stringr::str_ends(base_name, "_down"), "down", "unknown"))
         contrast_label <- stringr::str_replace(base_name, "_(up|down)$", "")
@@ -946,6 +975,11 @@ copyToResultsSummary <- function(omic_type,
     }
     cat("--- End of copyToResultsSummary ---\n\n")
     cat("--- End of copyToResultsSummary ---\n\n")
+    # KIT-219: the files left out are a record, not a failure (the summary and the warning above count failures only).
+    if (length(enrichment_left_out) > 0L) {
+        failed_copies[[length(failed_copies) + 1L]] <- list(type = "enrichment_not_current", files = enrichment_left_out,
+            display_name = "Enrichment files not made by the current enrichment")
+    }
     invisible(failed_copies)
 }
 
