@@ -1,4 +1,4 @@
-# KIT-228 step 0 (2026-11-27)
+# KIT-228 step 0 (2026-11-26)
 
 Base: `origin/v0.9-staging` 0bdf72131 (the ticket's r1.1 was written at 3deba98d). Nothing run; every statement below is by reading.
 

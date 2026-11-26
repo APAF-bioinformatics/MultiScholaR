@@ -653,12 +653,15 @@
    (KIT-207).
 
  * Summary, every omic: a Save that does not write a new integration input (refused for any reason, failed, interrupted,
-   or transcriptomics without its RUVIII export) now removes the omic's earlier input (integration/<omic>/) and says
-   so, so the integration cannot import an input the last Save did not write. Before, only a Save refused for its table
-   removed it. An input written by a successful Save stays until the next Save: changes made after it, in the same or a
-   later session, reach the integration only when the Summary is saved again; the 'Saved' column of the integration's
-   input list shows when each input was written. A failed publish of a new input no longer says that a previous input
-   is kept when there was none (KIT-228).
+   or transcriptomics without its RUVIII export) now removes the omic's earlier input (integration/<omic>/) and the file
+   saved beside it (<omic>_<label>_final_s4.RDS; transcriptomics_normalized_data.tsv) and says so, so the integration
+   cannot import an input the last Save did not write. Every Save removes the omic's earlier file of that kind at its
+   start, so a Save under a new experiment label also removes the earlier label's file. Before, only a Save refused for
+   its table, or one with no final table, removed it. An input written by a successful Save stays until the next Save:
+   changes made after it, in the same or a later session, reach the integration only when the Summary is saved again;
+   the 'Saved' column of the integration's input list shows when each input was written. A failed publish of a new
+   input no longer says that a previous input is kept when there was none, and a Save pressed again after a background
+   step failed to publish its files no longer removes the input that step had already written (KIT-228).
 
  * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
    RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0). The
