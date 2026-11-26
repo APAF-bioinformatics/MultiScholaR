@@ -1,0 +1,7 @@
+check	units_compared	units_passed	pass	max_abs_deviation
+E1	12	12	TRUE	25
+E2	2	2	TRUE	NA
+E3	2	2	TRUE	NA
+E5	76	76	TRUE	NA
+E9	2	2	TRUE	NA
+L1_status	42	42	TRUE	NA

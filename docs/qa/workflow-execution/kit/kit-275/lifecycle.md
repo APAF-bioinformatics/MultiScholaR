@@ -115,7 +115,22 @@ what KIT-242 changes (what a legacy RUV arm returns when missing values leave to
 Declared in `smoke/declaration.md` (what it must show, ten items). One request, `kit275-smoke-1e381cab` on `run-tests`, package commit `1e381cab29e7d13e68f059c02ed6c26040cd19e1`, ceiling 58 job-minutes = 3.87 core-hours, charged to L1's line.
 Result: see the end of this section (filled in when the run has returned; if it shows a defect it is recorded here with its file and line and **not repaired or re-sent**).
 
-(smoke result: pending at the time of this commit)
+**Result, run 45742592872 (package 1e381cab, scripts at 892 s of 48 min declared; about 25 job-minutes with set-up = 1.67 core-hours against the 3.87 ceiling). Raw: `smoke/result/`.** Nothing is a result; no repair was made and none was re-sent.
+
+| Declared item | Observed |
+|---|---|
+| 1 all scripts parse | met (`parse: all scripts parse`) |
+| 2 E0 | met (29 hunks, 0 unmarked) |
+| 3 E4 | met: 19 cases, 1,859 predictions (not 1,860 as declared: the count is the generator's), 0 differ; scorer exit codes 1 for `smoke` and `g1_missing` as predicted |
+| 4 G1 fixture | met: 4 readings written (NA), 6 checks (E6, E10), 0 failed |
+| 5 job A (D,K,S,E,T at D3) | **not met**: 2 failed checks. (a) `L1_status` 49 of 50: journey `VD NO` ended `crashed` at step `da` ("Lipidomics DA formula cannot produce a model matrix: contrasts can be applied only to factors with 2 or more levels"): the pre-RUV filter at 0.5 removed enough samples of VD (5 samples) that a group had no values left; this is the package's behaviour on a genuine data set (ticket P04, KIT-255 I01), not a script fault, but L1 as written would flag it: the audit should decide whether such a journey is a result (`no_da`) in L1's status check. (b) **Defect: unit `E-D3-9101` crashed** with `invalid 'type' (list) of argument` inside `journeyAssayColumns` (the kept KIT-188 function, called from `journeyL`) on a pass-2 journey of tier E (a `PEL2`/`PEG2` journey on VE, `correlation = FALSE`); trace `smoke/result/3/progress/unit-trace-E-D3-9101.txt`. Only V0's PEL2 and PEG2 rows exist; V1g's pass 2 did not run. Checks E1, E2, E3, E5 (92 of 92), E7_crash, E7_refusal, E9, E11, E12 all passed; blind scorer exit 0 |
+| 6 job B (D,ID at D4) | met: 6 checks, 0 failed; the blind scorer's E8 line compared journeys (see `smoke/result/4`) |
+| 7 SMOKE_counted_refusal | met (exit 1 after 4 s with that message) |
+| 8 no partial-match stop | met (no occurrence in any console, progress file or table) |
+| 9 provenance and progress | met (`provenance-smoke-*.json`, `checks-*-start.tsv`, `progress/` present) |
+| 10 timing | recorded: mean seconds per journey at D3: NO 18.7, LM 22.8, LG 21.6, GK 24.7, GA 24.2, LA 40.1, GSC 31.9, PEL2 22.9, PEG2 25.8 (4 workers busy; for information only; LA is above the 22.8 s basis, L1 decides) |
+
+**Desk-review findings made after the send, before the result was read, NOT repaired (for the script audit):** (1) `score-k275.R` lines 279-280, 284 and 290 pass `st$jk_lo, st$jk_hi` positionally to `emit`, so they land in `label` and `jk_lo` (and line 290 also names `label`, an error "formal argument matched by multiple actual arguments" when a pi cell is reached): the E4 self-test did not reach this because the predictions cover the labelled cells only; the fix is to name them. (2) `sim-k275.R` K275-pairs block (`corr_removed`, about line 718): if the legacy RUV output drops an assay (`m_out` without it), `before` is NULL and the journey crashes at step `correlation`; use `m_in` for that assay. (3) The E4 predictions say 1,860 in the smoke declaration; the generator writes 1,859.
 
 ## 7. Drafts of the declaration files (not sent; `declarations/`)
 

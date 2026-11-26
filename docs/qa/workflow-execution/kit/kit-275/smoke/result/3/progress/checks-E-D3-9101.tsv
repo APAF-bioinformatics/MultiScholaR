@@ -1,0 +1,13 @@
+check	cell	rep	condition	value	threshold	pass	note
+L1_status	D3	9101	V0 NO	ok	ok	TRUE	NA NA
+E5	D3	9101	V0 NO e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	V0 NO e5_x	NA	fail list equals the filter's removed set	TRUE	
+E11	D3	9101	V0 pass 1	NA	fail list equals the NO journey's filter set	TRUE	
+E11	D3	9101	V0 VE	NA	VE equals the version without those samples (exact)	TRUE	
+L1_status	D3	9101	V0 PEL2	ok	ok	TRUE	NA NA
+L1_status	D3	9101	V0 PEG2	ok	ok	TRUE	NA NA
+L1_status	D3	9101	V1g NO	ok	ok	TRUE	NA NA
+E5	D3	9101	V1g NO e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9101	V1g NO e5_x	NA	fail list equals the filter's removed set	TRUE	
+E11	D3	9101	V1g pass 1	NA	fail list equals the NO journey's filter set	TRUE	
+E11	D3	9101	V1g VE	NA	VE equals the version without those samples (exact)	TRUE	

@@ -1,0 +1,38 @@
+parse: sim-k275.R parses
+parse: score-k275.R parses
+parse: fixture-k275.R parses
+parse: run-selftest.R parses
+parse: all scripts parse
+replace  old 1-3  new 1-4  K275-*
+replace  old 6-10  new 7-10  header comment
+replace  old 12-40  new 12-29  header comment
+replace  old 62-62  new 51-51  K275-cells
+replace  old 64-64  new 53-53  K275-cells
+replace  old 80-80  new 69-78  K275-cells
+replace  old 83-83  new 81-81  K275-REFUSALS
+insert   old 109-None  new 99-99  K275-guard
+replace  old 139-139  new 130-133  K275-markers
+replace  old 164-164  new 158-158  K275-sig
+replace  old 166-166  new 160-160  K275-seed
+replace  old 183-183  new 177-177  K275-noIS
+replace  old 231-231  new 225-225  K275-C
+insert   old 286-None  new 280-301  K275-plant
+replace  old 308-308  new 324-324  K275-ret
+replace  old 315-315  new 331-331  K275-mask
+replace  old 319-319  new 335-335  K275-mask
+replace  old 430-432  new 446-448  K275-E3
+delete   old 438-444  new 454-453  K275-E3
+replace  old 446-453  new 455-457  K275-E3
+replace  old 558-559  new 562-563  K275-prefix
+replace  old 582-582  new 586-586  K275-prefix
+replace  old 659-661  new 663-665  K275-prefix
+insert   old 672-None  new 676-678  K275-pairs
+replace  old 677-679  new 684-686  K275-prefix
+replace  old 691-691  new 698-698  K275-W
+insert   old 695-None  new 702-704  K275-pairs
+insert   old 704-None  new 714-721  K275-pairs
+replace  old 708-708  new 726-726  K275-prefix
+E0: 29 hunks, 0 unmarked
+make-selftest: 19 cases, 1859 predictions, 75 row columns
+selftest: 19 cases run, scorer exit codes 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0
+selftest: 1859 predictions, 0 differ

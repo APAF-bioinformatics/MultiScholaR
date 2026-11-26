@@ -1,0 +1,7 @@
+tag	tier	design	r	wall_seconds	exit	error
+K-D3-9101	K	D3	9101	408.6	0	
+D-D3-9101	D	D3	9101	413.8	0	
+E-D3-9101	E	D3	9101	123.3	0	simpleError invalid 'type' (list) of argument
+T-D3-9101	T	D3	9101	188.1	0	
+S-D3-9101	S	D3	9101	150.1	0	
+S-D3-9101-rep	S	D3	9101	140.8	0	

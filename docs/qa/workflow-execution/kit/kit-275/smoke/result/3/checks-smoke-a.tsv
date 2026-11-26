@@ -1,0 +1,12 @@
+check	units_compared	units_passed	pass	max_abs_deviation
+E1	6	6	TRUE	25
+E11	4	4	TRUE	NA
+E12	4	4	TRUE	NA
+E2	1	1	TRUE	NA
+E3	1	1	TRUE	NA
+E5	92	92	TRUE	NA
+E7_crash	1	1	TRUE	NA
+E7_refusal	1	1	TRUE	NA
+E9	1	1	TRUE	NA
+L1_status	50	49	FALSE	NA
+unit_completed	1	0	FALSE	NA

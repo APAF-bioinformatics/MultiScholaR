@@ -1,0 +1,3 @@
+Error in runParentMain() : 
+  SMOKE_counted_refusal: K275_SMOKE=1 is refused without K275_LIFECYCLE=1 (a counted request never carries the smoke flag)
+Execution halted

@@ -1,0 +1,13 @@
+item	value	pass
+parse	52 rows, 76 columns, 6 row files	TRUE
+coverage GA D3	4 journeys, 4 completed	TRUE
+coverage GK D3	12 journeys, 11 completed	TRUE
+coverage GSC D3	6 journeys, 6 completed	TRUE
+coverage LA D3	4 journeys, 4 completed	TRUE
+coverage LG D3	4 journeys, 4 completed	TRUE
+coverage LM D3	12 journeys, 11 completed	TRUE
+coverage LX D3	2 journeys, 2 completed	TRUE
+coverage NO D3	6 journeys, 5 completed	TRUE
+coverage PEG2 D3	1 journeys, 1 completed	TRUE
+coverage PEL2 D3	1 journeys, 1 completed	TRUE
+E8	0 compared, 0 equal, max deviation 0	TRUE

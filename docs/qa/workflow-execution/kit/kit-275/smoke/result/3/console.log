@@ -1,0 +1,6 @@
+K275 smoke-a: 6 units, 4 workers, lifecycle TRUE, smoke TRUE
+K275 smoke-a: blind scorer exit 0
+K275 smoke-a: FAILED check L1_status (1 of 50); first: VD NO da simpleError: Lipidomics DA formula cannot produce a model matrix: contrasts can be applied only to factors with 2 or more levels
+K275 smoke-a: FAILED check unit_completed (1 of 1); first: D3 simpleError invalid 'type' (list) of argument
+K275 smoke-a: 11 checks, 2 failed
+K275 smoke-a finished: 6 units (1 with an error), wall 7.0 min
