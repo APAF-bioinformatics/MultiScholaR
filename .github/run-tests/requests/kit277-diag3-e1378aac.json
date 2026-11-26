@@ -1,0 +1,30 @@
+{
+  "requested_by": "KIT-277 diagnostic 3 of O4's miss (coordinator-allowed, outside the correction pass, nothing judged): export bookkeeping around the Save Workflow Arguments press; base e728c709 vs head e1378aac; ceiling 3.0 core-hours (worst 2.93); running total about 77 + 2.93 of 200.00",
+  "label": "KIT-277 O4 diagnostic 3 e1378aac",
+  "package_commit": "e1378aacdba78e9363945b765e6cf9e398b29198",
+  "base_commit": "e728c70925e115d9d7fac6777e03e196922098cf",
+  "tools_ref": "",
+  "tests": [
+    "test-kit277-resave-carried-through.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 12,
+  "file_timeouts": {
+    "test-kit277-resave-carried-through.R": 12
+  },
+  "extra_packages": [
+    "sva",
+    "limpa",
+    "mixOmics"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1",
+    "MULTISCHOLAR_KIT277_STAGE": "2",
+    "MULTISCHOLAR_KIT277_DIAG": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
