@@ -1,2 +1,3 @@
 run_id	commit	purpose	minutes	core_hours	result
 45820775438	aff34c7dbe79af8f45a47094910bab7fb4705a79	R1 tests-only on old R/ (request kit280-r1-tests-aff34c7d)	36.6	2.44	every new test failed by value, no error; T7 and T9 passed; missing-value-counts 64/3 as predicted; kit227 3 failures (186 passed, prediction said 183: the substitution's own match assertions add 3 passes); templates 123/0; fixture slip found (see addendum)
+45827317090	bb320e7ee827843b4cd5a6a95127ab2bcaf3a39d	R1b new file on old R/ after the correction pass (request kit280-r1b-tests-bb320e7e; ceiling 30 min = 2.00 core-h)			in flight
