@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-266 M1 instrument re-send 3 of 3 (VAL-54): run 45750228451 died in helper sourcing (no measurement); controller and child both load the source tree; m1/declaration.md; ceiling 60 job-minutes",
+  "label": "KIT-266 M1c on kit-266 495af273",
+  "package_commit": "495af27336768b42f3b396709df73cf27278d0a5",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-266/m1/m1.R",
+      "args": [],
+      "env": {
+        "NOT_CRAN": "true"
+      },
+      "out": "kit266-m1",
+      "out_pattern": "\\.(txt|log)$",
+      "timeout_minutes": 55
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
