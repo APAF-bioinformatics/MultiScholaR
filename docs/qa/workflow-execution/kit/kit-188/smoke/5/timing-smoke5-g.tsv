@@ -1,0 +1,5 @@
+cell	job	rep	scenario	mask	wall_seconds	unit_seconds	exit	error	rows	rows_sha256	fault	e7
+M12	guard	401	N0	none	11.6	NA	0		3	7967e82d085ec0769287d07997146582a8db13f2b5297dd81fb9953c6f608ccd	FALSE	FALSE
+M12	guard	401	N0	none	6.8	NA	0	simpleError partial-match guard: partial match of 'partial_probe' to 'partial_probe_value'	1	d00f189f0be52dc63b0efcb8a443cb1d319ee90b02064b7242612ee0ec6408a9	FALSE	FALSE
+M12	guard	401	N0	none	20.8	NA	0		3	181405ed96b8f2639186d530700ea5c60885a99b9c4fa51cb10022b4e8ed0e4a	FALSE	FALSE
+M12	guard	401	N0	none	5.6	NA	1	child process exit 1, no result Error: K188 planted non-guard error outside every handler	1	a574b3ab5eb3377fb65dbdf1128f320aba1e6eb7a0bd7304c63f8eb385b967ce	FALSE	FALSE

@@ -1,0 +1,19 @@
+check	cell	rep	condition	value	threshold	pass	note
+E12_patterns	lipid msdial	0	format default	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid progenesis	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid xcms	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid compound_discoverer	0	format default	^IS_|ISTD|Internal	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	lipid lipidsearch	0	format default	^IS_|ISTD|Internal|_IS	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab msdial	0	format default	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab progenesis	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab xcms	0	format default	^IS_|ISTD	matches exactly the IS_ rows	TRUE	5 rows matched
+E12_patterns	metab compound_discoverer	0	format default	^IS_|ISTD|Internal	matches exactly the IS_ rows	TRUE	5 rows matched
+E4	constructed	0	family	NA	exact	TRUE	differ: ; s5 without the feature 0; oracle s5 1
+E4b	constructed	0	ties	NA	exact	TRUE	share 1 block 3 jaccard 0.333333333333333; no-tie share 0
+E3	metab	0	defaults	NA	equal to 2.1 and 18.4	FALSE	differ: ; labelled names matching an ITSD pattern: ; markers off their current token: ; import pattern as shipped FALSE; replay markers missing at this commit: normalisation_fallback,protein_normalisation_fallback,itsd_outcome,ruv_fallback | auto_min=1; auto_max=20; metric=max_difference; penalty=0.
+GUARD_planted	M12	401	guardjourney	instrument	instrument	TRUE	partial_match_guard: partial-match guard: partial match of 'partial_probe' to 'partial_probe_value'
+GUARD_planted	M12	401	guardunit	instrument	instrument	TRUE	simpleError partial-match guard: partial match of 'partial_probe' to 'partial_probe_value'
+GUARD_planted	M12	401	guardcontrol	ok	ok	TRUE	NA
+GUARD_planted	M12	401	crashnet	crashed	crashed, with a trace	TRUE	child process exit 1, no result Error: K188 planted non-guard error outside every handler
+unit_completed	M12	401	guard guardunit	NA	ran to the end	TRUE	simpleError partial-match guard: partial match of 'partial_probe' to 'partial_probe_value'
+unit_completed	M12	401	guard crashnet	NA	ran to the end	TRUE	child process exit 1, no result Error: K188 planted non-guard error outside every handler

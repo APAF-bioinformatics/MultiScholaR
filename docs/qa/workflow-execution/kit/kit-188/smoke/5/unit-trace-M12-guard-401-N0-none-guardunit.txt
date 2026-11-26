@@ -1,0 +1,15 @@
+tryCatch(withCallingHandlers(runUnit(args[[2L]], args[[3L]], as.integer(args[[4L]]), args[[5L]], args[[6L]], args[[7L]], lifecycle, fault_now, Sys.getenv("K188_PLANT_UNIT")), warning = guardWarning, e
+tryCatchList(expr, classes, parentenv, handlers)
+tryCatchOne(expr, names, parentenv, handlers[[1L]])
+doTryCatch(return(expr), name, parentenv, handler)
+withCallingHandlers(runUnit(args[[2L]], args[[3L]], as.integer(args[[4L]]), args[[5L]], args[[6L]], args[[7L]], lifecycle, fault_now, Sys.getenv("K188_PLANT_UNIT")), warning = guardWarning, error = fu
+runUnit(args[[2L]], args[[3L]], as.integer(args[[4L]]), args[[5L]], args[[6L]], args[[7L]], lifecycle, fault_now, Sys.getenv("K188_PLANT_UNIT"))
+runGuardUnit(plant, cellname, r, d)
+.signalSimpleWarning("partial match of 'partial_probe' to 'partial_probe_value'", base::quote(probe$partial_probe))
+withRestarts({     .Internal(.signalCondition(simpleWarning(msg, call), msg, call))     .Internal(.dfltWarn(msg, call)) }, muffleWarning = function() NULL)
+withOneRestart(expr, restarts[[1L]])
+doWithOneRestart(return(expr), restart)
+(function (w)  {     if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) {         options(k188.guard_trace = paste(vapply(sys.calls(), function(cl) substr(paste(deparse(cl)[[1L
+stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
+.handleSimpleError(function (e)  {     stack <<- vapply(sys.calls(), function(cl) substr(oneLine(paste(deparse(cl, width.cutoff = 200L), collapse = " "), 200L), 1L, 200L), "") }, "partial-match guard:
+h(simpleError(msg, call))

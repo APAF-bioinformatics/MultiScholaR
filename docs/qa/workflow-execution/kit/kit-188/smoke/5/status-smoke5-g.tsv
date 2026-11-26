@@ -1,0 +1,5 @@
+cell	job	arm	arm_scale	scenario	mask	status	class	n
+M12	guard	NO		N0	none	ok		1
+M12	guard	unit		N0	none	crashed	child process exit 1, no result Error: K188 planted non-guard error outside every handler	1
+M12	guard	NO		N0	none	instrument	partial_match_guard: partial-match guard: partial match of 'partial_probe' to 'partial_probe_value'	1
+M12	guard	unit		N0	none	instrument	simpleError partial-match guard: partial match of 'partial_probe' to 'partial_probe_value'	1
