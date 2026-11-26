@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-276 R3: instrument repair 2 of 3 (T2 mechanics), the new file only, tests-only e6f83d43 against fix 72ba4edc; declared in predictions.md before sending; ceiling 120 job-minutes; running total before this request 80.5 of 172.00 core-hours",
+  "label": "KIT-276 R3 new file only, base e6f83d43 vs head 72ba4edc",
+  "package_commit": "72ba4edc9848a833387defe3e43b70b2cec60614",
+  "base_commit": "e6f83d43f30adb0c9c3f740ee561fb7059660982",
+  "tools_ref": "",
+  "tests": ["test-kit276-ruv-superseded.R"],
+  "shards": 1,
+  "file_timeout_minutes": 60,
+  "file_timeouts": {},
+  "extra_packages": ["sva"],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
