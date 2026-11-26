@@ -675,3 +675,30 @@ under (a): `omics_ruv_failed`, `assay` "A2", `reason` "group_too_small", the mes
 completes, A2 equal to its input, A1 corrected, `ruv_not_applied_reason_per_assay$A2` "no_usable_controls", the notice
 naming group B. Plus KIT-275's VE shape (group B with one sample in every assay): under (a) a stop naming every assay;
 under (b) every assay kept without RUV, `ruv_applied` FALSE.
+
+## VAL-373: the owner's answers and the one bounded correction (Q-C)
+
+VAL-373 (origin/v0.9-staging, 2026-11-27): Q-A (b), Q-B (a), Q-C one bounded correction for two things only (the DIA
+normalisation route's notice and record of a removed sample; Q-A's behaviour on both search paths), Q-D the OD-4 (c) note
+is a follow-up.
+
+**Tests-only commit a8c299c2** (nothing under `R/`): E17 through `diaNormalizationOperation` (kernel, commit outcomes,
+the tab's notice), E27 (lipid and metab, Automatic and Manual; seed 242027) and KIT-275's VE shape (lipid and metab;
+seed 242227), and the 18 edits of Q-B exactly as prepared (comments cite VAL-373).
+
+### Predictions for R1e, written before the run (a8c299c2: the code of 11d3150a, unchanged since afb27738, plus these tests)
+
+Files: `test-kit242-normalisation-fallback.R`, `test-kit172-downstream.R`, `test-workflow-lipid-declarations.R`,
+`test-workflow-metab-declarations.R`; 1 job, ceiling 60 job-minutes.
+- `test-kit242-normalisation-fallback.R`: every earlier row passes (526 as on R2's head). E17 fails by value on four
+  expectations (the removed-sample warning escapes the kernel: `kept` length 1; `samples_removed` NULL; the commit's
+  `outcomes$samples_removed` NULL; no warning notification naming B_6). E27 Automatic (lipid, metab) fails at
+  `expect_false(inherits(run, "error"))`: the step stops with R's "invalid 'type' (list) of argument". E27 Manual (lipid,
+  metab) fails there too: the step stops with `omics_ruv_failed` (`search_error`, "could not read the assay"). The VE
+  shape (lipid, metab) fails there with the Automatic R error. No error is raised by any row (all failures are by value).
+- `test-kit172-downstream.R`: passes in full (84 passed, 0 failed): T10 now counts the scale warning by its own text,
+  which the code already gives once; the ITSD notice is not counted.
+- `test-workflow-lipid-declarations.R`, `test-workflow-metab-declarations.R`: pass in full (259 passed, 0 failed each): on
+  this code `itsd_applied` is FALSE on the fixture whose ITSD matches nothing (`:138`) and in the overlay (`:188`); `:47`
+  as re-pinned.
+- A miss is a result: recorded and handed back.
