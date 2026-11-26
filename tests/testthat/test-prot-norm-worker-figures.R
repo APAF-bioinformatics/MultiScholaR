@@ -309,9 +309,12 @@ protNormK182Steps <- function(seen) {
             on.exit(if (device %in% grDevices::dev.list()) grDevices::dev.off(device), add = TRUE)
             testthat::with_mocked_bindings(withDIAStateScope(manager, function() {
                 selectDIAStateReference(manager, "protein_replicate_filtered")
-                value <- computeDIAReferenceProteinIntensityFilter(manager, getDIAStateReference(manager),
-                    list(strict_mode = FALSE, min_reps_per_group = 2, min_groups = 2,
-                        proteins_intensity_cutoff_percentile = 10))
+                # KIT-280: rule B removes no protein from the complete fixture; the KIT-182 QC change is made under the
+                # earlier threshold rule, as before.
+                value <- withr::with_options(list(MultiScholaR.missing_filter_threshold_rule = "missing"),
+                    computeDIAReferenceProteinIntensityFilter(manager, getDIAStateReference(manager),
+                        list(strict_mode = FALSE, min_reps_per_group = 2, min_groups = 2,
+                            proteins_intensity_cutoff_percentile = 10)))
                 result <- finishDIAReferenceProteinStep(list2env(list(state_manager = manager, qc_params = list())),
                     value, publish = FALSE)
                 publishDIAProteinProgress(result, "11_protein_intensity_filtered", "proteomics", "core", updateProteinFiltering)

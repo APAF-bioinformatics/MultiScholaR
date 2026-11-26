@@ -196,7 +196,9 @@ test_that("T3c: the threshold is taken from the pre-filter table (the filter rem
     pit <- run$filtered@protein_id_table
     expect_identical(pit$low_intensity_groups[pit$Protein.Ids == "P_a"], "control")
     expect_identical(pit$low_intensity_groups[pit$Protein.Ids == "P_b"], "")
-    expect_identical(sum(nzchar(pit$low_intensity_groups, keepNA = NA), na.rm = TRUE), 1L)
+    # keepNA = TRUE: nzchar() is TRUE for NA under keepNA = NA, so the removed protein's NA would be counted.
+    expect_identical(sum(nzchar(pit$low_intensity_groups, keepNA = TRUE), na.rm = TRUE), 1L)
+    expect_true(is.na(pit$low_intensity_groups[pit$Protein.Ids == "Pmin"]))
 })
 
 test_that("T3d: digit-leading group labels (1h, 2h) are matched by the design's label in the comparison", {

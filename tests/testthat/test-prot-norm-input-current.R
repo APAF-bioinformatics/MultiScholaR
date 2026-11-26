@@ -96,7 +96,10 @@ k182QcChange <- function(fixture) {
     on.exit(if (device %in% grDevices::dev.list()) grDevices::dev.off(device), add = TRUE)
     before <- k182Rows(fixture, k182Head(fixture))
     protNormCoreQuiet(k182Scope(fixture, function() {
-        value <- computeDIAReferenceProteinIntensityFilter(manager, getDIAStateReference(manager), k182QcParameters)
+        # KIT-280: rule B removes no protein from the complete fixture; the KIT-182 QC change is made under the earlier
+        # threshold rule, as before (F2 k = 6).
+        value <- withr::with_options(list(MultiScholaR.missing_filter_threshold_rule = "missing"),
+            computeDIAReferenceProteinIntensityFilter(manager, getDIAStateReference(manager), k182QcParameters))
         if (identical(as.integer(value$protein_count), as.integer(before))) {
             object <- manager$getState()
             object@protein_quant_table <- object@protein_quant_table[-1L, , drop = FALSE]
