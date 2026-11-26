@@ -1,0 +1,6 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-prot-norm-input-current.R	321	0	0	0	10	1153.2	ok
+test-kit206-prot-norm-export-guard.R	116	0	0	0	6	372.3	ok
+test-prot-norm-worker-figures.R	71	0	0	0	2	875.2	ok
+test-prot-ruv-factors-in-model.R	312	0	0	0	2	150.9	ok
+test-kit280-prot-threshold-values.R	149	0	0	0	0	151.3	ok

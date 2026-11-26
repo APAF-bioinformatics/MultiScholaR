@@ -1,0 +1,7 @@
+file: test-prot-ruv-factors-in-model.R
+test: through the operations the DA table is arm 7 on every protein of the normalised matrix (audit F-03, F-07; M14)
+kind: failure
+message:
+  Expected `uncorrected_only` to have length 0.
+  Actual length: 2.
+

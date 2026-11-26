@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-prot-ruv-factors-in-model.R	311	1	0	0	2	145.8	failed
