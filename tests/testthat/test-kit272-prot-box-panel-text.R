@@ -219,7 +219,8 @@ for (name in k272Names) {
         file <- k272Spec[[name]]$file
         expect_false(is.null(k272Chunk(file, "QC_metrics_placeholders")))
         skip_if(is.null(k272Chunk(file, "QC_metrics_placeholders")))
-        expect_identical(k272Placeholder(file, "d\tpre_norm_density"), k272PlaceholderSentence)
+        # The chunk prints the sentence between blank lines (`cat("\n\n", text, "\n\n")`): the sentence is what is compared.
+        expect_identical(trimws(k272Placeholder(file, "d\tpre_norm_density")), k272PlaceholderSentence)
     })
 
     # --- T4: no template carries the old words anywhere ------------------------------------------------------------

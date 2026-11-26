@@ -75,3 +75,22 @@ expectations, by value; T8, G1', T9 pass). Stop rule 1 not triggered: every base
 | R CMD check | identical findings on both sides |
 
 Any other verdict stops the work (stop rule 2).
+
+## R2 observed (run 45729807390, commit 085e57e5 against 57d83190, 112.2 job-minutes, 7.48 core-hours)
+
+All 18 other files: verdict as predicted (`same`, or `fixed`/count change only where the file's own expectations were
+added: test-kit227 162 -> 186, test-kit235 54 -> 58, test-kit236 289 -> 293 passed, 0 failed on both sides: the
+substitution assertions added by the declared edits, all passing). Standing failures identical on both sides:
+test-kit220 (2), test-omic-summary-module (28), test-omics-summary-core (25). R CMD check identical (0 ERRORs, 3
+WARNINGs, 3 NOTEs on both sides; none only on head). New file on head: 369 passed, 4 failed (predicted 373/0): the four
+T7 rows. The sentence is the right one; my comparison forgot that the placeholder chunk prints it between blank lines
+(`cat("\n\n", text, "\n\n")`), so `expect_identical` against the bare sentence failed. A mechanics defect of the new test
+(no template defect, no expected value changed): instrument defect 2 of at most 3 (VAL-54). Fix: compare `trimws()` of
+the chunk's output with the same sentence constant.
+
+## R2b: the new file only, after the fix (instrument defect 2)
+
+Binds the commit of the T7 fix (only the new test file and records change; no other test, no template). Base = 57d83190,
+head = that commit, only `test-kit272-prot-box-panel-text.R`, one shard, no check (head differs from 085e57e5 in the new
+test file and docs; the other 18 files and R CMD check of R2 stay valid for it). Ceiling 45 job-minutes. Prediction: head
+373 passed, 0 failed, 0 errors (verdict `fixed`); base unchanged 104/269.
