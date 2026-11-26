@@ -1,0 +1,22 @@
+{
+  "requested_by": "KIT-228 R1: tests-only commit; each E row fails on the old code at its stated value, G rows pass; decides stop rule 1 (ceiling 60 min, 4.0 core-hours of 92.0)",
+  "label": "KIT-228 R1 tests-only 96f32e91 (R/ equals staging 0bdf7213)",
+  "package_commit": "96f32e917ce0faf29263b318be0d65826111d502",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit228-integration-input-refused-save.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
