@@ -661,6 +661,7 @@ test_that("KIT-206 E11b (audit I02): a Save refused at a stale head removes the 
     cat(sprintf("KIT-206 E11b refused save notes=%s failed=%d input_present=%s\n", paste(seen$notes, collapse = " | "),
         length(seen$failed), dir.exists(input)))
     expect_false(dir.exists(input))
-    expect_true(paste("The session could not be saved:", k206Text) %in% seen$notes)
+    # KIT-216 (I10): the proteomics Summary's guard refuses the stale head first, before the archive refresh.
+    expect_true(paste("The session could not be saved:", omicNormGuardTexts()$summary_prot) %in% seen$notes)
     expect_length(seen$failed, 1L)
 })

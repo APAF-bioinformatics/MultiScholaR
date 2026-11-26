@@ -1,0 +1,488 @@
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E1 (G1, D1 (a)): after the DA and an enrichment the export writes the table with the product (fails before)
+kind: failure
+message:
+  Expected `fixture$manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual`:   "enrichment_completed"
+  `expected`: "correlation_filtered"
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E1 (G1, D1 (a)): after the DA and an enrichment the export writes the table with the product (fails before)
+kind: failure
+message:
+  Expected `log$errors` to have length 0.
+  Actual length: 1.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E1 (G1, D1 (a)): after the DA and an enrichment the export writes the table with the product (fails before)
+kind: failure
+message:
+  Expected `added` to have length 1.
+  Actual length: 0.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E1 (G1, D1 (a)): after the DA and an enrichment the export writes the table with the product (fails before)
+kind: failure
+message:
+  Expected `archive$state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E1 (G1, D1 (a)): after the DA and an enrichment the export writes the table with the product (fails before)
+kind: failure
+message:
+  Expected `"enrichment_completed" %in% archive$stored` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E1 (G1, D1 (a)): after the DA and an enrichment the export writes the table with the product (fails before)
+kind: failure
+message:
+  Expected `is.null(archive$marker)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E2 (G2, D1 (b), SD-2): with no export in the session the Save writes the integration input and skips the session file (fails before)
+kind: failure
+message:
+  Expected `seen$failed` to have length 0.
+  Actual length: 1.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E2 (G2, D1 (b), SD-2): with no export in the session the Save writes the integration input and skips the session file (fails before)
+kind: failure
+message:
+  Expected `seen$done` to have length 1.
+  Actual length: 0.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E2 (G2, D1 (b), SD-2): with no export in the session the Save writes the integration input and skips the session file (fails before)
+kind: failure
+message:
+  Expected `"Study parameters saved with warnings" %in% seen$notes` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E2 (G2, D1 (b), SD-2): with no export in the session the Save writes the integration input and skips the session file (fails before)
+kind: failure
+message:
+  Expected `planted` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E2 (G2, D1 (b), SD-2): with no export in the session the Save writes the integration input and skips the session file (fails before)
+kind: failure
+message:
+  Expected `any(seen$types == "warning" & seen$persistent)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E3 (G3, D1 (c)): the archive the Summary writes after an enrichment opens and is adopted at the table (fails before)
+kind: failure
+message:
+  Expected `reopened$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E3 (G3, D1 (c)): the archive the Summary writes after an enrichment opens and is adopted at the table (fails before)
+kind: failure
+message:
+  Expected `reopened$fixture$manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E3 (G3, D1 (c)): the archive the Summary writes after an enrichment opens and is adopted at the table (fails before)
+kind: failure
+message:
+  Expected `is.null(restored)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E3 (G3, D1 (c)): the archive the Summary writes after an enrichment opens and is adopted at the table (fails before)
+kind: failure
+message:
+  Expected `length(restored$all_enrichment_results) > 0L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E3 (G3, D1 (c)): the archive the Summary writes after an enrichment opens and is adopted at the table (fails before)
+kind: failure
+message:
+  Expected `restored$not_tested` to be identical to `k216NotTested`.
+  Differences:
+  `actual` is NULL
+  `expected` is an S3 object of class <data.frame>, a list
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E4 (G4, D1 (e)): an archive exported after a Revert from an enrichment opens (fails before)
+kind: failure
+message:
+  Expected `reopened$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E4 (G4, D1 (e)): an archive exported after a Revert from an enrichment opens (fails before)
+kind: failure
+message:
+  Expected `reopened$fixture$manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E11 (G6, I05): DIA with limpa, the refreshed archive states the RUV mode of the last covariates run (fails before)
+kind: failure
+message:
+  Expected `archive$ruv_mode` to be identical to "correction".
+  Differences:
+  `actual`:   "covariates"
+  `expected`: "correction"
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E7 (G7, I04): the archive and the reopened tab state the normalisation method that was run (fails before)
+kind: failure
+message:
+  Expected `archive$normalization_method` to be identical to "quantile".
+  Differences:
+  `actual`:   "cyclicloess"
+  `expected`: "quantile"   
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E7 (G7, I04): the archive and the reopened tab state the normalisation method that was run (fails before)
+kind: failure
+message:
+  Expected `"norm_method=quantile" %in% reopened$selected` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E7 (G7, I04): the archive and the reopened tab state the normalisation method that was run (fails before)
+kind: failure
+message:
+  Expected `"norm_method=cyclicloess" %in% reopened$selected` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E7b (I04, P08): after two runs the archive states the later run's method (fails before)
+kind: failure
+message:
+  Expected `archive$normalization_method` to be identical to "cyclicloess".
+  Differences:
+  `actual`:   "quantile"   
+  `expected`: "cyclicloess"
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E8 (G8, D2): after a second enrichment run the Save writes the integration input and the record's input is the table (fails before)
+kind: failure
+message:
+  Expected `file.exists(file.path(k216Input(fixture), "integration_input.json"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E8 (G8, D2): after a second enrichment run the Save writes the integration input and the record's input is the table (fails before)
+kind: failure
+message:
+  Expected `unlist(inputs)` to be identical to `manifest$source$entity_id`.
+  Differences:
+  `actual`:   "6c43bfc7abf3f2875a49df7315208f9d160fcae3daeab387db088094d4624b8f"
+  `expected`: "99f6daf4310079aaa2cc4560197e0268695db5cf4ee49a14eff015923e11621d"
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E9 (G9, I10): at a stale head Generate Report and Export Session State are refused before anything is written (fails before)
+kind: failure
+message:
+  Expected `guard` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E9 (G9, I10): at a stale head Generate Report and Export Session State are refused before anything is written (fails before)
+kind: failure
+message:
+  Expected `report$render` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E9 (G9, I10): at a stale head Generate Report and Export Session State are refused before anything is written (fails before)
+kind: failure
+message:
+  Expected `state$files` to have length 0.
+  Actual length: 1.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E10 (G10, I10): at a stale head the Save is refused before the parameters and the record are written (fails before)
+kind: failure
+message:
+  Expected `seen$failed[[1L]]` to inherit from "omic_norm_correlation_input_stale".
+  Actual class: "prot_norm_correlation_input_stale"/"rlang_error"/"error"/"condition".
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E10 (G10, I10): at a stale head the Save is refused before the parameters and the record are written (fails before)
+kind: failure
+message:
+  Expected `seen$args` to have length 0.
+  Actual length: 1.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E10 (G10, I10): at a stale head the Save is refused before the parameters and the record are written (fails before)
+kind: failure
+message:
+  Expected `seen$records` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E10 (G10, I10): at a stale head the Save is refused before the parameters and the record are written (fails before)
+kind: failure
+message:
+  Expected `written` to be identical to `c(FALSE, FALSE)`.
+  Differences:
+  `actual`:   TRUE  TRUE 
+  `expected`: FALSE FALSE
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E5: a DA run again with other arguments ends the product (head only; base printed)
+kind: failure
+message:
+  Expected `again` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E5: a DA run again with other arguments ends the product (head only; base printed)
+kind: failure
+message:
+  Expected `steps` to have length 0.
+  Actual length: 1.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E5b (P03): an enrichment of an earlier table's DA after a Revert is not a product of the head (fails before)
+kind: failure
+message:
+  Expected `fixture$manager$current_state` to be identical to "normalized".
+  Differences:
+  `actual`:   "enrichment_completed"
+  `expected`: "normalized"          
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E5b (P03): an enrichment of an earlier table's DA after a Revert is not a product of the head (fails before)
+kind: failure
+message:
+  Expected `steps` to have length 0.
+  Actual length: 1.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E10c (SD-1): a project never normalised is refused Save, Report and Session State (fails before)
+kind: failure
+message:
+  Expected `guard` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E10c (SD-1): a project never normalised is refused Save, Report and Session State (fails before)
+kind: failure
+message:
+  Expected `seen$args` to have length 0.
+  Actual length: 1.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E10c (SD-1): a project never normalised is refused Save, Report and Session State (fails before)
+kind: failure
+message:
+  Expected `report$render` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E10c (SD-1): a project never normalised is refused Save, Report and Session State (fails before)
+kind: failure
+message:
+  Expected `state$files` to have length 0.
+  Actual length: 1.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E14 (P06): at `normalized` the Save names the `normalized` table as final (fails before)
+kind: failure
+message:
+  Expected `final` to be identical to `getDIAStateReference(fixture$manager, "normalized")$entity_id`.
+  Differences:
+  `actual`:   "0060712b448b37a5fd9ade7827af1f6b33ebffb6d35a35c44832f632043bfead"
+  `expected`: "6f55f8dd2fb063942057ba6c1bb89b765644dc75b3dc120fc104ad82f12bc36d"
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E9b: an old-shape archive whose current state is the enrichment opens at the DA's table (fails before)
+kind: failure
+message:
+  Expected `reopened$error` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <saved_entity_corrupt/rlang_error/error/condition>, a list
+  `expected` is NULL
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E9b: an old-shape archive whose current state is the enrichment opens at the DA's table (fails before)
+kind: failure
+message:
+  Expected `reopened$fixture$manager$current_state` to be identical to "correlation_filtered".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correlation_filtered')
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E9b: an old-shape archive whose current state is the enrichment opens at the DA's table (fails before)
+kind: failure
+message:
+  Expected `is.null(reopened$fixture$manager$.context$snapshot$enrichment_results)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 G16: a second enrichment run with other cut-offs replaces the first; the record lists one step with the second run's parameters (guard)
+kind: failure
+message:
+  Expected `as.numeric(unlist(values$q_cutoff))` to equal 0.01.
+  Differences:
+    `actual`:   NA 0.01 1
+  `expected`: 0.01       
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 G18 (SD-4): after an export and a new normalisation the Report runs and the Save writes all but the session file (fails before at the Save)
+kind: failure
+message:
+  Expected `seen$failed` to have length 0.
+  Actual length: 1.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 G18 (SD-4): after an export and a new normalisation the Report runs and the Save writes all but the session file (fails before at the Save)
+kind: failure
+message:
+  Expected `seen$done` to have length 1.
+  Actual length: 0.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 G18 (SD-4): after an export and a new normalisation the Report runs and the Save writes all but the session file (fails before at the Save)
+kind: failure
+message:
+  Expected `file.exists(file.path(k216Input(fixture), "integration_input.json"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 G18 (SD-4): after an export and a new normalisation the Report runs and the Save writes all but the session file (fails before at the Save)
+kind: failure
+message:
+  Expected `any(seen$types == "warning" & seen$persistent)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 G19 (P05, R1-03): after a Revert to `normalized` the Save completes; with an export, all but the session file (base printed)
+kind: failure
+message:
+  Expected `any(seen$types == "warning" & seen$persistent)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 G20 (R1-03): S3, a Revert into an earlier run's `normalized` with an export: the Save writes all but the session file (fails before)
+kind: failure
+message:
+  Expected `seen$failed` to have length 0.
+  Actual length: 1.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 G20 (R1-03): S3, a Revert into an earlier run's `normalized` with an export: the Save writes all but the session file (fails before)
+kind: failure
+message:
+  Expected `seen$done` to have length 1.
+  Actual length: 0.
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 G20 (R1-03): S3, a Revert into an earlier run's `normalized` with an export: the Save writes all but the session file (fails before)
+kind: failure
+message:
+  Expected `file.exists(file.path(k216Input(fixture), "integration_input.json"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 G20 (R1-03): S3, a Revert into an earlier run's `normalized` with an export: the Save writes all but the session file (fails before)
+kind: failure
+message:
+  Expected `any(seen$types == "warning" & seen$persistent)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E15 (item 13): the enrichment Run is refused when the DA tab has cleared its result (fails before)
+kind: failure
+message:
+  Expected `cleared` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E15 (item 13): the enrichment Run is refused when the DA tab has cleared its result (fails before)
+kind: failure
+message:
+  Expected `calls` to be identical to 0L.
+  Differences:
+    `actual`: 1
+  `expected`: 0
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E15 (item 13): the enrichment Run is refused when the DA tab has cleared its result (fails before)
+kind: failure
+message:
+  Expected `any(startsWith(notes, "[warning]"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit216-prot-session-after-enrichment.R
+test: KIT-216 E7c (I04, P08): DIA with limpa, the archive states the protein normalisation step's method (fails before)
+kind: failure
+message:
+  Expected `archive$normalization_method` to be identical to "none".
+  Differences:
+  `actual`:   "quantile"
+  `expected`: "none"    
+

@@ -722,7 +722,8 @@ resolveDIARuvRunDescription <- function(manager) {
     if (!usesDIAReferenceStates(manager)) return(NULL)
     states <- unique(c(manager$current_state, rev(manager$getHistory())))
     for (state in intersect(states, c("ruv_covariates", "correlation_filtered", "ruv_corrected", "normalized"))) {
-        record <- tryCatch(readDIAStateMetadata(manager, getDIAStateReference(manager, state))$data, error = function(e) NULL)
+        metadata <- tryCatch(readDIAStateMetadata(manager, getDIAStateReference(manager, state)), error = function(e) NULL)
+        record <- metadata$data
         product <- record$products$ruv_covariates_science %||% record$products$normalization_science
         if (is.null(product)) next
         value <- hydrateSavedWorkflowEntity(manager$.context$store, product)$value
@@ -730,9 +731,36 @@ resolveDIARuvRunDescription <- function(manager) {
         # KIT-129 (audit F2): a declared-rule run that applied no RUV (a count of 0, or a refused automatic k) is
         # described as such, whatever mode its parameters asked for.
         ruv_mode <- if (identical(value$ruv_applied, FALSE)) "none" else parameters$ruv_mode
-        return(list(ruv_mode = ruv_mode, grouping = parameters$grouping %||% parameters$ruv_grouping_variable))
+        # KIT-216 (I04): the normalisation method of the same run (the product's parameters, else the state's config).
+        return(list(ruv_mode = ruv_mode, grouping = parameters$grouping %||% parameters$ruv_grouping_variable,
+            norm_method = parameters$norm_method %||% metadata$config$norm_method))
     }
     NULL
+}
+
+#' KIT-216 (I04, P08, E-5): the between-sample normalisation method of the run, for the session file. On DIA, LFQ and
+#' TMT the method of the normalisation product `resolveDIARuvRunDescription` resolves (`run`), else that state's config;
+#' on DIA with limpa the protein QC step `protein_normalised`'s method when it is in the active history, else "none" once
+#' the route has a normalised table; the tab's selector only before any normalisation.
+#' @param manager The session's owner.
+#' @param run `resolveDIARuvRunDescription(manager)`.
+#' @param selector The tab's selector value.
+#' @return A method name, or `selector`.
+#' @noRd
+resolveDIANormalisationMethod <- function(manager, run, selector) {
+    if (!usesDIAReferenceStates(manager)) return(selector)
+    history <- diaStateHistory(manager)
+    if (identical(manager$workflow_type, "DIA_LIMPA")) {
+        if ("protein_normalised" %in% history) {
+            config <- tryCatch(readDIAStateMetadata(manager, getDIAStateReference(manager, "protein_normalised"))$config,
+                error = function(e) NULL)
+            method <- config$outcomes$norm_method %||% config$norm_method
+            if (!is.null(method)) return(method)
+        }
+        normalised <- any(c("ruv_covariates", "ruv_corrected", "correlation_filtered") %in% history)
+        return(if (normalised) "none" else selector)
+    }
+    run$norm_method %||% selector
 }
 
 #' The in-process normalisation: the gate, the request, the compute half, the commit and the publication half.
