@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-278 correction 1 (K01): the one line shown_idle <<- idle is exempt through the helper's allow argument, not the file; base versus head",
+  "label": "KIT-278 corr1 globals file, base 75acd421 vs head 84941aba",
+  "package_commit": "84941aba151f38dfbc6d3e58cc7209253d5898e5",
+  "base_commit": "75acd4219cd2d2db9cab9a470147c0e8a479ef73",
+  "tools_ref": "",
+  "tests": [
+    "test-omics-module-globals.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
