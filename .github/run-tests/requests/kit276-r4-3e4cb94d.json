@@ -1,0 +1,18 @@
+{
+  "requested_by": "KIT-276 R4: the further bounded correction of VAL-389 (row T8d and one line), base 7649808b against head 3e4cb94d, the new file and test-kit216-prot-session-after-enrichment.R; ceiling 8.0 core-hours (120 job-minutes); a miss stops with no repair; running total before this request 83.15 of 172.00",
+  "label": "KIT-276 R4 VAL-389 base 7649808b vs head 3e4cb94d",
+  "package_commit": "3e4cb94ddd448ae90b33329eb06b2a81c456193e",
+  "base_commit": "7649808bf9a39794ec12ff4d58ba69c2fc1ac31a",
+  "tools_ref": "",
+  "tests": ["test-kit276-ruv-superseded.R", "test-kit216-prot-session-after-enrichment.R"],
+  "shards": 1,
+  "file_timeout_minutes": 60,
+  "file_timeouts": {},
+  "extra_packages": ["sva"],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
