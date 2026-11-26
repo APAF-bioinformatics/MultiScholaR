@@ -1,0 +1,53 @@
+{
+  "requested_by": "KIT-275 L1 (the blind lifecycle, once; G1 passed; declaration declarations/l1-declaration.md on branch kit-275; ceiling 139 job-minutes)",
+  "label": "KIT-275 L1 f3c1358b",
+  "package_commit": "f3c1358bb6388899a538aa90df8c46040d5f9def",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/selftest/run-selftest.R",
+      "args": [],
+      "env": {
+        "K275_SELFTEST_OUT": "k275-l1-selftest"
+      },
+      "out": "k275-l1-selftest",
+      "out_pattern": "\\.(tsv|txt|json)$",
+      "timeout_minutes": 15
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/sim-k275.R",
+      "args": [
+        "all",
+        "D3,D4,D6",
+        "9101",
+        "9103",
+        "k275-l1"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K275_LIFECYCLE": "1",
+        "K275_FAULT": "1",
+        "K275_JOB": "l1",
+        "K275_DECLARATION": "docs/qa/workflow-execution/kit/kit-275/declarations/l1-declaration.md"
+      },
+      "out": "k275-l1",
+      "out_pattern": "\\.(tsv|txt|json)$",
+      "timeout_minutes": 114
+    }
+  ],
+  "fetch_refs": [
+    "kit-188-ruv-default-calibration"
+  ],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
