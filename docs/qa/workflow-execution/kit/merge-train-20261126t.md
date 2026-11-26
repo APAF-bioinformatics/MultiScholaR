@@ -195,3 +195,40 @@ sides (stored references recorded on the laptop; KIT-156).
   (I04); optional I05 clause (`enrichProteinsPathways()`).
 - Records owed (no run): KIT-221 I05 (plan section 13 row beside F3) and I07 (the checkpoint names KIT-221 and KIT-218 for
   the DA-reaching files); KIT-270 ticket R02 sentences; KIT-246c CN-2 (three code comments, optional, an `R/` edit).
+
+## Result
+
+Run 45729766211 (request `train27-compare-47a9ad3f`, request commit 0f14d8160 on `run-tests`), created by the dispatcher
+without error (no hand dispatch); green (infrastructure). Head 47a9ad3f vs base 623f7550. Tables:
+`merge-train-20261126t-compare.tsv`, `merge-train-20261126t-check-compare.txt` (same directory).
+
+**Job-minutes 443.8 = 29.58 core-hours** (job-minutes x 4 / 60, from the jobs' start and end times) against the ceiling of
+700 job-minutes (46.67 core-hours) and the expected about 420 (about 28 core-hours): tests head 65.3/48.4/50.9/59.3, tests
+base 63.2/47.5/28.2/49.6, check head 14.9, check base 15.7, plan 0.3, results 0.5.
+
+| File | Predicted | Observed base | Observed head | Verdict |
+|---|---|---|---|---|
+| test-kit221-da-several-comparisons.R | only-on-head, 124/0 | absent | 124/0/0/0 | only-on-head: HELD |
+| test-integration-record.R | count-changed, 200 to 209 | 200/0/0/0 | 209/0/0/0 | count-changed (KIT-246 block 33 to 42): HELD |
+| test-workflow-figure-paths.R | same, 181/0 | 181/0/0/0 | 181/0/0/0 | same: HELD (no flake on either side) |
+| test-workflow-saved-da.R | same, 755/196 | 755/196 | 755/196 | same: HELD |
+| test-omic-da-module.R | same, 1288/81 | 1288/81 | 1288/81 | same: HELD |
+| test-gui-entry-proteomics.R | same, 92/101 | 92/101 | 92/101 | same: HELD |
+| test-kit129-run-path.R | same, 687/6/0/1 | 687/6/0/1 | 687/6/0/1 | same: HELD |
+| test-kit220-da-threshold-consumers.R | same, 71/2 | 71/2 | 71/2 | same: HELD |
+| test-dia-limpa-ruv-rules.R | same, 333/1 | 333/1 | 333/1 | same: HELD |
+| test-kit218-da-wrapper-tail.R | same, 80/0/0/2 | 80/0/0/2 | 80/0/0/2 | same: HELD |
+| test-metab-02q-da-analysis-helper-characterization.R | same, 19/0 | 19/0 | 19/0 | same: HELD |
+| test-kit213-study-parameters-labels.R | same, 56/0 | 56/0 | 56/0 | same: HELD |
+| the other 45 files | same | as predicted | as predicted | same: HELD |
+| R CMD check | identical, nothing only on head | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | identical (6 findings on both; only on head: none; only on base: none): HELD |
+
+Totals: 58 files, 56 `same`, 1 `count-changed` (the declared one), 1 `only-on-head` (the new file); no `new-failure`, no
+`message-changed`. Passed base 10226, head 10359 (+9 and +124 = +133); failed 387 on both sides. The six files that fail do
+so on both sides with identical failure lists (`compare-failures.txt`: "no non-identical failures").
+
+**Decision.** Every prediction held. TRAIN GREEN for KIT-270, KIT-246c and KIT-221: KIT-221's new file passes 124/0 and no
+DA-reaching file moved; KIT-246c's passage passes (209/0) with the other ten files unchanged; KIT-270's file is 181/0 on
+both sides (the base-side flake did not occur in this run, so the run does not show the removal itself: that is KIT-270's
+own seeded evidence, run 45709348632). The script job was not requested. KIT-221's A4 (full suite) stays with the
+checkpoint, which names KIT-221 as a contributor for the DA-reaching files.
