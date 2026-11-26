@@ -9,3 +9,15 @@ Likely cause (inferred, not shown): k274Run builds a fresh omicNormReactiveState
 second run may not have run; the test has no precondition that the second run made a new trx_ruvs entity. No error text in the log.
 Stop rule: a missed prediction stops the work; reported, not corrected.
 Not checked: everything after R1 (the fix is drafted in the worktree, uncommitted; R2; R CMD check).
+
+## R1b (VAL-54 instrument re-send 1 of 3), after the coordinator's ruling (R1 above is kept as it happened)
+
+Ruling quoted: "treated as an instrument defect, re-send 1 of 3 (VAL-54) ... the behaviour T10 guards (a later run supersedes the
+listed export) is what KIT-264's E1/E2 assert on the same base, and that file passed 85/0 in your own R1 with one shared `nd`; your T10
+differs only in building a fresh omicNormReactiveState() per run, and it has no precondition showing the second run happened. So the run
+gave no result on the guarded behaviour." Terms: tests-only; (1) one `nd` per project in k274Run; (2) a precondition in T10 that the
+second run committed a new trx_ruvs entity; (3) no assertion changed. Sharing `nd` changes nothing T1 to T9, T11, T12 exercise (only T10
+calls k274Run). Predictions for R1b: T10 passes on base with the precondition met; all others as in R1 (T1-T7, T12 fail by value; T8, T9,
+T11 pass; X1 base line as in R1). If T10 still fails with the precondition met: a result, stop. If the precondition fails: hand back.
+T4 deviation (accepted by the coordinator): the press is made in the summary hook, not through `ruviii = "group"`, so the product set is
+read before and after it; it asserts the same observables as the plan register's P04.

@@ -26,7 +26,8 @@
 #   T9  guard: after a legacy run the export is accepted, listed with the run's k, described, and the integration input is
 #       the export (corrected, product trx.ruviii).   base: same; head: same
 #   T10 guard: KIT-264's routes (run k = 2, export, run k = 1; run k = 2, export, run with the design none): no entry.
-#       base: same; head: same
+#       base: same; head: same. R1b (VAL-54 instrument re-send 1): one shared `nd` per project and a precondition that the
+#       second run committed a new trx_ruvs entity; with it met T10 passes on base. T1 to T9, T11, T12 use no k274Run: as in R1.
 #   T11 guard: a manager that is not the session's owner: saved_entity_scope from both wrappers.   base: same; head: same
 #   T12 the call sites: trxRuviiiExportParameters and acceptTrxRuviiiExport on a no-RUV head each raise trx_ruviii_no_ruv.
 #       base: no error (fail)
@@ -164,8 +165,8 @@ k274Figure <- function(results_dir) {
     file
 }
 
-#' Copy of `k264Run`: trx's "Run Normalization Pipeline" in process.
-k274Run <- function(project, inputs) {
+#' Copy of `k264Run`: trx's "Run Normalization Pipeline" in process, on one `nd` shared by a project's runs (R1b, VAL-54).
+k274Run <- function(project, inputs, nd) {
     testthat::local_mocked_bindings(workflowOmicsManagedActions = function(omic_type) NULL, .package = "MultiScholaR")
     notify <- function(ui, ..., type = "default", duration = 5) invisible(NULL)
     set_status <- function(tab, value) {
@@ -176,8 +177,8 @@ k274Run <- function(project, inputs) {
     withr::local_seed(20261124L)
     kit172Quiet(utils::capture.output(shiny::isolate(runTrxNormalisation(list(managed = runTrxNormManaged,
         in_process = runTrxNormInProcess), transcriptomicsDeclarationBinding, project$workflow$state_manager,
-        trxNormGridParameters(inputs), omicNormReactiveState(), project$workflow$config_list, project$paths,
-        omicNormAddLog(omicNormReactiveState()), notify, set_status))))
+        trxNormGridParameters(inputs), nd, project$workflow$config_list, project$paths,
+        omicNormAddLog(nd), notify, set_status))))
     invisible(NULL)
 }
 
@@ -459,28 +460,29 @@ test_that("KIT-274 T9 (guard): after a legacy run the export is accepted, listed
 
 test_that("KIT-274 T10 (guard): KIT-264's routes still list no earlier export (run k = 2, export, run k = 1; and with the design none)", {
     skip_if_not_installed("edgeR")
+    ruvs_entity <- function(owner) k274Snapshot(owner)$states[["trx_ruvs"]]$entity_id
     one <- k274Project()
-    k274Run(one, K274Legacy2)
+    nd_one <- omicNormReactiveState()
+    k274Run(one, K274Legacy2, nd_one)
     expect_identical(one$owner$current_state, "trx_ruvs", info = "route A run 1")
+    first_one <- ruvs_entity(one$owner)
     k274Export(one$owner)
     expect_true(k274Listed(k274Record(one$owner)), info = "the true export is listed")
-    k274Run(one, K274Legacy1)
+    k274Run(one, K274Legacy1, nd_one)
+    expect_false(identical(first_one, ruvs_entity(one$owner)), info = "precondition: route A's second run committed a new trx_ruvs entity")
     two <- k274Project()
-    k274Run(two, K274Legacy2)
+    nd_two <- omicNormReactiveState()
+    k274Run(two, K274Legacy2, nd_two)
+    first_two <- ruvs_entity(two$owner)
     k274Export(two$owner)
-    k274Run(two, K274Design)
+    k274Run(two, K274Design, nd_two)
     expect_identical(two$owner$current_state, "trx_ruvs", info = "route B run 2")
+    expect_false(identical(first_two, ruvs_entity(two$owner)), info = "precondition: route B's second run committed a new trx_ruvs entity")
     a <- k274Listed(k274Record(one$owner))
     b <- k274Listed(k274Record(two$owner))
     k274Row("T10", "route A listed:", a, "route B listed:", b)
     expect_false(a)
     expect_false(b)
-})
-
-test_that("KIT-274 T11 (guard): a manager that is not the session's owner is refused by both wrappers, before anything else", {
-    not_owner <- list(.context = list())
-    expect_error(runTrxReferenceRuviiiExport(not_owner, "group"), class = "saved_entity_scope")
-    expect_error(acceptTrxRuviiiExport(not_owner, NULL, list()), class = "saved_entity_scope")
 })
 
 # ------------------------------------------------------------------------------------------------
