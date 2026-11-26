@@ -248,6 +248,8 @@ k228Texts <- list(
     failed = function(omic) sprintf(paste("This omic's earlier integration input (integration/%s/) was removed because this save",
         "did not write a new one (the reason is in the message above). The integration cannot use %s until this Summary is",
         "saved without errors."), omic, omic),
+    failed_unnamed = function(omic) sprintf(paste("This omic's earlier integration input (integration/%s/) was removed because this save",
+        "did not write a new one. The integration cannot use %s until this Summary is saved without errors."), omic, omic),
     gate = function(omic) sprintf(paste("This omic's earlier integration input (integration/%s/) was removed because this save",
         "did not write a new one: the RUVIII export is missing. Run the RUVIII export, then save again before integrating."), omic),
     no_table = function(omic) sprintf(paste("This omic's earlier integration input (integration/%s/) was removed, and this save",
@@ -332,6 +334,28 @@ k228FailingRunner <- function() {
 k228SilentRunner <- function() {
     list(progress = function(...) list(inc = function(...) invisible(NULL), close = function() invisible(NULL)),
         run = function(actions, done = NULL, failed = NULL, dropped = NULL) invisible(NULL))
+}
+
+#' The managed route's "publication pending" sequence (I05): the first request's worker writes the input, then the step fails
+#' as publication pending (`failed` is called, `done` is kept); a second Save finds the runner retrying and resumes the
+#' first request: its `done` runs, nothing is recomputed or rewritten (`R/utils_workflow_omics_actions.R:73-82`).
+k228RetryRunner <- function(write_input) {
+    state <- new.env(parent = emptyenv())
+    state$pending <- FALSE
+    list(progress = function(...) list(inc = function(...) invisible(NULL), close = function() invisible(NULL)),
+        retrying = function() isTRUE(state$pending),
+        run = function(actions, done = NULL, failed = NULL, dropped = NULL) {
+            if (isTRUE(state$pending)) {
+                state$pending <- FALSE
+                state$done()
+                return(invisible(NULL))
+            }
+            write_input()
+            state$pending <- TRUE
+            state$done <- done
+            failed(simpleError("publication pending: press the button again to write the files"))
+            invisible(NULL)
+        })
 }
 
 #' The managed failure's expectations, base and head alike: the class is lost, so the Summary names no refusal.
@@ -440,7 +464,8 @@ test_that("KIT-228 E4, G1, G3, G4: proteomics, a generic failure removes the ear
     k228Line("E4", "proteomics", rec, folder)
     cat(sprintf("KIT-228 E4 proteomics\tmanifest_sha_before=%s\tafter=%s\n", sha,
         k228ManifestSha(folder)))
-    k228ExpectRemoved(rec, folder, k228Texts$failed("proteomics"), "E4")
+    # I04: an in-process error whose reason the Summary never shows: the notice does not point to a message above.
+    k228ExpectRemoved(rec, folder, k228Texts$failed_unnamed("proteomics"), "E4")
     expect_true("[warning] Study parameters saved with warnings" %in% rec$notes)
     expect_true(file.exists(file.path(dirs$proteomics$source_dir, "study_parameters.txt")), info = "E4 fallback file")
     expect_true(length(rec$failed) == 1L)
@@ -449,6 +474,17 @@ test_that("KIT-228 E4, G1, G3, G4: proteomics, a generic failure removes the ear
     rec <- k228Save(owner$workflow, "proteomics", fresh, args = failing)
     k228Line("G4", "proteomics", rec, k228Folder(fresh, "proteomics"))
     k228ExpectNoNotice(rec, k228Folder(fresh, "proteomics"), "G4 proteomics")
+    # I06 (i): the start removal fails, then the writer's own no-source removal succeeds (the folder is gone at the end):
+    # the notice is chosen from the end state, so it says the input was removed (T3), not that it could not be.
+    k228FirstSave(owner$workflow, "proteomics", dirs, "I06 prot", args = k228ProtWriters)
+    rec <- testthat::with_mocked_bindings(k228Save(owner$workflow, "proteomics", dirs, args = k228ProtWriters),
+        removeOmicIntegrationInput = function(integrationDir, omicType) abortIntegrationInput("injected: cannot remove"),
+        protIntegrationInputSource = function(manager) NULL, .package = "MultiScholaR")
+    k228Line("I06 prot", "proteomics", rec, folder)
+    info <- paste("I06 prot | notes:", paste(rec$notes, collapse = " | "))
+    expect_false(dir.exists(folder), info = info)
+    expect_identical(sum(rec$notes == paste0("[warning] ", k228Texts$no_table("proteomics"))), 1L, info = info)
+    expect_false(paste0("[warning] ", k228Texts$not_removed(folder)) %in% rec$notes, info = info)
     # G3: the removal fails (a read-only integration folder, Linux): named, the Save goes on, T4 at its end.
     k228FirstSave(owner$workflow, "proteomics", dirs, "G3", args = k228ProtWriters)
     integration <- k207IntegrationDir(dirs$proteomics)
@@ -586,6 +622,41 @@ for (class in c("lipid", "metab")) {
         expect_false(dir.exists(folder), info = paste("E6", class, "| notes:", paste(rec$notes, collapse = " | ")))
         expect_identical(rec$done, 0L, info = paste("E6", class))
         expect_identical(length(rec$failed), 0L, info = paste("E6", class))
+        # I05: the managed route's "publication pending" failure, then Save pressed again: the worker's input must be on disk
+        # and what the user is told must be true (the re-press must not delete the input the resumed request published).
+        k228FirstSave(q$fx$workflow, omic, dirs, "I05")
+        stash <- file.path(root, "stash")
+        dir.create(stash)
+        file.copy(folder, stash, recursive = TRUE)
+        write_input <- function() {
+            unlink(folder, recursive = TRUE)
+            file.copy(file.path(stash, basename(folder)), dirname(folder), recursive = TRUE)
+        }
+        retry <- k228RetryRunner(write_input)
+        first <- k228Save(q$fx$workflow, omic, dirs, runner = retry)
+        k228Line("I05 first press", omic, first, folder)
+        expect_true(file.exists(k228Manifest(folder)), info = paste("I05", class, "the worker's input after the first press"))
+        again <- k228Save(q$fx$workflow, omic, dirs, runner = retry)
+        k228Line("I05 second press", omic, first, folder)
+        info <- paste("I05", class, "| first notes:", paste(first$notes, collapse = " | "), "| second notes:",
+            paste(again$notes, collapse = " | "))
+        expect_true("[message] Saved Integration S4 Object" %in% first$notes, info = info)
+        expect_true(file.exists(k228Manifest(folder)), info = info)
+        expect_false(any(grepl("earlier integration input", c(first$notes, again$notes), fixed = TRUE)), info = info)
+        # I06 (ii): the start removal fails, then the writer with no source removes the folder and reports TRUE (the folder is
+        # gone at the end): T3, not silence.
+        k228FirstSave(q$fx$workflow, omic, dirs, "I06")
+        rec <- testthat::with_mocked_bindings(k228Save(q$fx$workflow, omic, dirs),
+            removeOmicIntegrationInput = function(integrationDir, omicType) abortIntegrationInput("injected: cannot remove"),
+            omicsIntegrationInputSource = function(binding, manager) NULL, .package = "MultiScholaR")
+        k228Line("I06", omic, rec, folder)
+        info <- paste("I06", class, "| notes:", paste(rec$notes, collapse = " | "))
+        expect_false(dir.exists(folder), info = info)
+        expect_identical(sum(rec$notes == paste0("[warning] ", k228Texts$no_table(omic))), 1L, info = info)
+        expect_false(paste0("[warning] ", k228Texts$not_removed(folder)) %in% rec$notes, info = info)
+        # I07: T1 in the stale-head branch (the commonest refusal) when an earlier folder exists: a Save, a Revert to QC
+        # complete, a Save into the same folder.
+        k228FirstSave(q$fx$workflow, omic, dirs, "I07")
         # G2 and G4: KIT-207's refusal (a Revert to QC complete) with no earlier folder: the notes as before, no notice.
         expect_identical(k194Revert(q$fx, paste0(prefix, "_qc_complete")), paste0(prefix, "_qc_complete"), info = "G2 precondition")
         fresh <- k207Dirs(file.path(root, "g2-project"), omic)
@@ -596,5 +667,9 @@ for (class in c("lipid", "metab")) {
             "Control was reverted, or the normalisation was reset, after it ran. Run the normalisation (and the correlation filter",
             "or its Skip) again, or, if you have only just pressed Reset, press Revert once in a Quality Control sub-tab; then",
             "press this button again."))) %in% rec$notes, info = paste("G2", class))
+        rec <- k228Save(q$fx$workflow, omic, dirs)
+        k228Line("I07", omic, rec, folder)
+        k228ExpectRemoved(rec, folder, k228Texts$failed(omic), paste("I07", class))
+        expect_true(length(rec$failed) == 1L && inherits(rec$failed[[1L]], "omic_norm_correlation_input_stale"), info = paste("I07", class))
     })
 }
