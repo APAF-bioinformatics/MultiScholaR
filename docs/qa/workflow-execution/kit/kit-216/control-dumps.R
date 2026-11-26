@@ -16,7 +16,9 @@ writeLines(c(
     "testthat::test_file(file.path('tests', 'testthat', args[[1L]]), reporter = 'summary', stop_on_failure = FALSE)"),
     runner)
 for (r in seq_len(repeats)) {
-    out <- normalizePath(file.path(root, sprintf("%s-%d", label, r)), mustWork = FALSE)
+    # Instrument repair (VAL-54; runs 45723149339, 45723123145 wrote no dump): the path is made absolute after the folder
+    # exists; a relative path was resolved inside tests/testthat, where test_file() runs, and not uploaded.
+    out <- file.path(normalizePath(root), sprintf("%s-%d", label, r))
     dir.create(out, recursive = TRUE, showWarnings = FALSE)
     jobs <- list(
         list(file = "test-omic-enrich-module.R", env = c(MULTISCHOLAR_KIT107_W1_DUMP = file.path(out, "kit107-w1.R"),
