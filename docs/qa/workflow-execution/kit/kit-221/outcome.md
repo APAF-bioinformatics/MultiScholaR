@@ -99,6 +99,12 @@ helpers dropped, gives 43 files (the new file included); plus `test-gui-entry-pr
 - test-workflow-saved-da.R
 - test-workflow-saved-installed.R
 
+**Correction of 2026-11-26 (implementation audit I01):** the ticket's grep at 176f9d3ff gives 43 test files without the
+new file (44 with it), not 43 with it: dropping 'helpers' by a name match also dropped
+`test-metab-02q-da-analysis-helper-characterization.R`, which calls the metabolomics `differentialAbundanceAnalysisHelper`.
+The declared scope was 46 files; R2 ran 45. The omitted file tests `R/func_metab_s4_da_methods.R`, which this change does
+not touch (by reading unaffected; 19 passed on staging, merge train h). It runs in the merge train.
+
 R2 price and predictions: `r2-predictions.md` (expected 36.0, ceiling 55.2 core-hours with the head script job).
 
 **Stored values the change could move (declared by file and line; searched `tests/` whole, `tests/testdata/`
@@ -147,6 +153,26 @@ Request kit221-r2-53ac0f87: 45 files, 3 shards per side, check on both sides, he
 
 No missed prediction on R2.
 
+Head observations (R2 artifact, `logs/test-kit221-da-several-comparisons.log`): W1 with two comparisons gives
+`names(da_proteins_long)` = Protein.Ids, fdr_qvalue, raw_pvalue, log2FC, comparison, numerator, denominator,
+log2norm.1.left to log2norm.4.left, log2norm.1.right to log2norm.4.right, raw.1.left to raw.4.left, raw.1.right to
+raw.4.right, gene_names (the per-sample columns numbered, as NEWS says); W7 on head: mean log2FC of P11..P16 under
+B_vs_A = 1.0322, under C_vs_A = 0.0764 (on base 1.0322 sat under the label C_vs_A). Of the 93 digests, 20 are of the
+four mocked pre-DA plots (empty ggplots, the same digest in every case); 73 are of DA outputs.
+
+**Citation slips (implementation audit I08, 2026-11-26; recorded, nothing else edited).** (1) The header of
+`tests/testthat/test-kit221-da-several-comparisons.R` cites `kit218MockPlots :86-91`; the helper is at
+`tests/testthat/test-kit218-da-wrapper-tail.R:79-83`. It is a test comment and is left as it is (no test edit). (2) The R1
+price in the core-hours table below (2.0 expected, 6.67 ceiling) is the implementer's; the ticket's R1 row is 1.0 expected,
+4.0 ceiling. (3) `r2-predictions.md` repeats the stale "171" failing expectations of `test-workflow-saved-da.R`; the run
+gives 196 on both sides (verdict `same` held, as the R2 table above says).
+
+**NEWS refusal sentence (implementation audit I04, 2026-11-26): a DRAFT for the wording pass (VAL-41).** The clause
+"(before: 'incorrect number of dimensions')" was true only for a vector or a list. It now reads, in `NEWS.md` on the merge
+train: "(before: an error, 'incorrect number of dimensions', for a vector or a list; a one-column character matrix was
+read, by every row in `differentialAbundanceAnalysis()` and by its first value in `protein_deAnalysisWrapperFunction()`)".
+A one-column character matrix, accepted before, is now refused, as VAL-193 decided. The owner sets the final wording.
+
 ## Core-hours (job minutes x 4 / 60, from the jobs' start and end times)
 
 | Run | Job minutes | Core-hours | Expected | Ceiling |
@@ -184,6 +210,19 @@ comparison per kernel call, `R/utils_workflow_dia_da.R:535-543`); the shipped wo
 (`contrasts_tbl[, 1][[1]]`). Fix 4654fd600: `R/func_prot_da_model_methods.R` check and `as.character(contrasts_tbl[[1]])`
 at `:295-302`, `contrast_tables` (`purrr::imap`) at `:443-461`, `list(contrast_tables)` at the two calls; 
 `R/func_prot_da_compat.R:32-38` (check) and `:121` (`as.character(contrasts_tbl[[1]])`).
+
+**In earlier releases.** The same pattern is in every release read: `main` 0.4.1.2 (`main:R/func_prot_da.R:4093`
+`contrasts_tbl[, 1]`, `:4119` `results[[1]]`, `:4168-4171`, `:4200-4203`, the active copy; the same in
+`main:R/func_prot_s4_objects.R:780`, `:806`; the sibling `main:R/da_analysis_function_wrapper.R:112`), the published
+v0.3.6.3 (`R/func_prot_de.R:3278`, `:3303`), v0.5.0-rc1 (`R/func_prot_da_model_methods.R:356`, `:382`;
+`R/func_prot_da_compat.R:112`) and v0.9.0 (`:295`, `:427`; compat `:115`). In each, the application's DA step called the
+method once per comparison with a one-row text data frame (`main:R/mod_prot_da.R:1153-1168`, `:1316`) and the DIA
+workbooks called the sibling once per comparison with a one-row tibble slice
+(`main:inst/workbooks/proteomics/DIA_workflow_experienced.rmd:1107-1109`): users of the application and the workbooks
+were not affected; scripted users of every release were, in the same way (by reading), the factor case included
+(`main:R/func_prot_da.R:2595`, `:2822`). The archived workbooks' fixed-name summary files, which keep only the last
+comparison, are KIT-230's, parked with the workbooks (VAL-193 (2), VAL-209). A multi-comparison result written with
+`outputDaAnalysisResults()` now fills its 'all' files with every comparison (before: the first).
 
 **What changed in results.** A scripted call with several comparisons now returns every comparison in every table and
 plot; each comparison's `log2FC`, `raw_pvalue`, `fdr_qvalue` equal those of a call with it alone (identical on the

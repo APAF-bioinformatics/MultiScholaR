@@ -391,7 +391,9 @@
    per call and is unchanged. `outputDaResultsAllContrasts()` still expects one comparison per list element.
    `differentialAbundanceAnalysis()` now also accepts a tibble (it stopped with an error before). With several
    comparisons the long table's per-sample columns are numbered rather than named by sample. Both functions now stop
-   with a clear message when `contrasts_tbl` is not a data frame (before: 'incorrect number of dimensions'), and read
+   with a clear message when `contrasts_tbl` is not a data frame (before: an error, 'incorrect number of dimensions', for
+   a vector or a list; a one-column character matrix was read, by every row in `differentialAbundanceAnalysis()` and by
+   its first value in `protein_deAnalysisWrapperFunction()`), and read
    the comparisons as text: with a comparisons column stored as a factor whose levels were not in row order,
    `differentialAbundanceAnalysis()` labelled one comparison's results with another's name (KIT-221).
  * Proteomics: the enrichment tab's 'Download All Results' now writes its archive itself. Before, it needed a separate
