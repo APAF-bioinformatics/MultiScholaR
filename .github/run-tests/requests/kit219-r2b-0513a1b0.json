@@ -1,0 +1,58 @@
+{
+  "requested_by": "KIT-219: run R2b, the correction pass: 26 affected files base against head with check, plus G0 (iii)/(iv); ceiling 816 job-minutes (54.4 core-h)",
+  "label": "KIT-219 R2b correction 0513a1b0 against tests-only a70b352c5",
+  "package_commit": "0513a1b0086ad5837ffa4286deea2e1b9954c259",
+  "base_commit": "a70b352c5128f39295cbbf695ba73ab5dee77fa4",
+  "tools_ref": "",
+  "tests": [
+    "test-kit266-limpa-combined-qc-figure.R",
+    "test-gui-entry-proteomics.R",
+    "test-kit212-da-current.R",
+    "test-workflow-gui-diagnostic.R",
+    "test-kit273-limpa-ruv-delivery.R",
+    "test-kit243-summary-current-outputs.R",
+    "test-general-filemgmt-report-helpers-shared.R",
+    "test-gui-entry-metabolomics.R",
+    "test-kit257-norm-own-files.R",
+    "test-module-ci-prot-enrich.R",
+    "test-omic-summary-module.R",
+    "test-kit271-limpa-table-name.R",
+    "test-workflow-memory-mechanism-member.R",
+    "test-omics-summary-core.R",
+    "test-kit259b-second-correction.R",
+    "test-lipid-15-summary-module-seams.R",
+    "test-workflow-omics-figures.R",
+    "test-kit207-summary-head-guard.R",
+    "test-lipid-14a-summary-module-characterization.R",
+    "test-gui-entry-transcriptomics.R",
+    "test-kit219-enrichment-files-current.R",
+    "test-prot-12-summary-module-contracts.R",
+    "test-module-ci-metab-da.R",
+    "test-gui-entry-lipidomics.R",
+    "test-metab-05-summary-module-characterization.R",
+    "test-omic-design-module.R"
+  ],
+  "shards": 3,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {
+    "test-kit266-limpa-combined-qc-figure.R": 66
+  },
+  "extra_packages": [],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": true,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-219/g0b.R",
+      "args": [],
+      "env": {},
+      "out": "docs/qa/workflow-execution/kit/kit-219/g0b-out",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 45
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
