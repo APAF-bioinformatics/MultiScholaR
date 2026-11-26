@@ -599,7 +599,9 @@ writeIntegrationInput <- function(dir, manifest, samples, matrices, features, no
             abortIntegrationInput(sprintf("the integration input could not be published at %s, and the previous input could not be restored from %s",
                 dir, previous))
         }
-        abortIntegrationInput(sprintf("the integration input could not be published at %s; the previous input is kept", dir))
+        # KIT-228 (Re-check 1 R01): a previous input is kept only when there was one; a Save removes it at its start.
+        abortIntegrationInput(if (is.null(previous)) sprintf("the integration input could not be published at %s", dir) else
+            sprintf("the integration input could not be published at %s; the previous input is kept", dir))
     }
     if (!is.null(previous) && (unlink(previous, recursive = TRUE) != 0L || file.exists(previous))) {
         cli::cli_warn(sprintf("the replaced integration input could not be removed from %s", previous))

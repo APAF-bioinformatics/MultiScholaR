@@ -244,8 +244,40 @@ workflowSummaryRecords <- function(config, workflowData) {
     !is.null(workflowData) && (is.null(config$record_class) || inherits(workflowData$state_manager, config$record_class))
 }
 
-#' Save the workflow's parameters: the final state, `study_parameters.txt` (`createWorkflowArgsFromConfig`), the analysis
-#' record, then the integration export. On an error the fallback `study_parameters.txt` is written (when absent).
+#' KIT-228 (VAL-201; DRAFT wording, VAL-41): what the user is told when the omic's earlier integration input was removed
+#' and this Save wrote no new one. `kind`: "failed" (an error or refusal, whose message is above it), "gate" (the
+#' transcriptomics RUVIII export is missing) or "no_table" (a writer or worker that wrote no input).
+#' @param omicType The omic.
+#' @param kind One of the three.
+#' @return A string.
+#' @noRd
+workflowSummaryInputRemovedText <- function(omicType, kind) {
+    folder <- sprintf("integration/%s/", omicType)
+    switch(kind,
+        gate = sprintf(paste("This omic's earlier integration input (%s) was removed because this save did not write a new",
+            "one: the RUVIII export is missing. Run the RUVIII export, then save again before integrating."), folder),
+        no_table = sprintf(paste("This omic's earlier integration input (%s) was removed, and this save did not write a new",
+            "one. Save this Summary again before integrating; if this message returns, finish the analysis first (the",
+            "integration input is written from the final normalised table)."), folder),
+        sprintf(paste("This omic's earlier integration input (%s) was removed because this save did not write a new one (the",
+            "reason is in the message above). The integration cannot use %s until this Summary is saved without errors."),
+            folder, omicType))
+}
+
+#' KIT-228 (DRAFT wording, VAL-41): the earlier integration input could not be removed at the start of the Save, and this
+#' Save wrote no new one.
+#' @param folder The omic's input folder.
+#' @return A string.
+#' @noRd
+workflowSummaryInputNotRemovedText <- function(folder) {
+    sprintf(paste("The earlier integration input at %s could not be removed. The integration may still read it, although",
+        "this save did not write it: delete that folder, or save again once it can be removed."), folder)
+}
+
+#' Save the workflow's parameters: first the omic's earlier integration input is removed (KIT-228: one removal for every
+#' way the Save can end without a new input, so the integration cannot import an input this Save did not write; a removal
+#' that fails is named and the Save goes on), then the final state, `study_parameters.txt` (`createWorkflowArgsFromConfig`),
+#' the analysis record and the integration export. On an error the fallback `study_parameters.txt` is written (when absent).
 #' @param label,description The experiment label and description.
 #' @param notify `function(message, type, duration)`.
 #' @param done `function(saved)` after the integration export: `saved` is `list(studyParamsFile, integrationFile)`.
@@ -256,16 +288,32 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
     saveRDSFn = saveRDS, catFn = cat) {
     paths <- projectDirs[[omicType]]
     catFn("SESSION SUMMARY: Starting workflow args save process\n")
+    # KIT-228: the omic's input folder (`integration/<omic>/`, where every writer puts it), whether one existed before this
+    # Save and whether its removal failed.
+    earlierDir <- paths$integration_dir %||% if (!is.null(paths$base_dir)) file.path(paths$base_dir, "integration")
+    inputFolder <- if (!is.null(earlierDir)) file.path(earlierDir, omicType)
+    earlier <- FALSE
+    removalFailed <- FALSE
+    # KIT-228 (E-5): said only when an earlier input existed and this Save ends without a new one (decided here, at the
+    # Save's end: the manifest is the input). `kind`: "failed" (an error or refusal), "gate", "no_table".
+    notifyInputRemoved <- function(kind) {
+        if (!earlier) return(invisible(NULL))
+        if (removalFailed) {
+            notify(workflowSummaryInputNotRemovedText(inputFolder), "warning", NULL)
+        } else if (!file.exists(file.path(inputFolder, INTEGRATION_INPUT_MANIFEST))) {
+            notify(workflowSummaryInputRemovedText(omicType, kind), "warning", NULL)
+        }
+        invisible(NULL)
+    }
     summaryFailed <- function(error) {
         catFn("SESSION SUMMARY ERROR:", conditionMessage(error), "\n")
         # KIT-207: the head is not the normalisation's result. Refused before anything was written: no fallback file, no
-        # "saved with warnings"; the omic's earlier integration input is removed (SD-5 (b), K061-3).
-        # KIT-212 (VAL-172 (1)): the DA shown was run on another table; refused the same way, the earlier input removed.
+        # "saved with warnings"; the omic's earlier integration input was removed at the start of the Save (SD-5 (b), K061-3;
+        # KIT-228) and the user is told.
+        # KIT-212 (VAL-172 (1)): the DA shown was run on another table; refused the same way.
         if (inherits(error, c("omic_norm_correlation_input_stale", "workflow_summary_da_stale"))) {
             notify(paste("The session could not be saved:", cli::ansi_strip(conditionMessage(error))), "error", NULL)
-            # KIT-247 (VAL-239 (iv)): the omic's folder and the top-level file the Save writes beside it.
-            tryCatch(removeOmicIntegrationInput(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType),
-                error = function(e) notify(cli::ansi_strip(conditionMessage(e)), "warning", NULL))
+            notifyInputRemoved("failed")
             failed(error)
             return(invisible(NULL))
         }
@@ -276,13 +324,6 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
             "integration_input_invalid"))) {
             notify(paste("The session could not be saved:", cli::ansi_strip(conditionMessage(error))), "error", NULL)
         }
-        # KIT-206 audit I02 (K061-3; as KIT-207 SD-5 (b)): the proteomics archive refresh refused a table that is not the
-        # normalisation tab's last result before the integration input was written; the omic's earlier input is removed.
-        if (inherits(error, "prot_norm_correlation_input_stale")) {
-            # KIT-247 (VAL-239 (iv)): the omic's folder and the top-level file the Save writes beside it.
-            tryCatch(removeOmicIntegrationInput(paths$integration_dir %||% file.path(paths$base_dir, "integration"), omicType),
-                error = function(e) notify(cli::ansi_strip(conditionMessage(e)), "warning", NULL))
-        }
         basicParamsFile <- file.path(paths$source_dir, "study_parameters.txt")
         if (!file.exists(basicParamsFile)) {
             writeLines(c("Study Parameters", "================", "", paste("Workflow Name:", label),
@@ -290,10 +331,20 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
                 paste("Error:", conditionMessage(error))), basicParamsFile)
         }
         notify("Study parameters saved with warnings", "warning", 5)
+        notifyInputRemoved("failed")
         failed(error)
         invisible(basicParamsFile)
     }
     tryCatch({
+        # KIT-228 (VAL-201): the omic's earlier integration input is removed once, here, before anything is written: every
+        # Save then either publishes a new input or leaves none, whatever ends it (a refusal, an error, the gate, a worker
+        # failure whose class is lost, an interrupted Save). A removal that fails is named and the Save goes on.
+        if (!is.null(inputFolder)) {
+            earlier <- dir.exists(inputFolder)
+            tryCatch(removeOmicIntegrationInput(earlierDir, omicType),
+                error = function(e) notify(cli::ansi_strip(conditionMessage(e)), "warning", NULL))
+            removalFailed <- dir.exists(inputFolder)
+        }
         assertWorkflowSummaryHeadFinal(workflowData, omicType)
         assertWorkflowSummaryDaCurrent(workflowData, omicType, paths)
         state <- workflowSummaryFinalState(config, workflowData, omicType, catFn)
@@ -326,6 +377,10 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
                     notify(if (is.character(written)) written else
                         workflowSummaryText(config, "integration_saved", "Saved Integration S4 Object"), "message", 5)
                 }
+                # KIT-228: no new input (the gate, a writer with no source, or a worker that wrote none): the earlier one
+                # was removed at the start; a writer that reported TRUE is judged by its manifest.
+                if (isFALSE(written)) notifyInputRemoved(if (isTRUE(attr(written, "gate"))) "gate" else "no_table") else
+                    if (!removalFailed) notifyInputRemoved("no_table")
                 notify("Study parameters saved successfully", "message", 5)
                 # KIT-216 (SD-2, SD-4): a route writer's reason the session file was not refreshed, after the success.
                 if (!is.null(attr(written, "notice_after"))) notify(attr(written, "notice_after"), "warning", NULL)
@@ -340,8 +395,8 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
 #' in-process writer (`integration$write`, or the final object's RDS).
 #' @param stateName The final state's name (the managed product's).
 #' @param object The final object (the in-process RDS's content).
-#' @param done `function(written)`: `written` is FALSE when the gate refused the write, else TRUE, or a route writer's
-#'   notice.
+#' @param done `function(written)`: `written` is FALSE when the gate refused the write (with the attribute `gate`, KIT-228:
+#'   the Save's notice names the missing export), else TRUE, or a route writer's notice.
 #' @param sourceDir The project's source directory, for a route writer (KIT-108 W4: proteomics' native archive).
 #' @noRd
 startWorkflowSummaryIntegrationExport <- function(config, workflowData, omicType, path, stateName, object, notify, done,
@@ -352,7 +407,7 @@ startWorkflowSummaryIntegrationExport <- function(config, workflowData, omicType
     if (is.function(requires)) requires <- requires(workflowData)
     if (!is.null(requires) && is.null(workflowData$state_manager$.context$snapshot$exports[[requires]])) {
         notify(integration$missing_message, "warning", 10)
-        return(done(FALSE))
+        return(done(structure(FALSE, gate = TRUE)))
     }
     # KIT-082: the integration object is the whole state, so a managed session's worker writes it.
     runner <- if (!is.null(integration$operation)) workflowOmicsManagedActions(omicType)

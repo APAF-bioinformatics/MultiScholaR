@@ -1,0 +1,225 @@
+kit228-integration-input-refused-save: ..1...KIT-228 E4 first proteomics	folder=TRUE	files=features_proteomics.parquet:a09eee373cee,integration_input.json:1972eb6dc430,matrix_proteomics.parquet:ba9eff42048f,samples.parquet:2f07ef3fbb64	done=1	failed=	notes=[message] Saved Integration input | [message] Study parameters saved successfully
+..KIT-228 G1 again proteomics	folder=TRUE	files=features_proteomics.parquet:a09eee373cee,integration_input.json:1972eb6dc430,matrix_proteomics.parquet:ba9eff42048f,samples.parquet:2f07ef3fbb64	done=1	failed=	notes=[message] Saved Integration input | [message] Study parameters saved successfully
+....KIT-228 E4 proteomics	folder=TRUE	files=features_proteomics.parquet:a09eee373cee,integration_input.json:1972eb6dc430,matrix_proteomics.parquet:ba9eff42048f,samples.parquet:2f07ef3fbb64	done=0	failed=simpleError	notes=[warning] Study parameters saved with warnings
+KIT-228 E4 proteomics	manifest_sha_before=e2ae4d2c67c13e089ad49f9167d68c20caddca69ba8e352231c0130c62d9c61c	after=e2ae4d2c67c13e089ad49f9167d68c20caddca69ba8e352231c0130c62d9c61c
+23...KIT-228 G4 proteomics	folder=FALSE	files=<none>	done=0	failed=simpleError	notes=[warning] Study parameters saved with warnings
+..KIT-228 G3 first proteomics	folder=TRUE	files=features_proteomics.parquet:a09eee373cee,integration_input.json:1972eb6dc430,matrix_proteomics.parquet:ba9eff42048f,samples.parquet:2f07ef3fbb64	done=1	failed=	notes=[message] Saved Integration input | [message] Study parameters saved successfully
+..KIT-228 G3 proteomics	folder=TRUE	files=features_proteomics.parquet:a09eee373cee,integration_input.json:1972eb6dc430,matrix_proteomics.parquet:ba9eff42048f,samples.parquet:2f07ef3fbb64	done=0	failed=simpleError	notes=[warning] Study parameters saved with warnings
+45..::notice title=INFO::--- Processing setup for omic type: transcriptomics ---
+::notice title=INFO::Ensured omic-specific data directory exists: /tmp/RtmpxJhcmY/file4b9a7bfaccaf/project/kit097/data/transcriptomics
+::notice title=INFO::Ensured timestamped directory exists: /tmp/RtmpxJhcmY/file4b9a7bfaccaf/project/kit097/results/transcriptomics/publication_graphs/filtering_qc/20261126_073012
+::notice title=INFO::Creating directory structure for 'transcriptomics'...
+::warning title=WARN::Source script directory not found for transcriptomics: /tmp/RtmpxJhcmY/file4b9a7bfaccaf/project/kit097/scripts/transcriptomics. No scripts copied.
+::notice title=INFO::Stored paths for transcriptomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+calcNormFactors has been renamed to normLibSizes
+.KIT-228 E1 first transcriptomics	folder=TRUE	files=corrected_transcriptomics.parquet:8602e821745d,features_transcriptomics.parquet:c7c540f0c82a,integration_input.json:cc57a3bd9e0f,matrix_transcriptomics.parquet:1a0375fa2a00,removed_transcriptomics.parquet:c64be9c828c5,samples.parquet:6e33aa969dbb	done=1	failed=	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+..KIT-228 G1 again transcriptomics	folder=TRUE	files=corrected_transcriptomics.parquet:8602e821745d,features_transcriptomics.parquet:c7c540f0c82a,integration_input.json:cc57a3bd9e0f,matrix_transcriptomics.parquet:1a0375fa2a00,removed_transcriptomics.parquet:c64be9c828c5,samples.parquet:6e33aa969dbb	done=1	failed=	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+....::notice title=INFO::Removed the earlier run's files: /tmp/RtmpxJhcmY/file4b9a7bfaccaf/project/kit097/results/transcriptomics/publication_graphs/canonical_correlation_panels.png, /tmp/RtmpxJhcmY/file4b9a7bfaccaf/project/kit097/results/transcriptomics/publication_graphs/canonical_correlation_panels.pdf, /tmp/RtmpxJhcmY/file4b9a7bfaccaf/project/kit097/results/transcriptomics/publication_graphs/canonical_correlation_optimization_summary.xlsx
+..KIT-228 E1 transcriptomics	folder=TRUE	files=corrected_transcriptomics.parquet:8602e821745d,features_transcriptomics.parquet:c7c540f0c82a,integration_input.json:cc57a3bd9e0f,matrix_transcriptomics.parquet:1a0375fa2a00,removed_transcriptomics.parquet:c64be9c828c5,samples.parquet:6e33aa969dbb	done=0	failed=integration_input_invalid	notes=[error] The session could not be saved: the accepted RUVIII export was made from an earlier RUV step: run the export again, then save again | [warning] Study parameters saved with warnings
+KIT-228 E1 transcriptomics	manifest_sha_before=1ed4dbab903fe6a056d95200eb0a6aecbcaee2cfa881c877925d6806a6313c7a	after=6699936cf601e24df74a5a8b741093067f09fa86b5947a8a19920264c2350390
+67.::notice title=INFO::--- Processing setup for omic type: transcriptomics ---
+::notice title=INFO::Ensured omic-specific data directory exists: /tmp/RtmpxJhcmY/file4b9a62bc66db/project/kit097/data/transcriptomics
+::notice title=INFO::Ensured timestamped directory exists: /tmp/RtmpxJhcmY/file4b9a62bc66db/project/kit097/results/transcriptomics/publication_graphs/filtering_qc/20261126_073040
+::notice title=INFO::Creating directory structure for 'transcriptomics'...
+::warning title=WARN::Source script directory not found for transcriptomics: /tmp/RtmpxJhcmY/file4b9a62bc66db/project/kit097/scripts/transcriptomics. No scripts copied.
+::notice title=INFO::Stored paths for transcriptomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+calcNormFactors has been renamed to normLibSizes
+KIT-228 E2 first transcriptomics	folder=TRUE	files=features_transcriptomics.parquet:c7c540f0c82a,integration_input.json:6d4b29fcb2eb,matrix_transcriptomics.parquet:1a0375fa2a00,samples.parquet:6e33aa969dbb	done=1	failed=	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+....KIT-228 E2 transcriptomics	folder=TRUE	files=features_transcriptomics.parquet:c7c540f0c82a,integration_input.json:6d4b29fcb2eb,matrix_transcriptomics.parquet:1a0375fa2a00,samples.parquet:6e33aa969dbb	done=1	failed=	notes=[warning] The integration export needs the RUVIII export: run it in the panel above, then save again. | [message] Study parameters saved successfully
+KIT-228 E2 transcriptomics	manifest_sha_before=0f431b6bbb5ca300ad5303081380cb432be84eb0ae1f121e8422fbb2536254ef	after=0f431b6bbb5ca300ad5303081380cb432be84eb0ae1f121e8422fbb2536254ef
+89...KIT-228 G4 transcriptomics	folder=FALSE	files=<none>	done=1	failed=	notes=[warning] The integration export needs the RUVIII export: run it in the panel above, then save again. | [message] Study parameters saved successfully
+...::notice title=INFO::--- Processing setup for omic type: transcriptomics ---
+::notice title=INFO::Ensured omic-specific data directory exists: /tmp/RtmpxJhcmY/file4b9a914a528/project/kit097/data/transcriptomics
+::notice title=INFO::Ensured timestamped directory exists: /tmp/RtmpxJhcmY/file4b9a914a528/project/kit097/results/transcriptomics/publication_graphs/filtering_qc/20261126_073046
+::notice title=INFO::Creating directory structure for 'transcriptomics'...
+::warning title=WARN::Source script directory not found for transcriptomics: /tmp/RtmpxJhcmY/file4b9a914a528/project/kit097/scripts/transcriptomics. No scripts copied.
+::notice title=INFO::Stored paths for transcriptomics.
+::notice title=INFO::--- Directory Structure Setup Complete ---
+calcNormFactors has been renamed to normLibSizes
+KIT-228 E5 first transcriptomics	folder=TRUE	files=features_transcriptomics.parquet:c7c540f0c82a,integration_input.json:50076c3e9d96,matrix_transcriptomics.parquet:1a0375fa2a00,samples.parquet:6e33aa969dbb	done=1	failed=	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+..KIT-228 E5 transcriptomics	folder=TRUE	files=features_transcriptomics.parquet:c7c540f0c82a,integration_input.json:50076c3e9d96,matrix_transcriptomics.parquet:1a0375fa2a00,samples.parquet:6e33aa969dbb	done=0	failed=simpleError	notes=[warning] Study parameters saved with warnings
+KIT-228 E5 transcriptomics	manifest_sha_before=24ebadf870b6a84d0e554700cf000ed898a0f8cf4e1dd530ea6d0d2c738e170a	after=24ebadf870b6a84d0e554700cf000ed898a0f8cf4e1dd530ea6d0d2c738e170a
+...abKIT-228 E6 first transcriptomics	folder=TRUE	files=features_transcriptomics.parquet:c7c540f0c82a,integration_input.json:50076c3e9d96,matrix_transcriptomics.parquet:1a0375fa2a00,samples.parquet:6e33aa969dbb	done=1	failed=	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+..KIT-228 E6 transcriptomics	folder=TRUE	files=features_transcriptomics.parquet:c7c540f0c82a,integration_input.json:50076c3e9d96,matrix_transcriptomics.parquet:1a0375fa2a00,samples.parquet:6e33aa969dbb	done=0	failed=	notes=
+c..::notice title=INFO::Applying between-sample normalization method: quantile
+::notice title=INFO::Between-sample normalization process finished for all assays.
+..::notice title=INFO::Calculating Pearson correlations per sample pair...
+.::notice title=INFO::   Expression matrix: 514 lipids x 12 samples
+::notice title=INFO::   design_m dims = 12 x 2
+::notice title=INFO::   data_subset dims = 514 x 12
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupB-groupA
+::notice title=INFO::      Extracted 514 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::--- Entering createLipidDaResultsLongFormat ---
+::notice title=INFO::   lfc_qval_tbl: 514 rows
+::notice title=INFO::   expr_matrix: 514 lipids x 12 samples
+::notice title=INFO::   intensity_long: 6168 rows
+::notice title=INFO::   intensity_wide: 514 lipids x 13 columns
+::notice title=INFO::   Processing 1 contrasts: groupB-groupA
+::notice title=INFO::   Final da_results_long: 514 rows x 29 columns
+::notice title=INFO::--- Exiting createLipidDaResultsLongFormat ---
+KIT-228 E3 first lipidomics	folder=TRUE	files=features_lipidomics_LCMS_Pos.parquet:f15d30c46579,integration_input.json:236706a347bf,matrix_lipidomics_LCMS_Pos.parquet:e72b3464b224,samples.parquet:dbaeabb96655	done=1	failed=	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+..KIT-228 G1 again lipidomics	folder=TRUE	files=features_lipidomics_LCMS_Pos.parquet:f15d30c46579,integration_input.json:236706a347bf,matrix_lipidomics_LCMS_Pos.parquet:e72b3464b224,samples.parquet:dbaeabb96655	done=1	failed=	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+....KIT-228 E3 lipidomics	folder=TRUE	files=features_lipidomics_LCMS_Pos.parquet:f15d30c46579,integration_input.json:236706a347bf,matrix_lipidomics_LCMS_Pos.parquet:e72b3464b224,samples.parquet:dbaeabb96655	done=0	failed=integration_input_invalid	notes=[error] The session could not be saved: injected | [warning] Study parameters saved with warnings
+KIT-228 E3 lipidomics	manifest_sha_before=c45c47ce9a485f639584fe537f3045fac6b09076126876fff8e819ca3aff2993	after=a68e71722e0c0951252cb61423a2fc935fdc48b5205404be7048b8e5a444b686
+de.KIT-228 E5 first lipidomics	folder=TRUE	files=features_lipidomics_LCMS_Pos.parquet:f15d30c46579,integration_input.json:236706a347bf,matrix_lipidomics_LCMS_Pos.parquet:e72b3464b224,samples.parquet:dbaeabb96655	done=1	failed=	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+..KIT-228 E5 lipidomics	folder=TRUE	files=features_lipidomics_LCMS_Pos.parquet:f15d30c46579,integration_input.json:236706a347bf,matrix_lipidomics_LCMS_Pos.parquet:e72b3464b224,samples.parquet:dbaeabb96655	done=0	failed=simpleError	notes=[warning] Study parameters saved with warnings
+...fgKIT-228 E6 first lipidomics	folder=TRUE	files=features_lipidomics_LCMS_Pos.parquet:f15d30c46579,integration_input.json:236706a347bf,matrix_lipidomics_LCMS_Pos.parquet:e72b3464b224,samples.parquet:dbaeabb96655	done=1	failed=	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+..KIT-228 E6 lipidomics	folder=TRUE	files=features_lipidomics_LCMS_Pos.parquet:f15d30c46579,integration_input.json:236706a347bf,matrix_lipidomics_LCMS_Pos.parquet:e72b3464b224,samples.parquet:dbaeabb96655	done=0	failed=	notes=
+h..::notice title=INFO::Reverted lipid intensity filter to lipid_normalized
+::notice title=INFO::Reverted lipid intensity filter to lipid_log2
+::notice title=INFO::Reverted lipid intensity filter to lipid_qc_complete
+.KIT-228 G2 lipidomics	folder=FALSE	files=<none>	done=0	failed=omic_norm_correlation_input_stale	notes=[error] The session could not be saved: The current table is not the result of the last normalisation: Quality Control was reverted, or the normalisation was reset, after it ran. Run the normalisation (and the correlation filter or its Skip) again, or, if you have only just pressed Reset, press Revert once in a Quality Control sub-tab; then press this button again.
+...::notice title=INFO::Applying between-sample normalization method: quantile
+::notice title=INFO::Between-sample normalization process finished for all assays.
+..::notice title=INFO::Calculating Pearson correlations per sample pair...
+.::notice title=INFO::   Expression matrix: 514 metabolites x 12 samples
+::notice title=INFO::   design_m dims = 12 x 2
+::notice title=INFO::   data_subset dims = 514 x 12
+::notice title=INFO::   Running lmFit...
+::notice title=INFO::   Creating contrast matrix...
+::notice title=INFO::   Running contrasts.fit...
+::notice title=INFO::   Running eBayes...
+::notice title=INFO::   Running standard analysis...
+::notice title=INFO::      Processing contrast: groupB-groupA
+::notice title=INFO::      Extracted 514 rows
+::notice title=INFO::      qvalue() computation successful
+::notice title=INFO::   lfc_qval_tbl: 514 rows
+::notice title=INFO::   expr_matrix: 514 metabolites x 12 samples
+KIT-228 E3 first metabolomics	folder=TRUE	files=features_metabolomics_LCMS_Pos.parquet:fcf797e3ae90,integration_input.json:ac59c7d770ac,matrix_metabolomics_LCMS_Pos.parquet:e72b3464b224,samples.parquet:dbaeabb96655	done=1	failed=	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+..KIT-228 G1 again metabolomics	folder=TRUE	files=features_metabolomics_LCMS_Pos.parquet:fcf797e3ae90,integration_input.json:ac59c7d770ac,matrix_metabolomics_LCMS_Pos.parquet:e72b3464b224,samples.parquet:dbaeabb96655	done=1	failed=	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+....KIT-228 E3 metabolomics	folder=TRUE	files=features_metabolomics_LCMS_Pos.parquet:fcf797e3ae90,integration_input.json:ac59c7d770ac,matrix_metabolomics_LCMS_Pos.parquet:e72b3464b224,samples.parquet:dbaeabb96655	done=0	failed=integration_input_invalid	notes=[error] The session could not be saved: injected | [warning] Study parameters saved with warnings
+KIT-228 E3 metabolomics	manifest_sha_before=55d67db75e1dc67dadc5ca01b6d6029f62af8ae30d777c59e447e784650824ee	after=55d67db75e1dc67dadc5ca01b6d6029f62af8ae30d777c59e447e784650824ee
+ij.KIT-228 E5 first metabolomics	folder=TRUE	files=features_metabolomics_LCMS_Pos.parquet:fcf797e3ae90,integration_input.json:ac59c7d770ac,matrix_metabolomics_LCMS_Pos.parquet:e72b3464b224,samples.parquet:dbaeabb96655	done=1	failed=	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+..KIT-228 E5 metabolomics	folder=TRUE	files=features_metabolomics_LCMS_Pos.parquet:fcf797e3ae90,integration_input.json:ac59c7d770ac,matrix_metabolomics_LCMS_Pos.parquet:e72b3464b224,samples.parquet:dbaeabb96655	done=0	failed=simpleError	notes=[warning] Study parameters saved with warnings
+...klKIT-228 E6 first metabolomics	folder=TRUE	files=features_metabolomics_LCMS_Pos.parquet:fcf797e3ae90,integration_input.json:ac59c7d770ac,matrix_metabolomics_LCMS_Pos.parquet:e72b3464b224,samples.parquet:dbaeabb96655	done=1	failed=	notes=[message] Saved Integration S4 Object | [message] Study parameters saved successfully
+..KIT-228 E6 metabolomics	folder=TRUE	files=features_metabolomics_LCMS_Pos.parquet:fcf797e3ae90,integration_input.json:ac59c7d770ac,matrix_metabolomics_LCMS_Pos.parquet:e72b3464b224,samples.parquet:dbaeabb96655	done=0	failed=	notes=
+m..::notice title=INFO::Reverted metabolite intensity filter to metab_normalized
+::notice title=INFO::Reverted metabolite intensity filter to metab_log2
+::notice title=INFO::Reverted metabolite intensity filter to metab_qc_complete
+.KIT-228 G2 metabolomics	folder=FALSE	files=<none>	done=0	failed=omic_norm_correlation_input_stale	notes=[error] The session could not be saved: The current table is not the result of the last normalisation: Quality Control was reverted, or the normalisation was reset, after it ran. Run the normalisation (and the correlation filter or its Skip) again, or, if you have only just pressed Reset, press Revert once in a Quality Control sub-tab; then press this button again.
+...
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure ('test-kit228-integration-input-refused-save.R:408:5'): KIT-228 R0
+Expected `grepl("kept", message, fixed = TRUE)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+the integration input could not be published at /tmp/RtmpxJhcmY/file4b9a15d61c3c/integration/proteomics; the previous input is kept
+
+── 2. Failure ('test-kit228-integration-input-refused-save.R:443:5'): KIT-228 E4
+Expected `dir.exists(folder)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+E4 | notes: [warning] Study parameters saved with warnings
+Backtrace:
+    ▆
+ 1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:443:5
+ 2.   └─testthat::expect_false(dir.exists(folder), info = info) at test-kit228-integration-input-refused-save.R:318:5
+
+── 3. Failure ('test-kit228-integration-input-refused-save.R:443:5'): KIT-228 E4
+Expected `sum(rec$notes == paste0("[warning] ", text))` to be identical to 1L.
+Differences:
+  `actual`: 0
+`expected`: 1
+
+E4 | notes: [warning] Study parameters saved with warnings
+Backtrace:
+    ▆
+ 1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:443:5
+ 2.   └─testthat::expect_identical(...) at test-kit228-integration-input-refused-save.R:319:5
+
+── 4. Failure ('test-kit228-integration-input-refused-save.R:461:5'): KIT-228 E4
+Expected `any(...)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+
+G3 | notes: [warning] Study parameters saved with warnings
+
+── 5. Failure ('test-kit228-integration-input-refused-save.R:463:5'): KIT-228 E4
+Expected `sum(rec$notes == paste0("[warning] ", k228Texts$not_removed(folder)))` to be identical to 1L.
+Differences:
+  `actual`: 0
+`expected`: 1
+
+G3 | notes: [warning] Study parameters saved with warnings
+
+── 6. Failure ('test-kit228-integration-input-refused-save.R:496:5'): KIT-228 E1
+Expected `dir.exists(folder)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+E1 | notes: [error] The session could not be saved: the accepted RUVIII export was made from an earlier RUV step: run the export again, then save again | [warning] Study parameters saved with warnings
+Backtrace:
+    ▆
+ 1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:496:5
+ 2.   └─testthat::expect_false(dir.exists(folder), info = info) at test-kit228-integration-input-refused-save.R:318:5
+
+── 7. Failure ('test-kit228-integration-input-refused-save.R:496:5'): KIT-228 E1
+Expected `sum(rec$notes == paste0("[warning] ", text))` to be identical to 1L.
+Differences:
+  `actual`: 0
+`expected`: 1
+
+E1 | notes: [error] The session could not be saved: the accepted RUVIII export was made from an earlier RUV step: run the export again, then save again | [warning] Study parameters saved with warnings
+Backtrace:
+    ▆
+ 1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:496:5
+ 2.   └─testthat::expect_identical(...) at test-kit228-integration-input-refused-save.R:319:5
+
+── 8. Failure ('test-kit228-integration-input-refused-save.R:516:5'): KIT-228 E2
+Expected `dir.exists(folder)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+E2 | notes: [warning] The integration export needs the RUVIII export: run it in the panel above, then save again. | [message] Study parameters saved successfully
+Backtrace:
+    ▆
+ 1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:516:5
+ 2.   └─testthat::expect_false(dir.exists(folder), info = info) at test-kit228-integration-input-refused-save.R:318:5
+
+── 9. Failure ('test-kit228-integration-input-refused-save.R:516:5'): KIT-228 E2
+Expected `sum(rec$notes == paste0("[warning] ", text))` to be identical to 1L.
+Differences:
+  `actual`: 0
+`expected`: 1
+
+E2 | notes: [warning] The integration export needs the RUVIII export: run it in the panel above, then save again. | [message] Study parameters saved successfully
+Backtrace:
+    ▆
+ 1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:516:5
+ 2.   └─testthat::expect_identical(...) at test-kit228-integration-input-refused-save.R:319:5
+
+── 10. Failure ('test-kit228-integration-input-refused-save.R:542:5'): KIT-228 E
+Expected `dir.exists(folder)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+E5 transcriptomics | notes: [warning] Study parameters saved with warnings
+Backtrace:
+    ▆
+ 1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:542:5
+ 2.   └─testthat::expect_false(dir.exists(folder), info = info) at test-kit228-integration-input-refused-save.R:318:5
+  ... and 12 more
+
+
+Maximum number of 10 failures reached, some test results may be missing.
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+
+COUNTS test-kit228-integration-input-refused-save.R pass 95 fail 22 error 0 skip 0 warn 0

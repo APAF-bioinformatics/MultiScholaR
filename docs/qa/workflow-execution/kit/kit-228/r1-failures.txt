@@ -1,0 +1,306 @@
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 R01: a publish that fails with no previous input does not say a previous input is kept
+kind: failure
+message:
+  Expected `grepl("kept", message, fixed = TRUE)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  the integration input could not be published at /tmp/RtmpxJhcmY/file4b9a15d61c3c/integration/proteomics; the previous input is kept
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E4, G1, G3, G4: proteomics, a generic failure removes the earlier input; a removal that fails is named
+kind: failure
+message:
+  Expected `dir.exists(folder)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E4 | notes: [warning] Study parameters saved with warnings
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:443:5
+   2.   └─testthat::expect_false(dir.exists(folder), info = info) at test-kit228-integration-input-refused-save.R:318:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E4, G1, G3, G4: proteomics, a generic failure removes the earlier input; a removal that fails is named
+kind: failure
+message:
+  Expected `sum(rec$notes == paste0("[warning] ", text))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  E4 | notes: [warning] Study parameters saved with warnings
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:443:5
+   2.   └─testthat::expect_identical(...) at test-kit228-integration-input-refused-save.R:319:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E4, G1, G3, G4: proteomics, a generic failure removes the earlier input; a removal that fails is named
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  G3 | notes: [warning] Study parameters saved with warnings
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E4, G1, G3, G4: proteomics, a generic failure removes the earlier input; a removal that fails is named
+kind: failure
+message:
+  Expected `sum(rec$notes == paste0("[warning] ", k228Texts$not_removed(folder)))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  G3 | notes: [warning] Study parameters saved with warnings
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E1: transcriptomics, an RUV step run again with no new export: the Save is refused and removes the earlier input
+kind: failure
+message:
+  Expected `dir.exists(folder)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E1 | notes: [error] The session could not be saved: the accepted RUVIII export was made from an earlier RUV step: run the export again, then save again | [warning] Study parameters saved with warnings
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:496:5
+   2.   └─testthat::expect_false(dir.exists(folder), info = info) at test-kit228-integration-input-refused-save.R:318:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E1: transcriptomics, an RUV step run again with no new export: the Save is refused and removes the earlier input
+kind: failure
+message:
+  Expected `sum(rec$notes == paste0("[warning] ", text))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  E1 | notes: [error] The session could not be saved: the accepted RUVIII export was made from an earlier RUV step: run the export again, then save again | [warning] Study parameters saved with warnings
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:496:5
+   2.   └─testthat::expect_identical(...) at test-kit228-integration-input-refused-save.R:319:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E2, G4: transcriptomics, the RUVIII export missing at the gate removes the earlier input; with none, nothing is said
+kind: failure
+message:
+  Expected `dir.exists(folder)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E2 | notes: [warning] The integration export needs the RUVIII export: run it in the panel above, then save again. | [message] Study parameters saved successfully
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:516:5
+   2.   └─testthat::expect_false(dir.exists(folder), info = info) at test-kit228-integration-input-refused-save.R:318:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E2, G4: transcriptomics, the RUVIII export missing at the gate removes the earlier input; with none, nothing is said
+kind: failure
+message:
+  Expected `sum(rec$notes == paste0("[warning] ", text))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  E2 | notes: [warning] The integration export needs the RUVIII export: run it in the panel above, then save again. | [message] Study parameters saved successfully
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:516:5
+   2.   └─testthat::expect_identical(...) at test-kit228-integration-input-refused-save.R:319:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E5, E6: transcriptomics on the managed route: a failure that lost its class, and a Save that never ends, remove the earlier input
+kind: failure
+message:
+  Expected `dir.exists(folder)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E5 transcriptomics | notes: [warning] Study parameters saved with warnings
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:542:5
+   2.   └─testthat::expect_false(dir.exists(folder), info = info) at test-kit228-integration-input-refused-save.R:318:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E5, E6: transcriptomics on the managed route: a failure that lost its class, and a Save that never ends, remove the earlier input
+kind: failure
+message:
+  Expected `sum(rec$notes == paste0("[warning] ", text))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  E5 transcriptomics | notes: [warning] Study parameters saved with warnings
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:542:5
+   2.   └─testthat::expect_identical(...) at test-kit228-integration-input-refused-save.R:319:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E5, E6: transcriptomics on the managed route: a failure that lost its class, and a Save that never ends, remove the earlier input
+kind: failure
+message:
+  Expected `dir.exists(folder)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E6 transcriptomics | notes: 
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E3, E5, E6, G1, G2, G4: lipid a Save that writes no new input removes the earlier one
+kind: failure
+message:
+  Expected `dir.exists(folder)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E3 lipid | notes: [error] The session could not be saved: injected | [warning] Study parameters saved with warnings
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:574:9
+   2.   └─testthat::expect_false(dir.exists(folder), info = info) at test-kit228-integration-input-refused-save.R:318:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E3, E5, E6, G1, G2, G4: lipid a Save that writes no new input removes the earlier one
+kind: failure
+message:
+  Expected `sum(rec$notes == paste0("[warning] ", text))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  E3 lipid | notes: [error] The session could not be saved: injected | [warning] Study parameters saved with warnings
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:574:9
+   2.   └─testthat::expect_identical(...) at test-kit228-integration-input-refused-save.R:319:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E3, E5, E6, G1, G2, G4: lipid a Save that writes no new input removes the earlier one
+kind: failure
+message:
+  Expected `dir.exists(folder)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E5 lipid | notes: [warning] Study parameters saved with warnings
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:581:9
+   2.   └─testthat::expect_false(dir.exists(folder), info = info) at test-kit228-integration-input-refused-save.R:318:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E3, E5, E6, G1, G2, G4: lipid a Save that writes no new input removes the earlier one
+kind: failure
+message:
+  Expected `sum(rec$notes == paste0("[warning] ", text))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  E5 lipid | notes: [warning] Study parameters saved with warnings
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:581:9
+   2.   └─testthat::expect_identical(...) at test-kit228-integration-input-refused-save.R:319:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E3, E5, E6, G1, G2, G4: lipid a Save that writes no new input removes the earlier one
+kind: failure
+message:
+  Expected `dir.exists(folder)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E6 lipid | notes: 
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E3, E5, E6, G1, G2, G4: metab a Save that writes no new input removes the earlier one
+kind: failure
+message:
+  Expected `dir.exists(folder)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E3 metab | notes: [error] The session could not be saved: injected | [warning] Study parameters saved with warnings
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:574:9
+   2.   └─testthat::expect_false(dir.exists(folder), info = info) at test-kit228-integration-input-refused-save.R:318:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E3, E5, E6, G1, G2, G4: metab a Save that writes no new input removes the earlier one
+kind: failure
+message:
+  Expected `sum(rec$notes == paste0("[warning] ", text))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  E3 metab | notes: [error] The session could not be saved: injected | [warning] Study parameters saved with warnings
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:574:9
+   2.   └─testthat::expect_identical(...) at test-kit228-integration-input-refused-save.R:319:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E3, E5, E6, G1, G2, G4: metab a Save that writes no new input removes the earlier one
+kind: failure
+message:
+  Expected `dir.exists(folder)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E5 metab | notes: [warning] Study parameters saved with warnings
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:581:9
+   2.   └─testthat::expect_false(dir.exists(folder), info = info) at test-kit228-integration-input-refused-save.R:318:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E3, E5, E6, G1, G2, G4: metab a Save that writes no new input removes the earlier one
+kind: failure
+message:
+  Expected `sum(rec$notes == paste0("[warning] ", text))` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  E5 metab | notes: [warning] Study parameters saved with warnings
+trace (first lines):
+      ▆
+   1. └─k228ExpectRemoved(...) at test-kit228-integration-input-refused-save.R:581:9
+   2.   └─testthat::expect_identical(...) at test-kit228-integration-input-refused-save.R:319:5
+
+file: test-kit228-integration-input-refused-save.R
+test: KIT-228 E3, E5, E6, G1, G2, G4: metab a Save that writes no new input removes the earlier one
+kind: failure
+message:
+  Expected `dir.exists(folder)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  E6 metab | notes: 
+

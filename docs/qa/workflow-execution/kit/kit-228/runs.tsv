@@ -1,1 +1,2 @@
 run_id	commit	purpose	minutes	result
+45774845920	96f32e917	R1 tests-only; 22 of 22 predicted failures (R01 1, prot 4, trx E1 2, E2 2, trx managed 3, lipid 5, metab 5); 95 passed; no instrument defect; E1 manifest sha before/after differs only because G1 re-saved between (evidence note)	8.2 (job 8.2 + overhead; 0.6 core-h)	failed as predicted

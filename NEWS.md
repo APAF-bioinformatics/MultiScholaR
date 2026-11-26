@@ -652,6 +652,14 @@
    written the earlier RUVIII export as transcriptomics_normalized_data.tsv: run the RUVIII export and save again
    (KIT-207).
 
+ * Summary, every omic: a Save that does not write a new integration input (refused for any reason, failed, interrupted,
+   or transcriptomics without its RUVIII export) now removes the omic's earlier input (integration/<omic>/) and says
+   so, so the integration cannot import an input the last Save did not write. Before, only a Save refused for its table
+   removed it. An input written by a successful Save stays until the next Save: changes made after it, in the same or a
+   later session, reach the integration only when the Summary is saved again; the 'Saved' column of the integration's
+   input list shows when each input was written. A failed publish of a new input no longer says that a previous input
+   is kept when there was none (KIT-228).
+
  * Transcriptomics: the differential analysis now runs after a normalisation without removal of unwanted variation (the
    RUV option 'No removal of unwanted variation', or an RUV design whose rule finds no unwanted factor, k = 0). The
    model is then ~ 0 + group, tested with the edgeR quasi-likelihood F-test. Before, the Differential Analysis tab
