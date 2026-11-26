@@ -1,0 +1,29 @@
+{
+  "requested_by": "KIT-266 M1: controller memory at the limpa_composite delivery, worker in a child process, fresh controller, controls in the job; declaration docs/qa/workflow-execution/kit/kit-266/m1/declaration.md; ceiling 60 job-minutes; decides A5a",
+  "label": "KIT-266 M1 on kit-266 7da7df16",
+  "package_commit": "7da7df169dc7f4545007b117880299bcc99e934a",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-266/m1/m1.R",
+      "args": [],
+      "env": {
+        "NOT_CRAN": "true"
+      },
+      "out": "kit266-m1",
+      "out_pattern": "\\.(txt|log|png)$",
+      "timeout_minutes": 55
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
