@@ -1,3 +1,10 @@
+# Pooled view of M2 (hand-tallied from results/m2-cells.tsv by tables-k262.py; NOT an output of score-k262.R)
+
+**Caveat (audit M02).** These rows pool F = 300 with F = 1,000 (and 2 with 3 groups). The two feature counts give opposite outcomes at the same
+complete-feature share (n = 96, MCAR 1 %: P without RUV in 66 of 80 at F = 300 and 0 of 80 at F = 1,000, complete share 0.380 and 0.382). The number of
+complete features (share x F) places a data set; the share alone does not. Use `m2-cells.tsv` per cell. **Rows for abundance-dependent (AD)
+missingness carry the M01 caveat** (the 2 % floor values are set before the mask; see outcome.md).
+
 | n | missingness | data sets | P no RUV | C1 no RUV | C2 no RUV | no-RUV sets: completeness only | no-RUV sets: rescued by C1 | no-RUV sets: no R5 | R5 rows | R5 rows cap side | R5 rows completeness | C1 differs among P-with-RUV |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 6 | none | 160 | 0 (0%) | 0 (0%) | 0 (0%) | 0 | 0 | 0 | 0 | 0 | 0 | 0 of 160 |
