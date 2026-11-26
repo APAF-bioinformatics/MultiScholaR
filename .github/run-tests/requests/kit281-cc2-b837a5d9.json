@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-281 counted job C2 r 559-715; G3 table sha256 9568f599fccf8544; ceiling 74.67 (VAL-371); declaration-counted.md on kit-281; blind, scored once",
+  "label": "KIT-281 counted C2 b837a5d9",
+  "package_commit": "b837a5d9a4174b39948e8ad736c9f2ac7a267b4b",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-281/sim-k281.R",
+      "args": [
+        "k281-out",
+        "559",
+        "715"
+      ],
+      "env": {
+        "K211_CELLS": "C"
+      },
+      "out": "k281-out",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 70
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
