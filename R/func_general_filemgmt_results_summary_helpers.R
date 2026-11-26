@@ -341,6 +341,12 @@ copyToResultsSummary <- function(omic_type,
                 dest = "QC_figures", is_dir = FALSE,
                 display_name = "Correlation Filtered Plots")))
         }
+        # KIT-259 third pass (VAL-307, C01): the combined figure's list of replaced panels, which the report reads.
+        composite_placeholders <- file.path(current_paths$feature_qc_dir, "proteomics_composite_QC_figure.placeholders")
+        if (file.exists(composite_placeholders)) {
+            files_to_copy <- c(files_to_copy, list(list(source = composite_placeholders, dest = "QC_figures", is_dir = FALSE,
+                display_name = "Composite QC (replaced panels)", new_name = paste0(omic_type, "_composite_QC_figure.placeholders"))))
+        }
         files_to_copy <- c(files_to_copy, list(
             list(source = composite_pdf, dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PDF)", new_name = paste0(omic_type, "_composite_QC_figure.pdf")),
             list(source = composite_png, dest = "QC_figures", is_dir = FALSE, display_name = "Composite QC (PNG)", new_name = paste0(omic_type, "_composite_QC_figure.png")),

@@ -1,0 +1,28 @@
+case	write	lines	l_lines	steps_changed	captures	l_text
+lipid_refusals	NA	NA	NA			ERROR: rlang_error `teardown_env()` has not been initialized. ℹ This is an internal error that was detected in the testthat package.   Please report it at <https://github.com/r-lib/testthat/issues> with a reprex   (<https://tidyverse.org/help/>) and the full backtrace.
+lipid_main	NA	NA	NA			ERROR: rlang_error `teardown_env()` has not been initialized. ℹ This is an internal error that was detected in the testthat package.   Please report it at <https://github.com/r-lib/testthat/issues> with a reprex   (<https://tidyverse.org/help/>) and the full backtrace.
+lipid_variants	NA	NA	NA			ERROR: rlang_error `teardown_env()` has not been initialized. ℹ This is an internal error that was detected in the testthat package.   Please report it at <https://github.com/r-lib/testthat/issues> with a reprex   (<https://tidyverse.org/help/>) and the full backtrace.
+lipid_required_missing	NA	NA	NA			ERROR: rlang_error `teardown_env()` has not been initialized. ℹ This is an internal error that was detected in the testthat package.   Please report it at <https://github.com/r-lib/testthat/issues> with a reprex   (<https://tidyverse.org/help/>) and the full backtrace.
+lipid_github_fallback	NA	NA	NA			ERROR: rlang_error `teardown_env()` has not been initialized. ℹ This is an internal error that was detected in the testthat package.   Please report it at <https://github.com/r-lib/testthat/issues> with a reprex   (<https://tidyverse.org/help/>) and the full backtrace.
+lipid_managed	NA	NA	NA			ERROR: rlang_error `teardown_env()` has not been initialized. ℹ This is an internal error that was detected in the testthat package.   Please report it at <https://github.com/r-lib/testthat/issues> with a reprex   (<https://tidyverse.org/help/>) and the full backtrace.
+lipid_global_another	NA	NA	NA			ERROR: rlang_error `teardown_env()` has not been initialized. ℹ This is an internal error that was detected in the testthat package.   Please report it at <https://github.com/r-lib/testthat/issues> with a reprex   (<https://tidyverse.org/help/>) and the full backtrace.
+metab_refusals	NA	NA	NA			ERROR: rlang_error `teardown_env()` has not been initialized. ℹ This is an internal error that was detected in the testthat package.   Please report it at <https://github.com/r-lib/testthat/issues> with a reprex   (<https://tidyverse.org/help/>) and the full backtrace.
+metab_main	NA	NA	NA			ERROR: rlang_error `teardown_env()` has not been initialized. ℹ This is an internal error that was detected in the testthat package.   Please report it at <https://github.com/r-lib/testthat/issues> with a reprex   (<https://tidyverse.org/help/>) and the full backtrace.
+metab_variants	NA	NA	NA			ERROR: rlang_error `teardown_env()` has not been initialized. ℹ This is an internal error that was detected in the testthat package.   Please report it at <https://github.com/r-lib/testthat/issues> with a reprex   (<https://tidyverse.org/help/>) and the full backtrace.
+metab_required_missing	NA	NA	NA			ERROR: rlang_error `teardown_env()` has not been initialized. ℹ This is an internal error that was detected in the testthat package.   Please report it at <https://github.com/r-lib/testthat/issues> with a reprex   (<https://tidyverse.org/help/>) and the full backtrace.
+metab_github_fallback	NA	NA	NA			ERROR: rlang_error `teardown_env()` has not been initialized. ℹ This is an internal error that was detected in the testthat package.   Please report it at <https://github.com/r-lib/testthat/issues> with a reprex   (<https://tidyverse.org/help/>) and the full backtrace.
+metab_managed	NA	NA	NA			ERROR: rlang_error `teardown_env()` has not been initialized. ℹ This is an internal error that was detected in the testthat package.   Please report it at <https://github.com/r-lib/testthat/issues> with a reprex   (<https://tidyverse.org/help/>) and the full backtrace.
+trx_main	1	53	3	save_before_export,save	47 lines 96b3fdbde9b1bb30 | 50 lines 6309448be78f095c	  trx_ruv_grid.logcpm [input] = <HEX> ||   logcpm [input] = <HEX> ||   grid [input] = <HEX>
+trx_main	2	56	3	save_before_export,save	47 lines 96b3fdbde9b1bb30 | 50 lines 6309448be78f095c	  trx_ruv_grid.logcpm [input] = <HEX> ||   logcpm [input] = <HEX> ||   grid [input] = <HEX>
+trx_technical	0	0	0			<no study_parameters.txt written>
+trx_managed	1	56	3	save	50 lines 6309448be78f095c	  trx_ruv_grid.logcpm [input] = <HEX> ||   logcpm [input] = <HEX> ||   grid [input] = <HEX>
+prot_refusals	0	0	0	start	1 lines 55c1b3aadde3f3b7	<no study_parameters.txt written>
+prot_route_dia	1	59	0	start,save	1 lines 55c1b3aadde3f3b7 | 53 lines e784ac050188e7bb	
+prot_route_dia_limpa	1	59	0	start,save	1 lines 55c1b3aadde3f3b7 | 53 lines af0725c98c8784d4	
+prot_route_tmt	1	59	0	start,save	1 lines 55c1b3aadde3f3b7 | 53 lines cba0c0582a2307ba	
+prot_route_lfq	1	59	0	start,save	1 lines 55c1b3aadde3f3b7 | 53 lines 1b538d9f8d17648f	
+prot_stale	0	0	0	copy	1 lines 55c1b3aadde3f3b7	<no study_parameters.txt written>
+prot_owner	1	101	0	start,save	1 lines 55c1b3aadde3f3b7 | 95 lines 0d7f7ba1f81361e1	
+prot_owner_variants	1	101	0	start,save_record_fails	1 lines 55c1b3aadde3f3b7 | 95 lines 0d7f7ba1f81361e1	
+prot_native	1	101	0	start,save	1 lines 55c1b3aadde3f3b7 | 95 lines 0d7f7ba1f81361e1	
+prot_github_fallback	0	0	0	copy	1 lines 55c1b3aadde3f3b7	<no study_parameters.txt written>
