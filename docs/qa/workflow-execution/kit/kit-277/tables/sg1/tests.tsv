@@ -1,0 +1,3 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit277-resave-carried-through.R	113	0	0	17	0	1044.8	ok
+test-omics-module-globals.R	14	0	0	0	0	7.9	ok
