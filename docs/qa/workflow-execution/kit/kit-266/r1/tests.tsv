@@ -1,0 +1,4 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit266-limpa-combined-qc-figure.R	44	101	0	6	50	793.5	failed
+test-kit259b-second-correction.R	85	5	0	0	4	261.3	failed
+test-kit227-report-ruv-sentences.R	161	1	0	0	0	11.2	failed
