@@ -48,3 +48,10 @@ New lines and their predictions on the OLD code (R1c, new file only):
 - G4 (new, guard): an import with taxon 9606 and the name "Homo sapiens (human)" asks nothing and says "nothing changed":
   passes on both sides. (It found a defect in the code stage before any run: the organism rule asked on a name difference
   with an equal taxonomy id; the rule now decides by taxonomy id when the bus holds one.)
+
+## SG1 (declared before sending; code commit 53e4c745, stage filter MULTISCHOLAR_KIT277_STAGE=1)
+Files: test-kit277-resave-carried-through.R and test-omics-module-globals.R, one job. Expected: every S1 row (F1/F2 x3 lanes with
+the Copy press, F5/F6 x3, F2b, F3, F4 x2, F7) and G2 pass; S2, S3 rows are skipped; the globals test passes (no `<<-` or
+global reference added to R/mod_omic_da.R or R/mod_omic_design.R). Expected 40 job-minutes, worst case 6.67 core-hours; running
+total 10.60 + R1c worst 6.67 + SG1 worst 6.67 = 23.94 of 200.00. Decision: a failing S1 row or the globals test = stop rule 3
+(the one correction pass); S2/S3 do not start until SG1 holds.
