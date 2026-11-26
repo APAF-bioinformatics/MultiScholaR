@@ -1,0 +1,782 @@
+file: test-kit280-prot-threshold-values.R
+test: T1: rule B keeps every protein of F (the earlier rule removed P_low1)
+kind: failure
+message:
+  Expected `k280Ids(run$filtered)` to have the same values as `k280FIds`.
+  Actual: "P001", "P002", "P003", "P004", "P005", "P006", "P007", "P008", "P009", ...
+  Expected: "P001", "P002", "P003", "P004", "P005", "P006", "P007", "P008", "P009", ...
+  Absent: "P_low1"
+
+file: test-kit280-prot-threshold-values.R
+test: T1: rule B keeps every protein of F (the earlier rule removed P_low1)
+kind: failure
+message:
+  Expected `run$value$protein_count` to be identical to 40L.
+  Differences:
+    `actual`: 38
+  `expected`: 40
+
+file: test-kit280-prot-threshold-values.R
+test: T2: P_low1 reaches the DA table with a finite p value and the logFC of its own values
+kind: failure
+message:
+  Expected `nrow(row)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit280-prot-threshold-values.R
+test: T2: P_low1 reaches the DA table with a finite p value and the logFC of its own values
+kind: failure
+message:
+  Expected `row$log2FC` to equal `20.1 - 40.1/3`.
+  Differences:
+    `actual`:                 
+  `expected`: 6.73333333333333
+
+file: test-kit280-prot-threshold-values.R
+test: T2: P_low1 reaches the DA table with a finite p value and the logFC of its own values
+kind: failure
+message:
+  Expected `is.finite(row$raw_pvalue)` to be TRUE.
+  Differences:
+  `actual`:       
+  `expected`: TRUE
+
+file: test-kit280-prot-threshold-values.R
+test: T3: low_intensity_value, treated against control, is TRUE for P_low1 and P_low2 and FALSE for the other 38
+kind: failure
+message:
+  Expected `long$Protein.Ids[long$low_intensity_value %in% TRUE]` to have the same values as `c("P_low1", "P_low2")`.
+  Actual: 
+  Expected: "P_low1", "P_low2"
+  Absent: "P_low1", "P_low2"
+
+file: test-kit280-prot-threshold-values.R
+test: T3: low_intensity_value, treated against control, is TRUE for P_low1 and P_low2 and FALSE for the other 38
+kind: failure
+message:
+  Expected `sum(long$low_intensity_value %in% FALSE)` to be identical to 38L.
+  Differences:
+    `actual`:  0
+  `expected`: 38
+
+file: test-kit280-prot-threshold-values.R
+test: T3: low_intensity_value, treated against control, is TRUE for P_low1 and P_low2 and FALSE for the other 38
+kind: failure
+message:
+  Expected `nrow(long)` to be identical to 40L.
+  Differences:
+    `actual`: 38
+  `expected`: 40
+
+file: test-kit280-prot-threshold-values.R
+test: T3: low_intensity_value, treated against control, is TRUE for P_low1 and P_low2 and FALSE for the other 38
+kind: failure
+message:
+  Expected `pit$low_intensity_groups[pit$Protein.Ids == "P_low1"]` to be identical to "control".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('control')
+
+file: test-kit280-prot-threshold-values.R
+test: T3: low_intensity_value, treated against control, is TRUE for P_low1 and P_low2 and FALSE for the other 38
+kind: failure
+message:
+  Expected `pit$low_intensity_groups[pit$Protein.Ids == "P_low2"]` to be identical to "control".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('control')
+
+file: test-kit280-prot-threshold-values.R
+test: T3: low_intensity_value, treated against control, is TRUE for P_low1 and P_low2 and FALSE for the other 38
+kind: failure
+message:
+  Expected `sum(nzchar(pit$low_intensity_groups))` to be identical to 2L.
+  Differences:
+    `actual`: 0
+  `expected`: 2
+
+file: test-kit280-prot-threshold-values.R
+test: T3b: the flag reaches the DA through duplicate removal, the replicate filter, normalisation and correlation (RUV skip and RUV manual, two chains)
+kind: failure
+message:
+  Expected `"low_intensity_value" %in% names(long)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  skip
+
+file: test-kit280-prot-threshold-values.R
+test: T3b: the flag reaches the DA through duplicate removal, the replicate filter, normalisation and correlation (RUV skip and RUV manual, two chains)
+kind: failure
+message:
+  Expected `long$Protein.Ids[long$low_intensity_value %in% TRUE]` to have the same values as `c("P_low1", "P_low2")`.
+  Actual: 
+  Expected: "P_low1", "P_low2"
+  Absent: "P_low1", "P_low2"
+
+file: test-kit280-prot-threshold-values.R
+test: T3b: the flag reaches the DA through duplicate removal, the replicate filter, normalisation and correlation (RUV skip and RUV manual, two chains)
+kind: failure
+message:
+  Expected `sum(long$low_intensity_value %in% FALSE)` to be identical to 38L.
+  Differences:
+    `actual`:  0
+  `expected`: 38
+  
+  skip
+
+file: test-kit280-prot-threshold-values.R
+test: T3b: the flag reaches the DA through duplicate removal, the replicate filter, normalisation and correlation (RUV skip and RUV manual, two chains)
+kind: failure
+message:
+  Expected `"low_intensity_value" %in% names(long)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  manual
+
+file: test-kit280-prot-threshold-values.R
+test: T3b: the flag reaches the DA through duplicate removal, the replicate filter, normalisation and correlation (RUV skip and RUV manual, two chains)
+kind: failure
+message:
+  Expected `long$Protein.Ids[long$low_intensity_value %in% TRUE]` to have the same values as `c("P_low1", "P_low2")`.
+  Actual: 
+  Expected: "P_low1", "P_low2"
+  Absent: "P_low1", "P_low2"
+
+file: test-kit280-prot-threshold-values.R
+test: T3b: the flag reaches the DA through duplicate removal, the replicate filter, normalisation and correlation (RUV skip and RUV manual, two chains)
+kind: failure
+message:
+  Expected `sum(long$low_intensity_value %in% FALSE)` to be identical to 38L.
+  Differences:
+    `actual`:  0
+  `expected`: 38
+  
+  manual
+
+file: test-kit280-prot-threshold-values.R
+test: T3c: the threshold is taken from the pre-filter table (the filter removes the protein holding the minimum)
+kind: failure
+message:
+  Expected `pit$low_intensity_groups[pit$Protein.Ids == "P_a"]` to be identical to "control".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('control')
+
+file: test-kit280-prot-threshold-values.R
+test: T3c: the threshold is taken from the pre-filter table (the filter removes the protein holding the minimum)
+kind: failure
+message:
+  Expected `pit$low_intensity_groups[pit$Protein.Ids == "P_b"]` to be identical to "".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('')
+
+file: test-kit280-prot-threshold-values.R
+test: T3c: the threshold is taken from the pre-filter table (the filter removes the protein holding the minimum)
+kind: failure
+message:
+  Expected `sum(nzchar(pit$low_intensity_groups, keepNA = NA), na.rm = TRUE)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+
+file: test-kit280-prot-threshold-values.R
+test: T3d: digit-leading group labels (1h, 2h) are matched by the design's label in the comparison
+kind: failure
+message:
+  Expected `pit$low_intensity_groups[pit$Protein.Ids == "P_low1"]` to be identical to "1h".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('1h')
+
+file: test-kit280-prot-threshold-values.R
+test: T3d: digit-leading group labels (1h, 2h) are matched by the design's label in the comparison
+kind: failure
+message:
+  Expected `pit$low_intensity_groups[pit$Protein.Ids == "P_low2"]` to be identical to "2h".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('2h')
+
+file: test-kit280-prot-threshold-values.R
+test: T3d: digit-leading group labels (1h, 2h) are matched by the design's label in the comparison
+kind: failure
+message:
+  Expected `long$Protein.Ids[long$low_intensity_value %in% TRUE]` to have the same values as `c("P_low1", "P_low2")`.
+  Actual: 
+  Expected: "P_low1", "P_low2"
+  Absent: "P_low1", "P_low2"
+
+file: test-kit280-prot-threshold-values.R
+test: T3d: digit-leading group labels (1h, 2h) are matched by the design's label in the comparison
+kind: failure
+message:
+  Expected `sum(long$low_intensity_value %in% FALSE)` to be identical to 37L.
+  Differences:
+    `actual`:  0
+  `expected`: 37
+
+file: test-kit280-prot-threshold-values.R
+test: T4: three groups, a protein low only in g3: FALSE treated against control, TRUE g3 against control
+kind: failure
+message:
+  Expected `at("treated_vs_control")` to be identical to FALSE.
+  Differences:
+  `actual` is NULL
+  `expected` is a logical vector (FALSE)
+
+file: test-kit280-prot-threshold-values.R
+test: T4: three groups, a protein low only in g3: FALSE treated against control, TRUE g3 against control
+kind: failure
+message:
+  Expected `at("g3_vs_control")` to be identical to TRUE.
+  Differences:
+  `actual` is NULL
+  `expected` is a logical vector (TRUE)
+
+file: test-kit280-prot-threshold-values.R
+test: T5: the marker row, a step made now, and records made before replay F with the rule each was made under
+kind: failure
+message:
+  Expected `marker$option` to be identical to "MultiScholaR.missing_filter_threshold_rule".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('MultiScholaR.missing_filter_threshold_rule')
+
+file: test-kit280-prot-threshold-values.R
+test: T5: the marker row, a step made now, and records made before replay F with the rule each was made under
+kind: failure
+message:
+  Expected `marker$current` to be identical to "present".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('present')
+
+file: test-kit280-prot-threshold-values.R
+test: T5: the marker row, a step made now, and records made before replay F with the rule each was made under
+kind: failure
+message:
+  Expected `marker$earlier` to be identical to "missing".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('missing')
+
+file: test-kit280-prot-threshold-values.R
+test: T5: the marker row, a step made now, and records made before replay F with the rule each was made under
+kind: failure
+message:
+  Expected `"threshold_values_in_filter" %in% names(workflowOperationEntry("protein_intensity_filter")$declaration$fixed)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit280-prot-threshold-values.R
+test: T5: the marker row, a step made now, and records made before replay F with the rule each was made under
+kind: failure
+message:
+  Expected `"threshold_values_in_filter" %in% names(workflowOperationEntry("normalization-ruv")$declaration$fixed)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit280-prot-threshold-values.R
+test: T5: the marker row, a step made now, and records made before replay F with the rule each was made under
+kind: failure
+message:
+  Expected `k280Marker(a$record, filter_state)` to be identical to `list(source = "fixed", value = "present")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit280-prot-threshold-values.R
+test: T5: the marker row, a step made now, and records made before replay F with the rule each was made under
+kind: failure
+message:
+  Expected `k280Marker(a$replayed_record, filter_state)` to be identical to `list(source = "fixed", value = "present")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit280-prot-threshold-values.R
+test: T5: the marker row, a step made now, and records made before replay F with the rule each was made under
+kind: failure
+message:
+  Expected `kept(a)` to be identical to `sort(k280FIds)`.
+  Differences:
+  `actual[35:38]`:   "P035" "P036" "P037" "P_low2"         
+  `expected[35:39]`: "P035" "P036" "P037" "P_low1" "P_low2"
+
+file: test-kit280-prot-threshold-values.R
+test: T5: the marker row, a step made now, and records made before replay F with the rule each was made under
+kind: failure
+message:
+  Expected `k280HasFlag(a$origin[[filter_state]])` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit280-prot-threshold-values.R
+test: T5: the marker row, a step made now, and records made before replay F with the rule each was made under
+kind: failure
+message:
+  Expected `kept(b)` to have length 39.
+  Actual length: 38.
+
+file: test-kit280-prot-threshold-values.R
+test: T5: the marker row, a step made now, and records made before replay F with the rule each was made under
+kind: failure
+message:
+  Expected `kept(c_)` to have length 39.
+  Actual length: 37.
+
+file: test-kit280-prot-threshold-values.R
+test: T5b: a session saved before this version and continued has no flag; each step keeps its own marker
+kind: failure
+message:
+  Expected `k280Marker(result$record, norm_state)` to be identical to `list(source = "fixed", value = "present")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit280-prot-threshold-values.R
+test: T6: strict mode and the clean-up after RUV keep P_low1 (only an absent value counts as missing)
+kind: failure
+message:
+  Expected `k280Ids(run$filtered)` to have the same values as `k280FIds`.
+  Actual: "P001", "P002", "P003", "P004", "P005", "P006", "P007", "P008", "P009", ...
+  Expected: "P001", "P002", "P003", "P004", "P005", "P006", "P007", "P008", "P009", ...
+  Absent: "P_low1", "P_low2"
+
+file: test-kit280-prot-threshold-values.R
+test: T6: strict mode and the clean-up after RUV keep P_low1 (only an absent value counts as missing)
+kind: failure
+message:
+  Expected `k280Ids(filtered)` to have the same values as `k280FIds`.
+  Actual: "P001", "P002", "P003", "P004", "P005", "P006", "P007", "P008", "P009", ...
+  Expected: "P001", "P002", "P003", "P004", "P005", "P006", "P007", "P008", "P009", ...
+  Absent: "P_low1"
+
+file: test-kit280-prot-threshold-values.R
+test: T8: the Apply text states the marked count; a long table from an older object gains no column and is otherwise identical
+kind: failure
+message:
+  Expected `grepl(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit280-prot-threshold-values.R
+test: T8: the Apply text states the marked count; a long table from an older object gains no column and is otherwise identical
+kind: failure
+message:
+  Expected `setdiff(names(long_flagged), names(long_plain))` to be identical to `c("low_intensity_groups", "low_intensity_value")`.
+  Differences:
+  `actual`:   "low_intensity_groups"                      
+  `expected`: "low_intensity_groups" "low_intensity_value"
+
+file: test-kit280-prot-threshold-values.R
+test: T8: the Apply text states the marked count; a long table from an older object gains no column and is otherwise identical
+kind: failure
+message:
+  Expected `...[]` to be identical to "P_low1".
+  Differences:
+  `actual`:           
+  `expected`: "P_low1"
+
+file: test-kit280-prot-threshold-values.R
+test: T8b: a saved DA table pages with the flag column when it holds one, and as before when it does not
+kind: failure
+message:
+  Expected `"low_intensity_value" %in% names(page$data)` to be identical to `identical(token, "present")`.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  present
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, sprintf(k280Rule, "5th"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, "simulated data")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, "measured at the 1st percentile only")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, "low_intensity_value")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, k280EarlierSentence)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(neutral, sprintf(k280NeutralSentence, "1st"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(neutral, k280EarlierSentence)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  LFQ
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, sprintf(k280Rule, "5th"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, "simulated data")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, "measured at the 1st percentile only")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, "low_intensity_value")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, k280EarlierSentence)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(neutral, sprintf(k280NeutralSentence, "1st"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(neutral, k280EarlierSentence)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  TMT
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, sprintf(k280Rule, "5th"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, "simulated data")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, "measured at the 1st percentile only")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, "low_intensity_value")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, k280EarlierSentence)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(with_marker, k280DiaSentence)` to be identical to `identical(name, "DIANN")`.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(neutral, sprintf(k280NeutralSentence, "1st"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(neutral, k280EarlierSentence)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  DIANN
+
+file: test-kit280-prot-threshold-values.R
+test: T10: the Methods text states the rule the record says, the earlier rule without the marker, and neutral words without a record
+kind: failure
+message:
+  Expected `k280Has(k280Method("DIANN", before), "5th percentile of all")` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit280-prot-threshold-values.R
+test: T10b: the percentile control says it marks values and does not remove proteins; the tab states the rule and the DIA sentence
+kind: failure
+message:
+  Expected `grepl("Low-intensity marking percentile (%)", html, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit280-prot-threshold-values.R
+test: T10b: the percentile control says it marks values and does not remove proteins; the tab states the rule and the DIA sentence
+kind: failure
+message:
+  Expected `grepl("marking does not remove proteins", html, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit280-prot-threshold-values.R
+test: T10b: the percentile control says it marks values and does not remove proteins; the tab states the rule and the DIA sentence
+kind: failure
+message:
+  Expected `grepl("measured at 1 %", html, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit280-prot-threshold-values.R
+test: T10b: the percentile control says it marks values and does not remove proteins; the tab states the rule and the DIA sentence
+kind: failure
+message:
+  Expected `grepl("only an absent value counts as missing", html, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit280-prot-threshold-values.R
+test: T10b: the percentile control says it marks values and does not remove proteins; the tab states the rule and the DIA sentence
+kind: failure
+message:
+  Expected `grepl(k280DiaSentence, html, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-prot-missing-value-counts.R
+test: T4: unequal groups keep the largest group's share (3 and 6: unchanged), applied exactly (2 and 3)
+kind: failure
+message:
+  Expected `k187Filter(k187Object(table, design), 2, 2)$kept` to have the same values as `c("P_full", "P_oneB", "P_floor")`.
+  Actual: "P_full", "P_oneB"
+  Expected: "P_full", "P_oneB", "P_floor"
+  Absent: "P_floor"
+
+file: test-prot-missing-value-counts.R
+test: T5: strict mode keeps only fully observed proteins
+kind: failure
+message:
+  Expected `value$protein_count` to be identical to 2L.
+  Differences:
+    `actual`: 1
+  `expected`: 2
+
+file: test-prot-missing-value-counts.R
+test: T5: strict mode keeps only fully observed proteins
+kind: failure
+message:
+  Expected `manager$getState("protein_intensity_filtered")@protein_quant_table$Protein.Ids` to have the same values as `c("P_full", "P_floor")`.
+  Actual: "P_full"
+  Expected: "P_full", "P_floor"
+  Absent: "P_floor"
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 G1: Automatic on the group column prints the base text byte for byte, without and with a record
+kind: failure
+message:
+  Expected `head$method` to be identical to `base_method`.
+  Differences:
+  lines(actual)[19:26] vs lines(expected)[19:25]
+    ""
+    "Protein accessions were cleaned and validated to ensure accurate annotation and to select the best representative protein ID when multiple accessions were present. Duplicate protein entries were removed to prevent redundancy in quantification."
+    ""
+  - "Proteins were then filtered on missing values within experimental groups. Intensities below the "
+  - "1st percentile of all intensities in the table were treated as missing. "
+  + "Proteins were then filtered on missing values within experimental groups. Whether intensities at or below the 1st percentile of all intensities counted as missing in this filter is not recorded for this analysis. "
+    "Within each group a protein failed if the share of its values that were missing exceeded the allowed share, 60% (shown rounded to three decimals); a protein was retained if the share of experimental groups in which it failed did not exceed the allowed share, 60% (shown rounded to three decimals)."
+    ""
+    "Proteins appearing in only one replicate across all groups were also excluded "
+  
+  LFQ file_only
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 G1: Automatic on the group column prints the base text byte for byte, without and with a record
+kind: failure
+message:
+  Expected `head$method` to be identical to `base_method`.
+  Differences:
+  lines(actual)[24:31] vs lines(expected)[24:30]
+    ""
+    "Protein accessions were cleaned and validated to ensure accurate annotation and to select the best representative protein ID when multiple accessions were present. Duplicate protein entries were removed to prevent redundancy in quantification."
+    ""
+  - "Proteins were then filtered on missing values within experimental groups. Intensities below the "
+  - "1st percentile of all intensities in the table were treated as missing. "
+  + "Proteins were then filtered on missing values within experimental groups. Whether intensities at or below the 1st percentile of all intensities counted as missing in this filter is not recorded for this analysis. "
+    "Within each group a protein failed if the share of its values that were missing exceeded the allowed share, 60% (shown rounded to three decimals); a protein was retained if the share of experimental groups in which it failed did not exceed the allowed share, 60% (shown rounded to three decimals)."
+    ""
+    "Proteins appearing in only one replicate across all groups were also excluded "
+  
+  TMT file_only
+
+file: test-kit227-report-ruv-sentences.R
+test: KIT-227 G1: Automatic on the group column prints the base text byte for byte, without and with a record
+kind: failure
+message:
+  Expected `head$method` to be identical to `base_method`.
+  Differences:
+  lines(actual)[53:60] vs lines(expected)[53:59]
+    "Using the protein intensity matrix, zero values were replaced with NA denoting "
+    "these are missing values. Protein filtering was then applied based on missing "
+    "value patterns and intensity thresholds to ensure robust statistical analysis. "
+  - "Intensities below the 1st percentile of all "
+  - "intensities in the table were treated as missing. Within each experimental group a protein "
+  + "Whether intensities at or below the 1st percentile of all intensities counted as missing in this filter is not recorded for this analysis. Within each experimental group a protein "
+    "failed if the share of its values that were missing exceeded the allowed share, 33.333% (shown rounded to three decimals); a protein was retained only if it passed in every experimental group. "
+    "The data matrix was then log (base 2) transformed and between-sample normalisation "
+    "were performed using the 'cyclicloess' method from the 'limma' R package "
+  
+  DIANN file_only
+

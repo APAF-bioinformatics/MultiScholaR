@@ -247,3 +247,9 @@ S_a per setting (vd; estimate [2.5 %, 97.5 %]):
 | D vd5 | 1.2008 [1.0383, 1.3638] (0.0836) | -0.0210 [-0.0230, -0.0189] (0.0010) | 0.0112 [-0.0002, 0.0233] (0.0062) | 0.0416 [0.0303, 0.0540] (0.0062) |
 | D vd10 | 1.1120 [1.0222, 1.2023] (0.0466) | -0.0012 [-0.0033, 0.0010] (0.0011) | 0.0090 [-0.0011, 0.0196] (0.0054) | 0.0591 [0.0488, 0.0699] (0.0054) |
 | D vd25 | 1.0029 [0.9361, 1.0732] (0.0355) | 0.0143 [0.0124, 0.0162] (0.0010) | 0.0001 [-0.0073, 0.0073] (0.0038) | 0.0637 [0.0561, 0.0710] (0.0038) |
+
+## Correction note, 2026-11-26 (appended; the text above is not rewritten)
+
+Applies to the paragraph at lines 45 to 47 (the unchanged proteins that hold a value at or below the filter's intensity threshold, 2.5 times as often).
+
+> Correction (2026-11-26, KIT-280; VAL-350, VAL-354, VAL-365): the 2.5-fold figure stands (2.60 on KIT-211's new draws) but is not due to the filter and test inconsistency alone: the same ratio is 1.75 with no filter; the inconsistency multiplies it by 1.49 (one-sided 97.5 % lower limit 1.43; pooled over ten settings; in 2 x 3 not resolved); on complete data such proteins reach p < 0.05 1.22 times as often as proteins holding no such value (a different comparator). Say 'as the corresponding newly kept proteins in the same data analysed without a filter'.

@@ -3,7 +3,7 @@
 # `threshold_values_in_filter`; the filter step writes `low_intensity_groups` into `protein_id_table` and the DA writes
 # `low_intensity_value` per comparison; the three proteomics templates state the rule. Synthetic data only.
 #
-# Fixture F: 40 proteins x 6 samples (control c1 to c3, treated t1 to t3); 37 fillers, every value at least 20.00;
+# Fixture F: 40 proteins x 6 samples (control c1 to c3, treated t1 to t3); 38 fillers, every value at least 20.00;
 # P_low1: control (10.0, 10.1, 20.0), treated (20.0, 20.1, 20.2); P_low2: control (10.2, 20.0, 20.1), treated 20.3 to
 # 20.5. n = 240, h = 3.39, the 1st percentile (type 7) is 10.2 + 0.39 x (20.0 - 10.2) = 14.022, and exactly three values
 # are at or below it. Minimum replicates 2, minimum groups 2: the earlier rule removes P_low1 (two of three control
@@ -26,7 +26,7 @@ k280Design <- function(sizes) {
 }
 
 # `special`: named list, protein to its full row of values (NA allowed).
-k280Table <- function(design, special = list(), fillers = 37L) {
+k280Table <- function(design, special = list(), fillers = 38L) {
     ids <- c(sprintf("P%03d", seq_len(fillers)), names(special))
     values <- 20 + outer(seq_along(ids), seq_along(design$Run), \(i, j) (i - 1) / 10 + ((7 * i + 3 * j) %% 10) / 100)
     dimnames(values) <- list(ids, design$Run)
@@ -44,7 +44,7 @@ k280Object <- function(table, design) {
 k280FSpecial <- list(P_low1 = c(10.0, 10.1, 20.0, 20.0, 20.1, 20.2), P_low2 = c(10.2, 20.0, 20.1, 20.3, 20.4, 20.5))
 k280FDesign <- function() k280Design(c(control = 3L, treated = 3L))
 k280FObject <- function() k280Object(k280Table(k280FDesign(), k280FSpecial), k280FDesign())
-k280FIds <- c(sprintf("P%03d", 1:37), "P_low1", "P_low2")
+k280FIds <- c(sprintf("P%03d", 1:38), "P_low1", "P_low2")
 
 k280Owner <- function(root, type = "DIA") {
     dir.create(root, recursive = TRUE, showWarnings = FALSE)
@@ -211,7 +211,7 @@ test_that("T3d: digit-leading group labels (1h, 2h) are matched by the design's 
     if (!k280Completed(da, "T3d DA")) return(invisible())
     long <- da$value$da_proteins_long
     expect_setequal(long$Protein.Ids[long$low_intensity_value %in% TRUE], c("P_low1", "P_low2"))
-    expect_identical(sum(long$low_intensity_value %in% FALSE), 37L)
+    expect_identical(sum(long$low_intensity_value %in% FALSE), 38L)
 })
 
 test_that("T4: three groups, a protein low only in g3: FALSE treated against control, TRUE g3 against control", {
@@ -342,7 +342,10 @@ test_that("T5: the marker row, a step made now, and records made before replay F
     c_ <- k280Replay(owner, root, withr::local_tempdir(), withr::local_tempdir())
     expect_null(k280Marker(c_$record, filter_state, "missing_value_comparison"))
     expect_null(k280Marker(c_$record, filter_state))
-    expect_length(kept(c_), 39L)
+    # Both earlier rules: the earlier comparison also removes P_low2 (one missing value of three is 33.3333 % against the
+    # cutoff 33.333 %), so 38 proteins stay.
+    expect_length(kept(c_), 38L)
+    expect_false(any(c("P_low1", "P_low2") %in% kept(c_)))
     expect_false(k280HasFlag(c_$replayed[[filter_state]]))
     k280ExpectReplayIdentical(c_)
 })

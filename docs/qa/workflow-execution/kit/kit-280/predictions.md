@@ -49,3 +49,11 @@ Any verdict not listed stops the ticket and goes back to the coordinator before 
 - `tests/testdata/gui-entry/prot_dia.json`, `prot_lfq.json`, `prot_lfq_fragpipe.json`, `prot_tmt.json`: the 73 steps above.
 - `tests/testthat/test-prot-norm-core.R` `protNormW1Frozen()`: the 16 values above (already failing).
 - `tests/testthat/test-omic-qc-module.R`: `omicQcFrozen$tabs` `prot_DIA`, `prot_TMT`, `prot_LFQ` (:163, :167, :168) and `$subtabs` `prot_protein_DIA`, `prot_protein_TMT`, `prot_protein_LFQ` (:182, :184, :185): three green expectations turn red by declaration (W5), two identity messages change.
+
+## Addendum after R1 (45820775438), written before the correction run
+
+R1 judged: every new test failed by value (72 failed, 75 passed, no error). Two slips of mine, both in the new tests, found from the returned values:
+- Fixture F was built with 37 fillers (39 proteins, n = 234); the ticket's F has 40 proteins (n = 240), so 38 fillers. The old code kept 38 (not 39) proteins. The behaviour is the ticket's; the test's counts are corrected to 40 / 38 (T1, T3, T3b, T3d, T6, F's header).
+- T5 (c): a record with no marker at all replays with the earlier comparison as well, which removes P_low2 too (one missing value of three is 33.3333 % against the cutoff 33.333 %): 38 stay, not 39 (the ticket's "39 kept" holds for the record with only `missing_value_comparison = counts`, case (b), which R1 confirmed at 39 of 40 under the earlier threshold rule on the old code's rule). Corrected in the test.
+- `test-kit227-report-ruv-sentences.R` R1: 186 passed / 3 failed (predicted 183 / 3): the declared substitution's three match assertions are passing expectations.
+This is the one correction pass of the ticket (tests only, no expected behaviour weakened). R1b re-runs only the new file on the old code.

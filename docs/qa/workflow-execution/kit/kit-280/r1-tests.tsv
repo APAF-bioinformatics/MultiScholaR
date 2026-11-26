@@ -1,0 +1,5 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit280-prot-threshold-values.R	75	72	0	0	7	165.3	failed
+test-prot-missing-value-counts.R	64	3	0	0	4	1480.1	failed
+test-kit227-report-ruv-sentences.R	186	3	0	0	0	11.5	failed
+test-prot-summary-report-templates.R	123	0	0	0	0	6.8	ok

@@ -141,3 +141,9 @@ total **10.54** against 10.67 expected and 25.33 ceiling (`runs.tsv`).
 ## Merge record (coordinator)
 
 Merged into `v0.9-staging` on 2026-11-24 from 07b4cd2f after the implementation audit and its re-checks 1 and 2 (register `AUDIT-KIT-197-impl-20261124`): I01 to I06 and R1-01 closed. The ledger row is VAL-149. The owner's decisions on this result are VAL-142: the intervals on the threshold-value figures come from this ticket's own script run on a runner (run 45342463572); the threshold-value inconsistency is a recorded candidate, not fixed here; the paper's claim names the exception; the NEWS entry and the Methods sentence carry the exception, final wording at the owner's wording pass. No package code changed with this merge; NEWS gained one clause.
+
+## Correction note, 2026-11-26 (appended; the text above is not rewritten)
+
+Applies to the statements at lines 8 (the pooled exception), 55 (the calibration excess of values at or below the threshold) and 126 to 127 (the exception, 'when unchanged they reach p < 0.05 2.5 times as often').
+
+> Correction (2026-11-26, KIT-280; VAL-350, VAL-354, VAL-365): the 2.5-fold figure stands (2.60 on KIT-211's new draws) but is not due to the filter and test inconsistency alone: the same ratio is 1.75 with no filter; the inconsistency multiplies it by 1.49 (one-sided 97.5 % lower limit 1.43; pooled over ten settings; in 2 x 3 not resolved); on complete data such proteins reach p < 0.05 1.22 times as often as proteins holding no such value (a different comparator). Say 'as the corresponding newly kept proteins in the same data analysed without a filter'.
