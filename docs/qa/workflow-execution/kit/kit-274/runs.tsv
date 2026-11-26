@@ -1,2 +1,3 @@
 run	commit	purpose	job_minutes	result
 45723980071	050a04028feb2653b8710a0cc446d24bae8e4ae6	R1 tests-only, one shard, no base (kit274 file 135 s, kit264 file 256 s)	about 15 (expected 20; 1.0 core-h of 1.33)	T1-T7,T12 fail by value as predicted; T8,T9,T11 pass; T10 (predicted pass) FAILED: missed prediction, stop and report; X1 base line printed
+45726224100	60565dd4af18474e9b69fb09b95a2cd11b4377ae	R1b tests-only (VAL-54 instrument re-send 1 of 3: T10 shared nd and new-entity precondition), one shard, no base	about 6 (test file 185 s plus install; expected 12)	as predicted: T1-T7,T12 fail by value (25 failures); T8,T9,T10,T11 pass; T10 precondition met (route A and B listed FALSE)
