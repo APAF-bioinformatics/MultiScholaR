@@ -1,0 +1,29 @@
+{
+  "requested_by": "Merge train 31 (KIT-272): render job, four proteomics lanes knitted with the head's and the base's templates (V0/V1/V2, render3.R copy with BASE ec27f69e), head ed941465; 1 scripts job, ceiling 60 job-minutes",
+  "label": "Train 31 KIT-272 render on ed941465",
+  "package_commit": "ed941465d70537595a0da606d285a08d41e622bc",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-272/render-train31.R",
+      "args": [],
+      "env": {
+        "NOT_CRAN": "true"
+      },
+      "out": "kit259-render",
+      "out_pattern": "\\.(txt|tsv)$",
+      "timeout_minutes": 55
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
