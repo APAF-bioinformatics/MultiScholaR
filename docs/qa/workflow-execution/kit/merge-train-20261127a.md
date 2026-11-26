@@ -147,3 +147,43 @@ New failures: none. A head that differs from its base, other than as stated, is 
 
 - Every prediction holds: TRAIN GREEN for KIT-273. Anything else is a result, recorded and not re-run; no test or expectation is removed, weakened or edited. One run; a re-send only for an
   instrument defect with no result judged and with the coordinator's word; an HTTP 500/502 at dispatch with no run created is started once by hand.
+
+## Results (run 45751468836, head 9dd61ff8, base 1798d5a8; request file kit273-train34-9dd61ff8.json)
+
+Run success; every file ran to completion (no timeout, no crash). Tables beside this file: `merge-train-20261127a-compare.tsv`,
+`merge-train-20261127a-check-compare.txt`, `merge-train-20261127a-masked-comparison.txt`. Base versus head: same 46, only-on-head 1,
+message-changed 1, new-failure 0, count-changed 0, fixed 0. Tests head: passed 11485, failed 658, errors 1, skipped 55; base: 11355, 658, 1, 55 (the 130 are the new file).
+**Every prediction held: TRAIN GREEN for KIT-273.**
+
+| File | Predicted | Observed base | Observed head | Verdict |
+|---|---|---|---|---|
+| test-kit273-limpa-ruv-delivery.R | absent / 130/0/0/0, only-on-head | absent | 130/0/0/0 | only-on-head: HELD |
+| test-gui-entry-proteomics.R | 92/101 both, message-changed only at the three limpa Copy steps | 92/101 | 92/101 | message-changed: HELD (masked comparison below) |
+| test-prot-norm-core.R | 1547/307 same | 1547/307 | 1547/307 | same: HELD |
+| test-workflow-saved-da.R | 755/196 same | 755/196 | 755/196 | same: HELD |
+| test-kit236-report-sentences.R | 321/0 same | 321/0 | 321/0 | same: HELD (R2's older base was 289) |
+| test-kit272-prot-box-panel-text.R | 373/0 same | 373/0 | 373/0 | same: HELD |
+| test-module-ci-trx-summary.R | 87/1 same | 87/1 | 87/1 | same: HELD (83/2 in R2 without the variable) |
+| test-omics-module-globals.R | 14/0 same | 14/0 | 14/0 | same: HELD |
+| test-omic-summary-module.R 1675/28; test-omics-summary-core.R 676/25/0/2; test-workflow-saved-exports.R 271/0/1/4 | same | as predicted | same | same: HELD |
+| the other 38 files | same | equal to R2's base except the two named above | same | same: HELD |
+| R CMD check | identical, 0/3/3 | 0 E / 3 W / 3 N | 0 E / 3 W / 3 N | identical (6 findings on both; only on head: none): HELD |
+
+**Masked comparison** (Python `-I`, script kept outside the downloaded folder; output `merge-train-20261127a-masked-comparison.txt`). 659 failure records on each side;
+656 identical after temporary-path masking; 3 differ, exactly `test-gui-entry-proteomics.R` lane `prot_dia_limpa` at `summary_copy`, `summary_report` and `summary_export`. With the one new key
+`results_summary/proteomics/Study_report/design_matrix_with_ruv_factors.tab` (its line, digest 31bee7fa8d6bf07efd85dac297b1a9148868c8cdf07fdad4fdf759bd4593aeb0 observed in the head records), the length lines
+(173/172, 178/177, 179/178), the chunk headers and the quoted path lines masked, **3 of 3 head records equal their base records, no residue**; `test-prot-norm-core.R` and `test-workflow-saved-da.R` records identical.
+A first pass of the script left the length lines unmasked (residue only those six lines); the mask was widened to the declared "length lines" and rerun on the same tables.
+
+**Budget** (jobs API, summed, skipped jobs 0): **475.95 job-minutes = 31.73 core-hours** (core-hours = job-minutes x 4 / 60): tests head 50.63 + 56.13 + 55.70 + 54.28 = 216.74;
+tests base 52.10 + 45.97 + 74.45 + 52.68 = 225.20; check head 15.60, base 16.08; plan 0.38; results 1.93. Ceiling 820 (54.67); expected about 410, so above the expectation and under the ceiling
+(one base shard, `tests base 3`, took 74.45 of 80 minutes: it held `test-prot-norm-core.R`'s base run on a slower runner).
+
+Decision: KIT-273 is green on the merged tree.
+
+## What the coordinator resolves at landing
+
+- Ledger: `VAL-<train34-1>` (`docs/methods-decision-ledger.md:2543`) and `VAL-<train34-2>` (`:2544`) take their numbers (next free after VAL-370). Status cells: VAL-317 (`:2489`) "(2) implemented by KIT-273 (VAL-n), merged by train 34";
+  VAL-332 (`:2504`) "KIT-273 merged by train 34 (VAL-n)". The ticket row's own status cell reads "implemented; audited (AUDIT-KIT-273-impl-20261126); merge train 34".
+- Placeholders: `docs/qa/workflow-execution/kit/kit-273/outcome.md:30` reads `VAL-<merge>`; `NEWS.md` carries no placeholder.
+- Open by ruling (not here): KIT-276's A7 must remove NEWS's "Skip RUV" sentence (AUDIT-KIT-273-impl I07); I06, I11 candidates.
