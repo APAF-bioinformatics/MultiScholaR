@@ -17,6 +17,12 @@
 #   outcome.txt, dataset.tsv (per data set and arm), statuses.tsv, statuses-assay.tsv, phi.tsv, capbind.tsv, partm-df.tsv,
 #   partm-amp.tsv, partm-closed-form.tsv, partm-unit.tsv, partm-repair.tsv, partm-levels.tsv, partm-warn.tsv, settings.txt.
 
+# Partial-match guard (smoke check send 3, the coordinator's ruling): `$` on a list or data frame matches a name by its prefix when none is exact;
+# that warning is an error here, in every process of every run (lifecycle, L1r, L1c and counted runs). A stop from it is an instrument defect.
+options(warnPartialMatchDollar = TRUE)
+globalCallingHandlers(warning = function(w) {
+    if (grepl("partial match of", conditionMessage(w), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
+})
 args <- commandArgs(TRUE)
 stopifnot(length(args) >= 2L)
 rows_dir <- args[[1L]]

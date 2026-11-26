@@ -241,6 +241,9 @@ expect("main", "conditions.tsv", k, "classification", "not determined")
 expect("main", "statuses.tsv", pk("L", "L12", "deciding", "LA", "1", "crashed", "planted"), "n", 19 + 20 + 10)
 expect("main", "statuses.tsv", pk("L", "L12", "deciding", "LA", "1", "crashed", "unit: child process exit 3, no result"), "n", 18)
 expect("main", "statuses.tsv", pk("L", "L12", "deciding", "LA", "1", "refused", "multischolar_refusal"), "n", 5)
+# GA's not_run journeys in (N1, vd20): data sets 2 to 400 are planted not_run (399); the unit row at data set 5 replaces every L12 deciding
+# journey of data set 5 (all arms and conditions) by a crashed one, so data set 5 is not among them: 399 - 1 = 398. (First written as 399, which
+# forgot the unit row; corrected after send 2's observation, the scorer's count following from the planted rows.)
 expect("main", "statuses.tsv", pk("L", "L12", "deciding", "GA", "1", "not_run", "planted not_run"), "n", 398)
 # L24 is in no verdict
 expect("main", "conditions.tsv", "absent:L24", "deciding_rows", 0)

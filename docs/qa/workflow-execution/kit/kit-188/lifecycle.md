@@ -268,3 +268,23 @@ L1r's L job (plan 80, timeout 120) still fits (its longest unit, L64, about 61 m
 likely near or above 115 min: **the ticket's single M job does not hold and should be two or three jobs** (M12; M168 deciding; M168 reported, lp, las). L1c (plan 30, timeout 45) holds with large margin (about 2 minutes of wall plus set-up).
 Budget, indicative: the M line (125 x 4 / 60 = 8.33 ceiling) becomes M12 (25 + 10) x 4 / 60 = 2.33, M168 deciding (90 + 10) x 4 / 60 = 6.67 and M168 reported/lp/las (130 + 10) x 4 / 60 = 9.33 ceiling, 18.3 against 8.33: about +10 on the line, to be set by G3 from L1r's own times, as the ticket says.
 **Smoke running total** (core-hours, job minutes plus 10 set-up, x 4 / 60): send 1 2.13; send 2 A 2.05, B 2.05; total 6.23 against the 3.33 declared (excess 2.9, charged to L1r's line, inside Part L's accepted ceiling).
+
+## Guard against `$` prefix matches (smoke check send 3; the coordinator's ruling)
+
+`options(warnPartialMatchDollar = TRUE)` and a global calling handler that stops on the message "partial match of" are at the top of `sim-k188.R`, `score-k188.R` and
+`e16/run-e16.R`, and `quiet()` stops on it too (it would otherwise muffle the warning). Children are separate Rscript processes, so each sets it itself. **This guard stays on in L1r, L1c and the counted runs, and a stop from it
+is an instrument defect by definition** (VAL-54: fix the mechanics and re-send; no expected value changes). The renames of send 2 (`reached_da`, `itsd_check`, `norm_check`) are kept.
+
+## The corrected E16 prediction (record for the script auditor)
+
+One predicted value of the self-test was changed after an observation: `statuses.tsv`, `L|L12|deciding|LA... GA|1|not_run|planted not_run`, from 399 to 398. Derivation by arithmetic (also in `e16/make-e16.py` beside the value):
+in case `main`, (N1, vd20) GA is planted `not_run` for data sets 2 to 400, which is 399 journeys; the unit row at data set 5 (`unit_row("L12", 5)`, arm `unit`) is expanded by the scorer to every arm and condition of L12 deciding as `crashed`,
+so data set 5 is one of those 399 and is a crash, not a `not_run`: 399 - 1 = 398. The first value forgot the unit row. This is not fitting: the scorer's count follows from the planted rows, no scorer line changed to meet it,
+and the other 128 predictions were not touched (they were all met on the cases that finished).
+
+## Request for the coordinator at G3: L1r's M job as three jobs (the ticket is not changed)
+
+Proposed split: (1) M12; (2) M168 deciding; (3) M168 reported, lp, las. Indicative ceilings, core-hours = (limit + 10) x 4 / 60: (1) 25 min, 2.33; (2) 90 min, 6.67; (3) 130 min, 9.33; total 18.3 against the line's 8.33 for one M job (about +10).
+Measured basis (smoke check, M12 data set 401, 4 cores, one unit per job type): deciding 1,243 s alone (send 2 B), lp 372 s, las 596 s, K172c 229 s (send 1), L1c eight units in 119 s of wall. **Scaled, not measured:** every M168, L12 and L64 time
+(M168 deciding about 77 min, L12 about 34, L64 about 61) is M12's measured 1,243 s times L1's ratios (3.7, 1.65, 2.9: Nov 24 core-seconds per data set on the pre-KIT-190 base, which do not include the checks added since); M168's reported unit
+(about 4.6 times M12's reported, itself unmeasured) is the least certain and is why it is a job of its own. G3 sets the real figures from L1r's times.

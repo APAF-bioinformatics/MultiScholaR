@@ -39,6 +39,12 @@
 # draw their levels and variances as features (the variance scaled by the features' median); every draw is made in
 # every scenario (a scenario without unwanted variation multiplies it by 0).
 
+# Partial-match guard (smoke check send 3, the coordinator's ruling): `$` on a list or data frame matches a name by its prefix when none is exact;
+# that warning is an error here, in every process of every run (lifecycle, L1r, L1c and counted runs). A stop from it is an instrument defect.
+options(warnPartialMatchDollar = TRUE)
+globalCallingHandlers(warning = function(w) {
+    if (grepl("partial match of", conditionMessage(w), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
+})
 args <- commandArgs(TRUE)
 child <- length(args) >= 1L && identical(args[[1L]], "--unit")
 script_file <- normalizePath(sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[[1L]]))
@@ -106,6 +112,7 @@ quiet <- function(expr) {
         warning_count$log <- c(warning_count$log, paste(class(cond)[[1L]], if (length(hit)) hit[[1L]] else "", sep = "@"))
     }
     invisible(utils::capture.output(value <- withCallingHandlers(expr, warning = function(w) {
+        if (grepl("partial match of", conditionMessage(w), fixed = TRUE)) stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
         warning_count$n <- warning_count$n + 1L
         noteOf(w)
         invokeRestart("muffleWarning")
