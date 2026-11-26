@@ -480,10 +480,11 @@ formatConfigList <- function(config_list, indent = 0) {
                 # SAFE value display formatting
                 value_display <- tryCatch(
                     {
-                        if (is.character(value) && length(value) > 5) {
-                            paste(c(utils::head(value, 5), "..."), collapse = ", ")
-                        } else if (is.character(value) && length(value) > 1) {
-                            paste(value, collapse = ", ")
+                        if (length(value) > 1) {
+                            # KIT-269: every vector value in full; a named vector as name=value, the record path's form (REC-072, REC-001).
+                            text <- as.character(value)
+                            if (!is.null(names(value))) text <- paste0(names(value), "=", text)
+                            paste(text, collapse = ", ")
                         } else {
                             result <- as.character(value)
                             if (length(result) == 0) "[Empty/NULL]" else result
