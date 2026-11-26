@@ -1,0 +1,121 @@
+{
+  "requested_by": "selftest; G3 table sha256 a9a82bf4ddca17c7",
+  "label": "selftest",
+  "package_commit": "0000000000000000000000000000000000000000",
+  "base_commit": "none",
+  "tests": [],
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-281/sim-k281.R",
+      "args": [
+        "k281-out",
+        "401",
+        "600"
+      ],
+      "env": {
+        "K211_CELLS": "A"
+      },
+      "out": "k281-out",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 75
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-281/sim-k281.R",
+      "args": [
+        "k281-out",
+        "601",
+        "677"
+      ],
+      "env": {
+        "K211_CELLS": "A"
+      },
+      "out": "k281-out",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 75
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-281/sim-k281.R",
+      "args": [
+        "k281-out",
+        "401",
+        "600"
+      ],
+      "env": {
+        "K211_CELLS": "B"
+      },
+      "out": "k281-out",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 75
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-281/sim-k281.R",
+      "args": [
+        "k281-out",
+        "601",
+        "677"
+      ],
+      "env": {
+        "K211_CELLS": "B"
+      },
+      "out": "k281-out",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 75
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-281/sim-k281.R",
+      "args": [
+        "k281-out",
+        "401",
+        "600"
+      ],
+      "env": {
+        "K211_CELLS": "C"
+      },
+      "out": "k281-out",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 75
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-281/sim-k281.R",
+      "args": [
+        "k281-out",
+        "601",
+        "677"
+      ],
+      "env": {
+        "K211_CELLS": "C"
+      },
+      "out": "k281-out",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 75
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-281/sim-k281.R",
+      "args": [
+        "k281-out",
+        "401",
+        "600"
+      ],
+      "env": {
+        "K211_CELLS": "D"
+      },
+      "out": "k281-out",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 75
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-281/sim-k281.R",
+      "args": [
+        "k281-out",
+        "601",
+        "677"
+      ],
+      "env": {
+        "K211_CELLS": "D"
+      },
+      "out": "k281-out",
+      "out_pattern": "\\.(tsv|gz|json|txt|md)$",
+      "timeout_minutes": 75
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+case	rowsdir	env	expect
+cal105	cal105	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+bnd_below	bnd_below	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+bnd_at	bnd_at	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+bnd_above	bnd_above	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+rho112	rho112	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+split	split	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+g1a_fail	g1a_fail	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+g1a_pass_edge	g1a_pass_edge	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+g1b_fail	g1b_fail	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+g1b_pass	g1b_pass	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+g2_fail	g2_fail	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+g2_below	g2_below	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+g2_at	g2_at	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+g2_above	g2_above	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+pc_pass	pc_pass	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+pc_fail_ok	pc_fail_ok	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+f5_fires_pos	f5_fires_pos	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+f5_fires_neg	f5_fires_neg	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+f5_zero	f5_zero	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+f5_and_fail	f5_and_fail	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+noadded	noadded	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+partial	partial	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+fields	fields	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+miss_rep	miss_rep	K281_RANGE=401,404;K211_B_BOOT=1000	stop:a replicate is absent
+smoke	smoke	K281_RANGE=401,404;K211_B_BOOT=1000	stop:smoke flag
+smoke_absent	smoke_absent	K281_RANGE=401,404;K211_B_BOOT=1000	stop:smoke flag
+range_out	range_out	K281_RANGE=401,403;K211_B_BOOT=1000	stop:outside the declared range
+qmethod_bh	qmethod_bh	K281_RANGE=401,404;K211_B_BOOT=1000	stop:q-method other than qvalue
+guardstop	guardstop	K281_RANGE=401,404;K211_B_BOOT=1000	stop:instrument-stop.txt
+probe	probe	K281_RANGE=401,404;K211_B_BOOT=1000;K281_GUARD_PROBE=1	stop:partial-match guard
+f1	f1	K281_RANGE=401,404;K211_B_BOOT=1000	stop:F1
+f2_e10	f2_e10	K281_RANGE=401,404;K211_B_BOOT=1000	stop:F2
+f2_e3	f2_e3	K281_RANGE=401,404;K211_B_BOOT=1000	stop:F2
+incomplete_range	incomplete_range	K281_RANGE=401,404;K211_B_BOOT=1000	stop:range is incomplete
+cell_T	cell_T	K281_RANGE=401,404;K211_B_BOOT=1000	stop:unexpected label
+cell_F	cell_F	K281_RANGE=401,404;K211_B_BOOT=1000	stop:unexpected label
+cell_NA	cell_NA	K281_RANGE=401,404;K211_B_BOOT=1000	stop:unexpected label
+arm_NA	arm_NA	K281_RANGE=401,404;K211_B_BOOT=1000	stop:unexpected label
+mask_mcar	mask_mcar	K281_RANGE=401,404;K211_B_BOOT=1000	stop:unexpected label
+text_num	text_num	K281_RANGE=401,404;K211_B_BOOT=1000	stop:not a number
+na_num	na_num	K281_RANGE=401,404;K211_B_BOOT=1000	stop:not a number
+logical_na	logical_na	K281_RANGE=401,404;K211_B_BOOT=1000	stop:not TRUE, FALSE, T or F
+tf	tf	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+join	join	K281_RANGE=401,404;K211_B_BOOT=1000	ok
+dup	dup	K281_RANGE=401,404;K211_B_BOOT=1000	stop:duplicated
+f2_det	f2_det	K281_RANGE=401,404;K211_B_BOOT=1000	stop:F2
+counted_ok	counted_ok	K281_G3_TABLE=@HERE@/cases/g3tables/g3-ok.tsv	ok
+counted_nodet	counted_nodet	K281_G3_TABLE=@HERE@/cases/g3tables/g3-ok.tsv	stop:no determinism table
+counted_g3five	counted_g3five	K281_G3_TABLE=@HERE@/cases/g3tables/g3-five.tsv	stop:a replicate is absent
+counted_g3none	counted_g3none	K281_G3_TABLE=@HERE@/cases/g3tables/absent.tsv	stop:no declared replicate range

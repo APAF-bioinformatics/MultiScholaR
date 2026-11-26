@@ -1,0 +1,1 @@
+partial-match guard: partial match of 'ab' to 'abcd'

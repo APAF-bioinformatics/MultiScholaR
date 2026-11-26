@@ -1,0 +1,1483 @@
+case	file	key	column	value
+cal105	decision.tsv	rho_g	estimate	1.0499999999999998
+cal105	decision.tsv	rho_g	upper	1.0499999999999998
+cal105	decision.tsv	rho_g	limit	1.1
+cal105	decision.tsv	rho_g	state	pass
+cal105	decision.tsv	rho_g	upper_jack	1.0499999999999998
+cal105	decision.tsv	rho_g	state_jack	pass
+cal105	decision.tsv	rho_g	boot_nonfinite	0
+cal105	decision.tsv	G1a	estimate	0.047619047619047616
+cal105	decision.tsv	G1a	upper	0.047619047619047616
+cal105	decision.tsv	G1a	limit	0.05
+cal105	decision.tsv	G1a	state	pass
+cal105	decision.tsv	G1a	upper_jack	0.047619047619047616
+cal105	decision.tsv	G1a	state_jack	pass
+cal105	decision.tsv	G1a	boot_nonfinite	0
+cal105	decision.tsv	G1b	estimate	0.0
+cal105	decision.tsv	G1b	upper	0.0
+cal105	decision.tsv	G1b	limit	0.0025
+cal105	decision.tsv	G1b	state	pass
+cal105	decision.tsv	G1b	upper_jack	0.0
+cal105	decision.tsv	G1b	state_jack	pass
+cal105	decision.tsv	G1b	boot_nonfinite	0
+cal105	decision.tsv	G2	estimate	0.0
+cal105	decision.tsv	G2	upper	0.0
+cal105	decision.tsv	G2	limit	0.005
+cal105	decision.tsv	G2	state	pass
+cal105	decision.tsv	G2	upper_jack	0.0
+cal105	decision.tsv	G2	state_jack	pass
+cal105	decision.tsv	G2	boot_nonfinite	0
+cal105	falsifier.tsv	F5'	estimate	0.0
+cal105	falsifier.tsv	F5'	fires	FALSE
+cal105	positive-control.tsv	Phi.S	estimate	1.0
+cal105	positive-control.tsv	Phi.S	passes	FALSE
+cal105	outcome.tsv		outcome	Calibrated
+cal105	outcome.tsv		rho_g_state	pass
+cal105	outcome.tsv		g1a_state	pass
+cal105	outcome.tsv		g1b_state	pass
+cal105	outcome.tsv		g2_state	pass
+cal105	outcome.tsv		f5_fires	FALSE
+cal105	outcome.tsv		pc_pass	FALSE
+cal105	outcome.tsv		rho_g	1.0499999999999998
+cal105	outcome.tsv		kind	outcome
+bnd_below	decision.tsv	rho_g	estimate	1.0997999999999999
+bnd_below	decision.tsv	rho_g	upper	1.0997999999999999
+bnd_below	decision.tsv	rho_g	limit	1.1
+bnd_below	decision.tsv	rho_g	state	pass
+bnd_below	decision.tsv	rho_g	upper_jack	1.0997999999999999
+bnd_below	decision.tsv	rho_g	state_jack	pass
+bnd_below	decision.tsv	rho_g	boot_nonfinite	0
+bnd_below	decision.tsv	G1a	estimate	0.047619047619047616
+bnd_below	decision.tsv	G1a	upper	0.047619047619047616
+bnd_below	decision.tsv	G1a	limit	0.05
+bnd_below	decision.tsv	G1a	state	pass
+bnd_below	decision.tsv	G1a	upper_jack	0.047619047619047616
+bnd_below	decision.tsv	G1a	state_jack	pass
+bnd_below	decision.tsv	G1a	boot_nonfinite	0
+bnd_below	decision.tsv	G1b	estimate	0.0
+bnd_below	decision.tsv	G1b	upper	0.0
+bnd_below	decision.tsv	G1b	limit	0.0025
+bnd_below	decision.tsv	G1b	state	pass
+bnd_below	decision.tsv	G1b	upper_jack	0.0
+bnd_below	decision.tsv	G1b	state_jack	pass
+bnd_below	decision.tsv	G1b	boot_nonfinite	0
+bnd_below	decision.tsv	G2	estimate	0.0
+bnd_below	decision.tsv	G2	upper	0.0
+bnd_below	decision.tsv	G2	limit	0.005
+bnd_below	decision.tsv	G2	state	pass
+bnd_below	decision.tsv	G2	upper_jack	0.0
+bnd_below	decision.tsv	G2	state_jack	pass
+bnd_below	decision.tsv	G2	boot_nonfinite	0
+bnd_below	falsifier.tsv	F5'	estimate	0.0
+bnd_below	falsifier.tsv	F5'	fires	FALSE
+bnd_below	positive-control.tsv	Phi.S	estimate	1.0
+bnd_below	positive-control.tsv	Phi.S	passes	FALSE
+bnd_below	outcome.tsv		outcome	Calibrated
+bnd_below	outcome.tsv		rho_g_state	pass
+bnd_below	outcome.tsv		g1a_state	pass
+bnd_below	outcome.tsv		g1b_state	pass
+bnd_below	outcome.tsv		g2_state	pass
+bnd_below	outcome.tsv		f5_fires	FALSE
+bnd_below	outcome.tsv		pc_pass	FALSE
+bnd_below	outcome.tsv		rho_g	1.0997999999999999
+bnd_below	outcome.tsv		kind	outcome
+bnd_at	decision.tsv	rho_g	estimate	1.0999999999999999
+bnd_at	decision.tsv	rho_g	upper	1.0999999999999999
+bnd_at	decision.tsv	rho_g	limit	1.1
+bnd_at	decision.tsv	rho_g	state	pass
+bnd_at	decision.tsv	rho_g	upper_jack	1.0999999999999999
+bnd_at	decision.tsv	rho_g	state_jack	pass
+bnd_at	decision.tsv	rho_g	boot_nonfinite	0
+bnd_at	decision.tsv	G1a	estimate	0.047619047619047616
+bnd_at	decision.tsv	G1a	upper	0.047619047619047616
+bnd_at	decision.tsv	G1a	limit	0.05
+bnd_at	decision.tsv	G1a	state	pass
+bnd_at	decision.tsv	G1a	upper_jack	0.047619047619047616
+bnd_at	decision.tsv	G1a	state_jack	pass
+bnd_at	decision.tsv	G1a	boot_nonfinite	0
+bnd_at	decision.tsv	G1b	estimate	0.0
+bnd_at	decision.tsv	G1b	upper	0.0
+bnd_at	decision.tsv	G1b	limit	0.0025
+bnd_at	decision.tsv	G1b	state	pass
+bnd_at	decision.tsv	G1b	upper_jack	0.0
+bnd_at	decision.tsv	G1b	state_jack	pass
+bnd_at	decision.tsv	G1b	boot_nonfinite	0
+bnd_at	decision.tsv	G2	estimate	0.0
+bnd_at	decision.tsv	G2	upper	0.0
+bnd_at	decision.tsv	G2	limit	0.005
+bnd_at	decision.tsv	G2	state	pass
+bnd_at	decision.tsv	G2	upper_jack	0.0
+bnd_at	decision.tsv	G2	state_jack	pass
+bnd_at	decision.tsv	G2	boot_nonfinite	0
+bnd_at	falsifier.tsv	F5'	estimate	0.0
+bnd_at	falsifier.tsv	F5'	fires	FALSE
+bnd_at	positive-control.tsv	Phi.S	estimate	1.0
+bnd_at	positive-control.tsv	Phi.S	passes	FALSE
+bnd_at	outcome.tsv		outcome	Calibrated
+bnd_at	outcome.tsv		rho_g_state	pass
+bnd_at	outcome.tsv		g1a_state	pass
+bnd_at	outcome.tsv		g1b_state	pass
+bnd_at	outcome.tsv		g2_state	pass
+bnd_at	outcome.tsv		f5_fires	FALSE
+bnd_at	outcome.tsv		pc_pass	FALSE
+bnd_at	outcome.tsv		rho_g	1.0999999999999999
+bnd_at	outcome.tsv		kind	outcome
+bnd_above	decision.tsv	rho_g	estimate	1.1002
+bnd_above	decision.tsv	rho_g	upper	1.1002
+bnd_above	decision.tsv	rho_g	limit	1.1
+bnd_above	decision.tsv	rho_g	state	fail
+bnd_above	decision.tsv	rho_g	upper_jack	1.1002
+bnd_above	decision.tsv	rho_g	state_jack	fail
+bnd_above	decision.tsv	rho_g	boot_nonfinite	0
+bnd_above	decision.tsv	G1a	estimate	0.047619047619047616
+bnd_above	decision.tsv	G1a	upper	0.047619047619047616
+bnd_above	decision.tsv	G1a	limit	0.05
+bnd_above	decision.tsv	G1a	state	pass
+bnd_above	decision.tsv	G1a	upper_jack	0.047619047619047616
+bnd_above	decision.tsv	G1a	state_jack	pass
+bnd_above	decision.tsv	G1a	boot_nonfinite	0
+bnd_above	decision.tsv	G1b	estimate	0.0
+bnd_above	decision.tsv	G1b	upper	0.0
+bnd_above	decision.tsv	G1b	limit	0.0025
+bnd_above	decision.tsv	G1b	state	pass
+bnd_above	decision.tsv	G1b	upper_jack	0.0
+bnd_above	decision.tsv	G1b	state_jack	pass
+bnd_above	decision.tsv	G1b	boot_nonfinite	0
+bnd_above	decision.tsv	G2	estimate	0.0
+bnd_above	decision.tsv	G2	upper	0.0
+bnd_above	decision.tsv	G2	limit	0.005
+bnd_above	decision.tsv	G2	state	pass
+bnd_above	decision.tsv	G2	upper_jack	0.0
+bnd_above	decision.tsv	G2	state_jack	pass
+bnd_above	decision.tsv	G2	boot_nonfinite	0
+bnd_above	falsifier.tsv	F5'	estimate	0.0
+bnd_above	falsifier.tsv	F5'	fires	FALSE
+bnd_above	positive-control.tsv	Phi.S	estimate	1.0
+bnd_above	positive-control.tsv	Phi.S	passes	FALSE
+bnd_above	outcome.tsv		outcome	Not calibrated
+bnd_above	outcome.tsv		rho_g_state	fail
+bnd_above	outcome.tsv		g1a_state	pass
+bnd_above	outcome.tsv		g1b_state	pass
+bnd_above	outcome.tsv		g2_state	pass
+bnd_above	outcome.tsv		f5_fires	FALSE
+bnd_above	outcome.tsv		pc_pass	FALSE
+bnd_above	outcome.tsv		rho_g	1.1002
+bnd_above	outcome.tsv		kind	outcome
+rho112	decision.tsv	rho_g	estimate	1.1199999999999999
+rho112	decision.tsv	rho_g	upper	1.1199999999999999
+rho112	decision.tsv	rho_g	limit	1.1
+rho112	decision.tsv	rho_g	state	fail
+rho112	decision.tsv	rho_g	upper_jack	1.1199999999999999
+rho112	decision.tsv	rho_g	state_jack	fail
+rho112	decision.tsv	rho_g	boot_nonfinite	0
+rho112	decision.tsv	G1a	estimate	0.047619047619047616
+rho112	decision.tsv	G1a	upper	0.047619047619047616
+rho112	decision.tsv	G1a	limit	0.05
+rho112	decision.tsv	G1a	state	pass
+rho112	decision.tsv	G1a	upper_jack	0.047619047619047616
+rho112	decision.tsv	G1a	state_jack	pass
+rho112	decision.tsv	G1a	boot_nonfinite	0
+rho112	decision.tsv	G1b	estimate	0.0
+rho112	decision.tsv	G1b	upper	0.0
+rho112	decision.tsv	G1b	limit	0.0025
+rho112	decision.tsv	G1b	state	pass
+rho112	decision.tsv	G1b	upper_jack	0.0
+rho112	decision.tsv	G1b	state_jack	pass
+rho112	decision.tsv	G1b	boot_nonfinite	0
+rho112	decision.tsv	G2	estimate	0.0
+rho112	decision.tsv	G2	upper	0.0
+rho112	decision.tsv	G2	limit	0.005
+rho112	decision.tsv	G2	state	pass
+rho112	decision.tsv	G2	upper_jack	0.0
+rho112	decision.tsv	G2	state_jack	pass
+rho112	decision.tsv	G2	boot_nonfinite	0
+rho112	falsifier.tsv	F5'	estimate	0.0
+rho112	falsifier.tsv	F5'	fires	FALSE
+rho112	positive-control.tsv	Phi.S	estimate	1.0
+rho112	positive-control.tsv	Phi.S	passes	FALSE
+rho112	outcome.tsv		outcome	Not calibrated
+rho112	outcome.tsv		rho_g_state	fail
+rho112	outcome.tsv		g1a_state	pass
+rho112	outcome.tsv		g1b_state	pass
+rho112	outcome.tsv		g2_state	pass
+rho112	outcome.tsv		f5_fires	FALSE
+rho112	outcome.tsv		pc_pass	FALSE
+rho112	outcome.tsv		rho_g	1.1199999999999999
+rho112	outcome.tsv		kind	outcome
+split	decision.tsv	rho_g	estimate	1.008
+split	decision.tsv	rho_g	upper	1.008
+split	decision.tsv	rho_g	limit	1.1
+split	decision.tsv	rho_g	state	pass
+split	decision.tsv	rho_g	upper_jack	1.008
+split	decision.tsv	rho_g	state_jack	pass
+split	decision.tsv	rho_g	boot_nonfinite	0
+split	decision.tsv	G1a	estimate	0.047619047619047616
+split	decision.tsv	G1a	upper	0.047619047619047616
+split	decision.tsv	G1a	limit	0.05
+split	decision.tsv	G1a	state	pass
+split	decision.tsv	G1a	upper_jack	0.047619047619047616
+split	decision.tsv	G1a	state_jack	pass
+split	decision.tsv	G1a	boot_nonfinite	0
+split	decision.tsv	G1b	estimate	0.0
+split	decision.tsv	G1b	upper	0.0
+split	decision.tsv	G1b	limit	0.0025
+split	decision.tsv	G1b	state	pass
+split	decision.tsv	G1b	upper_jack	0.0
+split	decision.tsv	G1b	state_jack	pass
+split	decision.tsv	G1b	boot_nonfinite	0
+split	decision.tsv	G2	estimate	0.0
+split	decision.tsv	G2	upper	0.0
+split	decision.tsv	G2	limit	0.005
+split	decision.tsv	G2	state	pass
+split	decision.tsv	G2	upper_jack	0.0
+split	decision.tsv	G2	state_jack	pass
+split	decision.tsv	G2	boot_nonfinite	0
+split	falsifier.tsv	F5'	estimate	0.0
+split	falsifier.tsv	F5'	fires	FALSE
+split	positive-control.tsv	Phi.S	estimate	1.0
+split	positive-control.tsv	Phi.S	passes	FALSE
+split	outcome.tsv		outcome	Calibrated
+split	outcome.tsv		rho_g_state	pass
+split	outcome.tsv		g1a_state	pass
+split	outcome.tsv		g1b_state	pass
+split	outcome.tsv		g2_state	pass
+split	outcome.tsv		f5_fires	FALSE
+split	outcome.tsv		pc_pass	FALSE
+split	outcome.tsv		rho_g	1.008
+split	outcome.tsv		kind	outcome
+split	pooled.tsv	pool|twelve|vd|rhog_l1.B1	estimate	1.7999999999999998
+split	pooled.tsv	pool|twelve|vd|rhog_l0.B1	estimate	1.0
+split	pooled.tsv	pool|twelve|vd|rhog.B1	estimate	1.008
+g1a_fail	decision.tsv	rho_g	estimate	1.0
+g1a_fail	decision.tsv	rho_g	upper	1.0
+g1a_fail	decision.tsv	rho_g	limit	1.1
+g1a_fail	decision.tsv	rho_g	state	pass
+g1a_fail	decision.tsv	rho_g	upper_jack	1.0
+g1a_fail	decision.tsv	rho_g	state_jack	pass
+g1a_fail	decision.tsv	rho_g	boot_nonfinite	0
+g1a_fail	decision.tsv	G1a	estimate	0.052
+g1a_fail	decision.tsv	G1a	upper	0.052
+g1a_fail	decision.tsv	G1a	limit	0.05
+g1a_fail	decision.tsv	G1a	state	fail
+g1a_fail	decision.tsv	G1a	upper_jack	0.052
+g1a_fail	decision.tsv	G1a	state_jack	fail
+g1a_fail	decision.tsv	G1a	boot_nonfinite	0
+g1a_fail	decision.tsv	G1b	estimate	0.0
+g1a_fail	decision.tsv	G1b	upper	0.0
+g1a_fail	decision.tsv	G1b	limit	0.0025
+g1a_fail	decision.tsv	G1b	state	pass
+g1a_fail	decision.tsv	G1b	upper_jack	0.0
+g1a_fail	decision.tsv	G1b	state_jack	pass
+g1a_fail	decision.tsv	G1b	boot_nonfinite	0
+g1a_fail	decision.tsv	G2	estimate	0.0
+g1a_fail	decision.tsv	G2	upper	0.0
+g1a_fail	decision.tsv	G2	limit	0.005
+g1a_fail	decision.tsv	G2	state	pass
+g1a_fail	decision.tsv	G2	upper_jack	0.0
+g1a_fail	decision.tsv	G2	state_jack	pass
+g1a_fail	decision.tsv	G2	boot_nonfinite	0
+g1a_fail	falsifier.tsv	F5'	estimate	0.0
+g1a_fail	falsifier.tsv	F5'	fires	FALSE
+g1a_fail	positive-control.tsv	Phi.S	estimate	1.0
+g1a_fail	positive-control.tsv	Phi.S	passes	FALSE
+g1a_fail	outcome.tsv		outcome	Not calibrated
+g1a_fail	outcome.tsv		rho_g_state	pass
+g1a_fail	outcome.tsv		g1a_state	fail
+g1a_fail	outcome.tsv		g1b_state	pass
+g1a_fail	outcome.tsv		g2_state	pass
+g1a_fail	outcome.tsv		f5_fires	FALSE
+g1a_fail	outcome.tsv		pc_pass	FALSE
+g1a_fail	outcome.tsv		rho_g	1.0
+g1a_fail	outcome.tsv		kind	outcome
+g1a_pass_edge	decision.tsv	rho_g	estimate	1.0
+g1a_pass_edge	decision.tsv	rho_g	upper	1.0
+g1a_pass_edge	decision.tsv	rho_g	limit	1.1
+g1a_pass_edge	decision.tsv	rho_g	state	pass
+g1a_pass_edge	decision.tsv	rho_g	upper_jack	1.0
+g1a_pass_edge	decision.tsv	rho_g	state_jack	pass
+g1a_pass_edge	decision.tsv	rho_g	boot_nonfinite	0
+g1a_pass_edge	decision.tsv	G1a	estimate	0.05
+g1a_pass_edge	decision.tsv	G1a	upper	0.05
+g1a_pass_edge	decision.tsv	G1a	limit	0.05
+g1a_pass_edge	decision.tsv	G1a	state	pass
+g1a_pass_edge	decision.tsv	G1a	upper_jack	0.05
+g1a_pass_edge	decision.tsv	G1a	state_jack	pass
+g1a_pass_edge	decision.tsv	G1a	boot_nonfinite	0
+g1a_pass_edge	decision.tsv	G1b	estimate	0.0
+g1a_pass_edge	decision.tsv	G1b	upper	0.0
+g1a_pass_edge	decision.tsv	G1b	limit	0.0025
+g1a_pass_edge	decision.tsv	G1b	state	pass
+g1a_pass_edge	decision.tsv	G1b	upper_jack	0.0
+g1a_pass_edge	decision.tsv	G1b	state_jack	pass
+g1a_pass_edge	decision.tsv	G1b	boot_nonfinite	0
+g1a_pass_edge	decision.tsv	G2	estimate	0.0
+g1a_pass_edge	decision.tsv	G2	upper	0.0
+g1a_pass_edge	decision.tsv	G2	limit	0.005
+g1a_pass_edge	decision.tsv	G2	state	pass
+g1a_pass_edge	decision.tsv	G2	upper_jack	0.0
+g1a_pass_edge	decision.tsv	G2	state_jack	pass
+g1a_pass_edge	decision.tsv	G2	boot_nonfinite	0
+g1a_pass_edge	falsifier.tsv	F5'	estimate	0.0
+g1a_pass_edge	falsifier.tsv	F5'	fires	FALSE
+g1a_pass_edge	positive-control.tsv	Phi.S	estimate	1.0
+g1a_pass_edge	positive-control.tsv	Phi.S	passes	FALSE
+g1a_pass_edge	outcome.tsv		outcome	Calibrated
+g1a_pass_edge	outcome.tsv		rho_g_state	pass
+g1a_pass_edge	outcome.tsv		g1a_state	pass
+g1a_pass_edge	outcome.tsv		g1b_state	pass
+g1a_pass_edge	outcome.tsv		g2_state	pass
+g1a_pass_edge	outcome.tsv		f5_fires	FALSE
+g1a_pass_edge	outcome.tsv		pc_pass	FALSE
+g1a_pass_edge	outcome.tsv		rho_g	1.0
+g1a_pass_edge	outcome.tsv		kind	outcome
+g1b_fail	decision.tsv	rho_g	estimate	1.0
+g1b_fail	decision.tsv	rho_g	upper	1.0
+g1b_fail	decision.tsv	rho_g	limit	1.1
+g1b_fail	decision.tsv	rho_g	state	pass
+g1b_fail	decision.tsv	rho_g	upper_jack	1.0
+g1b_fail	decision.tsv	rho_g	state_jack	pass
+g1b_fail	decision.tsv	rho_g	boot_nonfinite	0
+g1b_fail	decision.tsv	G1a	estimate	0.0495
+g1b_fail	decision.tsv	G1a	upper	0.0495
+g1b_fail	decision.tsv	G1a	limit	0.05
+g1b_fail	decision.tsv	G1a	state	pass
+g1b_fail	decision.tsv	G1a	upper_jack	0.0495
+g1b_fail	decision.tsv	G1a	state_jack	pass
+g1b_fail	decision.tsv	G1a	boot_nonfinite	0
+g1b_fail	decision.tsv	G1b	estimate	0.003500000000000003
+g1b_fail	decision.tsv	G1b	upper	0.003500000000000003
+g1b_fail	decision.tsv	G1b	limit	0.0025
+g1b_fail	decision.tsv	G1b	state	fail
+g1b_fail	decision.tsv	G1b	upper_jack	0.003500000000000003
+g1b_fail	decision.tsv	G1b	state_jack	fail
+g1b_fail	decision.tsv	G1b	boot_nonfinite	0
+g1b_fail	decision.tsv	G2	estimate	-0.4746666666666667
+g1b_fail	decision.tsv	G2	upper	-0.4746666666666667
+g1b_fail	decision.tsv	G2	limit	0.005
+g1b_fail	decision.tsv	G2	state	pass
+g1b_fail	decision.tsv	G2	upper_jack	-0.4746666666666667
+g1b_fail	decision.tsv	G2	state_jack	pass
+g1b_fail	decision.tsv	G2	boot_nonfinite	0
+g1b_fail	falsifier.tsv	F5'	estimate	0.0
+g1b_fail	falsifier.tsv	F5'	fires	FALSE
+g1b_fail	positive-control.tsv	Phi.S	estimate	1.0
+g1b_fail	positive-control.tsv	Phi.S	passes	FALSE
+g1b_fail	outcome.tsv		outcome	Not calibrated
+g1b_fail	outcome.tsv		rho_g_state	pass
+g1b_fail	outcome.tsv		g1a_state	pass
+g1b_fail	outcome.tsv		g1b_state	fail
+g1b_fail	outcome.tsv		g2_state	pass
+g1b_fail	outcome.tsv		f5_fires	FALSE
+g1b_fail	outcome.tsv		pc_pass	FALSE
+g1b_fail	outcome.tsv		rho_g	1.0
+g1b_fail	outcome.tsv		kind	outcome
+g1b_pass	decision.tsv	rho_g	estimate	1.0
+g1b_pass	decision.tsv	rho_g	upper	1.0
+g1b_pass	decision.tsv	rho_g	limit	1.1
+g1b_pass	decision.tsv	rho_g	state	pass
+g1b_pass	decision.tsv	rho_g	upper_jack	1.0
+g1b_pass	decision.tsv	rho_g	state_jack	pass
+g1b_pass	decision.tsv	rho_g	boot_nonfinite	0
+g1b_pass	decision.tsv	G1a	estimate	0.048
+g1b_pass	decision.tsv	G1a	upper	0.048
+g1b_pass	decision.tsv	G1a	limit	0.05
+g1b_pass	decision.tsv	G1a	state	pass
+g1b_pass	decision.tsv	G1a	upper_jack	0.048
+g1b_pass	decision.tsv	G1a	state_jack	pass
+g1b_pass	decision.tsv	G1a	boot_nonfinite	0
+g1b_pass	decision.tsv	G1b	estimate	0.0020000000000000018
+g1b_pass	decision.tsv	G1b	upper	0.0020000000000000018
+g1b_pass	decision.tsv	G1b	limit	0.0025
+g1b_pass	decision.tsv	G1b	state	pass
+g1b_pass	decision.tsv	G1b	upper_jack	0.0020000000000000018
+g1b_pass	decision.tsv	G1b	state_jack	pass
+g1b_pass	decision.tsv	G1b	boot_nonfinite	0
+g1b_pass	decision.tsv	G2	estimate	0.0003333333333333244
+g1b_pass	decision.tsv	G2	upper	0.0003333333333333244
+g1b_pass	decision.tsv	G2	limit	0.005
+g1b_pass	decision.tsv	G2	state	pass
+g1b_pass	decision.tsv	G2	upper_jack	0.0003333333333333244
+g1b_pass	decision.tsv	G2	state_jack	pass
+g1b_pass	decision.tsv	G2	boot_nonfinite	0
+g1b_pass	falsifier.tsv	F5'	estimate	0.0
+g1b_pass	falsifier.tsv	F5'	fires	FALSE
+g1b_pass	positive-control.tsv	Phi.S	estimate	1.0
+g1b_pass	positive-control.tsv	Phi.S	passes	FALSE
+g1b_pass	outcome.tsv		outcome	Calibrated
+g1b_pass	outcome.tsv		rho_g_state	pass
+g1b_pass	outcome.tsv		g1a_state	pass
+g1b_pass	outcome.tsv		g1b_state	pass
+g1b_pass	outcome.tsv		g2_state	pass
+g1b_pass	outcome.tsv		f5_fires	FALSE
+g1b_pass	outcome.tsv		pc_pass	FALSE
+g1b_pass	outcome.tsv		rho_g	1.0
+g1b_pass	outcome.tsv		kind	outcome
+g2_fail	decision.tsv	rho_g	estimate	1.0
+g2_fail	decision.tsv	rho_g	upper	1.0
+g2_fail	decision.tsv	rho_g	limit	1.1
+g2_fail	decision.tsv	rho_g	state	pass
+g2_fail	decision.tsv	rho_g	upper_jack	1.0
+g2_fail	decision.tsv	rho_g	state_jack	pass
+g2_fail	decision.tsv	rho_g	boot_nonfinite	0
+g2_fail	decision.tsv	G1a	estimate	0.03289473684210526
+g2_fail	decision.tsv	G1a	upper	0.03289473684210526
+g2_fail	decision.tsv	G1a	limit	0.05
+g2_fail	decision.tsv	G1a	state	pass
+g2_fail	decision.tsv	G1a	upper_jack	0.03289473684210526
+g2_fail	decision.tsv	G1a	state_jack	pass
+g2_fail	decision.tsv	G1a	boot_nonfinite	0
+g2_fail	decision.tsv	G1b	estimate	0.00063667232597623
+g2_fail	decision.tsv	G1b	upper	0.00063667232597623
+g2_fail	decision.tsv	G1b	limit	0.0025
+g2_fail	decision.tsv	G1b	state	pass
+g2_fail	decision.tsv	G1b	upper_jack	0.00063667232597623
+g2_fail	decision.tsv	G1b	state_jack	pass
+g2_fail	decision.tsv	G1b	boot_nonfinite	0
+g2_fail	decision.tsv	G2	estimate	0.006000000000000005
+g2_fail	decision.tsv	G2	upper	0.006000000000000005
+g2_fail	decision.tsv	G2	limit	0.005
+g2_fail	decision.tsv	G2	state	fail
+g2_fail	decision.tsv	G2	upper_jack	0.006000000000000005
+g2_fail	decision.tsv	G2	state_jack	fail
+g2_fail	decision.tsv	G2	boot_nonfinite	0
+g2_fail	falsifier.tsv	F5'	estimate	0.0
+g2_fail	falsifier.tsv	F5'	fires	FALSE
+g2_fail	positive-control.tsv	Phi.S	estimate	1.0
+g2_fail	positive-control.tsv	Phi.S	passes	FALSE
+g2_fail	outcome.tsv		outcome	Not calibrated
+g2_fail	outcome.tsv		rho_g_state	pass
+g2_fail	outcome.tsv		g1a_state	pass
+g2_fail	outcome.tsv		g1b_state	pass
+g2_fail	outcome.tsv		g2_state	fail
+g2_fail	outcome.tsv		f5_fires	FALSE
+g2_fail	outcome.tsv		pc_pass	FALSE
+g2_fail	outcome.tsv		rho_g	1.0
+g2_fail	outcome.tsv		kind	outcome
+g2_below	decision.tsv	rho_g	estimate	1.0
+g2_below	decision.tsv	rho_g	upper	1.0
+g2_below	decision.tsv	rho_g	limit	1.1
+g2_below	decision.tsv	rho_g	state	pass
+g2_below	decision.tsv	rho_g	upper_jack	1.0
+g2_below	decision.tsv	rho_g	state_jack	pass
+g2_below	decision.tsv	rho_g	boot_nonfinite	0
+g2_below	decision.tsv	G1a	estimate	0.0020157226365652087
+g2_below	decision.tsv	G1a	upper	0.0020157226365652087
+g2_below	decision.tsv	G1a	limit	0.05
+g2_below	decision.tsv	G1a	state	pass
+g2_below	decision.tsv	G1a	upper_jack	0.0020157226365652087
+g2_below	decision.tsv	G1a	state_jack	pass
+g2_below	decision.tsv	G1a	boot_nonfinite	0
+g2_below	decision.tsv	G1b	estimate	1.9714652533272745e-05
+g2_below	decision.tsv	G1b	upper	1.9714652533272745e-05
+g2_below	decision.tsv	G1b	limit	0.0025
+g2_below	decision.tsv	G1b	state	pass
+g2_below	decision.tsv	G1b	upper_jack	1.9714652533272745e-05
+g2_below	decision.tsv	G1b	state_jack	pass
+g2_below	decision.tsv	G1b	boot_nonfinite	0
+g2_below	decision.tsv	G2	estimate	0.0049000000000000155
+g2_below	decision.tsv	G2	upper	0.0049000000000000155
+g2_below	decision.tsv	G2	limit	0.005
+g2_below	decision.tsv	G2	state	pass
+g2_below	decision.tsv	G2	upper_jack	0.0049000000000000155
+g2_below	decision.tsv	G2	state_jack	pass
+g2_below	decision.tsv	G2	boot_nonfinite	0
+g2_below	falsifier.tsv	F5'	estimate	0.0
+g2_below	falsifier.tsv	F5'	fires	FALSE
+g2_below	positive-control.tsv	Phi.S	estimate	1.0
+g2_below	positive-control.tsv	Phi.S	passes	FALSE
+g2_below	outcome.tsv		outcome	Calibrated
+g2_below	outcome.tsv		rho_g_state	pass
+g2_below	outcome.tsv		g1a_state	pass
+g2_below	outcome.tsv		g1b_state	pass
+g2_below	outcome.tsv		g2_state	pass
+g2_below	outcome.tsv		f5_fires	FALSE
+g2_below	outcome.tsv		pc_pass	FALSE
+g2_below	outcome.tsv		rho_g	1.0
+g2_below	outcome.tsv		kind	outcome
+g2_at	decision.tsv	rho_g	estimate	1.0
+g2_at	decision.tsv	rho_g	upper	1.0
+g2_at	decision.tsv	rho_g	limit	1.1
+g2_at	decision.tsv	rho_g	state	pass
+g2_at	decision.tsv	rho_g	upper_jack	1.0
+g2_at	decision.tsv	rho_g	state_jack	pass
+g2_at	decision.tsv	rho_g	boot_nonfinite	0
+g2_at	decision.tsv	G1a	estimate	0.04878048780487805
+g2_at	decision.tsv	G1a	upper	0.04878048780487805
+g2_at	decision.tsv	G1a	limit	0.05
+g2_at	decision.tsv	G1a	state	pass
+g2_at	decision.tsv	G1a	upper_jack	0.04878048780487805
+g2_at	decision.tsv	G1a	state_jack	pass
+g2_at	decision.tsv	G1a	boot_nonfinite	0
+g2_at	decision.tsv	G1b	estimate	0.001161440185830434
+g2_at	decision.tsv	G1b	upper	0.001161440185830434
+g2_at	decision.tsv	G1b	limit	0.0025
+g2_at	decision.tsv	G1b	state	pass
+g2_at	decision.tsv	G1b	upper_jack	0.001161440185830434
+g2_at	decision.tsv	G1b	state_jack	pass
+g2_at	decision.tsv	G1b	boot_nonfinite	0
+g2_at	decision.tsv	G2	estimate	0.0050000000000000044
+g2_at	decision.tsv	G2	upper	0.0050000000000000044
+g2_at	decision.tsv	G2	limit	0.005
+g2_at	decision.tsv	G2	state	fail
+g2_at	decision.tsv	G2	upper_jack	0.0050000000000000044
+g2_at	decision.tsv	G2	state_jack	fail
+g2_at	decision.tsv	G2	boot_nonfinite	0
+g2_at	falsifier.tsv	F5'	estimate	0.0
+g2_at	falsifier.tsv	F5'	fires	FALSE
+g2_at	positive-control.tsv	Phi.S	estimate	1.0
+g2_at	positive-control.tsv	Phi.S	passes	FALSE
+g2_at	outcome.tsv		outcome	Not calibrated
+g2_at	outcome.tsv		rho_g_state	pass
+g2_at	outcome.tsv		g1a_state	pass
+g2_at	outcome.tsv		g1b_state	pass
+g2_at	outcome.tsv		g2_state	fail
+g2_at	outcome.tsv		f5_fires	FALSE
+g2_at	outcome.tsv		pc_pass	FALSE
+g2_at	outcome.tsv		rho_g	1.0
+g2_at	outcome.tsv		kind	outcome
+g2_above	decision.tsv	rho_g	estimate	1.0
+g2_above	decision.tsv	rho_g	upper	1.0
+g2_above	decision.tsv	rho_g	limit	1.1
+g2_above	decision.tsv	rho_g	state	pass
+g2_above	decision.tsv	rho_g	upper_jack	1.0
+g2_above	decision.tsv	rho_g	state_jack	pass
+g2_above	decision.tsv	rho_g	boot_nonfinite	0
+g2_above	decision.tsv	G1a	estimate	0.002016535591853196
+g2_above	decision.tsv	G1a	upper	0.002016535591853196
+g2_above	decision.tsv	G1a	limit	0.05
+g2_above	decision.tsv	G1a	state	pass
+g2_above	decision.tsv	G1a	upper_jack	0.002016535591853196
+g2_above	decision.tsv	G1a	state_jack	pass
+g2_above	decision.tsv	G1a	boot_nonfinite	0
+g2_above	decision.tsv	G1b	estimate	2.0527607821260122e-05
+g2_above	decision.tsv	G1b	upper	2.0527607821260122e-05
+g2_above	decision.tsv	G1b	limit	0.0025
+g2_above	decision.tsv	G1b	state	pass
+g2_above	decision.tsv	G1b	upper_jack	2.0527607821260122e-05
+g2_above	decision.tsv	G1b	state_jack	pass
+g2_above	decision.tsv	G1b	boot_nonfinite	0
+g2_above	decision.tsv	G2	estimate	0.005099999999999993
+g2_above	decision.tsv	G2	upper	0.005099999999999993
+g2_above	decision.tsv	G2	limit	0.005
+g2_above	decision.tsv	G2	state	fail
+g2_above	decision.tsv	G2	upper_jack	0.005099999999999993
+g2_above	decision.tsv	G2	state_jack	fail
+g2_above	decision.tsv	G2	boot_nonfinite	0
+g2_above	falsifier.tsv	F5'	estimate	0.0
+g2_above	falsifier.tsv	F5'	fires	FALSE
+g2_above	positive-control.tsv	Phi.S	estimate	1.0
+g2_above	positive-control.tsv	Phi.S	passes	FALSE
+g2_above	outcome.tsv		outcome	Not calibrated
+g2_above	outcome.tsv		rho_g_state	pass
+g2_above	outcome.tsv		g1a_state	pass
+g2_above	outcome.tsv		g1b_state	pass
+g2_above	outcome.tsv		g2_state	fail
+g2_above	outcome.tsv		f5_fires	FALSE
+g2_above	outcome.tsv		pc_pass	FALSE
+g2_above	outcome.tsv		rho_g	1.0
+g2_above	outcome.tsv		kind	outcome
+pc_pass	decision.tsv	rho_g	estimate	1.0499999999999998
+pc_pass	decision.tsv	rho_g	upper	1.0499999999999998
+pc_pass	decision.tsv	rho_g	limit	1.1
+pc_pass	decision.tsv	rho_g	state	pass
+pc_pass	decision.tsv	rho_g	upper_jack	1.0499999999999998
+pc_pass	decision.tsv	rho_g	state_jack	pass
+pc_pass	decision.tsv	rho_g	boot_nonfinite	0
+pc_pass	decision.tsv	G1a	estimate	0.047619047619047616
+pc_pass	decision.tsv	G1a	upper	0.047619047619047616
+pc_pass	decision.tsv	G1a	limit	0.05
+pc_pass	decision.tsv	G1a	state	pass
+pc_pass	decision.tsv	G1a	upper_jack	0.047619047619047616
+pc_pass	decision.tsv	G1a	state_jack	pass
+pc_pass	decision.tsv	G1a	boot_nonfinite	0
+pc_pass	decision.tsv	G1b	estimate	0.0
+pc_pass	decision.tsv	G1b	upper	0.0
+pc_pass	decision.tsv	G1b	limit	0.0025
+pc_pass	decision.tsv	G1b	state	pass
+pc_pass	decision.tsv	G1b	upper_jack	0.0
+pc_pass	decision.tsv	G1b	state_jack	pass
+pc_pass	decision.tsv	G1b	boot_nonfinite	0
+pc_pass	decision.tsv	G2	estimate	0.0
+pc_pass	decision.tsv	G2	upper	0.0
+pc_pass	decision.tsv	G2	limit	0.005
+pc_pass	decision.tsv	G2	state	pass
+pc_pass	decision.tsv	G2	upper_jack	0.0
+pc_pass	decision.tsv	G2	state_jack	pass
+pc_pass	decision.tsv	G2	boot_nonfinite	0
+pc_pass	falsifier.tsv	F5'	estimate	0.0
+pc_pass	falsifier.tsv	F5'	fires	FALSE
+pc_pass	positive-control.tsv	Phi.S	estimate	2.9999999999999996
+pc_pass	positive-control.tsv	Phi.S	passes	TRUE
+pc_pass	outcome.tsv		outcome	Calibrated
+pc_pass	outcome.tsv		rho_g_state	pass
+pc_pass	outcome.tsv		g1a_state	pass
+pc_pass	outcome.tsv		g1b_state	pass
+pc_pass	outcome.tsv		g2_state	pass
+pc_pass	outcome.tsv		f5_fires	FALSE
+pc_pass	outcome.tsv		pc_pass	TRUE
+pc_pass	outcome.tsv		rho_g	1.0499999999999998
+pc_pass	outcome.tsv		kind	outcome
+pc_fail_ok	decision.tsv	rho_g	estimate	1.0499999999999998
+pc_fail_ok	decision.tsv	rho_g	upper	1.0499999999999998
+pc_fail_ok	decision.tsv	rho_g	limit	1.1
+pc_fail_ok	decision.tsv	rho_g	state	pass
+pc_fail_ok	decision.tsv	rho_g	upper_jack	1.0499999999999998
+pc_fail_ok	decision.tsv	rho_g	state_jack	pass
+pc_fail_ok	decision.tsv	rho_g	boot_nonfinite	0
+pc_fail_ok	decision.tsv	G1a	estimate	0.047619047619047616
+pc_fail_ok	decision.tsv	G1a	upper	0.047619047619047616
+pc_fail_ok	decision.tsv	G1a	limit	0.05
+pc_fail_ok	decision.tsv	G1a	state	pass
+pc_fail_ok	decision.tsv	G1a	upper_jack	0.047619047619047616
+pc_fail_ok	decision.tsv	G1a	state_jack	pass
+pc_fail_ok	decision.tsv	G1a	boot_nonfinite	0
+pc_fail_ok	decision.tsv	G1b	estimate	0.0
+pc_fail_ok	decision.tsv	G1b	upper	0.0
+pc_fail_ok	decision.tsv	G1b	limit	0.0025
+pc_fail_ok	decision.tsv	G1b	state	pass
+pc_fail_ok	decision.tsv	G1b	upper_jack	0.0
+pc_fail_ok	decision.tsv	G1b	state_jack	pass
+pc_fail_ok	decision.tsv	G1b	boot_nonfinite	0
+pc_fail_ok	decision.tsv	G2	estimate	0.0
+pc_fail_ok	decision.tsv	G2	upper	0.0
+pc_fail_ok	decision.tsv	G2	limit	0.005
+pc_fail_ok	decision.tsv	G2	state	pass
+pc_fail_ok	decision.tsv	G2	upper_jack	0.0
+pc_fail_ok	decision.tsv	G2	state_jack	pass
+pc_fail_ok	decision.tsv	G2	boot_nonfinite	0
+pc_fail_ok	falsifier.tsv	F5'	estimate	0.0
+pc_fail_ok	falsifier.tsv	F5'	fires	FALSE
+pc_fail_ok	positive-control.tsv	Phi.S	estimate	1.0
+pc_fail_ok	positive-control.tsv	Phi.S	passes	FALSE
+pc_fail_ok	outcome.tsv		outcome	Calibrated
+pc_fail_ok	outcome.tsv		rho_g_state	pass
+pc_fail_ok	outcome.tsv		g1a_state	pass
+pc_fail_ok	outcome.tsv		g1b_state	pass
+pc_fail_ok	outcome.tsv		g2_state	pass
+pc_fail_ok	outcome.tsv		f5_fires	FALSE
+pc_fail_ok	outcome.tsv		pc_pass	FALSE
+pc_fail_ok	outcome.tsv		rho_g	1.0499999999999998
+pc_fail_ok	outcome.tsv		kind	outcome
+f5_fires_pos	decision.tsv	rho_g	estimate	1.0499999999999998
+f5_fires_pos	decision.tsv	rho_g	upper	1.0499999999999998
+f5_fires_pos	decision.tsv	rho_g	limit	1.1
+f5_fires_pos	decision.tsv	rho_g	state	pass
+f5_fires_pos	decision.tsv	rho_g	upper_jack	1.0499999999999998
+f5_fires_pos	decision.tsv	rho_g	state_jack	pass
+f5_fires_pos	decision.tsv	rho_g	boot_nonfinite	0
+f5_fires_pos	decision.tsv	G1a	estimate	0.047619047619047616
+f5_fires_pos	decision.tsv	G1a	upper	0.047619047619047616
+f5_fires_pos	decision.tsv	G1a	limit	0.05
+f5_fires_pos	decision.tsv	G1a	state	pass
+f5_fires_pos	decision.tsv	G1a	upper_jack	0.047619047619047616
+f5_fires_pos	decision.tsv	G1a	state_jack	pass
+f5_fires_pos	decision.tsv	G1a	boot_nonfinite	0
+f5_fires_pos	decision.tsv	G1b	estimate	0.0
+f5_fires_pos	decision.tsv	G1b	upper	0.0
+f5_fires_pos	decision.tsv	G1b	limit	0.0025
+f5_fires_pos	decision.tsv	G1b	state	pass
+f5_fires_pos	decision.tsv	G1b	upper_jack	0.0
+f5_fires_pos	decision.tsv	G1b	state_jack	pass
+f5_fires_pos	decision.tsv	G1b	boot_nonfinite	0
+f5_fires_pos	decision.tsv	G2	estimate	0.0
+f5_fires_pos	decision.tsv	G2	upper	0.0
+f5_fires_pos	decision.tsv	G2	limit	0.005
+f5_fires_pos	decision.tsv	G2	state	pass
+f5_fires_pos	decision.tsv	G2	upper_jack	0.0
+f5_fires_pos	decision.tsv	G2	state_jack	pass
+f5_fires_pos	decision.tsv	G2	boot_nonfinite	0
+f5_fires_pos	falsifier.tsv	F5'	estimate	0.2
+f5_fires_pos	falsifier.tsv	F5'	fires	TRUE
+f5_fires_pos	positive-control.tsv	Phi.S	estimate	1.0
+f5_fires_pos	positive-control.tsv	Phi.S	passes	FALSE
+f5_fires_pos	outcome.tsv		outcome	Withheld
+f5_fires_pos	outcome.tsv		rho_g_state	pass
+f5_fires_pos	outcome.tsv		g1a_state	pass
+f5_fires_pos	outcome.tsv		g1b_state	pass
+f5_fires_pos	outcome.tsv		g2_state	pass
+f5_fires_pos	outcome.tsv		f5_fires	TRUE
+f5_fires_pos	outcome.tsv		pc_pass	FALSE
+f5_fires_pos	outcome.tsv		rho_g	1.0499999999999998
+f5_fires_pos	outcome.tsv		kind	outcome
+f5_fires_neg	decision.tsv	rho_g	estimate	1.0499999999999998
+f5_fires_neg	decision.tsv	rho_g	upper	1.0499999999999998
+f5_fires_neg	decision.tsv	rho_g	limit	1.1
+f5_fires_neg	decision.tsv	rho_g	state	pass
+f5_fires_neg	decision.tsv	rho_g	upper_jack	1.0499999999999998
+f5_fires_neg	decision.tsv	rho_g	state_jack	pass
+f5_fires_neg	decision.tsv	rho_g	boot_nonfinite	0
+f5_fires_neg	decision.tsv	G1a	estimate	0.047619047619047616
+f5_fires_neg	decision.tsv	G1a	upper	0.047619047619047616
+f5_fires_neg	decision.tsv	G1a	limit	0.05
+f5_fires_neg	decision.tsv	G1a	state	pass
+f5_fires_neg	decision.tsv	G1a	upper_jack	0.047619047619047616
+f5_fires_neg	decision.tsv	G1a	state_jack	pass
+f5_fires_neg	decision.tsv	G1a	boot_nonfinite	0
+f5_fires_neg	decision.tsv	G1b	estimate	0.0
+f5_fires_neg	decision.tsv	G1b	upper	0.0
+f5_fires_neg	decision.tsv	G1b	limit	0.0025
+f5_fires_neg	decision.tsv	G1b	state	pass
+f5_fires_neg	decision.tsv	G1b	upper_jack	0.0
+f5_fires_neg	decision.tsv	G1b	state_jack	pass
+f5_fires_neg	decision.tsv	G1b	boot_nonfinite	0
+f5_fires_neg	decision.tsv	G2	estimate	0.0
+f5_fires_neg	decision.tsv	G2	upper	0.0
+f5_fires_neg	decision.tsv	G2	limit	0.005
+f5_fires_neg	decision.tsv	G2	state	pass
+f5_fires_neg	decision.tsv	G2	upper_jack	0.0
+f5_fires_neg	decision.tsv	G2	state_jack	pass
+f5_fires_neg	decision.tsv	G2	boot_nonfinite	0
+f5_fires_neg	falsifier.tsv	F5'	estimate	-0.2
+f5_fires_neg	falsifier.tsv	F5'	fires	TRUE
+f5_fires_neg	positive-control.tsv	Phi.S	estimate	1.0
+f5_fires_neg	positive-control.tsv	Phi.S	passes	FALSE
+f5_fires_neg	outcome.tsv		outcome	Withheld
+f5_fires_neg	outcome.tsv		rho_g_state	pass
+f5_fires_neg	outcome.tsv		g1a_state	pass
+f5_fires_neg	outcome.tsv		g1b_state	pass
+f5_fires_neg	outcome.tsv		g2_state	pass
+f5_fires_neg	outcome.tsv		f5_fires	TRUE
+f5_fires_neg	outcome.tsv		pc_pass	FALSE
+f5_fires_neg	outcome.tsv		rho_g	1.0499999999999998
+f5_fires_neg	outcome.tsv		kind	outcome
+f5_zero	decision.tsv	rho_g	estimate	1.0499999999999998
+f5_zero	decision.tsv	rho_g	upper	1.0499999999999998
+f5_zero	decision.tsv	rho_g	limit	1.1
+f5_zero	decision.tsv	rho_g	state	pass
+f5_zero	decision.tsv	rho_g	upper_jack	1.0499999999999998
+f5_zero	decision.tsv	rho_g	state_jack	pass
+f5_zero	decision.tsv	rho_g	boot_nonfinite	0
+f5_zero	decision.tsv	G1a	estimate	0.047619047619047616
+f5_zero	decision.tsv	G1a	upper	0.047619047619047616
+f5_zero	decision.tsv	G1a	limit	0.05
+f5_zero	decision.tsv	G1a	state	pass
+f5_zero	decision.tsv	G1a	upper_jack	0.047619047619047616
+f5_zero	decision.tsv	G1a	state_jack	pass
+f5_zero	decision.tsv	G1a	boot_nonfinite	0
+f5_zero	decision.tsv	G1b	estimate	0.0
+f5_zero	decision.tsv	G1b	upper	0.0
+f5_zero	decision.tsv	G1b	limit	0.0025
+f5_zero	decision.tsv	G1b	state	pass
+f5_zero	decision.tsv	G1b	upper_jack	0.0
+f5_zero	decision.tsv	G1b	state_jack	pass
+f5_zero	decision.tsv	G1b	boot_nonfinite	0
+f5_zero	decision.tsv	G2	estimate	0.0
+f5_zero	decision.tsv	G2	upper	0.0
+f5_zero	decision.tsv	G2	limit	0.005
+f5_zero	decision.tsv	G2	state	pass
+f5_zero	decision.tsv	G2	upper_jack	0.0
+f5_zero	decision.tsv	G2	state_jack	pass
+f5_zero	decision.tsv	G2	boot_nonfinite	0
+f5_zero	falsifier.tsv	F5'	estimate	0.0
+f5_zero	falsifier.tsv	F5'	fires	FALSE
+f5_zero	positive-control.tsv	Phi.S	estimate	1.0
+f5_zero	positive-control.tsv	Phi.S	passes	FALSE
+f5_zero	outcome.tsv		outcome	Calibrated
+f5_zero	outcome.tsv		rho_g_state	pass
+f5_zero	outcome.tsv		g1a_state	pass
+f5_zero	outcome.tsv		g1b_state	pass
+f5_zero	outcome.tsv		g2_state	pass
+f5_zero	outcome.tsv		f5_fires	FALSE
+f5_zero	outcome.tsv		pc_pass	FALSE
+f5_zero	outcome.tsv		rho_g	1.0499999999999998
+f5_zero	outcome.tsv		kind	outcome
+f5_and_fail	decision.tsv	rho_g	estimate	1.1199999999999999
+f5_and_fail	decision.tsv	rho_g	upper	1.1199999999999999
+f5_and_fail	decision.tsv	rho_g	limit	1.1
+f5_and_fail	decision.tsv	rho_g	state	fail
+f5_and_fail	decision.tsv	rho_g	upper_jack	1.1199999999999999
+f5_and_fail	decision.tsv	rho_g	state_jack	fail
+f5_and_fail	decision.tsv	rho_g	boot_nonfinite	0
+f5_and_fail	decision.tsv	G1a	estimate	0.047619047619047616
+f5_and_fail	decision.tsv	G1a	upper	0.047619047619047616
+f5_and_fail	decision.tsv	G1a	limit	0.05
+f5_and_fail	decision.tsv	G1a	state	pass
+f5_and_fail	decision.tsv	G1a	upper_jack	0.047619047619047616
+f5_and_fail	decision.tsv	G1a	state_jack	pass
+f5_and_fail	decision.tsv	G1a	boot_nonfinite	0
+f5_and_fail	decision.tsv	G1b	estimate	0.0
+f5_and_fail	decision.tsv	G1b	upper	0.0
+f5_and_fail	decision.tsv	G1b	limit	0.0025
+f5_and_fail	decision.tsv	G1b	state	pass
+f5_and_fail	decision.tsv	G1b	upper_jack	0.0
+f5_and_fail	decision.tsv	G1b	state_jack	pass
+f5_and_fail	decision.tsv	G1b	boot_nonfinite	0
+f5_and_fail	decision.tsv	G2	estimate	0.0
+f5_and_fail	decision.tsv	G2	upper	0.0
+f5_and_fail	decision.tsv	G2	limit	0.005
+f5_and_fail	decision.tsv	G2	state	pass
+f5_and_fail	decision.tsv	G2	upper_jack	0.0
+f5_and_fail	decision.tsv	G2	state_jack	pass
+f5_and_fail	decision.tsv	G2	boot_nonfinite	0
+f5_and_fail	falsifier.tsv	F5'	estimate	0.2
+f5_and_fail	falsifier.tsv	F5'	fires	TRUE
+f5_and_fail	positive-control.tsv	Phi.S	estimate	1.0
+f5_and_fail	positive-control.tsv	Phi.S	passes	FALSE
+f5_and_fail	outcome.tsv		outcome	Withheld
+f5_and_fail	outcome.tsv		rho_g_state	fail
+f5_and_fail	outcome.tsv		g1a_state	pass
+f5_and_fail	outcome.tsv		g1b_state	pass
+f5_and_fail	outcome.tsv		g2_state	pass
+f5_and_fail	outcome.tsv		f5_fires	TRUE
+f5_and_fail	outcome.tsv		pc_pass	FALSE
+f5_and_fail	outcome.tsv		rho_g	1.1199999999999999
+f5_and_fail	outcome.tsv		kind	outcome
+noadded	decision.tsv	rho_g	estimate	NA
+noadded	decision.tsv	rho_g	upper	NA
+noadded	decision.tsv	rho_g	limit	1.1
+noadded	decision.tsv	rho_g	state	fail
+noadded	decision.tsv	rho_g	upper_jack	NA
+noadded	decision.tsv	rho_g	state_jack	fail
+noadded	decision.tsv	rho_g	boot_nonfinite	1000
+noadded	decision.tsv	G1a	estimate	0.047619047619047616
+noadded	decision.tsv	G1a	upper	0.047619047619047616
+noadded	decision.tsv	G1a	limit	0.05
+noadded	decision.tsv	G1a	state	pass
+noadded	decision.tsv	G1a	upper_jack	0.047619047619047616
+noadded	decision.tsv	G1a	state_jack	pass
+noadded	decision.tsv	G1a	boot_nonfinite	0
+noadded	decision.tsv	G1b	estimate	0.0
+noadded	decision.tsv	G1b	upper	0.0
+noadded	decision.tsv	G1b	limit	0.0025
+noadded	decision.tsv	G1b	state	pass
+noadded	decision.tsv	G1b	upper_jack	0.0
+noadded	decision.tsv	G1b	state_jack	pass
+noadded	decision.tsv	G1b	boot_nonfinite	0
+noadded	decision.tsv	G2	estimate	0.0
+noadded	decision.tsv	G2	upper	0.0
+noadded	decision.tsv	G2	limit	0.005
+noadded	decision.tsv	G2	state	pass
+noadded	decision.tsv	G2	upper_jack	0.0
+noadded	decision.tsv	G2	state_jack	pass
+noadded	decision.tsv	G2	boot_nonfinite	0
+noadded	falsifier.tsv	F5'	estimate	0.0
+noadded	falsifier.tsv	F5'	fires	FALSE
+noadded	positive-control.tsv	Phi.S	estimate	1.0
+noadded	positive-control.tsv	Phi.S	passes	FALSE
+noadded	outcome.tsv		outcome	Not calibrated
+noadded	outcome.tsv		rho_g_state	fail
+noadded	outcome.tsv		g1a_state	pass
+noadded	outcome.tsv		g1b_state	pass
+noadded	outcome.tsv		g2_state	pass
+noadded	outcome.tsv		f5_fires	FALSE
+noadded	outcome.tsv		pc_pass	FALSE
+noadded	outcome.tsv		rho_g	NA
+noadded	outcome.tsv		kind	outcome
+noadded	labels-settings.tsv	A|vd5	label	not determined
+noadded	labels-settings.tsv	A|vd5	estimate	NA
+noadded	settings.tsv	setting|A|vd5|rhog.B1	boot_nonfinite	1000
+noadded	settings.tsv	setting|A|vd5|rhog.B1	estimate	NA
+noadded	labels-settings.tsv	A|vd10	label	not determined
+noadded	labels-settings.tsv	A|vd10	estimate	NA
+noadded	settings.tsv	setting|A|vd10|rhog.B1	boot_nonfinite	1000
+noadded	settings.tsv	setting|A|vd10|rhog.B1	estimate	NA
+noadded	labels-settings.tsv	A|vd25	label	not determined
+noadded	labels-settings.tsv	A|vd25	estimate	NA
+noadded	settings.tsv	setting|A|vd25|rhog.B1	boot_nonfinite	1000
+noadded	settings.tsv	setting|A|vd25|rhog.B1	estimate	NA
+noadded	labels-settings.tsv	B|vd5	label	not determined
+noadded	labels-settings.tsv	B|vd5	estimate	NA
+noadded	settings.tsv	setting|B|vd5|rhog.B1	boot_nonfinite	1000
+noadded	settings.tsv	setting|B|vd5|rhog.B1	estimate	NA
+noadded	labels-settings.tsv	B|vd10	label	not determined
+noadded	labels-settings.tsv	B|vd10	estimate	NA
+noadded	settings.tsv	setting|B|vd10|rhog.B1	boot_nonfinite	1000
+noadded	settings.tsv	setting|B|vd10|rhog.B1	estimate	NA
+noadded	labels-settings.tsv	B|vd25	label	not determined
+noadded	labels-settings.tsv	B|vd25	estimate	NA
+noadded	settings.tsv	setting|B|vd25|rhog.B1	boot_nonfinite	1000
+noadded	settings.tsv	setting|B|vd25|rhog.B1	estimate	NA
+noadded	labels-settings.tsv	C|vd5	label	not determined
+noadded	labels-settings.tsv	C|vd5	estimate	NA
+noadded	settings.tsv	setting|C|vd5|rhog.B1	boot_nonfinite	1000
+noadded	settings.tsv	setting|C|vd5|rhog.B1	estimate	NA
+noadded	labels-settings.tsv	C|vd10	label	not determined
+noadded	labels-settings.tsv	C|vd10	estimate	NA
+noadded	settings.tsv	setting|C|vd10|rhog.B1	boot_nonfinite	1000
+noadded	settings.tsv	setting|C|vd10|rhog.B1	estimate	NA
+noadded	labels-settings.tsv	C|vd25	label	not determined
+noadded	labels-settings.tsv	C|vd25	estimate	NA
+noadded	settings.tsv	setting|C|vd25|rhog.B1	boot_nonfinite	1000
+noadded	settings.tsv	setting|C|vd25|rhog.B1	estimate	NA
+noadded	labels-settings.tsv	D|vd5	label	not determined
+noadded	labels-settings.tsv	D|vd5	estimate	NA
+noadded	settings.tsv	setting|D|vd5|rhog.B1	boot_nonfinite	1000
+noadded	settings.tsv	setting|D|vd5|rhog.B1	estimate	NA
+noadded	labels-settings.tsv	D|vd10	label	not determined
+noadded	labels-settings.tsv	D|vd10	estimate	NA
+noadded	settings.tsv	setting|D|vd10|rhog.B1	boot_nonfinite	1000
+noadded	settings.tsv	setting|D|vd10|rhog.B1	estimate	NA
+noadded	labels-settings.tsv	D|vd25	label	not determined
+noadded	labels-settings.tsv	D|vd25	estimate	NA
+noadded	settings.tsv	setting|D|vd25|rhog.B1	boot_nonfinite	1000
+noadded	settings.tsv	setting|D|vd25|rhog.B1	estimate	NA
+partial	decision.tsv	rho_g	estimate	2.0
+partial	decision.tsv	rho_g	upper	2.0
+partial	decision.tsv	rho_g	state	fail
+partial	decision.tsv	rho_g	boot_nonfinite	>0
+partial	decision.tsv	rho_g	upper_jack	NA
+partial	outcome.tsv		outcome	Not calibrated
+partial	settings.tsv	setting|A|vd5|rhog.B1	estimate	2.0
+partial	settings.tsv	setting|A|vd5|rhog.B1	lo95	2.0
+partial	settings.tsv	setting|A|vd5|rhog.B1	hi95	2.0
+partial	settings.tsv	setting|A|vd5|rhog.B1	boot_nonfinite	>0
+partial	labels-settings.tsv	A|vd5	label	exceeds margin
+partial	labels-settings.tsv	A|vd5	label_jack	not determined
+partial	labels-settings.tsv	B|vd5	label	not determined
+fields	decision.tsv	rho_g	estimate	0.9512715977480101
+fields	decision.tsv	rho_g	upper	0.9512715977480101
+fields	decision.tsv	rho_g	limit	1.1
+fields	decision.tsv	rho_g	state	pass
+fields	decision.tsv	rho_g	upper_jack	0.9512715977480101
+fields	decision.tsv	rho_g	state_jack	pass
+fields	decision.tsv	rho_g	boot_nonfinite	0
+fields	decision.tsv	G1a	estimate	0.06666666666666667
+fields	decision.tsv	G1a	upper	0.06666666666666667
+fields	decision.tsv	G1a	limit	0.05
+fields	decision.tsv	G1a	state	fail
+fields	decision.tsv	G1a	upper_jack	0.06666666666666667
+fields	decision.tsv	G1a	state_jack	fail
+fields	decision.tsv	G1a	boot_nonfinite	0
+fields	decision.tsv	G1b	estimate	0.0033269353806781865
+fields	decision.tsv	G1b	upper	0.0033269353806781865
+fields	decision.tsv	G1b	limit	0.0025
+fields	decision.tsv	G1b	state	fail
+fields	decision.tsv	G1b	upper_jack	0.0033269353806781865
+fields	decision.tsv	G1b	state_jack	fail
+fields	decision.tsv	G1b	boot_nonfinite	0
+fields	decision.tsv	G2	estimate	-0.033333333333333326
+fields	decision.tsv	G2	upper	-0.033333333333333326
+fields	decision.tsv	G2	limit	0.005
+fields	decision.tsv	G2	state	pass
+fields	decision.tsv	G2	upper_jack	-0.033333333333333326
+fields	decision.tsv	G2	state_jack	pass
+fields	decision.tsv	G2	boot_nonfinite	0
+fields	falsifier.tsv	F5'	estimate	0.0
+fields	falsifier.tsv	F5'	fires	FALSE
+fields	positive-control.tsv	Phi.S	estimate	1.0
+fields	positive-control.tsv	Phi.S	passes	FALSE
+fields	outcome.tsv		outcome	Not calibrated
+fields	outcome.tsv		rho_g_state	pass
+fields	outcome.tsv		g1a_state	fail
+fields	outcome.tsv		g1b_state	fail
+fields	outcome.tsv		g2_state	pass
+fields	outcome.tsv		f5_fires	FALSE
+fields	outcome.tsv		pc_pass	FALSE
+fields	outcome.tsv		rho_g	0.9512715977480101
+fields	outcome.tsv		kind	outcome
+fields	settings.tsv	setting|A|vd5|rhog.B1	R	4
+fields	settings.tsv	setting|A|vd5|rhog.B1	estimate	1.0247358069140247
+fields	settings.tsv	setting|A|vd5|rhog.B1	lo95	1.0247358069140247
+fields	settings.tsv	setting|A|vd5|rhog.B1	hi95	1.0247358069140247
+fields	settings.tsv	setting|A|vd5|rhog.B1	jack_se	0.0
+fields	settings.tsv	setting|A|vd5|rhog.B1	boot_nonfinite	0
+fields	settings.tsv	setting|A|vd5|rhog_l1.B1	estimate	5.262626262626262
+fields	settings.tsv	setting|A|vd5|rhog_l0.B1	estimate	0.9823569023569023
+fields	settings.tsv	setting|A|vd5|B1.fdr_bh	estimate	0.06611570247933884
+fields	settings.tsv	setting|A|vd5|dfdrbh.B1	estimate	0.0006951417316753
+fields	settings.tsv	setting|A|vd5|dpowbh.B1	estimate	-0.01830985915492958
+fields	settings.tsv	setting|A|vd5|B1.gadd_per_r	R	4
+fields	settings.tsv	setting|A|vd5|B1.gadd_per_r	estimate	1111.0
+fields	settings.tsv	setting|A|vd5|B1.gadd_per_r	lo95	1111.0
+fields	settings.tsv	setting|A|vd5|B1.gadd_per_r	hi95	1111.0
+fields	settings.tsv	setting|A|vd5|B1.gadd_per_r	jack_se	0.0
+fields	settings.tsv	setting|A|vd5|B1.gadd_per_r	boot_nonfinite	0
+fields	settings.tsv	setting|A|vd5|B.alpha_whole	estimate	0.05182341650671785
+fields	labels-settings.tsv	A|vd5	R	4
+fields	labels-settings.tsv	A|vd5	estimate	1.0247358069140247
+fields	labels-settings.tsv	A|vd5	lower	1.0247358069140247
+fields	labels-settings.tsv	A|vd5	upper	1.0247358069140247
+fields	labels-settings.tsv	A|vd5	label	within margin
+fields	labels-settings.tsv	A|vd5	label_jack	within margin
+fields	settings.tsv	setting|A|vd10|rhog.B1	R	4
+fields	settings.tsv	setting|A|vd10|rhog.B1	estimate	1.0366336633663367
+fields	settings.tsv	setting|A|vd10|rhog.B1	lo95	1.0366336633663367
+fields	settings.tsv	setting|A|vd10|rhog.B1	hi95	1.0366336633663367
+fields	settings.tsv	setting|A|vd10|rhog.B1	jack_se	0.0
+fields	settings.tsv	setting|A|vd10|rhog.B1	boot_nonfinite	0
+fields	settings.tsv	setting|A|vd10|rhog_l1.B1	estimate	6.345454545454545
+fields	settings.tsv	setting|A|vd10|rhog_l0.B1	estimate	0.9835454545454545
+fields	settings.tsv	setting|A|vd10|B1.fdr_bh	estimate	0.06818181818181818
+fields	settings.tsv	setting|A|vd10|dfdrbh.B1	estimate	-0.008089368258859794
+fields	settings.tsv	setting|A|vd10|dpowbh.B1	estimate	-0.01944444444444446
+fields	settings.tsv	setting|A|vd10|B1.gadd_per_r	R	4
+fields	settings.tsv	setting|A|vd10|B1.gadd_per_r	estimate	1212.0
+fields	settings.tsv	setting|A|vd10|B1.gadd_per_r	lo95	1212.0
+fields	settings.tsv	setting|A|vd10|B1.gadd_per_r	hi95	1212.0
+fields	settings.tsv	setting|A|vd10|B1.gadd_per_r	jack_se	0.0
+fields	settings.tsv	setting|A|vd10|B1.gadd_per_r	boot_nonfinite	0
+fields	settings.tsv	setting|A|vd10|B.alpha_whole	estimate	0.05253104106972302
+fields	labels-settings.tsv	A|vd10	R	4
+fields	labels-settings.tsv	A|vd10	estimate	1.0366336633663367
+fields	labels-settings.tsv	A|vd10	lower	1.0366336633663367
+fields	labels-settings.tsv	A|vd10	upper	1.0366336633663367
+fields	labels-settings.tsv	A|vd10	label	within margin
+fields	labels-settings.tsv	A|vd10	label_jack	within margin
+fields	settings.tsv	setting|A|vd25|rhog.B1	R	4
+fields	settings.tsv	setting|A|vd25|rhog.B1	estimate	1.0444456533565445
+fields	settings.tsv	setting|A|vd25|rhog.B1	lo95	1.0444456533565445
+fields	settings.tsv	setting|A|vd25|rhog.B1	hi95	1.0444456533565445
+fields	settings.tsv	setting|A|vd25|rhog.B1	jack_se	0.0
+fields	settings.tsv	setting|A|vd25|rhog.B1	boot_nonfinite	0
+fields	settings.tsv	setting|A|vd25|rhog_l1.B1	estimate	7.225274725274726
+fields	settings.tsv	setting|A|vd25|rhog_l0.B1	estimate	0.9826373626373627
+fields	settings.tsv	setting|A|vd25|B1.fdr_bh	estimate	0.06993006993006994
+fields	settings.tsv	setting|A|vd25|dfdrbh.B1	estimate	-0.015341247899387428
+fields	settings.tsv	setting|A|vd25|dpowbh.B1	estimate	-0.02054794520547945
+fields	settings.tsv	setting|A|vd25|B1.gadd_per_r	R	4
+fields	settings.tsv	setting|A|vd25|B1.gadd_per_r	estimate	1313.0
+fields	settings.tsv	setting|A|vd25|B1.gadd_per_r	lo95	1313.0
+fields	settings.tsv	setting|A|vd25|B1.gadd_per_r	hi95	1313.0
+fields	settings.tsv	setting|A|vd25|B1.gadd_per_r	jack_se	0.0
+fields	settings.tsv	setting|A|vd25|B1.gadd_per_r	boot_nonfinite	0
+fields	settings.tsv	setting|A|vd25|B.alpha_whole	estimate	0.053231939163498096
+fields	labels-settings.tsv	A|vd25	R	4
+fields	labels-settings.tsv	A|vd25	estimate	1.0444456533565445
+fields	labels-settings.tsv	A|vd25	lower	1.0444456533565445
+fields	labels-settings.tsv	A|vd25	upper	1.0444456533565445
+fields	labels-settings.tsv	A|vd25	label	within margin
+fields	labels-settings.tsv	A|vd25	label_jack	within margin
+fields	designs.tsv	design|A|vd|rhog.B1	estimate	1.0366336633663367
+fields	designs.tsv	design|A|vd|rhog.B1	R	4
+fields	designs.tsv	design|A|vd|rhog_l1.B1	estimate	6.345454545454545
+fields	designs.tsv	design|A|vd|rhog_l1.B1	R	4
+fields	designs.tsv	design|A|vd|rhog_l0.B1	estimate	0.9835454545454545
+fields	designs.tsv	design|A|vd|rhog_l0.B1	R	4
+fields	designs.tsv	design|A|vd|B1.gadd_per_r	estimate	1212.0
+fields	designs.tsv	design|A|vd|B1.gadd_per_r	R	4
+fields	designs.tsv	design|A|vd|B1.fdr_bh	estimate	0.06818181818181818
+fields	designs.tsv	design|A|vd|B1.fdr_bh	R	4
+fields	settings.tsv	setting|B|vd5|rhog.B1	R	4
+fields	settings.tsv	setting|B|vd5|rhog.B1	estimate	0.9817447910204553
+fields	settings.tsv	setting|B|vd5|rhog.B1	lo95	0.9817447910204553
+fields	settings.tsv	setting|B|vd5|rhog.B1	hi95	0.9817447910204553
+fields	settings.tsv	setting|B|vd5|rhog.B1	jack_se	0.0
+fields	settings.tsv	setting|B|vd5|rhog.B1	boot_nonfinite	0
+fields	settings.tsv	setting|B|vd5|rhog_l1.B1	estimate	3.605680868838763
+fields	settings.tsv	setting|B|vd5|rhog_l0.B1	estimate	0.9555054302422722
+fields	settings.tsv	setting|B|vd5|B1.fdr_bh	estimate	0.06578947368421052
+fields	settings.tsv	setting|B|vd5|dfdrbh.B1	estimate	0.0063835330901511195
+fields	settings.tsv	setting|B|vd5|dpowbh.B1	estimate	-0.028395061728395066
+fields	settings.tsv	setting|B|vd5|B1.gadd_per_r	R	4
+fields	settings.tsv	setting|B|vd5|B1.gadd_per_r	estimate	2121.0
+fields	settings.tsv	setting|B|vd5|B1.gadd_per_r	lo95	2121.0
+fields	settings.tsv	setting|B|vd5|B1.gadd_per_r	hi95	2121.0
+fields	settings.tsv	setting|B|vd5|B1.gadd_per_r	jack_se	0.0
+fields	settings.tsv	setting|B|vd5|B1.gadd_per_r	boot_nonfinite	0
+fields	settings.tsv	setting|B|vd5|B.alpha_whole	estimate	0.05282669138090825
+fields	labels-settings.tsv	B|vd5	R	4
+fields	labels-settings.tsv	B|vd5	estimate	0.9817447910204553
+fields	labels-settings.tsv	B|vd5	lower	0.9817447910204553
+fields	labels-settings.tsv	B|vd5	upper	0.9817447910204553
+fields	labels-settings.tsv	B|vd5	label	within margin
+fields	labels-settings.tsv	B|vd5	label_jack	within margin
+fields	settings.tsv	setting|B|vd10|rhog.B1	R	4
+fields	settings.tsv	setting|B|vd10|rhog.B1	estimate	0.9841087557031566
+fields	settings.tsv	setting|B|vd10|rhog.B1	lo95	0.9841087557031566
+fields	settings.tsv	setting|B|vd10|rhog.B1	hi95	0.9841087557031566
+fields	settings.tsv	setting|B|vd10|rhog.B1	jack_se	0.0
+fields	settings.tsv	setting|B|vd10|rhog.B1	boot_nonfinite	0
+fields	settings.tsv	setting|B|vd10|rhog_l1.B1	estimate	4.247648902821317
+fields	settings.tsv	setting|B|vd10|rhog_l0.B1	estimate	0.951473354231975
+fields	settings.tsv	setting|B|vd10|B1.fdr_bh	estimate	0.06694560669456066
+fields	settings.tsv	setting|B|vd10|dfdrbh.B1	estimate	0.0012179071640442268
+fields	settings.tsv	setting|B|vd10|dpowbh.B1	estimate	-0.029268292682926855
+fields	settings.tsv	setting|B|vd10|B1.gadd_per_r	R	4
+fields	settings.tsv	setting|B|vd10|B1.gadd_per_r	estimate	2222.0
+fields	settings.tsv	setting|B|vd10|B1.gadd_per_r	lo95	2222.0
+fields	settings.tsv	setting|B|vd10|B1.gadd_per_r	hi95	2222.0
+fields	settings.tsv	setting|B|vd10|B1.gadd_per_r	jack_se	0.0
+fields	settings.tsv	setting|B|vd10|B1.gadd_per_r	boot_nonfinite	0
+fields	settings.tsv	setting|B|vd10|B.alpha_whole	estimate	0.05350553505535055
+fields	labels-settings.tsv	B|vd10	R	4
+fields	labels-settings.tsv	B|vd10	estimate	0.9841087557031566
+fields	labels-settings.tsv	B|vd10	lower	0.9841087557031566
+fields	labels-settings.tsv	B|vd10	upper	0.9841087557031566
+fields	labels-settings.tsv	B|vd10	label	within margin
+fields	labels-settings.tsv	B|vd10	label_jack	within margin
+fields	settings.tsv	setting|B|vd25|rhog.B1	R	4
+fields	settings.tsv	setting|B|vd25|rhog.B1	estimate	0.9455263138694121
+fields	settings.tsv	setting|B|vd25|rhog.B1	lo95	0.9455263138694121
+fields	settings.tsv	setting|B|vd25|rhog.B1	hi95	0.9455263138694121
+fields	settings.tsv	setting|B|vd25|rhog.B1	jack_se	0.0
+fields	settings.tsv	setting|B|vd25|rhog.B1	boot_nonfinite	0
+fields	settings.tsv	setting|B|vd25|rhog_l1.B1	estimate	0.8025055268975682
+fields	settings.tsv	setting|B|vd25|rhog_l0.B1	estimate	0.9469565217391305
+fields	settings.tsv	setting|B|vd25|B1.fdr_bh	estimate	0.068
+fields	settings.tsv	setting|B|vd25|dfdrbh.B1	estimate	-0.0034285714285714197
+fields	settings.tsv	setting|B|vd25|dpowbh.B1	estimate	-0.03012048192771083
+fields	settings.tsv	setting|B|vd25|B1.gadd_per_r	R	4
+fields	settings.tsv	setting|B|vd25|B1.gadd_per_r	estimate	2323.0
+fields	settings.tsv	setting|B|vd25|B1.gadd_per_r	lo95	2323.0
+fields	settings.tsv	setting|B|vd25|B1.gadd_per_r	hi95	2323.0
+fields	settings.tsv	setting|B|vd25|B1.gadd_per_r	jack_se	0.0
+fields	settings.tsv	setting|B|vd25|B1.gadd_per_r	boot_nonfinite	0
+fields	settings.tsv	setting|B|vd25|B.alpha_whole	estimate	0.05417814508723599
+fields	labels-settings.tsv	B|vd25	R	4
+fields	labels-settings.tsv	B|vd25	estimate	0.9455263138694121
+fields	labels-settings.tsv	B|vd25	lower	0.9455263138694121
+fields	labels-settings.tsv	B|vd25	upper	0.9455263138694121
+fields	labels-settings.tsv	B|vd25	label	within margin
+fields	labels-settings.tsv	B|vd25	label_jack	within margin
+fields	designs.tsv	design|B|vd|rhog.B1	estimate	0.9700901124595218
+fields	designs.tsv	design|B|vd|rhog.B1	R	4
+fields	designs.tsv	design|B|vd|rhog_l1.B1	estimate	2.8317659352142113
+fields	designs.tsv	design|B|vd|rhog_l1.B1	R	4
+fields	designs.tsv	design|B|vd|rhog_l0.B1	estimate	0.951473354231975
+fields	designs.tsv	design|B|vd|rhog_l0.B1	R	4
+fields	designs.tsv	design|B|vd|B1.gadd_per_r	estimate	2222.0
+fields	designs.tsv	design|B|vd|B1.gadd_per_r	R	4
+fields	designs.tsv	design|B|vd|B1.fdr_bh	estimate	0.06694560669456066
+fields	designs.tsv	design|B|vd|B1.fdr_bh	R	4
+fields	settings.tsv	setting|C|vd5|rhog.B1	R	4
+fields	settings.tsv	setting|C|vd5|rhog.B1	estimate	0.9564356435643565
+fields	settings.tsv	setting|C|vd5|rhog.B1	lo95	0.9564356435643565
+fields	settings.tsv	setting|C|vd5|rhog.B1	hi95	0.9564356435643565
+fields	settings.tsv	setting|C|vd5|rhog.B1	jack_se	0.0
+fields	settings.tsv	setting|C|vd5|rhog.B1	boot_nonfinite	0
+fields	settings.tsv	setting|C|vd5|rhog_l1.B1	estimate	3.0
+fields	settings.tsv	setting|C|vd5|rhog_l0.B1	estimate	0.936
+fields	settings.tsv	setting|C|vd5|B1.fdr_bh	estimate	0.06567164179104477
+fields	settings.tsv	setting|C|vd5|dfdrbh.B1	estimate	0.008432584551987532
+fields	settings.tsv	setting|C|vd5|dpowbh.B1	estimate	-0.036263736263736246
+fields	settings.tsv	setting|C|vd5|B1.gadd_per_r	R	4
+fields	settings.tsv	setting|C|vd5|B1.gadd_per_r	estimate	3131.0
+fields	settings.tsv	setting|C|vd5|B1.gadd_per_r	lo95	3131.0
+fields	settings.tsv	setting|C|vd5|B1.gadd_per_r	hi95	3131.0
+fields	settings.tsv	setting|C|vd5|B1.gadd_per_r	jack_se	0.0
+fields	settings.tsv	setting|C|vd5|B1.gadd_per_r	boot_nonfinite	0
+fields	settings.tsv	setting|C|vd5|B.alpha_whole	estimate	0.053763440860215055
+fields	labels-settings.tsv	C|vd5	R	4
+fields	labels-settings.tsv	C|vd5	estimate	0.9564356435643565
+fields	labels-settings.tsv	C|vd5	lower	0.9564356435643565
+fields	labels-settings.tsv	C|vd5	upper	0.9564356435643565
+fields	labels-settings.tsv	C|vd5	label	within margin
+fields	labels-settings.tsv	C|vd5	label_jack	within margin
+fields	settings.tsv	setting|C|vd10|rhog.B1	R	4
+fields	settings.tsv	setting|C|vd10|rhog.B1	estimate	0.9268128144781692
+fields	settings.tsv	setting|C|vd10|rhog.B1	lo95	0.9268128144781692
+fields	settings.tsv	setting|C|vd10|rhog.B1	hi95	0.9268128144781692
+fields	settings.tsv	setting|C|vd10|rhog.B1	jack_se	0.0
+fields	settings.tsv	setting|C|vd10|rhog.B1	boot_nonfinite	0
+fields	settings.tsv	setting|C|vd10|rhog_l1.B1	estimate	0.5742827868852459
+fields	settings.tsv	setting|C|vd10|rhog_l0.B1	estimate	0.9303381147540984
+fields	settings.tsv	setting|C|vd10|B1.fdr_bh	estimate	0.06647398843930635
+fields	settings.tsv	setting|C|vd10|dfdrbh.B1	estimate	0.004785676750994665
+fields	settings.tsv	setting|C|vd10|dpowbh.B1	estimate	-0.036956521739130443
+fields	settings.tsv	setting|C|vd10|B1.gadd_per_r	R	4
+fields	settings.tsv	setting|C|vd10|B1.gadd_per_r	estimate	3232.0
+fields	settings.tsv	setting|C|vd10|B1.gadd_per_r	lo95	3232.0
+fields	settings.tsv	setting|C|vd10|B1.gadd_per_r	hi95	3232.0
+fields	settings.tsv	setting|C|vd10|B1.gadd_per_r	jack_se	0.0
+fields	settings.tsv	setting|C|vd10|B1.gadd_per_r	boot_nonfinite	0
+fields	settings.tsv	setting|C|vd10|B.alpha_whole	estimate	0.054415700267618196
+fields	labels-settings.tsv	C|vd10	R	4
+fields	labels-settings.tsv	C|vd10	estimate	0.9268128144781692
+fields	labels-settings.tsv	C|vd10	lower	0.9268128144781692
+fields	labels-settings.tsv	C|vd10	upper	0.9268128144781692
+fields	labels-settings.tsv	C|vd10	label	within margin
+fields	labels-settings.tsv	C|vd10	label_jack	within margin
+fields	settings.tsv	setting|C|vd25|rhog.B1	R	4
+fields	settings.tsv	setting|C|vd25|rhog.B1	estimate	0.9263184382954425
+fields	settings.tsv	setting|C|vd25|rhog.B1	lo95	0.9263184382954425
+fields	settings.tsv	setting|C|vd25|rhog.B1	hi95	0.9263184382954425
+fields	settings.tsv	setting|C|vd25|rhog.B1	jack_se	0.0
+fields	settings.tsv	setting|C|vd25|rhog.B1	boot_nonfinite	0
+fields	settings.tsv	setting|C|vd25|rhog_l1.B1	estimate	1.1006842619745845
+fields	settings.tsv	setting|C|vd25|rhog_l0.B1	estimate	0.924574780058651
+fields	settings.tsv	setting|C|vd25|B1.fdr_bh	estimate	0.06722689075630252
+fields	settings.tsv	setting|C|vd25|dfdrbh.B1	estimate	0.0013961697531677253
+fields	settings.tsv	setting|C|vd25|dpowbh.B1	estimate	-0.03763440860215056
+fields	settings.tsv	setting|C|vd25|B1.gadd_per_r	R	4
+fields	settings.tsv	setting|C|vd25|B1.gadd_per_r	estimate	3333.0
+fields	settings.tsv	setting|C|vd25|B1.gadd_per_r	lo95	3333.0
+fields	settings.tsv	setting|C|vd25|B1.gadd_per_r	hi95	3333.0
+fields	settings.tsv	setting|C|vd25|B1.gadd_per_r	jack_se	0.0
+fields	settings.tsv	setting|C|vd25|B1.gadd_per_r	boot_nonfinite	0
+fields	settings.tsv	setting|C|vd25|B.alpha_whole	estimate	0.055062166962699825
+fields	labels-settings.tsv	C|vd25	R	4
+fields	labels-settings.tsv	C|vd25	estimate	0.9263184382954425
+fields	labels-settings.tsv	C|vd25	lower	0.9263184382954425
+fields	labels-settings.tsv	C|vd25	upper	0.9263184382954425
+fields	labels-settings.tsv	C|vd25	label	within margin
+fields	labels-settings.tsv	C|vd25	label_jack	within margin
+fields	designs.tsv	design|C|vd|rhog.B1	estimate	0.9362894281231402
+fields	designs.tsv	design|C|vd|rhog.B1	R	4
+fields	designs.tsv	design|C|vd|rhog_l1.B1	estimate	1.5314207650273224
+fields	designs.tsv	design|C|vd|rhog_l1.B1	R	4
+fields	designs.tsv	design|C|vd|rhog_l0.B1	estimate	0.9303381147540984
+fields	designs.tsv	design|C|vd|rhog_l0.B1	R	4
+fields	designs.tsv	design|C|vd|B1.gadd_per_r	estimate	3232.0
+fields	designs.tsv	design|C|vd|B1.gadd_per_r	R	4
+fields	designs.tsv	design|C|vd|B1.fdr_bh	estimate	0.06647398843930635
+fields	designs.tsv	design|C|vd|B1.fdr_bh	R	4
+fields	settings.tsv	setting|D|vd5|rhog.B1	R	4
+fields	settings.tsv	setting|D|vd5|rhog.B1	estimate	0.9148583847931833
+fields	settings.tsv	setting|D|vd5|rhog.B1	lo95	0.9148583847931833
+fields	settings.tsv	setting|D|vd5|rhog.B1	hi95	0.9148583847931833
+fields	settings.tsv	setting|D|vd5|rhog.B1	jack_se	0.0
+fields	settings.tsv	setting|D|vd5|rhog.B1	boot_nonfinite	0
+fields	settings.tsv	setting|D|vd5|rhog_l1.B1	estimate	0.4463801780874952
+fields	settings.tsv	setting|D|vd5|rhog_l0.B1	estimate	0.9195431668602401
+fields	settings.tsv	setting|D|vd5|B1.fdr_bh	estimate	0.06561085972850679
+fields	settings.tsv	setting|D|vd5|dfdrbh.B1	estimate	0.009488410748914954
+fields	settings.tsv	setting|D|vd5|dpowbh.B1	estimate	-0.04257425742574256
+fields	settings.tsv	setting|D|vd5|B1.gadd_per_r	R	4
+fields	settings.tsv	setting|D|vd5|B1.gadd_per_r	estimate	4141.0
+fields	settings.tsv	setting|D|vd5|B1.gadd_per_r	lo95	4141.0
+fields	settings.tsv	setting|D|vd5|B1.gadd_per_r	hi95	4141.0
+fields	settings.tsv	setting|D|vd5|B1.gadd_per_r	jack_se	0.0
+fields	settings.tsv	setting|D|vd5|B1.gadd_per_r	boot_nonfinite	0
+fields	settings.tsv	setting|D|vd5|B.alpha_whole	estimate	0.05464006938421509
+fields	labels-settings.tsv	D|vd5	R	4
+fields	labels-settings.tsv	D|vd5	estimate	0.9148583847931833
+fields	labels-settings.tsv	D|vd5	lower	0.9148583847931833
+fields	labels-settings.tsv	D|vd5	upper	0.9148583847931833
+fields	labels-settings.tsv	D|vd5	label	within margin
+fields	labels-settings.tsv	D|vd5	label_jack	within margin
+fields	settings.tsv	setting|D|vd10|rhog.B1	R	4
+fields	settings.tsv	setting|D|vd10|rhog.B1	estimate	0.9127917256011315
+fields	settings.tsv	setting|D|vd10|rhog.B1	lo95	0.9127917256011315
+fields	settings.tsv	setting|D|vd10|rhog.B1	hi95	0.9127917256011315
+fields	settings.tsv	setting|D|vd10|rhog.B1	jack_se	0.0
+fields	settings.tsv	setting|D|vd10|rhog.B1	boot_nonfinite	0
+fields	settings.tsv	setting|D|vd10|rhog_l1.B1	estimate	0.8616071428571429
+fields	settings.tsv	setting|D|vd10|rhog_l0.B1	estimate	0.9133035714285714
+fields	settings.tsv	setting|D|vd10|B1.fdr_bh	estimate	0.06622516556291391
+fields	settings.tsv	setting|D|vd10|dfdrbh.B1	estimate	0.006671815686983391
+fields	settings.tsv	setting|D|vd10|dpowbh.B1	estimate	-0.0431372549019608
+fields	settings.tsv	setting|D|vd10|B1.gadd_per_r	R	4
+fields	settings.tsv	setting|D|vd10|B1.gadd_per_r	estimate	4242.0
+fields	settings.tsv	setting|D|vd10|B1.gadd_per_r	lo95	4242.0
+fields	settings.tsv	setting|D|vd10|B1.gadd_per_r	hi95	4242.0
+fields	settings.tsv	setting|D|vd10|B1.gadd_per_r	jack_se	0.0
+fields	settings.tsv	setting|D|vd10|B1.gadd_per_r	boot_nonfinite	0
+fields	settings.tsv	setting|D|vd10|B.alpha_whole	estimate	0.055267702936096716
+fields	labels-settings.tsv	D|vd10	R	4
+fields	labels-settings.tsv	D|vd10	estimate	0.9127917256011315
+fields	labels-settings.tsv	D|vd10	lower	0.9127917256011315
+fields	labels-settings.tsv	D|vd10	upper	0.9127917256011315
+fields	labels-settings.tsv	D|vd10	label	within margin
+fields	labels-settings.tsv	D|vd10	label_jack	within margin
+fields	settings.tsv	setting|D|vd25|rhog.B1	R	4
+fields	settings.tsv	setting|D|vd25|rhog.B1	estimate	0.9104766290582547
+fields	settings.tsv	setting|D|vd25|rhog.B1	lo95	0.9104766290582547
+fields	settings.tsv	setting|D|vd25|rhog.B1	hi95	0.9104766290582547
+fields	settings.tsv	setting|D|vd25|rhog.B1	jack_se	0.0
+fields	settings.tsv	setting|D|vd25|rhog.B1	boot_nonfinite	0
+fields	settings.tsv	setting|D|vd25|rhog_l1.B1	estimate	1.2483005366726296
+fields	settings.tsv	setting|D|vd25|rhog_l0.B1	estimate	0.9070983899821108
+fields	settings.tsv	setting|D|vd25|B1.fdr_bh	estimate	0.0668103448275862
+fields	settings.tsv	setting|D|vd25|dfdrbh.B1	estimate	0.004008412460436442
+fields	settings.tsv	setting|D|vd25|dpowbh.B1	estimate	-0.043689320388349495
+fields	settings.tsv	setting|D|vd25|B1.gadd_per_r	R	4
+fields	settings.tsv	setting|D|vd25|B1.gadd_per_r	estimate	4343.0
+fields	settings.tsv	setting|D|vd25|B1.gadd_per_r	lo95	4343.0
+fields	settings.tsv	setting|D|vd25|B1.gadd_per_r	hi95	4343.0
+fields	settings.tsv	setting|D|vd25|B1.gadd_per_r	jack_se	0.0
+fields	settings.tsv	setting|D|vd25|B1.gadd_per_r	boot_nonfinite	0
+fields	settings.tsv	setting|D|vd25|B.alpha_whole	estimate	0.05588993981083405
+fields	labels-settings.tsv	D|vd25	R	4
+fields	labels-settings.tsv	D|vd25	estimate	0.9104766290582547
+fields	labels-settings.tsv	D|vd25	lower	0.9104766290582547
+fields	labels-settings.tsv	D|vd25	upper	0.9104766290582547
+fields	labels-settings.tsv	D|vd25	label	within margin
+fields	labels-settings.tsv	D|vd25	label_jack	within margin
+fields	designs.tsv	design|D|vd|rhog.B1	estimate	0.9127917256011315
+fields	designs.tsv	design|D|vd|rhog.B1	R	4
+fields	designs.tsv	design|D|vd|rhog_l1.B1	estimate	0.8616071428571429
+fields	designs.tsv	design|D|vd|rhog_l1.B1	R	4
+fields	designs.tsv	design|D|vd|rhog_l0.B1	estimate	0.9133035714285714
+fields	designs.tsv	design|D|vd|rhog_l0.B1	R	4
+fields	designs.tsv	design|D|vd|B1.gadd_per_r	estimate	4242.0
+fields	designs.tsv	design|D|vd|B1.gadd_per_r	R	4
+fields	designs.tsv	design|D|vd|B1.fdr_bh	estimate	0.06622516556291391
+fields	designs.tsv	design|D|vd|B1.fdr_bh	R	4
+fields	pooled.tsv	pool|twelve|vd|rhog.B1	estimate	0.9512715977480101
+fields	pooled.tsv	pool|twelve|vd|rhog_l1.B1	estimate	2.0588235294117645
+fields	pooled.tsv	pool|twelve|vd|rhog_l0.B1	estimate	0.9401960784313724
+fields	pooled.tsv	pool|twelve|vd|B1.gadd_per_r	estimate	2727.0
+fields	pooled.tsv	pool|twelve|vd|B1.fdr_bh	estimate	0.06666666666666667
+fields	pooled.tsv	pool|twelve|vd|dfdrbh.B1	estimate	0.0033269353806781865
+fields	pooled.tsv	pool|twelve|vd|dpowbh.B1	estimate	-0.033333333333333326
+fields	pooled.tsv	pool|twelve|vd|rhog.B1	R	16
+miss_rep	outcome.tsv		outcome	Stop
+miss_rep	outcome.tsv		kind	instrument
+smoke	outcome.tsv		outcome	Stop
+smoke	outcome.tsv		kind	instrument
+smoke_absent	outcome.tsv		outcome	Stop
+smoke_absent	outcome.tsv		kind	instrument
+range_out	outcome.tsv		outcome	Stop
+range_out	outcome.tsv		kind	instrument
+qmethod_bh	outcome.tsv		outcome	Stop
+qmethod_bh	outcome.tsv		kind	instrument
+guardstop	outcome.tsv		outcome	Stop
+guardstop	outcome.tsv		kind	instrument
+probe	outcome.tsv		outcome	Stop
+probe	outcome.tsv		kind	instrument
+f1	outcome.tsv		outcome	Stop
+f1	outcome.tsv		kind	falsifier
+f2_e10	outcome.tsv		outcome	Stop
+f2_e10	outcome.tsv		kind	falsifier
+f2_e3	outcome.tsv		outcome	Stop
+f2_e3	outcome.tsv		kind	falsifier
+incomplete_range	outcome.tsv		outcome	Stop
+incomplete_range	outcome.tsv		kind	instrument
+cell_T	outcome.tsv		outcome	Stop
+cell_T	outcome.tsv		kind	instrument
+cell_F	outcome.tsv		outcome	Stop
+cell_F	outcome.tsv		kind	instrument
+cell_NA	outcome.tsv		outcome	Stop
+cell_NA	outcome.tsv		kind	instrument
+arm_NA	outcome.tsv		outcome	Stop
+arm_NA	outcome.tsv		kind	instrument
+mask_mcar	outcome.tsv		outcome	Stop
+mask_mcar	outcome.tsv		kind	instrument
+text_num	outcome.tsv		outcome	Stop
+text_num	outcome.tsv		kind	instrument
+na_num	outcome.tsv		outcome	Stop
+na_num	outcome.tsv		kind	instrument
+logical_na	outcome.tsv		outcome	Stop
+logical_na	outcome.tsv		kind	instrument
+tf	decision.tsv	rho_g	estimate	1.0499999999999998
+tf	decision.tsv	rho_g	upper	1.0499999999999998
+tf	decision.tsv	rho_g	limit	1.1
+tf	decision.tsv	rho_g	state	pass
+tf	decision.tsv	rho_g	upper_jack	1.0499999999999998
+tf	decision.tsv	rho_g	state_jack	pass
+tf	decision.tsv	rho_g	boot_nonfinite	0
+tf	decision.tsv	G1a	estimate	0.047619047619047616
+tf	decision.tsv	G1a	upper	0.047619047619047616
+tf	decision.tsv	G1a	limit	0.05
+tf	decision.tsv	G1a	state	pass
+tf	decision.tsv	G1a	upper_jack	0.047619047619047616
+tf	decision.tsv	G1a	state_jack	pass
+tf	decision.tsv	G1a	boot_nonfinite	0
+tf	decision.tsv	G1b	estimate	0.0
+tf	decision.tsv	G1b	upper	0.0
+tf	decision.tsv	G1b	limit	0.0025
+tf	decision.tsv	G1b	state	pass
+tf	decision.tsv	G1b	upper_jack	0.0
+tf	decision.tsv	G1b	state_jack	pass
+tf	decision.tsv	G1b	boot_nonfinite	0
+tf	decision.tsv	G2	estimate	0.0
+tf	decision.tsv	G2	upper	0.0
+tf	decision.tsv	G2	limit	0.005
+tf	decision.tsv	G2	state	pass
+tf	decision.tsv	G2	upper_jack	0.0
+tf	decision.tsv	G2	state_jack	pass
+tf	decision.tsv	G2	boot_nonfinite	0
+tf	falsifier.tsv	F5'	estimate	0.0
+tf	falsifier.tsv	F5'	fires	FALSE
+tf	positive-control.tsv	Phi.S	estimate	1.0
+tf	positive-control.tsv	Phi.S	passes	FALSE
+tf	outcome.tsv		outcome	Calibrated
+tf	outcome.tsv		rho_g_state	pass
+tf	outcome.tsv		g1a_state	pass
+tf	outcome.tsv		g1b_state	pass
+tf	outcome.tsv		g2_state	pass
+tf	outcome.tsv		f5_fires	FALSE
+tf	outcome.tsv		pc_pass	FALSE
+tf	outcome.tsv		rho_g	1.0499999999999998
+tf	outcome.tsv		kind	outcome
+join	decision.tsv	rho_g	estimate	1.0
+join	decision.tsv	rho_g	upper	1.0
+join	decision.tsv	rho_g	limit	1.1
+join	decision.tsv	rho_g	state	pass
+join	decision.tsv	rho_g	upper_jack	1.0
+join	decision.tsv	rho_g	state_jack	pass
+join	decision.tsv	rho_g	boot_nonfinite	0
+join	decision.tsv	G1a	estimate	0.047619047619047616
+join	decision.tsv	G1a	upper	0.047619047619047616
+join	decision.tsv	G1a	limit	0.05
+join	decision.tsv	G1a	state	pass
+join	decision.tsv	G1a	upper_jack	0.047619047619047616
+join	decision.tsv	G1a	state_jack	pass
+join	decision.tsv	G1a	boot_nonfinite	0
+join	decision.tsv	G1b	estimate	0.0
+join	decision.tsv	G1b	upper	0.0
+join	decision.tsv	G1b	limit	0.0025
+join	decision.tsv	G1b	state	pass
+join	decision.tsv	G1b	upper_jack	0.0
+join	decision.tsv	G1b	state_jack	pass
+join	decision.tsv	G1b	boot_nonfinite	0
+join	decision.tsv	G2	estimate	0.0
+join	decision.tsv	G2	upper	0.0
+join	decision.tsv	G2	limit	0.005
+join	decision.tsv	G2	state	pass
+join	decision.tsv	G2	upper_jack	0.0
+join	decision.tsv	G2	state_jack	pass
+join	decision.tsv	G2	boot_nonfinite	0
+join	falsifier.tsv	F5'	estimate	0.0
+join	falsifier.tsv	F5'	fires	FALSE
+join	positive-control.tsv	Phi.S	estimate	1.0
+join	positive-control.tsv	Phi.S	passes	FALSE
+join	outcome.tsv		outcome	Calibrated
+join	outcome.tsv		rho_g_state	pass
+join	outcome.tsv		g1a_state	pass
+join	outcome.tsv		g1b_state	pass
+join	outcome.tsv		g2_state	pass
+join	outcome.tsv		f5_fires	FALSE
+join	outcome.tsv		pc_pass	FALSE
+join	outcome.tsv		rho_g	1.0
+join	outcome.tsv		kind	outcome
+dup	outcome.tsv		outcome	Stop
+dup	outcome.tsv		kind	instrument
+f2_det	outcome.tsv		outcome	Stop
+f2_det	outcome.tsv		kind	falsifier
+counted_ok	decision.tsv	rho_g	estimate	1.0
+counted_ok	decision.tsv	rho_g	upper	1.0
+counted_ok	decision.tsv	rho_g	limit	1.1
+counted_ok	decision.tsv	rho_g	state	pass
+counted_ok	decision.tsv	rho_g	upper_jack	1.0
+counted_ok	decision.tsv	rho_g	state_jack	pass
+counted_ok	decision.tsv	rho_g	boot_nonfinite	0
+counted_ok	decision.tsv	G1a	estimate	0.047619047619047616
+counted_ok	decision.tsv	G1a	upper	0.047619047619047616
+counted_ok	decision.tsv	G1a	limit	0.05
+counted_ok	decision.tsv	G1a	state	pass
+counted_ok	decision.tsv	G1a	upper_jack	0.047619047619047616
+counted_ok	decision.tsv	G1a	state_jack	pass
+counted_ok	decision.tsv	G1a	boot_nonfinite	0
+counted_ok	decision.tsv	G1b	estimate	0.0
+counted_ok	decision.tsv	G1b	upper	0.0
+counted_ok	decision.tsv	G1b	limit	0.0025
+counted_ok	decision.tsv	G1b	state	pass
+counted_ok	decision.tsv	G1b	upper_jack	0.0
+counted_ok	decision.tsv	G1b	state_jack	pass
+counted_ok	decision.tsv	G1b	boot_nonfinite	0
+counted_ok	decision.tsv	G2	estimate	0.0
+counted_ok	decision.tsv	G2	upper	0.0
+counted_ok	decision.tsv	G2	limit	0.005
+counted_ok	decision.tsv	G2	state	pass
+counted_ok	decision.tsv	G2	upper_jack	0.0
+counted_ok	decision.tsv	G2	state_jack	pass
+counted_ok	decision.tsv	G2	boot_nonfinite	0
+counted_ok	falsifier.tsv	F5'	estimate	0.0
+counted_ok	falsifier.tsv	F5'	fires	FALSE
+counted_ok	positive-control.tsv	Phi.S	estimate	1.0
+counted_ok	positive-control.tsv	Phi.S	passes	FALSE
+counted_ok	outcome.tsv		outcome	Calibrated
+counted_ok	outcome.tsv		rho_g_state	pass
+counted_ok	outcome.tsv		g1a_state	pass
+counted_ok	outcome.tsv		g1b_state	pass
+counted_ok	outcome.tsv		g2_state	pass
+counted_ok	outcome.tsv		f5_fires	FALSE
+counted_ok	outcome.tsv		pc_pass	FALSE
+counted_ok	outcome.tsv		rho_g	1.0
+counted_ok	outcome.tsv		kind	outcome
+counted_ok	outcome.tsv		counted	TRUE
+counted_ok	outcome.tsv		range_source	g3-table
+counted_ok	outcome.tsv		bootstrap_B	10000
+counted_nodet	outcome.tsv		outcome	Stop
+counted_nodet	outcome.tsv		kind	instrument
+counted_g3five	outcome.tsv		outcome	Stop
+counted_g3five	outcome.tsv		kind	instrument
+counted_g3none	outcome.tsv		outcome	Stop
+counted_g3none	outcome.tsv		kind	instrument
+cal105	checks.tsv	complete	pass	TRUE
+cal105	checks.tsv	qmethod	pass	TRUE
+cal105	checks.tsv	range_declared	pass	FALSE
+cal105	checks.tsv	bootstrap_B	pass	FALSE
+cal105	replicates.tsv	A	R	4
+cal105	outcome.tsv		counted	FALSE

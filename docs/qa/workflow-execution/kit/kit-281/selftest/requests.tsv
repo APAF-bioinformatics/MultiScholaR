@@ -1,0 +1,8 @@
+request	g3_table	exit
+req_ok.json	g3-277.tsv	0
+req_r276.json	g3-277.tsv	1
+req_cellshort.json	g3-277.tsv	1
+req_overlap.json	g3-277.tsv	1
+req_toolong.json	g3-277.tsv	1
+req_nocite.json	g3-277.tsv	1
+req_range.json	g3-277.tsv	1
