@@ -752,7 +752,7 @@ the combined `test-omic-norm-module.R` count are KIT-260's to predict. Request a
 | `test-gui-entry-lipidomics.R`, `test-gui-entry-metabolomics.R` | message-changed | 19/16, 57/48 | the ITSD log and record captures inside steps already failing (VAL-352 (2)); the lanes skip RUV |
 | `test-workflow-omics-declarations.R` (KIT-073) | message-changed | 43/25 | `values` (the RUV and ITSD per-assay fields); `registry` message unchanged (VAL-338's situation) (VAL-352 (3)) |
 | `test-workflow-omics-binding-steps.R` (KIT-094) | message-changed | 57/2 | the `records` part (VAL-352 (3)) |
-| `test-prot-norm-core.R` | message-changed | 1547/307 | three KIT-111 tests (the protein marker in provenance); the DIA step's new `samples_removed` appears only when a sample is removed, and no fixture has one |
+| `test-prot-norm-core.R` | message-changed, as before the VAL-373 correction | 1547/307 -> 1547/307 | three KIT-111 tests (the protein marker in provenance); after VAL-383 the tab's `samples_removed` field exists only when a sample is removed and no fixture removes one: R1g observed 1547/307 with every failure message identical to R2's head |
 | `test-omics-module-globals.R` | same | 14/0 -> 14/0 | after RC-1's repair (5be656b2) the two control-selection files hold no `<<-`; the other `<<-` KIT-242 adds are in `utils_*` files, outside the scan |
 | `test-gui-entry-proteomics.R`, `test-workflow-operation-registry.R`, `test-kit172-reopen.R`, `test-kit236-report-sentences.R`, `test-kit235-…`, the RUV and control-selection characterisation files (`test-metab-03a-…`, `test-lipid-12b/12c-…`, `test-metab-02y-…`, `test-metab-04-…`, `test-ruv-control-anova-grouping.R`), `test-kit224-ruv-feature-levels.R`, `test-kit255-omics-correlation-assays.R` | same | as on the base | no value moves where a correction acted before; the control selection's new attribute is set only when it skips an assay under the current rule |
 | every other file | same | as on the base | |
@@ -879,3 +879,13 @@ is removed and hands `normData` to the finish directly, so it holds as written.
 `test-omics-module-globals.R` is not in R1g: on this branch it reads 13/1 for the reason recorded at R1f (the branch's
 older copy of the test lacks KIT-278's allow for staging's `shown_idle <<- idle`); 14/0 is predicted on the merged tree.
 A miss: stop and hand back, no repair (it returns to the owner).
+
+### R1g (run 45785313805, 9a63a3b7; 93.9 job-minutes, 6.26 core-hours): observed
+
+Every prediction held. `test-prot-norm-core.R` 1547/307/0, and its 307 failure messages are identical, one by one, to
+R2's head (afb27738, the messages staging gives): no `samples_removed` in any message. The new file 571/0; the worker
+265/0; `test-prot-05b-norm-module-contracts.R` 440/0, `test-prot-05d-norm-module-characterization.R` 82/0,
+`test-prot-norm-input-current.R` 321/0, `test-kit257-norm-own-files.R` 133/0, `test-kit206-prot-norm-export-guard.R`
+116/0, `test-kit225-prot-norm-reset-source.R` 56/0, each as R2's head. The run used 93.9 job-minutes against its
+declared ceiling of 90 (6.26 against 6.0 core-hours): over by 3.9 job-minutes, recorded, not cut. Used: 227.18 + 6.26 =
+233.44 of 901.33 core-hours.
