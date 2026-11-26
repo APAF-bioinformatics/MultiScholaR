@@ -122,6 +122,20 @@
    form's organism (Homo sapiens by default), which then set the UniProt annotation, the Taxon ID in the study
    parameters and the enrichment organism. The organism window now says that only the selected organism is looked up
    in UniProt and tested for enrichment. No result of an import that completes changes (KIT-265).
+ * Proteomics, DIA with limpa: the table written by the correlation filter, and the results package's copy of it, no
+   longer carry the name of an RUV-normalised table. The table is the protein table before any RUV step (RUV-III
+   factors, when used, are computed after the filter; the Skip mode computes none), but it was stored as
+   `ruv_normalised_results_cln_with_replicates.tsv` and delivered as `Publication_tables/RUV_normalised_results.tsv`; it
+   is now stored as `normalised_results_cln_with_replicates.tsv` and delivered as `normalised_results.tsv`, as on the
+   other proteomics routes when RUV did not correct the table. "Normalised" here means "before RUV": with the default
+   limpa setting (no between-sample normalisation) the table holds the quantified values as they are, and a
+   between-sample normalisation was applied only if one was chosen. The values are unchanged. In the RUV correction
+   mode the delivered `normalised_results.tsv` is the uncorrected table, and the matrix the differential analysis used
+   (RUV-III's corrected matrix) is not delivered in the results package; in the factors-as-covariates mode the
+   factors' design columns are not delivered either; both stay as before. Projects saved by an earlier build need no
+   re-run: Copy delivers the table they hold as `normalised_results.tsv` and the session export works; the old file
+   name stays in their protein QC folder until the normalisation or the correlation filter is run again. This route is
+   new in 0.9 (tag v0.9.0 and later). (KIT-271)
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
    package and the report, without a note. In larger or very consistent studies most pairs could be missing, leaving

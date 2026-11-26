@@ -1,0 +1,78 @@
+kit271-limpa-table-name: [1] "normalisation_method = none"
+character(0)
+KIT-271 setup in process pass-through: NA correlation: NA state: correlation_filtered protein_qc: normalised_results_cln_with_replicates.tsv
+KIT-271 T1 in process present: normalised_results_cln_with_replicates.tsv
+..[1] "normalisation_method = none"
+KIT-271 setup worker pass-through: NA correlation: NA state: correlation_filtered protein_qc: normalised_results_cln_with_replicates.tsv
+KIT-271 T1 worker present: normalised_results_cln_with_replicates.tsv
+..[1] "normalisation_method = none"
+character(0)
+KIT-271 setup in process pass-through: NA correlation: NA state: correlation_filtered protein_qc: normalised_results_cln_with_replicates.tsv
+..KIT-271 T2 covariates present: normalised_results_cln_with_replicates.tsv table sha256 before/after: 156903a4c09b186926465be29477acf60b37f0c96b51c69cdfadba25cc7e2462 156903a4c09b186926465be29477acf60b37f0c96b51c69cdfadba25cc7e2462 adjusted matrix: TRUE
+....[1] "normalisation_method = none"
+character(0)
+KIT-271 setup in process pass-through: NA correlation: NA state: correlation_filtered protein_qc: normalised_results_cln_with_replicates.tsv
+..KIT-271 T2 correction present: normalised_results_cln_with_replicates.tsv table sha256 before/after: 156903a4c09b186926465be29477acf60b37f0c96b51c69cdfadba25cc7e2462 156903a4c09b186926465be29477acf60b37f0c96b51c69cdfadba25cc7e2462 adjusted matrix: TRUE
+....[1] "normalisation_method = none"
+character(0)
+KIT-271 setup in process pass-through: NA correlation: NA state: correlation_filtered protein_qc: normalised_results_cln_with_replicates.tsv
+KIT-271 T3 in process notes: RUV-III covariates skipped. Ready for differential expression analysis. present: normalised_results_cln_with_replicates.tsv
+..[1] "normalisation_method = none"
+KIT-271 setup worker pass-through: NA correlation: NA state: correlation_filtered protein_qc: normalised_results_cln_with_replicates.tsv
+KIT-271 T3 worker notes: RUV-III covariates skipped. Ready for differential expression analysis. present: normalised_results_cln_with_replicates.tsv
+..[1] "normalisation_method = none"
+character(0)
+KIT-271 setup in process pass-through: NA correlation: NA state: correlation_filtered protein_qc: normalised_results_cln_with_replicates.tsv
+::notice title=INFO::Results summary directory for proteomics_k271 (/tmp/RtmpSjIZHO/file1eaeb2808255c/copy/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Results summary directory for proteomics_k271 (/tmp/RtmpSjIZHO/file1eaeb2808255c/copy/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+KIT-271 T4 in process copy: COPY: Using normalized file names (DIA with limpa: the table precedes any RUV step) tables: DA_results_proteomics.xlsx,Pathway_enrichment_results_proteomics.xlsx,normalised_results.tsv
+..KIT-271 A5 in process table sha256: 156903a4c09b186926465be29477acf60b37f0c96b51c69cdfadba25cc7e2462 delivered sha256: 156903a4c09b186926465be29477acf60b37f0c96b51c69cdfadba25cc7e2462
+.[1] "normalisation_method = none"
+KIT-271 setup worker pass-through: NA correlation: NA state: correlation_filtered protein_qc: normalised_results_cln_with_replicates.tsv
+::notice title=INFO::Results summary directory for proteomics_k271 (/tmp/RtmpSjIZHO/file1eaeb72d9db62/copy/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Results summary directory for proteomics_k271 (/tmp/RtmpSjIZHO/file1eaeb72d9db62/copy/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+KIT-271 T4 worker copy: COPY: Using normalized file names (DIA with limpa: the table precedes any RUV step) tables: DA_results_proteomics.xlsx,Pathway_enrichment_results_proteomics.xlsx,normalised_results.tsv
+..KIT-271 A5 worker table sha256: 156903a4c09b186926465be29477acf60b37f0c96b51c69cdfadba25cc7e2462 delivered sha256: 156903a4c09b186926465be29477acf60b37f0c96b51c69cdfadba25cc7e2462
+.[1] "normalisation_method = none"
+character(0)
+KIT-271 setup in process pass-through: NA correlation: NA state: correlation_filtered protein_qc: normalised_results_cln_with_replicates.tsv
+KIT-271 T5 error: NA results_file: normalised_results_cln_with_replicates.tsv destinations: protein_qc/normalised_results_cln_with_replicates.tsv
+....[1] "normalisation_method = none"
+character(0)
+KIT-271 setup in process pass-through: NA correlation: NA state: correlation_filtered protein_qc: normalised_results_cln_with_replicates.tsv
+.KIT-271 T5b covariates error: NA results_file: normalised_results_cln_with_replicates.tsv archive written: TRUE
+....[1] "normalisation_method = none"
+character(0)
+KIT-271 setup in process pass-through: NA correlation: NA state: correlation_filtered protein_qc: normalised_results_cln_with_replicates.tsv
+.KIT-271 T5b correction error: NA results_file: normalised_results_cln_with_replicates.tsv archive written: TRUE
+..........................[1] "normalisation_method = quantile"
+character(0)
+KIT-271 T7 skip present: normalised_results_cln_with_replicates.tsv
+.[1] "normalisation_method = quantile"
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+character(0)
+KIT-271 T7 manual present: ruv_normalised_results_cln_with_replicates.tsv
+.[1] "normalisation_method = none"
+character(0)
+KIT-271 setup in process pass-through: NA correlation: NA state: correlation_filtered protein_qc: normalised_results_cln_with_replicates.tsv
+.KIT-271 T8 export error: NA results_file: normalised_results_cln_with_replicates.tsv destinations: protein_qc/ruv_normalised_results_cln_with_replicates.tsv stored ruv_ name destinations: protein_qc/ruv_normalised_results_cln_with_replicates.tsv
+.....[1] "normalisation_method = none"
+character(0)
+KIT-271 setup in process pass-through: NA correlation: NA state: correlation_filtered protein_qc: normalised_results_cln_with_replicates.tsv
+::notice title=INFO::Results summary directory for proteomics_k271 (/tmp/RtmpSjIZHO/file1eaeb7dd22185/copy/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Results summary directory for proteomics_k271 (/tmp/RtmpSjIZHO/file1eaeb7dd22185/copy/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+KIT-271 T8 copy: COPY: Using normalized file names (DIA with limpa: the table precedes any RUV step) tables: DA_results_proteomics.xlsx,Pathway_enrichment_results_proteomics.xlsx,normalised_results.tsv
+..[1] "normalisation_method = none"
+character(0)
+KIT-271 setup in process pass-through: NA correlation: NA state: correlation_filtered protein_qc: normalised_results_cln_with_replicates.tsv
+::notice title=INFO::Results summary directory for proteomics_k271 (/tmp/RtmpSjIZHO/file1eaeb4205a6f5/copy/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+::notice title=INFO::Results summary directory for proteomics_k271 (/tmp/RtmpSjIZHO/file1eaeb4205a6f5/copy/results_summary) is empty. No backup needed. Proceeding to create subdirectories.
+KIT-271 T8b copy: COPY: Using normalized file names (DIA with limpa: the table precedes any RUV step) tables: DA_results_proteomics.xlsx,Pathway_enrichment_results_proteomics.xlsx,normalised_results.tsv destinations: protein_qc/normalised_results_cln_with_replicates.tsv
+......
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+💅 Your tests are beautiful 💅
+
+COUNTS test-kit271-limpa-table-name.R pass 78 fail 0 error 0 skip 0 warn 0
