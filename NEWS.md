@@ -139,12 +139,14 @@
    set holding a sample set missing in it, the integration's removed RUV factors cannot be determined, so the optional
    adjustment for them is unavailable there; the integration model still counts such a sample as measured in that data
    set (in the data set's sample count, and it is kept when the option to keep only samples measured in every data set
-   is chosen). After RUV, the sample-correlation filter judges the corrected values. In one constructed test (12 samples in two
-   groups, one sample's values in one assay replaced at random, one RUV factor), RUV removed that sample's deviation, so
-   the filter did not fail it. This was seen with the new RUV design, and with the legacy RUV-III-C route as it chose its
-   control features before this version. How often the filter can act after RUV with the current settings, and how the
-   differential analysis then treats such a sample, will be measured before the release (KIT-275; VAL-330). With RUV
-   skipped, or when RUV removes no factor, the filter acts as described above. Where a sample's values were missing altogether in one assay, that assay may not have been
+   is chosen). After RUV, the sample-correlation filter rarely fails a single anomalous sample: RUV takes a deviation confined to
+   one sample into one of its factors and moves that sample's corrected values to its group's average, so that it
+   then correlates well with its replicates. The filter can still act when RUV is skipped or removes no factor, or
+   when the deviating samples and the other unwanted variation together need more factors than RUV removes. With the
+   RUV factors in the model (the declared RUV design), such a sample is in effect left out of that assay's test. On
+   the legacy RUV-III-C route it stays in the test as if it were a genuine replicate, and the differential analysis
+   can then report differences that are not there; how often is not yet known (derived, not measured; to be measured
+   before the release, KIT-275; VAL-330). Where a sample's values were missing altogether in one assay, that assay may not have been
    normalised between samples (see KIT-242; until KIT-242's first part is merged). (KIT-255)
  * Proteomics, normalisation QC: the Pearson correlation histogram now shows every within-group sample pair. Before,
    a bar holding more than 4 pairs was left out of the figure, the composite QC figure, its copy in the results
