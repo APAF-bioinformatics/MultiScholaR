@@ -19,11 +19,10 @@ status <- function() {
 }
 kb <- function(field) as.numeric(gsub("[^0-9]", "", status()[startsWith(status(), paste0(field, ":"))]))
 GiB <- 1024^2
-# The controller runs the INSTALLED package, as the child does (the first send loaded it with pkgload::load_all, the one
-# difference between the two processes; the test helpers are sourced into an environment under the installed namespace).
-suppressMessages(library(MultiScholaR))
-helperEnv <- new.env(parent = asNamespace("MultiScholaR"))
-suppressMessages(testthat::source_test_helpers("tests/testthat", env = helperEnv))
+# Controller and child run the SAME code from the source tree (pkgload::load_all in both): the second send tried the installed
+# package in the controller and failed in its helper sourcing (setClass into the locked namespace; run 45750228451, no result).
+suppressMessages(pkgload::load_all(".", quiet = TRUE, export_all = TRUE, helpers = TRUE))
+helperEnv <- globalenv()
 rows <- list()
 path <- new.env(parent = emptyenv())
 path$written <- logical()
@@ -40,7 +39,8 @@ testthat::test_that("KIT-266 M1", {
     controller <- omicsManagedChainMocks(list(owner = fixture$manager, paths = fixture$paths), probe)
     child <- function(request_path) {
         hash <- digest::digest(file = request_path, algo = "sha256")
-        expression <- paste0("ns <- asNamespace('MultiScholaR'); unlockBinding('workflowExecutionBuildIdentity', ns); ",
+        expression <- paste0("suppressMessages(pkgload::load_all('.', quiet = TRUE, export_all = TRUE)); ",
+            "ns <- asNamespace('MultiScholaR'); unlockBinding('workflowExecutionBuildIdentity', ns); ",
             "assign('workflowExecutionBuildIdentity', function() strrep('f', 64), ns); MultiScholaR:::workflowWorkerMain(commandArgs(TRUE))")
         system2(file.path(R.home("bin"), "Rscript"), c("--vanilla", "-e", shQuote(expression), request_path, hash),
             env = c("MULTISCHOLAR_WORKFLOW_WORKER=1", paste0("R_LIBS=", paste(.libPaths(), collapse = .Platform$path.sep))),

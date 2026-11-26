@@ -25,3 +25,11 @@ controller on a `load_all` tree against an installed child (m1.R:30 in the first
 line on a failed path control. No expected value, threshold or comparison changes: rise under 0.3 GiB at both build points; reset, path
 and positive controls as declared above. Ceiling 60 job-minutes, expected 30. A rise of 0.3 GiB or more with the path control passing is a
 result and returns to the coordinator (stop rule 7); a path control failing again is not re-sent: hand back with the diagnostic line.
+
+## Re-send 3 of 3 (VAL-54), declaration restated
+
+Re-send 2 (run 45750228451, 3 seconds) died in the script's helper sourcing (`source_test_helpers` into an environment under the installed
+namespace: `setClass` cannot bind in the locked namespace); no measurement, an instrument defect. Repair: controller and child both run the
+source tree (`pkgload::load_all`), so the two processes run the same code, and the controller's start is the first send's, which ran to
+completion. No expected value, threshold or comparison changes. This is the last re-send of the three allowed across R1 and M1: a further
+mechanical failure is handed back, not re-sent.
