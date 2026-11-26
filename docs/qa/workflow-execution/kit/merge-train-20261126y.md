@@ -179,7 +179,7 @@ base count was missed (below), identically on both sides. R CMD check identical.
 71/2/0/0.** Observed fact: the counts are identical on B and on the head, so KIT-268 changes nothing in this file. Inferred,
 not shown: the committed 71/2 comes from requests without `MULTISCHOLAR_TRX_MANIFEST_NOTE=1`; the file uses the
 transcriptomics declaration reference (`trxDeclReference`, `:204`), whose corpus-manifest digest check the variable turns into
-a note (the same effect train 32 saw in train 28's three files, `merge-train-20261126u.md`). My declaration took the base
+a note (the same effect as in train 28's three transcriptomics files, `merge-train-20261126u.md`). My declaration took the base
 counts from tables that were run without the variable while setting the variable in this request; I did not catch that the
 two diverge for this file. A prediction miss, recorded; no re-run.
 
