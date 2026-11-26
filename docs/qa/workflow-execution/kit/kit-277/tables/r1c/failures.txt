@@ -1,0 +1,2016 @@
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): prot_lfq a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): prot_lfq a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "~ 0 + group + replicates".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Retrieving UniProt Annotations</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <p>Please wait while we retrieve protein annotations from UniProt...</p>
+    |         <div id="uniprot_progress_text">Initializing...</div>
+    |         <div class="progress">
+    |           <div id="uniprot_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">0%</div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): prot_lfq a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "~ 0 + group".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Retrieving UniProt Annotations</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <p>Please wait while we retrieve protein annotations from UniProt...</p>
+    |         <div id="uniprot_progress_text">Initializing...</div>
+    |         <div class="progress">
+    |           <div id="uniprot_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">0%</div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): prot_lfq a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `...[]` to be identical to `...[]`.
+  Differences:
+  `actual$formula`:   "~ 0 + group + replicates"
+  `expected$formula`: "~ 0 + group"             
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): prot_lfq a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$after$box` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): prot_lfq a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$after$status[[out$key]]` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): prot_lfq a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$after$da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): prot_lfq a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$after$copy` to be identical to "refused".
+  Differences:
+  `actual`:   "allowed"
+  `expected`: "refused"
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): prot_lfq a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$record_da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): prot_lfq a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `any(grepl("Copy error", out$copy_notes_after, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): prot_lfq a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$head_formulas$design` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): prot_lfq a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$head_formulas$da_ui` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): prot_lfq a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$results_after` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): prot_lfq a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$export_da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): prot_lfq a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$rerun_formula` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F5, F6 (S1): prot_lfq the same formula saved again asks nothing; the notices say what was done
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F5, F6 (S1): prot_lfq the same formula saved again asks nothing; the notices say what was done
+kind: failure
+message:
+  Expected `out$after$box` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F5, F6 (S1): prot_lfq the same formula saved again asks nothing; the notices say what was done
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F5, F6 (S1): prot_lfq the same formula saved again asks nothing; the notices say what was done
+kind: failure
+message:
+  Expected `any(grepl("nothing changed", out$notes, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): lipid_canonical a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): lipid_canonical a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "~ 0 + group + replicates".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Processing Design Matrix</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <div style="text-align: center; padding: 20px;">
+    |           <i class="fas fa-spinner fa-spin fa-3x" role="presentation" aria-label="spinner icon"></i>
+    |           <br/>
+    |           <br/>
+    |           <p>Saving design matrix and preparing data...</p>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): lipid_canonical a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "~ 0 + group".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Processing Design Matrix</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <div style="text-align: center; padding: 20px;">
+    |           <i class="fas fa-spinner fa-spin fa-3x" role="presentation" aria-label="spinner icon"></i>
+    |           <br/>
+    |           <br/>
+    |           <p>Saving design matrix and preparing data...</p>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): lipid_canonical a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `...[]` to be identical to `...[]`.
+  Differences:
+  `actual$formula`:   "~ 0 + group + replicates"
+  `expected$formula`: "~ 0 + group"             
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): lipid_canonical a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$after$box` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): lipid_canonical a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$after$status[[out$key]]` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): lipid_canonical a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$after$da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): lipid_canonical a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$after$copy` to be identical to "refused".
+  Differences:
+  `actual`:   "allowed"
+  `expected`: "refused"
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): lipid_canonical a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$record_da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): lipid_canonical a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `any(grepl("Copy error", out$copy_notes_after, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): lipid_canonical a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$design_formula` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "<error> could not find function \"omicDaDesignFormula\""
+  `expected`: "~ 0 + group + replicates"                               
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): lipid_canonical a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$rerun_formula` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): lipid_canonical a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$rerun_design_formula` to be NULL.
+  Differences:
+  `actual` is a character vector ('<error> could not find function "omicDaDesignFormula"')
+  `expected` is NULL
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F5, F6 (S1): lipid_canonical the same formula saved again asks nothing; the notices say what was done
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F5, F6 (S1): lipid_canonical the same formula saved again asks nothing; the notices say what was done
+kind: failure
+message:
+  Expected `out$after$box` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F5, F6 (S1): lipid_canonical the same formula saved again asks nothing; the notices say what was done
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F5, F6 (S1): lipid_canonical the same formula saved again asks nothing; the notices say what was done
+kind: failure
+message:
+  Expected `any(grepl("nothing changed", out$notes, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): metab_lc a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): metab_lc a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "~ 0 + group + replicates".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Processing Design Matrix</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <div style="text-align: center; padding: 20px;">
+    |           <i class="fas fa-spinner fa-spin fa-3x" role="presentation" aria-label="spinner icon"></i>
+    |           <br/>
+    |           <br/>
+    |           <p>Saving design matrix and preparing data...</p>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): metab_lc a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "~ 0 + group".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Processing Design Matrix</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <div style="text-align: center; padding: 20px;">
+    |           <i class="fas fa-spinner fa-spin fa-3x" role="presentation" aria-label="spinner icon"></i>
+    |           <br/>
+    |           <br/>
+    |           <p>Saving design matrix and preparing data...</p>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): metab_lc a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `...[]` to be identical to `...[]`.
+  Differences:
+  `actual$formula`:   "~ 0 + group + replicates"
+  `expected$formula`: "~ 0 + group"             
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): metab_lc a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$after$box` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): metab_lc a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$after$status[[out$key]]` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): metab_lc a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$after$da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): metab_lc a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$after$copy` to be identical to "refused".
+  Differences:
+  `actual`:   "allowed"
+  `expected`: "refused"
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): metab_lc a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$record_da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): metab_lc a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `any(grepl("Copy error", out$copy_notes_after, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): metab_lc a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$design_formula` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "<error> could not find function \"omicDaDesignFormula\""
+  `expected`: "~ 0 + group + replicates"                               
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): metab_lc a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$rerun_formula` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F1/F2 (S1): metab_lc a formula-only re-save asks, and Save puts the formula on the DA tab and sets the DA back
+kind: failure
+message:
+  Expected `out$rerun_design_formula` to be NULL.
+  Differences:
+  `actual` is a character vector ('<error> could not find function "omicDaDesignFormula"')
+  `expected` is NULL
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F5, F6 (S1): metab_lc the same formula saved again asks nothing; the notices say what was done
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F5, F6 (S1): metab_lc the same formula saved again asks nothing; the notices say what was done
+kind: failure
+message:
+  Expected `out$after$box` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F5, F6 (S1): metab_lc the same formula saved again asks nothing; the notices say what was done
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F5, F6 (S1): metab_lc the same formula saved again asks nothing; the notices say what was done
+kind: failure
+message:
+  Expected `any(grepl("nothing changed", out$notes, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F2b (S1): the formula a lipidomics or metabolomics Save placed is on the head until the next DA run
+kind: failure
+message:
+  Expected `out$design_formula` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "<error> could not find function \"omicDaDesignFormula\""
+  `expected`: "~ 0 + group + replicates"                               
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F2b (S1): the formula a lipidomics or metabolomics Save placed is on the head until the next DA run
+kind: failure
+message:
+  Expected `out$rerun_formula` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F2b (S1): the formula a lipidomics or metabolomics Save placed is on the head until the next DA run
+kind: failure
+message:
+  Expected `out$rerun_design_formula` to be NULL.
+  Differences:
+  `actual` is a character vector ('<error> could not find function "omicDaDesignFormula"')
+  `expected` is NULL
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F2b (S1): the formula a lipidomics or metabolomics Save placed is on the head until the next DA run
+kind: failure
+message:
+  Expected `out$design_formula` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "<error> could not find function \"omicDaDesignFormula\""
+  `expected`: "~ 0 + group + replicates"                               
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F2b (S1): the formula a lipidomics or metabolomics Save placed is on the head until the next DA run
+kind: failure
+message:
+  Expected `out$rerun_formula` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F2b (S1): the formula a lipidomics or metabolomics Save placed is on the head until the next DA run
+kind: failure
+message:
+  Expected `out$rerun_design_formula` to be NULL.
+  Differences:
+  `actual` is a character vector ('<error> could not find function "omicDaDesignFormula"')
+  `expected` is NULL
+  
+  metab_lc
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F3 (S1): transcriptomics asks nothing and the notice says the formula does not change its analysis
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F4 (S1): prot_lfq Import Existing Design with only the formula changed asks, Cancel leaves the configuration, Save carries it through
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F4 (S1): prot_lfq Import Existing Design with only the formula changed asks, Cancel leaves the configuration, Save carries it through
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "~ 0 + group + replicates".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Retrieving UniProt Annotations</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <p>Please wait while we retrieve protein annotations from UniProt...</p>
+    |         <div id="uniprot_progress_text">Initializing...</div>
+    |         <div class="progress">
+    |           <div id="uniprot_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">0%</div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F4 (S1): prot_lfq Import Existing Design with only the formula changed asks, Cancel leaves the configuration, Save carries it through
+kind: failure
+message:
+  Expected `...[]` to be identical to `...[]`.
+  Differences:
+  `actual$formula`:   "~ 0 + group + replicates"
+  `expected$formula`: "~ 0 + group"             
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F4 (S1): prot_lfq Import Existing Design with only the formula changed asks, Cancel leaves the configuration, Save carries it through
+kind: failure
+message:
+  Expected `out$after$box` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F4 (S1): prot_lfq Import Existing Design with only the formula changed asks, Cancel leaves the configuration, Save carries it through
+kind: failure
+message:
+  Expected `out$after$status[[out$key]]` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F4 (S1): prot_lfq Import Existing Design with only the formula changed asks, Cancel leaves the configuration, Save carries it through
+kind: failure
+message:
+  Expected `out$after$copy` to be identical to "refused".
+  Differences:
+  `actual`:   "allowed"
+  `expected`: "refused"
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F4 (S1): prot_lfq Import Existing Design with only the formula changed asks, Cancel leaves the configuration, Save carries it through
+kind: failure
+message:
+  Expected `out$head_formulas$design` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F4 (S1): lipid_canonical Import Existing Design with only the formula changed asks, Cancel leaves the configuration, Save carries it through
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F4 (S1): lipid_canonical Import Existing Design with only the formula changed asks, Cancel leaves the configuration, Save carries it through
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "~ 0 + group + replicates".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Processing Design Matrix</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <div style="text-align: center; padding: 20px;">
+    |           <i class="fas fa-spinner fa-spin fa-3x" role="presentation" aria-label="spinner icon"></i>
+    |           <br/>
+    |           <br/>
+    |           <p>Saving design matrix and preparing data...</p>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F4 (S1): lipid_canonical Import Existing Design with only the formula changed asks, Cancel leaves the configuration, Save carries it through
+kind: failure
+message:
+  Expected `...[]` to be identical to `...[]`.
+  Differences:
+  `actual$formula`:   "~ 0 + group + replicates"
+  `expected$formula`: "~ 0 + group"             
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F4 (S1): lipid_canonical Import Existing Design with only the formula changed asks, Cancel leaves the configuration, Save carries it through
+kind: failure
+message:
+  Expected `out$after$box` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F4 (S1): lipid_canonical Import Existing Design with only the formula changed asks, Cancel leaves the configuration, Save carries it through
+kind: failure
+message:
+  Expected `out$after$status[[out$key]]` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F4 (S1): lipid_canonical Import Existing Design with only the formula changed asks, Cancel leaves the configuration, Save carries it through
+kind: failure
+message:
+  Expected `out$after$copy` to be identical to "refused".
+  Differences:
+  `actual`:   "allowed"
+  `expected`: "refused"
+  
+  lipid_canonical
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F7 (S1): the formula and the comparisons changed in one save ask, and Save applies both
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F7 (S1): the formula and the comparisons changed in one save ask, and Save applies both
+kind: failure
+message:
+  Expected `out$box` to be identical to `kit277NewFormula`.
+  Differences:
+  `actual`:   "~ 0 + group"             
+  `expected`: "~ 0 + group + replicates"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 F7 (S1): the formula and the comparisons changed in one save ask, and Save applies both
+kind: failure
+message:
+  Expected `out$copy` to be identical to "refused".
+  Differences:
+  `actual`:   "allowed"
+  `expected`: "refused"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "Homo sapiens".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Retrieving UniProt Annotations</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <p>Please wait while we retrieve protein annotations from UniProt...</p>
+    |         <div id="uniprot_progress_text">Initializing...</div>
+    |         <div class="progress">
+    |           <div id="uniprot_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">0%</div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "Mus musculus".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Retrieving UniProt Annotations</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <p>Please wait while we retrieve protein annotations from UniProt...</p>
+    |         <div id="uniprot_progress_text">Initializing...</div>
+    |         <div class="progress">
+    |           <div id="uniprot_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">0%</div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `as.numeric(out$taxon_after)` to equal 10090.
+  Differences:
+    `actual`:  9606.0
+  `expected`: 10090.0
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `out$organism_after` to be identical to "Mus musculus".
+  Differences:
+  `actual`:   "Homo sapiens"
+  `expected`: "Mus musculus"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `any(unlist(out$places_after))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `out$after$status$differential_expression` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `out$status_enrichment` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `any(grepl("nothing changed", out$notes, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `out$after$copy` to be identical to "refused".
+  Differences:
+  `actual`:   "allowed"
+  `expected`: "refused"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `out$after$da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `out$enrichment_after` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `out$record_da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `out$export_da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `out$enrichment_before_da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `any(grepl("Copy error", out$copy_notes_after, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O2b, O2 (S2): after an organism Save the DA run and the enrichment run use the new organism's annotation
+kind: failure
+message:
+  Expected `out$da_organisms` to be identical to "Synthetic test organism".
+  Differences:
+  `actual`:   "Homo sapiens"           
+  `expected`: "Synthetic test organism"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O2b, O2 (S2): after an organism Save the DA run and the enrichment run use the new organism's annotation
+kind: failure
+message:
+  Expected `out$enrich_organisms` to be identical to "Synthetic test organism".
+  Differences:
+  `actual`:   "Homo sapiens"           
+  `expected`: "Synthetic test organism"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P1, P2 (S3): a changed FASTA before Accession Cleanup is used without a question; the same file again changes nothing
+kind: failure
+message:
+  Expected `grepl("GENEX1", out$p1$bus, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P1, P2 (S3): a changed FASTA before Accession Cleanup is used without a question; the same file again changes nothing
+kind: failure
+message:
+  Expected `grepl("GENEX1", out$p1$project, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P1, P2 (S3): a changed FASTA before Accession Cleanup is used without a question; the same file again changes nothing
+kind: failure
+message:
+  Expected `out$p1$sha` to be identical to `out$p1_sha`.
+  Differences:
+  `actual`:   "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32"
+  `expected`: "d91c1886b5d05e4239601cdf69d2f8e2912b21427f835ac84e645df2c1ba6a2c"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P1, P2 (S3): a changed FASTA before Accession Cleanup is used without a question; the same file again changes nothing
+kind: failure
+message:
+  Expected `any(grepl("FASTA file saved", out$p1$notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P1, P2 (S3): a changed FASTA before Accession Cleanup is used without a question; the same file again changes nothing
+kind: failure
+message:
+  Expected `any(grepl("Accession Cleanup will use it", out$p1$notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P3, P9 (S3): a folder table is compared by content; the table applied is the file recorded
+kind: failure
+message:
+  Expected `grepl("GENEY1", out$p3$bus, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P3, P9 (S3): a folder table is compared by content; the table applied is the file recorded
+kind: failure
+message:
+  Expected `out$p3$name` to be identical to "aa_seq_tbl_final.RDS".
+  Differences:
+  `actual`:   "proteins.fasta"      
+  `expected`: "aa_seq_tbl_final.RDS"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P3, P9 (S3): a folder table is compared by content; the table applied is the file recorded
+kind: failure
+message:
+  Expected `grepl("GENEZ1", out$p9$bus, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P3, P9 (S3): a folder table is compared by content; the table applied is the file recorded
+kind: failure
+message:
+  Expected `out$p9$name` to be identical to "aa_seq_tbl_final.RDS".
+  Differences:
+  `actual`:   "proteins.fasta"      
+  `expected`: "aa_seq_tbl_final.RDS"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "proteins.fasta".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Retrieving UniProt Annotations</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <p>Please wait while we retrieve protein annotations from UniProt...</p>
+    |         <div id="uniprot_progress_text">Initializing...</div>
+    |         <div class="progress">
+    |           <div id="uniprot_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">0%</div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "Accession Cleanup".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Retrieving UniProt Annotations</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <p>Please wait while we retrieve protein annotations from UniProt...</p>
+    |         <div id="uniprot_progress_text">Initializing...</div>
+    |         <div class="progress">
+    |           <div id="uniprot_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">0%</div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$head_after` to be identical to `out$expected`.
+  Differences:
+  `actual`:   "correlation_filtered"
+  `expected`: "protein_s4_initial"  
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `utils::tail(out$history_after, 1L)` to be identical to `out$expected`.
+  Differences:
+  `actual`:   "correlation_filtered"
+  `expected`: "protein_s4_initial"  
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$status_after$quality_control` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$integration_after` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `grepl("GENEX1", out$bus_after, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `grepl("GENEX1", out$project_after, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$sha_after` to be identical to `out$new_sha`.
+  Differences:
+  `actual`:   "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32"
+  `expected`: "d91c1886b5d05e4239601cdf69d2f8e2912b21427f835ac84e645df2c1ba6a2c"
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `any(grepl("FASTA file saved", out$notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$da_status` to be identical to "stale".
+  Differences:
+  `actual`:   "current"
+  `expected`: "stale"  
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$copy` to be identical to "refused".
+  Differences:
+  `actual`:   "allowed"
+  `expected`: "refused"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$record_da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `any(grepl("Copy error", out$copy_notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_lfq a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$head_rule` to match regexp "^refused: .+".
+  Actual text:
+  x | allowed
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_tmt a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_tmt
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_tmt a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "proteins.fasta".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Retrieving UniProt Annotations</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <p>Please wait while we retrieve protein annotations from UniProt...</p>
+    |         <div id="uniprot_progress_text">Initializing...</div>
+    |         <div class="progress">
+    |           <div id="uniprot_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">0%</div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  prot_tmt
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_tmt a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "Accession Cleanup".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Retrieving UniProt Annotations</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <p>Please wait while we retrieve protein annotations from UniProt...</p>
+    |         <div id="uniprot_progress_text">Initializing...</div>
+    |         <div class="progress">
+    |           <div id="uniprot_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">0%</div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  prot_tmt
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_tmt a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$head_after` to be identical to `out$expected`.
+  Differences:
+  `actual`:   "protein_accession_cleaned"
+  `expected`: "protein_s4_initial"       
+  
+  prot_tmt
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_tmt a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `utils::tail(out$history_after, 1L)` to be identical to `out$expected`.
+  Differences:
+  `actual`:   "protein_accession_cleaned"
+  `expected`: "protein_s4_initial"       
+  
+  prot_tmt
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_tmt a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$integration_after` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  prot_tmt
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_tmt a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `grepl("GENEX1", out$bus_after, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_tmt
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_tmt a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `grepl("GENEX1", out$project_after, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_tmt
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_tmt a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$sha_after` to be identical to `out$new_sha`.
+  Differences:
+  `actual`:   "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32"
+  `expected`: "d91c1886b5d05e4239601cdf69d2f8e2912b21427f835ac84e645df2c1ba6a2c"
+  
+  prot_tmt
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_tmt a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `any(grepl("FASTA file saved", out$notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_tmt
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_dia
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "proteins.fasta".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Retrieving UniProt Annotations</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <p>Please wait while we retrieve protein annotations from UniProt...</p>
+    |         <div id="uniprot_progress_text">Initializing...</div>
+    |         <div class="progress">
+    |           <div id="uniprot_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">0%</div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  prot_dia
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "Accession Cleanup".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Retrieving UniProt Annotations</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <p>Please wait while we retrieve protein annotations from UniProt...</p>
+    |         <div id="uniprot_progress_text">Initializing...</div>
+    |         <div class="progress">
+    |           <div id="uniprot_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">0%</div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  prot_dia
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$head_after` to be identical to `out$expected`.
+  Differences:
+  `actual`:   "protein_accession_cleaned"
+  `expected`: "protein_s4_created"       
+  
+  prot_dia
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `utils::tail(out$history_after, 1L)` to be identical to `out$expected`.
+  Differences:
+  `actual`:   "protein_accession_cleaned"
+  `expected`: "protein_s4_created"       
+  
+  prot_dia
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$integration_after` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  prot_dia
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `grepl("GENEX1", out$bus_after, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_dia
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `grepl("GENEX1", out$project_after, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_dia
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$sha_after` to be identical to `out$new_sha`.
+  Differences:
+  `actual`:   "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32"
+  `expected`: "d91c1886b5d05e4239601cdf69d2f8e2912b21427f835ac84e645df2c1ba6a2c"
+  
+  prot_dia
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `any(grepl("FASTA file saved", out$notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_dia
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia_limpa a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_dia_limpa
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia_limpa a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "proteins.fasta".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Retrieving UniProt Annotations</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <p>Please wait while we retrieve protein annotations from UniProt...</p>
+    |         <div id="uniprot_progress_text">Initializing...</div>
+    |         <div class="progress">
+    |           <div id="uniprot_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">0%</div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  prot_dia_limpa
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia_limpa a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "Accession Cleanup".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Retrieving UniProt Annotations</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <p>Please wait while we retrieve protein annotations from UniProt...</p>
+    |         <div id="uniprot_progress_text">Initializing...</div>
+    |         <div class="progress">
+    |           <div id="uniprot_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">0%</div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+  prot_dia_limpa
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia_limpa a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$head_after` to be identical to `out$expected`.
+  Differences:
+  `actual`:   "peptide_accession_cleaned"
+  `expected`: "log2_matrix"              
+  
+  prot_dia_limpa
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia_limpa a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `utils::tail(out$history_after, 1L)` to be identical to `out$expected`.
+  Differences:
+  `actual`:   "peptide_accession_cleaned"
+  `expected`: "log2_matrix"              
+  
+  prot_dia_limpa
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia_limpa a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$integration_after` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  prot_dia_limpa
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia_limpa a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `grepl("GENEX1", out$bus_after, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_dia_limpa
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia_limpa a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `grepl("GENEX1", out$project_after, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_dia_limpa
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia_limpa a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `out$sha_after` to be identical to `out$new_sha`.
+  Differences:
+  `actual`:   "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32"
+  `expected`: "d91c1886b5d05e4239601cdf69d2f8e2912b21427f835ac84e645df2c1ba6a2c"
+  
+  prot_dia_limpa
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P4 (S3): prot_dia_limpa a changed FASTA after Accession Cleanup asks; Save goes back to the step before the cleanup
+kind: failure
+message:
+  Expected `any(grepl("FASTA file saved", out$notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_dia_limpa
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P5, P6 (S3): prot_lfq the cleanup run again names and uses the file that was applied
+kind: failure
+message:
+  Expected `grepl("GENEX1", out$rerun_bus, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P5, P6 (S3): prot_lfq the cleanup run again names and uses the file that was applied
+kind: failure
+message:
+  Expected `out$rerun_cleanup_sha` to be identical to `out$new_sha`.
+  Differences:
+  `actual`:   "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32"
+  `expected`: "d91c1886b5d05e4239601cdf69d2f8e2912b21427f835ac84e645df2c1ba6a2c"
+  
+  prot_lfq
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P5, P6 (S3): prot_dia_limpa the cleanup run again names and uses the file that was applied
+kind: failure
+message:
+  Expected `grepl("GENEX1", out$rerun_bus, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  prot_dia_limpa
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P5, P6 (S3): prot_dia_limpa the cleanup run again names and uses the file that was applied
+kind: failure
+message:
+  Expected `out$rerun_cleanup_sha` to be identical to `out$new_sha`.
+  Differences:
+  `actual`:   "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32"
+  `expected`: "d91c1886b5d05e4239601cdf69d2f8e2912b21427f835ac84e645df2c1ba6a2c"
+  
+  prot_dia_limpa
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P7 (S3): a full import with a new FASTA file into a project that already holds a table applies and records that file
+kind: failure
+message:
+  Expected `grepl("GENEX1", out$bus, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P7 (S3): a full import with a new FASTA file into a project that already holds a table applies and records that file
+kind: failure
+message:
+  Expected `grepl("GENEX1", out$project, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 P8 (S3): with no application session a limited change after Accession Cleanup is refused and nothing is applied
+kind: failure
+message:
+  Expected `condition` to inherit from "omics_design_resave_unconfirmed".
+  Actual class: "simpleError"/"error"/"condition".
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 R1 (S3, C05): a confirmed import refused at the checkpoint puts back the project's copies and the recorded input
+kind: failure
+message:
+  Expected `out$copies` to be identical to `out$before$copies`.
+  Differences:
+  actual vs expected
+  - aa_seq_tbl_final.RDS"13689bdb2276b92b2defb4ed79980802cf9f88fc6750102e95c4b5076ec9bcf4"
+  + aa_seq_tbl_final.RDS"1d80a66142490d6c23104e2d47e36087de86555744d181d46c70fe751d3cf0bf"
+  - fasta_metadata.RDS"102459a092d2d9399e00148427a278d99dd44e03fbce000919b59da140c2abca"
+  + fasta_metadata.RDS"c2faa62ddc9dbc9559b4bd28abcd383b4df3307fcde2a59643f92c5198887d01"
+  - uniprot_dat_cln.RDS"de28b195889d8ca3f6c728f84a16ce3e90434bb80ecf5482c424d0ecb5bac5c5"
+  + uniprot_dat_cln.RDS"b2657ecf2e6a9770cd63549db18e55720575318217f34bbd3bb4b675cabc7961"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 R1b (S3, E-8): a confirmed FASTA Save refused after the files were written puts them back
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 R1b (S3, E-8): a confirmed FASTA Save refused after the files were written puts them back
+kind: failure
+message:
+  Expected `any(grepl("Error during import", out$notes, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
