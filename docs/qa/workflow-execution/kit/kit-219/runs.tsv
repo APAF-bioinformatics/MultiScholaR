@@ -1,1 +1,3 @@
 id	commit	purpose	minutes	jobs	core_hours	result
+G	6cc29e6d	G0 script on the base R/ (run 45775309316)	22.4	1	1.49	INSTRUMENT DEFECT: the script stopped at its first helper call (a script function named add resolved to a package function; no result produced); fixed by renaming, rerun as G-2
+R1	6cc29e6d	new tests on the tests-only commit (run 45775313887)	23.6	1	1.57	as predicted: E1-E8 and G5 fail at the stated values (43 failures, 4 errors from a NULL record), G1-G3 pass

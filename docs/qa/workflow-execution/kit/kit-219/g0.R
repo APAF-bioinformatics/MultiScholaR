@@ -10,7 +10,7 @@
 # port), the GO route (taxon 999999) runs offline. Each route is run twice into one `pathway_dir`: the second run's down
 # list gives no result (g:Profiler: `gost` answers NULL; GO: a down-regulation cut-off that no protein reaches).
 #
-# The rule is written here as a function (`derive`): the package's function does not exist on the base commit.
+# The rule is written here as a function (`g0Derive`): the package's function does not exist on the base commit.
 #
 # Output: docs/qa/workflow-execution/kit/kit-219/g0-out/g0.tsv (route, run, kind, value) and g0-out/g0-summary.txt.
 
@@ -24,15 +24,15 @@ ns <- asNamespace("MultiScholaR")
 h <- new.env(parent = ns)
 sys.source(file.path("tests", "testthat", "helper-go-propagation.R"), envir = h)
 
-rows <- list()
-add <- function(route, run, kind, value) {
+g0Rows <- list()
+g0Add <- function(route, run, kind, value) {
     value <- as.character(value)
     if (!length(value)) value <- "<none>"
-    rows[[length(rows) + 1L]] <<- data.frame(route = route, run = run, kind = kind, value = value, stringsAsFactors = FALSE)
+    g0Rows[[length(g0Rows) + 1L]] <<- data.frame(route = route, run = run, kind = kind, value = value, stringsAsFactors = FALSE)
 }
 
 # The rule of 3.1 item 2, as a function of the stored result.
-derive <- function(state) {
+g0Derive <- function(state) {
     data <- methods::slot(state, "enrichment_data")
     as.character(unlist(lapply(names(data), function(contrast) {
         entry <- data[[contrast]]
@@ -45,31 +45,31 @@ derive <- function(state) {
 
 work <- tempfile("kit219-g0-")
 dir.create(work)
-annotations <- h$goPropAnnotate(h$goPropT7Raw(), file.path(work, "cache"))
-roles <- h$goPropReadTsv("t7-fixture-entries.tsv")
-shared_pathway <- file.path(work, "pathway_enrichment")
-dir.create(shared_pathway)
+g0Annotations <- h$goPropAnnotate(h$goPropT7Raw(), file.path(work, "cache"))
+g0Roles <- h$goPropReadTsv("t7-fixture-entries.tsv")
+g0Pathway <- file.path(work, "pathway_enrichment")
+dir.create(g0Pathway)
 
-#' One run of the project into `shared_pathway`; returns what the kernel was given and what the store holds.
-run_project <- function(route, run, root, taxon, gost = NULL, down_cutoff = 0) {
+#' One run of the project into `g0Pathway`; returns what the kernel was given and what the store holds.
+g0RunProject <- function(route, run, root, taxon, gost = NULL, down_cutoff = 0) {
     seen <- new.env()
     seen$da_names <- NULL
     seen$contrast_names <- NULL
     restore <- if (!is.null(gost)) h$goPropReplaceBinding("gprofiler2", "gost", gost)
     if (!is.null(restore)) on.exit(restore(), add = TRUE)
     paths <- h$goPropPaths(root)
-    paths$pathway_dir <- shared_pathway
+    paths$pathway_dir <- g0Pathway
     for (p in paths) dir.create(p, recursive = TRUE, showWarnings = FALSE)
-    saveRDS(annotations, file.path(paths$source_dir, "uniprot_dat_cln.RDS"))
+    saveRDS(g0Annotations, file.path(paths$source_dir, "uniprot_dat_cln.RDS"))
     manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "kit219-g0", "DIA"),
         WorkflowState$new(audit_enabled = FALSE))
     on.exit(closeDIAStateAdapter(manager), add = TRUE)
     manager$.context$reference_states <- TRUE
     manager$setWorkflowType("DIA")
-    entries <- sort(roles$entry)
+    entries <- sort(g0Roles$entry)
     design <- data.frame(Run = paste0("S", 1:6), group = rep(c("A", "B"), each = 3L),
         batch = rep(c("b1", "b2", "b3"), times = 2L), stringsAsFactors = FALSE)
-    quant <- h$goPropQuant(entries, roles$entry[roles$role == "p_term"], roles$entry[roles$role == "d_term"])
+    quant <- h$goPropQuant(entries, g0Roles$entry[g0Roles$role == "p_term"], g0Roles$entry[g0Roles$role == "d_term"])
     object <- methods::new("ProteinQuantitativeData", protein_quant_table = quant, design_matrix = design,
         sample_id = "Run", group_id = "group", protein_id_column = "uniprot_acc",
         protein_id_table = data.frame(uniprot_acc = entries, gene_names = paste0("GENE", seq_along(entries)),
@@ -100,7 +100,7 @@ run_project <- function(route, run, root, taxon, gost = NULL, down_cutoff = 0) {
         da_data$contrasts_available <- contrasts$contrasts
         manifest <- runDIAReferenceDaAnalysis(list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05,
             treat_lfc_cutoff = 0), da_data, workflow, paths, contrasts = contrasts, publish = FALSE)
-        produceDIADaPublication(manager, manifest, annotations, 0.05, paths[c("da_output_dir", "publication_graphs_dir")],
+        produceDIADaPublication(manager, manifest, g0Annotations, 0.05, paths[c("da_output_dir", "publication_graphs_dir")],
             save_assets = FALSE)
         manifest_names <<- names(manifest$results)
         runWorkflowEnrichment(workflow, omicGuiConfig("proteomics")$enrichment, manifest, parameters, paths,
@@ -111,19 +111,19 @@ run_project <- function(route, run, root, taxon, gost = NULL, down_cutoff = 0) {
             package_current <<- get("workflowEnrichmentCurrentFiles", envir = ns)(workflow, "proteomics")
         }
     }))), error = function(e) error <<- conditionMessage(e)))
-    add(route, run, "package_current_files", if (exists("workflowEnrichmentCurrentFiles", envir = ns, inherits = FALSE))
+    g0Add(route, run, "package_current_files", if (exists("workflowEnrichmentCurrentFiles", envir = ns, inherits = FALSE))
         sort(package_current) else "<function absent>")
-    add(route, run, "package_equals_derived", if (is.null(state) || !exists("workflowEnrichmentCurrentFiles",
-        envir = ns, inherits = FALSE)) NA else setequal(package_current, derive(state)))
-    add(route, run, "error", if (is.null(error)) "<none>" else error)
-    add(route, run, "source_da_data_names", seen$da_names)
-    add(route, run, "source_contrast_names_argument", seen$contrast_names)
-    add(route, run, "source_manifest_results_names", manifest_names)
+    g0Add(route, run, "package_equals_derived", if (is.null(state) || !exists("workflowEnrichmentCurrentFiles",
+        envir = ns, inherits = FALSE)) NA else setequal(package_current, g0Derive(state)))
+    g0Add(route, run, "error", if (is.null(error)) "<none>" else error)
+    g0Add(route, run, "source_da_data_names", seen$da_names)
+    g0Add(route, run, "source_contrast_names_argument", seen$contrast_names)
+    g0Add(route, run, "source_manifest_results_names", manifest_names)
     state
 }
 
 # The fixed g:Profiler answer: the first call of a contrast is the up list, the second the down list.
-make_gost <- function(down_empty) {
+g0MakeGost <- function(down_empty) {
     calls <- 0L
     function(query, ..., custom_bg = NULL) {
         calls <<- calls + 1L
@@ -133,39 +133,39 @@ make_gost <- function(down_empty) {
 }
 
 # The package's internals are visible from the helper environment (its parent is the namespace).
-environment(run_project) <- h
-environment(make_gost) <- h
+environment(g0RunProject) <- h
+environment(g0MakeGost) <- h
 
-report <- function(route, run, state) {
-    written <- sort(list.files(shared_pathway, recursive = TRUE))
-    derived <- if (is.null(state)) character() else derive(state)
-    add(route, run, "written", written)
-    add(route, run, "derived", sort(derived))
-    add(route, run, "written_not_derived", sort(setdiff(written, derived)))
-    add(route, run, "derived_not_written", sort(setdiff(derived, written)))
+g0Report <- function(route, run, state) {
+    written <- sort(list.files(g0Pathway, recursive = TRUE))
+    derived <- if (is.null(state)) character() else g0Derive(state)
+    g0Add(route, run, "written", written)
+    g0Add(route, run, "derived", sort(derived))
+    g0Add(route, run, "written_not_derived", sort(setdiff(written, derived)))
+    g0Add(route, run, "derived_not_written", sort(setdiff(derived, written)))
     data <- if (is.null(state)) list() else methods::slot(state, "enrichment_data")
-    add(route, run, "enrichment_data_names", names(data))
-    add(route, run, "directions_with_result", unlist(lapply(names(data), function(contrast) paste0(contrast, ":",
+    g0Add(route, run, "enrichment_data_names", names(data))
+    g0Add(route, run, "directions_with_result", unlist(lapply(names(data), function(contrast) paste0(contrast, ":",
         paste(names(Filter(Negate(is.null), data[[contrast]])), collapse = "+")))))
 }
 
 for (route in c("gprofiler", "go")) {
     taxon <- if (identical(route, "gprofiler")) "9606" else "999999"
-    unlink(list.files(shared_pathway, full.names = TRUE, recursive = TRUE))
-    state1 <- run_project(route, "run1", file.path(work, paste0(route, "-1")), taxon,
-        gost = if (identical(route, "gprofiler")) make_gost(FALSE))
-    report(route, "run1", state1)
-    first_files <- sort(list.files(shared_pathway, recursive = TRUE))
-    state2 <- run_project(route, "run2", file.path(work, paste0(route, "-2")), taxon,
-        gost = if (identical(route, "gprofiler")) make_gost(TRUE), down_cutoff = if (identical(route, "go")) 100 else 0)
-    report(route, "run2", state2)
+    unlink(list.files(g0Pathway, full.names = TRUE, recursive = TRUE))
+    state1 <- g0RunProject(route, "run1", file.path(work, paste0(route, "-1")), taxon,
+        gost = if (identical(route, "gprofiler")) g0MakeGost(FALSE))
+    g0Report(route, "run1", state1)
+    first_files <- sort(list.files(g0Pathway, recursive = TRUE))
+    state2 <- g0RunProject(route, "run2", file.path(work, paste0(route, "-2")), taxon,
+        gost = if (identical(route, "gprofiler")) g0MakeGost(TRUE), down_cutoff = if (identical(route, "go")) 100 else 0)
+    g0Report(route, "run2", state2)
     # (ii): the files of the first run that the second run's names exclude, and are still on disk.
-    left <- setdiff(first_files, if (is.null(state2)) character() else derive(state2))
-    add(route, "run2", "first_run_files_not_in_second_run_names", sort(left))
-    add(route, "run2", "of_which_still_on_disk", sort(intersect(left, list.files(shared_pathway, recursive = TRUE))))
+    left <- setdiff(first_files, if (is.null(state2)) character() else g0Derive(state2))
+    g0Add(route, "run2", "first_run_files_not_in_second_run_names", sort(left))
+    g0Add(route, "run2", "of_which_still_on_disk", sort(intersect(left, list.files(g0Pathway, recursive = TRUE))))
 }
 
-table <- do.call(rbind, rows)
+table <- do.call(rbind, g0Rows)
 utils::write.table(table, file.path(out_dir, "g0.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
 summary <- vapply(split(table, list(table$route, table$run), drop = TRUE), function(part) {
     pick <- function(kind) part$value[part$kind == kind]
