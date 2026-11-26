@@ -1,0 +1,4 @@
+exact-binomial threshold: 9 of 40
+a: v1 Wilson 4 cells (125,159,161,179); v1 exact 3; v2 Wilson 1 cells (179); v2 exact 1 (179)
+b: v1 Wilson 4 cells (125,159,161,179); v1 exact 3; v2 Wilson 1 cells (179); v2 exact 1 (179)
+e: v1 Wilson 0 cells (); v1 exact 0; v2 Wilson 0 cells (); v2 exact 0 ()

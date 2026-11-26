@@ -1,0 +1,4 @@
+cell	missing_id	n_valid	c1_not_p	c1_not_p_lo	ad	rate	cell_complete
+85	AD5	40	0	6.93889390390723e-18	TRUE	5	TRUE
+87	AD10	40	0	6.93889390390723e-18	TRUE	10	TRUE
+89	AD20	40	0	6.93889390390723e-18	TRUE	20	TRUE
