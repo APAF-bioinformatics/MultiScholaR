@@ -747,7 +747,7 @@ the combined `test-omic-norm-module.R` count are KIT-260's to predict. Request a
 | `test-module-ci-metab-norm.R` | count-changed, all pass | 156/0 -> 158/0 | MCI-015.3's edited block (VAL-352 (5)); its stub carries no skip reason, so it still stops |
 | `test-metab-02w-normalise-between-samples-characterization.R` | count-changed, all pass | 16/0 -> 18/0 | VAL-352 (1) |
 | `test-kit172-downstream.R` | same | 84/0 -> 84/0 | the edited T10 (VAL-373 Q-B) passes on staging's code and on the head (R1e: 84/0 on Part A's code) |
-| `test-workflow-lipid-declarations.R`, `test-workflow-metab-declarations.R` | count-changed? no: see reason | 259/0 -> 259/0, but `:47`, `:138`, `:188` fail on the base | on staging's code the edited `:138`/`:188` (FALSE) and the `:47` pin fail, on the head they pass: verdict **fixed** for each file (base 256/3, head 259/0) |
+| `test-workflow-lipid-declarations.R`, `test-workflow-metab-declarations.R` | fixed | 256/3 -> 259/0 each | on staging's code the re-pinned `:47` (VAL-303 (2)) and the edited `:138`, `:188` (FALSE; VAL-373 Q-B) fail; on the head they pass |
 | `test-omic-norm-module.R` | new-failure for KIT-242 alone | 631/8 -> 583/56 | VAL-303 (1), VAL-352 (4); the combined count with KIT-260's re-pins is KIT-260's |
 | `test-gui-entry-lipidomics.R`, `test-gui-entry-metabolomics.R` | message-changed | 19/16, 57/48 | the ITSD log and record captures inside steps already failing (VAL-352 (2)); the lanes skip RUV |
 | `test-workflow-omics-declarations.R` (KIT-073) | message-changed | 43/25 | `values` (the RUV and ITSD per-assay fields); `registry` message unchanged (VAL-338's situation) (VAL-352 (3)) |
@@ -756,6 +756,3 @@ the combined `test-omic-norm-module.R` count are KIT-260's to predict. Request a
 | `test-gui-entry-proteomics.R`, `test-workflow-operation-registry.R`, `test-kit172-reopen.R`, `test-kit236-report-sentences.R`, `test-kit235-…`, `test-omics-module-globals.R`, the RUV and control-selection characterisation files (`test-metab-03a-…`, `test-lipid-12b/12c-…`, `test-metab-02y-…`, `test-metab-04-…`, `test-ruv-control-anova-grouping.R`), `test-kit224-ruv-feature-levels.R`, `test-kit255-omics-correlation-assays.R` | same | as on the base | no value moves where a correction acted before; the control selection's new attribute is set only when it skips an assay under the current rule |
 | every other file | same | as on the base | |
 | check | identical findings | | |
-
-Correction to the table's declarations row: the two declarations files are **fixed** (base 256/3 with the three
-expectations `:47`, `:138`, `:188` failing on staging's code; head 259/0).
