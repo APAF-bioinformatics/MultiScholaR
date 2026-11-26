@@ -216,13 +216,11 @@ setMethod(
                     # We need to align the logical vector with the current assay's features if names are present
                     if (!is.null(names(ctrl_assay))) {
                         feature_match <- match(feature_names_in_assay, names(ctrl_assay))
-                        # KIT-242 (VAL-242 Q6.1): under the current rule a feature the control vector does not name is
-                        # not a control; the earlier rule skipped the assay.
-                        if (anyNA(feature_match) && !omicsRuvFallbackCurrent()) {
+                        if (anyNA(feature_match)) {
                             log_warn("Assay '{assay_name}': Some assay features not found in named logical 'ctrl' vector. Skipping.", .logr = TRUE)
                             return(NULL)
                         }
-                        control_indices_assay <- if (anyNA(feature_match)) ctrl_assay[feature_match] %in% TRUE else ctrl_assay[feature_match]
+                        control_indices_assay <- ctrl_assay[feature_match]
                         if (length(control_indices_assay) != length(feature_names_in_assay)) {
                             log_warn("Assay '{assay_name}': Length mismatch after aligning named logical 'ctrl' vector ({length(control_indices_assay)}) with assay features ({length(feature_names_in_assay)}). Skipping.", .logr = TRUE)
                             return(NULL)
@@ -345,10 +343,6 @@ setMethod(
                           ruv_grouping_variable = NULL,
                           ruv_number_k = NULL,
                           ctrl = NULL) {
-
-        # KIT-242 Part B (VAL-242 OD-1 (c), Q6.1, Q6.2 (c)): under the current rule the correction runs by cause
-        # (`omicsRuvCorrectByCause`), which calls this method under the earlier rule for the assays it corrects.
-        if (omicsRuvFallbackCurrent()) return(omicsRuvCorrectByCause(theObject, ruv_grouping_variable, ruv_number_k, ctrl))
 
         assay_list <- methods::slot(theObject, "metabolite_data")
         metabolite_id_col_name <- methods::slot(theObject, "metabolite_id_column")

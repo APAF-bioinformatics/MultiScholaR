@@ -1210,8 +1210,6 @@ registerOmicNormRuvCancorOutputs <- function(output, normData) {
 #' @noRd
 omicNormRuvSummary <- function(result) {
     if (is.null(result)) return("Not yet computed")
-    # KIT-242 Part B: an assay kept without RUV says so, with the reason.
-    if (!is.null(result$ruv_not_applied)) return(result$ruv_not_applied)
     if (!isTRUE(result$success)) return(paste0("Failed: ", result$error))
     # KIT-190 I01: where the cap reduced the search's k, the k removed is shown with the k found.
     k_line <- if (!is.null(result$k_removed) && !is.null(result$k_found) && !is.na(result$k_found) &&
