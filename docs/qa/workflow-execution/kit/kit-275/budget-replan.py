@@ -40,7 +40,7 @@ lv=sum(4*sec('V',d) for d in ('D3','D4','D6')); lv_plan=lv*1.25/4/60; lv_to=math
 print('counted expected min',round(tot_e,1),'ceiling min',tot_c,'largest job ceiling',maxjob)
 print('L1',round(l1,1),'s plan',round(l1_plan,1),'timeout',l1_to,'ceiling',l1_to+10,'| L1-V',round(lv,1),round(lv_plan,1),lv_to,lv_to+10)
 fixed=30+40+150+(maxjob+40)
-total_ceiling=tot_c+(l1_to+10)+(lv_to+10)+fixed
-total_expected=tot_e+(l1*0.8/4/60+13)+ (lv/4/60+13)+15+20
+total_ceiling=tot_c+(l1_to+25)+(lv_to+10)+fixed   # L1's request: the sim line, the self-test line (15) and 10 of set-up
+total_expected=tot_e+(l1/4/60+13)+(lv/4/60+13)+15+20
 print('TOTAL ceiling job-min',round(total_ceiling),'core-h',round(total_ceiling*4/60,2),'| expected job-min',round(total_expected),'core-h',round(total_expected*4/60,2))
 print('counted ceiling core-h',round(tot_c*4/60,2))

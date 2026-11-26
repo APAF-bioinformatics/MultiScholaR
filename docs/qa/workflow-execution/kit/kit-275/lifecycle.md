@@ -225,3 +225,9 @@ Cause found by reading (not observed): the guard's `stop()` was raised from a GL
 | 6 no other failed check | **one**: `E9` fails for 2 of 3 comparisons (units D and T): the planted fault is in the first run only (journey-level in D, unit-level in T), so the repeat run differs from it by construction; the control pair (S) is equal. An artefact of the plants, not a defect; recorded as a miss of the declared wording |
 
 Running ceiling (core-hours; `runs.tsv`): smoke 1 used 1.67; smoke 2 used 1.53; smoke 3 used 1.15 (ceiling 1.87): used 4.35; planned (accepted re-plan) 339.27; sum 343.62 against 350.73 (headroom 7.11). L1 re-measures every arm class; G2 re-plans from L1's own times and stops at 350.73.
+
+## 14. Closure check (C01 to C05) applied
+
+C01: every plant (the fault, the E7 refusal, both guard plants) sits on a data set E9 does not repeat (`units$r != first_rep`: r = 9102 in L1). E7's fault and refusal sit on the first unit that E9 does not repeat. C02: `score-k275.R --g1 <g1.tsv> <out>` judges PC2 and NC2 alone (`g1-judged.tsv`, exit 1 on F3); full scoring calls the same `judgeG1`; self-test cases `g1_pass`, `g1_fail`. C03: the header's guard lines carry `# K275-guard`; E0 exempts only hunks made of comments and blank lines. C04: the guard stop is re-raised in the analysis-record and E12 handlers. C05: the L1 draft is in line with the re-plan (114, 15, 139 job-minutes = 9.27 core-hours); `budget-replan.py` has no 0.8 factor (planned ceiling 340.27); `labelPi` applies the coverage rule when n = 0 (case `pi_nopair`).
+**Continuation rule as the scorer applies it:** a counted job that did not complete is replaced by its continuation in the scoring input; the scorer stops on unit rows, on a false `unit_completed` and on duplicate rows; the failed job's directory stays in the records but is not scored.
+Self-test now: 40 cases, 2,779 predictions.

@@ -23,19 +23,19 @@
 # Partial-match guard (lesson of KIT-188's smoke checks 1 to 3): `$` on a list or data frame matches a name by its prefix when none is
 # exact; that warning is an error here, in every process and inside `quiet()` (which would otherwise muffle it). A stop from it is an
 # instrument defect by definition (VAL-54). Every read of a field that may be absent below uses `[[` with exact matching.
-options(warnPartialMatchDollar = TRUE)
+options(warnPartialMatchDollar = TRUE) # K275-guard
 # A `stop()` raised from a GLOBAL calling handler runs with every local handler disabled (R's rule for the handler stack), so it cannot reach a
 # `tryCatch`: it ends the process with nothing written (smoke 2's planted guard unit). The guard is therefore also installed as a LOCAL calling
 # handler (`guardWarning`) around each journey and around each unit, where its stop reaches the enclosing `tryCatch`; the global handler stays as
 # a last net, with an error writer that leaves a trace before the process ends.
-guardWarning <- function(w) {
+guardWarning <- function(w) { # K275-guard
     if (grepl("partial match of", tolower(conditionMessage(w)), fixed = TRUE)) {
         options(k275.guard_trace = paste(vapply(sys.calls(), function(cl) substr(paste(deparse(cl)[[1L]], collapse = ""), 1L, 80L), ""), collapse = " <- "))
         stop(paste("partial-match guard:", conditionMessage(w)), call. = FALSE)
     }
 }
-globalCallingHandlers(warning = guardWarning)
-if (identical(commandArgs(TRUE)[1L], "--unit")) options(error = function() {   # an error that escaped every handler: write what is known, then end non-zero
+globalCallingHandlers(warning = guardWarning) # K275-guard
+if (identical(commandArgs(TRUE)[1L], "--unit")) options(error = function() { # K275-guard   # an error that escaped every handler: write what is known, then end non-zero
     dir <- dirname(Sys.getenv("K275_CHECKS_PATH"))
     tag <- sub("\\.tsv$", "", sub("^checks-", "", basename(Sys.getenv("K275_CHECKS_PATH"))))
     try(writeLines(c(geterrmessage(), getOption("k275.guard_trace", "")), file.path(dir, sprintf("unit-trace-%s.txt", tag))), silent = TRUE)
@@ -727,7 +727,7 @@ journeyL <- function(sim, log2_values, arm, request, d, root, filter = TRUE, its
             out$pairs_post <- quiet(pearsonCorForSamplePairs(theObject = owner$getState(paste0(prefix, "_ruv_corrected")), correlation_group = "group")) # K275-pairs
             step <- "ruv"
             # 35.2 (3): the analysis record's fields beside the product's (they must equal it)
-            record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) NULL)
+            record <- tryCatch(quiet(buildWorkflowAnalysisRecord(owner)), error = function(e) if (grepl("partial-match guard", conditionMessage(e), fixed = TRUE)) stop(e) else NULL) # K275-guard
             out$record_ruv <- recordOutcomes(record, paste0(prefix, "_ruv_corrected"))
         }
         if (correlation) {
@@ -1276,7 +1276,7 @@ checkE12 <- function(ctx, sim, j, arm, version) {
     pct <- ctx$defaults$manual_pct
     object <- omicObjectFromMatrices(sim, m_in)
     got <- tryCatch(withMarkers(armMarkers(arm), quiet(getNegCtrlMetabAnova(object, ruv_grouping_variable = "group",
-        percentage_as_neg_ctrl = pct))), error = function(e) e)
+        percentage_as_neg_ctrl = pct))), error = function(e) if (grepl("partial-match guard", conditionMessage(e), fixed = TRUE)) stop(e) else e) # C04
     if (inherits(got, "error")) return(addCheck("E12", ctx$cell, ctx$r, condition, NA, "positional controls", FALSE,
         paste(class(got)[[1L]], conditionMessage(got))))
     same <- vapply(names(m_in), function(a) setequal(names(got[[a]])[which(got[[a]])], positional(m_in[[a]], pct)), logical(1L))
@@ -1546,16 +1546,17 @@ runParentMain <- function() {
     units$guard <- FALSE
     units$guard_unit <- FALSE
     if (lifecycle && identical(Sys.getenv("K275_FAULT_GUARD"), "1")) {   # the planted partial-match fault: the guard's own self-check
-        hit <- which(units$tier == "D" & !units$repeat_run)
+        hit <- which(units$tier == "D" & !units$repeat_run & units$r != first_rep)   # C01: every plant sits on a data set E9 does not repeat
         if (length(hit)) units$guard[[hit[[1L]]]] <- TRUE
     }
     if (lifecycle && nzchar(Sys.getenv("K275_FAULT_GUARD_UNIT"))) {   # the planted unit-level variant: on the first unit of the tier named (not the journey-level one)
-        hit <- which(units$tier == Sys.getenv("K275_FAULT_GUARD_UNIT") & !units$guard & !units$repeat_run)
+        hit <- which(units$tier == Sys.getenv("K275_FAULT_GUARD_UNIT") & !units$guard & !units$repeat_run & units$r != first_rep)
         if (length(hit)) units$guard_unit[[hit[[1L]]]] <- TRUE
     }
     if (lifecycle && fault) {
-        units$fault[[1L]] <- TRUE
-        hit <- which(units$design == "D3" & units$tier == "D" & !units$repeat_run)
+        hit <- which(!units$repeat_run & units$r != first_rep)    # E7's fault: the first journey of the first unit that E9 does not repeat (C01)
+        if (length(hit)) units$fault[[hit[[1L]]]] <- TRUE
+        hit <- which(units$design == "D3" & units$tier == "D" & !units$repeat_run & units$r != first_rep)
         if (length(hit)) units$e7r[[hit[[1L]]]] <- TRUE
     }
     cat(sprintf("K275 %s: %d units, %d workers, lifecycle %s, smoke %s\n", job_name, nrow(units), workers, lifecycle, smoke))

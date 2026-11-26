@@ -35,6 +35,12 @@ def lookup(case, key):
                 if (r["id"], r["tier"], r["design"], r["version"], r["arm"]) == (ident, tier, design, version, arm):
                     return r[field]
         return None
+    if kind == "g1":
+        rows = table(os.path.join(out, "g1-judged.tsv"))
+        if rows is None: return None
+        for r in rows:
+            if (r["design"], r["kind"]) == (parts[1], parts[2]): return r[parts[3]]
+        return None
     if kind == "labels":
         rows = table(os.path.join(out, "labels.tsv"))
         if rows is None: return None

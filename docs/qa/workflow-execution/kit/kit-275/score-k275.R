@@ -22,7 +22,14 @@ globalCallingHandlers(warning = function(w) {
 args <- commandArgs(TRUE)
 blind <- length(args) >= 1L && identical(args[[1L]], "--blind")
 labels_mode <- length(args) >= 1L && identical(args[[1L]], "--labels")
-if (labels_mode) {
+g1_mode <- length(args) >= 1L && identical(args[[1L]], "--g1")
+if (g1_mode) {
+    stopifnot(length(args) == 3L)
+    g1_arg <- args[[2L]]
+    out_dir <- args[[3L]]
+    rows_dir <- out_dir
+    job <- "g1"
+} else if (labels_mode) {
     stopifnot(length(args) == 3L)
     rows_dir <- args[[2L]]
     out_dir <- args[[3L]]
@@ -69,7 +76,7 @@ labelBp <- function(lo, hi, n, R, derived, est) if (!covered(n, R)) "not determi
     sprintf("differs from derived (%s)", format(round(est, 4)))
 labelC <- function(lo, hi, n, R, margin) if (!covered(n, R)) "not determined (coverage)" else if (gt(lo, margin)) "raised (material)" else if (le(hi, margin)) "not raised" else "not determined"
 shownC <- function(lo, n, R) covered(n, R) && gt(lo, 0)
-labelPi <- function(lo, hi, n = 0, R = 0) if (n > 0 && !covered(n, R)) "not determined (coverage)" else if (gt(lo, 0.5)) "imprint retained" else if (lt(hi, 0.5)) "imprint removed" else "not determined"
+labelPi <- function(lo, hi, n = NA, R = NA) if (is.finite(R) && R > 0 && !covered(n, R)) "not determined (coverage)" else if (gt(lo, 0.5)) "imprint retained" else if (lt(hi, 0.5)) "imprint removed" else "not determined"
 labelsOf <- function(table) {
     out <- lapply(seq_len(nrow(table)), function(i) {
         x <- table[i, ]
@@ -90,11 +97,17 @@ if (labels_mode) {
     utils::write.table(labelsOf(readText(rows_dir)), file.path(out_dir, "labels.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
     quit(save = "no", status = 0L)
 }
-row_files <- c(list.files(rows_dir, pattern = "\\.tsv\\.gz$", full.names = TRUE, recursive = TRUE),
-    list.files(rows_dir, pattern = "^part-.*\\.tsv$", full.names = TRUE, recursive = TRUE))
-rows <- do.call(rbind, lapply(row_files, function(f) readText(if (grepl("\\.gz$", f)) gzfile(f) else f)))
-if (is.null(rows) || !nrow(rows)) stop("K275 scoring stops: no rows")
-for (column in setdiff(names(rows), TEXT_COLUMNS)) rows[[column]] <- num(rows[[column]])
+if (g1_mode) {
+    row_files <- character()
+    rows <- data.frame(tier = character(), design = character(), version = character(), arm = character(), smoke = character(), status = character(), class = character(),
+        r = numeric(), stringsAsFactors = FALSE)
+} else {
+    row_files <- c(list.files(rows_dir, pattern = "\\.tsv\\.gz$", full.names = TRUE, recursive = TRUE),
+        list.files(rows_dir, pattern = "^part-.*\\.tsv$", full.names = TRUE, recursive = TRUE))
+    rows <- do.call(rbind, lapply(row_files, function(f) readText(if (grepl("\\.gz$", f)) gzfile(f) else f)))
+    if (is.null(rows) || !nrow(rows)) stop("K275 scoring stops: no rows")
+    for (column in setdiff(names(rows), TEXT_COLUMNS)) rows[[column]] <- num(rows[[column]])
+}
 instrument_rows <- sum(rows[["status"]] %in% "instrument" | grepl("partial-match guard|partial_match_guard", rows[["class"]]))
 if (!blind && instrument_rows > 0L) stop("K275 scoring stops: an instrument status or a partial-match guard stop in the rows (VAL-54)")
 if (!blind && any(rows[["arm"]] %in% "unit")) stop("K275 scoring stops: a unit left no journey rows (a unit row of status crashed): the job did not complete")
@@ -193,6 +206,39 @@ ratioStat <- function(numerator, denominator, idx, alpha, transform = identity) 
         jk_hi = transform(est + z * se), n = sum(ok))
 }
 meanStat <- function(x, idx, alpha) ratioStat(x, ifelse(is.finite(x), 1, NA_real_), idx, alpha)
+
+# C02: G1's positive and negative controls (PC2, NC2), judged alone: F3 is read after G1 and before L1 (ticket 8.5)
+judgeG1 <- function(g1_path) {
+    g1 <- readText(g1_path)
+    if (any(isTrue(g1[["smoke"]]))) stop("K275 scoring stops: the G1 table carries the smoke flag")
+    g1[["rho"]] <- num(g1[["rho"]])
+    g1[["r"]] <- num(g1[["r"]])
+    pass_of <- list()
+    for (design in DESIGNS) for (kind in c("PC2", "NC2")) {
+        s <- g1[g1[["design"]] %in% design & g1[["kind"]] %in% kind, , drop = FALSE]
+        s <- s[order(s[["r"]]), , drop = FALSE]
+        n <- PER[[design]]
+        target <- if (identical(kind, "PC2")) sqrt((2 * n - 3) / (2 * n - 1)) else 1
+        R <- nrow(s)
+        set.seed(277000000 + 100 * CIDX[[design]] + 10L, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")
+        idx <- matrix(sample.int(max(R, 1L), max(R, 1L) * BOOT_B, replace = TRUE), nrow = max(R, 1L))
+        st <- meanStat(s[["rho"]], idx, 0.01 / 3 / 2)
+        pass <- R > 0 && ge(st$lo, target - M_MATCH) && le(st$hi, target + M_MATCH)
+        emit("control", kind, "G1", design, NA_character_, NA_character_, sprintf("rho_unmod within 0.03 of %s", format(round(target, 4))), R, R, st$est, st$lo, st$hi, 0.01 / 3, "two",
+            label = if (pass) "passes" else "FAILS")
+        pass_of[[paste(kind, design)]] <- pass
+    }
+    pass_of
+}
+if (g1_mode) {
+    judged <- judgeG1(g1_arg)
+    table <- do.call(rbind, cells)
+    table <- table[, c("design", "id", "estimate", "lo", "hi", "label")]
+    names(table)[2L] <- "kind"
+    utils::write.table(table, file.path(out_dir, "g1-judged.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
+    cat(sprintf("K275 G1 judged: %s\n", paste(sprintf("%s %s %s", table$kind, table$design, table$label), collapse = "; ")))
+    quit(save = "no", status = if (all(unlist(judged))) 0L else 1L)   # F3: a control fails: stop, the owner is told
+}
 
 # the per-data-set vector of one column of one (tier, design, version, arm), indexed by data set 1..R (NA where the journey is not valid)
 vec <- function(tier, design, version, arm, column, R, need_valid = TRUE) {
@@ -431,24 +477,8 @@ for (design in DESIGNS) {
 # ---- G1 (PC2, NC2) and the falsifiers ---------------------------------------------------------------------------------------------
 g1_path <- Sys.getenv("K275_G1")
 if (!nzchar(g1_path) || !file.exists(g1_path)) stop("K275 scoring stops: K275_G1 (the G1 table) is not set or not found: an outcome line needs F3 judged")
-g1 <- readText(g1_path)
-if (any(isTrue(g1[["smoke"]]))) stop("K275 scoring stops: the G1 table carries the smoke flag")
-g1[["rho"]] <- num(g1[["rho"]])
-g1[["r"]] <- num(g1[["r"]])
-for (design in DESIGNS) for (kind in c("PC2", "NC2")) {
-    s <- g1[g1[["design"]] %in% design & g1[["kind"]] %in% kind, , drop = FALSE]
-    s <- s[order(s[["r"]]), , drop = FALSE]
-    n <- PER[[design]]
-    target <- if (identical(kind, "PC2")) sqrt((2 * n - 3) / (2 * n - 1)) else 1
-    R <- nrow(s)
-    set.seed(277000000 + 100 * CIDX[[design]] + 10L, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")
-    idx <- matrix(sample.int(max(R, 1L), max(R, 1L) * BOOT_B, replace = TRUE), nrow = max(R, 1L))
-    st <- meanStat(s[["rho"]], idx, 0.01 / 3 / 2)
-    pass <- R > 0 && ge(st$lo, target - M_MATCH) && le(st$hi, target + M_MATCH)
-    emit("control", kind, "G1", design, NA_character_, NA_character_, sprintf("rho_unmod within 0.03 of %s", format(round(target, 4))), R, R, st$est, st$lo, st$hi, 0.01 / 3, "two",
-        label = if (pass) "passes" else "FAILS")
-    lab[[paste(kind, design)]] <- pass
-}
+judged <- judgeG1(g1_path)
+for (nm in names(judged)) lab[[nm]] <- judged[[nm]]
 # F4: an identity check fails in a counted journey (E5 from the rows; E1, E2 from the counted jobs' checks)
 e5_bad <- sum(isFalse(rows[["e5_y"]]) | isFalse(rows[["e5_x"]]))
 checks_files <- list.files(rows_dir, pattern = "^checks-.*\\.tsv$", full.names = TRUE, recursive = TRUE)

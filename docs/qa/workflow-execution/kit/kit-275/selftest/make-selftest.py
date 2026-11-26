@@ -480,6 +480,25 @@ u2 = blank(tier="D", design="D3", r=1, arm="unit", smoke="FALSE", status="crashe
 E = new_case("unit_crashed", rows + [u2]); expected += [("unit_crashed", "exit|unit_crashed", "exit", "nonzero", ""), ("unit_crashed", "stderr|unit_crashed", "substr", "left no journey rows", "")]
 E = new_case("unit_completed_false", rows, files={"checks-x.tsv": hdr + "unit_completed\tD\t1\tD3\tNA\tran to the end\tFALSE\tchild process exit 1, no result\n"})
 expected += [("unit_completed_false", "exit|unit_completed_false", "exit", "nonzero", ""), ("unit_completed_false", "stderr|unit_completed_false", "substr", "did not complete", "")]
+# ---- C02: the --g1 mode judges the G1 controls alone (exit 1 on F3); C05 (c): pi with a reference present and no matching pair -> coverage -----------------------
+for name, spec in (("g1_pass", {}), ("g1_fail", {"g1": {("D3", "PC2"): 1.0}})):
+    folder = os.path.join(OUT, "cases", name)
+    os.makedirs(folder, exist_ok=True)
+    write_g1(os.path.join(folder, "g1.tsv"), g1_rows(spec))
+    index.append((name, "g1", "K275_BOOT_B=200"))
+    for d, n_ in DESIGNS:
+        for k_, t_ in (("PC2", math.sqrt((2 * n_ - 3) / (2 * n_ - 1))), ("NC2", 1.0)):
+            val = spec.get("g1", {}).get((d, k_), t_)
+            expected.append((name, f"g1|{d}|{k_}|label", "str", "passes" if abs(val - t_) <= M_MATCH + TOL else "FAILS", ""))
+            expected.append((name, f"g1|{d}|{k_}|estimate", "num", val, "1e-8"))
+    expected.append((name, f"exit|{name}", "exit", "0" if name == "g1_pass" else "1", ""))
+rows = d_rows({})
+for r_ in rows:
+    if r_["tier"] == "D" and r_["design"] == "D3" and r_["version"] == "V1g" and r_["arm"] == "LM2":
+        r_["tested_sig_y"] = "249_1_1"
+E = new_case("pi_nopair", rows)
+E("cell|pi|D|D3|V1g|LM2|label", "str", "not determined (coverage)")
+E("cell|pi|D|D3|V1g|LM2|n_valid", "num", 0)
 with open(os.path.join(OUT, "index.tsv"), "w", newline="") as f:
     w = csv.writer(f, delimiter="\t", lineterminator="\n")
     w.writerow(["case", "mode", "env"])
