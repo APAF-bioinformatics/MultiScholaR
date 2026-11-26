@@ -1827,11 +1827,19 @@ refreshDIANativeSummaryArchive <- function(workflow, source_dir) {
     # it. A stored value is kept.
     metadata$report_template <- metadata$report_template %||%
         resolveProtSummaryReportTemplate(workflow, catFn = function(...) invisible(NULL))$templateFilename
+    # KIT-277: the FASTA table and the annotation are those of the bus NOW, as an export made at this moment states them (an
+    # organism Save removes the annotation; the earlier export's stored copy would declare a file that is gone).
+    for (field in c("aa_seq_tbl_final", "uniprot_dat_cln")) metadata[field] <- list(workflow[[field]])
     runDIANativeSessionExport(manager, metadata, source_dir,
         extra_references = owned$extra_references,
         dependencies = collectDIANativeGuiFiles(manager, metadata),
         prepare_outputs = function(metadata, request) {
             saveProtNormExportMetadataFiles(metadata, source_dir, strict = TRUE)
+            # As the user's export writes them (R/mod_prot_norm_session_helpers.R): the files the archive declares.
+            for (field in c("aa_seq_tbl_final", "uniprot_dat_cln")) {
+                value <- metadata[[field]]
+                if (is.data.frame(value) && nrow(value) > 0L) saveRDS(value, file.path(source_dir, paste0(field, ".RDS")))
+            }
             summary <- buildProtNormExportSummaryContent(metadata, request$archive_name,
                 timeFn = function() metadata$export_timestamp)
             writeLines(summary, file.path(source_dir, "filtered_session_summary.txt"))
