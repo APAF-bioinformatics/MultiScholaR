@@ -1,0 +1,2 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit260-itsd-default-pattern.R	0	0	0	0	absent	157	0	0	0	ok	only-on-head		

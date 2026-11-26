@@ -1,0 +1,53 @@
+case D6 ...
+[ERROR] Inner loop failure for contrast groupB-groupA: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types.
+[ERROR] Inner loop failure for contrast groupB-groupA: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+[ERROR] Inner loop failure for contrast groupB-groupA: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types.
+[ERROR] Inner loop failure for contrast groupB-groupA: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+[ERROR] Inner loop failure for contrast groupB-groupA: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types.
+[ERROR] Inner loop failure for contrast groupB-groupA: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+[ERROR] Inner loop failure for contrast groupB-groupA: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types.
+[ERROR] Inner loop failure for contrast groupB-groupA: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+[ERROR] Inner loop failure for contrast groupB-groupA: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types.
+[ERROR] Inner loop failure for contrast groupB-groupA: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+[ERROR] Inner loop failure for contrast groupB-groupA: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types.
+[ERROR] Inner loop failure for contrast groupB-groupA: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+case D6: ok in 303.3 s
+Warning messages:
+1: In max(abs(d), na.rm = TRUE) :
+  no non-missing arguments to max; returning -Inf
+2: In max(abs(d - row$constant), na.rm = TRUE) :
+  no non-missing arguments to max; returning -Inf
+3: In max(abs(d), na.rm = TRUE) :
+  no non-missing arguments to max; returning -Inf
+4: In max(abs(d - row$constant), na.rm = TRUE) :
+  no non-missing arguments to max; returning -Inf

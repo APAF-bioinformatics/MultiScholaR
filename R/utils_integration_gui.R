@@ -1415,6 +1415,10 @@ integrationAlignmentPreview <- function(object, views, match = NULL, manager = N
         as.character(entry$biological_sample_column), character(1)), stringsAsFactors = FALSE, row.names = NULL)
     out <- list(parameters = parameters, aligned = aligned, few_samples = few, keys = keys, views = parameters$views,
         replicates = replicates, all_samples = length(all_samples))
+    # KIT-260 (VAL-241): the marked rows named per data set (OD-4 (a)), and those the stored pattern matched through the
+    # alternatives the corrected MS-DIAL default removed (OD-3 (a)).
+    out$standard_names <- integrationInternalStandardNames(object, parameters$views)
+    out$standard_legacy <- integrationInternalStandardLegacy(object, parameters$views)
     if (!is.null(checked)) out$match <- checked
     out
 }
@@ -1481,10 +1485,16 @@ integrationAlignmentFacts <- function(preview, texts = integrationGuiTexts()) {
                 row$biological_samples, row$repeated))
         if (row$standards > 0L) {
             facts <- c(facts, sprintf(text("fact_standards_", parameters$internal_standards), row$view, row$standards))
+            # KIT-260 (OD-4 (a)): which rows, "display name (identifier)".
+            named <- preview$standard_names[[row$view]]
+            if (length(named)) facts <- c(facts, sprintf(omicGuiItsdTexts()[["integration_names"]], row$view, paste(named, collapse = "; ")))
         }
         sparse <- summary$sparse_dropped[summary$view == row$view]
         if (length(sparse) && sparse > 0L) facts <- c(facts, sprintf(texts[["fact_sparse"]], row$view, sparse, min_observed, kept))
     }
+    # KIT-260 (OD-3 (a)): the note, only where marked rows were matched through the removed alternatives.
+    note <- omicsItsdLegacyNote(preview$standard_legacy, unit = "data set")
+    if (!is.null(note)) facts <- c(facts, note)
     unname(facts)
 }
 

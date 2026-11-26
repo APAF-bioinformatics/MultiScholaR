@@ -1,0 +1,1441 @@
+pattern_id	pattern	alternative	name	role	matched
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	IS_Caffeine	intended	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	Caffeine_d9	intended	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	Caffeine-ISTD	intended	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	IS-Leucine	intended	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2: Alanine	wo_space	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2: Serine	wo_space	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2: Valine	wo_space	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2: Citric acid	wo_space	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2: Lactic acid	wo_space	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	CIS-ACONITIC ACID	capitalised	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	HIS-LEU	capitalised	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	cis-Aconitic acid	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	PC 15:0_18:1(d7)	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	Unknown	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2:Glucose	wo_nospace	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	no MS2: Glucose	ms5_no	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	low score: Glucose	ms5_low	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	Caffeine-d9	hyphen_label	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	<NA>	missing_annotation	NA
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	IS_Caffeine	intended	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	Caffeine_d9	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	Caffeine-ISTD	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	IS-Leucine	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2: Alanine	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2: Serine	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2: Valine	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2: Citric acid	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	HIS-LEU	capitalised	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	cis-Aconitic acid	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	PC 15:0_18:1(d7)	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	Unknown	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	no MS2: Glucose	ms5_no	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	low score: Glucose	ms5_low	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	Caffeine-d9	hyphen_label	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	<NA>	missing_annotation	NA
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	IS_Caffeine	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	Caffeine_d9	intended	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	Caffeine-ISTD	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	IS-Leucine	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2: Alanine	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2: Serine	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2: Valine	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2: Citric acid	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	HIS-LEU	capitalised	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	cis-Aconitic acid	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	PC 15:0_18:1(d7)	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	Unknown	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	no MS2: Glucose	ms5_no	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	low score: Glucose	ms5_low	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	Caffeine-d9	hyphen_label	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	<NA>	missing_annotation	NA
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	IS_Caffeine	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	Caffeine_d9	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	Caffeine-ISTD	intended	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	IS-Leucine	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2: Alanine	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2: Serine	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2: Valine	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2: Citric acid	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	HIS-LEU	capitalised	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	cis-Aconitic acid	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	PC 15:0_18:1(d7)	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	Unknown	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	no MS2: Glucose	ms5_no	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	low score: Glucose	ms5_low	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	Caffeine-d9	hyphen_label	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	<NA>	missing_annotation	NA
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	IS_Caffeine	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	Caffeine_d9	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	Caffeine-ISTD	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	IS-Leucine	intended	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2: Alanine	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2: Serine	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2: Valine	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2: Citric acid	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	CIS-ACONITIC ACID	capitalised	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	HIS-LEU	capitalised	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	cis-Aconitic acid	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	PC 15:0_18:1(d7)	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	Unknown	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	no MS2: Glucose	ms5_no	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	low score: Glucose	ms5_low	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	Caffeine-d9	hyphen_label	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	<NA>	missing_annotation	NA
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	IS_Caffeine	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	Caffeine_d9	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	Caffeine-ISTD	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	IS-Leucine	intended	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2: Alanine	wo_space	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2: Serine	wo_space	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2: Valine	wo_space	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2: Citric acid	wo_space	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2: Lactic acid	wo_space	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	HIS-LEU	capitalised	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	cis-Aconitic acid	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	PC 15:0_18:1(d7)	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	Unknown	control	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2:Glucose	wo_nospace	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	no MS2: Glucose	ms5_no	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	low score: Glucose	ms5_low	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2:IS_Caffeine	wo_prefixed_standard	TRUE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	Caffeine-d9	hyphen_label	FALSE
+lipid_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	<NA>	missing_annotation	NA
+lipid_progenesis	^IS_|ISTD	whole	IS_Caffeine	intended	TRUE
+lipid_progenesis	^IS_|ISTD	whole	Caffeine_d9	intended	FALSE
+lipid_progenesis	^IS_|ISTD	whole	Caffeine-ISTD	intended	TRUE
+lipid_progenesis	^IS_|ISTD	whole	IS-Leucine	intended	FALSE
+lipid_progenesis	^IS_|ISTD	whole	w/o MS2: Alanine	wo_space	FALSE
+lipid_progenesis	^IS_|ISTD	whole	w/o MS2: Serine	wo_space	FALSE
+lipid_progenesis	^IS_|ISTD	whole	w/o MS2: Valine	wo_space	FALSE
+lipid_progenesis	^IS_|ISTD	whole	w/o MS2: Citric acid	wo_space	FALSE
+lipid_progenesis	^IS_|ISTD	whole	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_progenesis	^IS_|ISTD	whole	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_progenesis	^IS_|ISTD	whole	HIS-LEU	capitalised	FALSE
+lipid_progenesis	^IS_|ISTD	whole	cis-Aconitic acid	control	FALSE
+lipid_progenesis	^IS_|ISTD	whole	PC 15:0_18:1(d7)	control	FALSE
+lipid_progenesis	^IS_|ISTD	whole	Unknown	control	FALSE
+lipid_progenesis	^IS_|ISTD	whole	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_progenesis	^IS_|ISTD	whole	no MS2: Glucose	ms5_no	FALSE
+lipid_progenesis	^IS_|ISTD	whole	low score: Glucose	ms5_low	FALSE
+lipid_progenesis	^IS_|ISTD	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_progenesis	^IS_|ISTD	whole	Caffeine-d9	hyphen_label	FALSE
+lipid_progenesis	^IS_|ISTD	whole	<NA>	missing_annotation	NA
+lipid_progenesis	^IS_|ISTD	^IS_	IS_Caffeine	intended	TRUE
+lipid_progenesis	^IS_|ISTD	^IS_	Caffeine_d9	intended	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	Caffeine-ISTD	intended	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	IS-Leucine	intended	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	w/o MS2: Alanine	wo_space	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	w/o MS2: Serine	wo_space	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	w/o MS2: Valine	wo_space	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	w/o MS2: Citric acid	wo_space	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	HIS-LEU	capitalised	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	cis-Aconitic acid	control	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	PC 15:0_18:1(d7)	control	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	Unknown	control	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	no MS2: Glucose	ms5_no	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	low score: Glucose	ms5_low	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	Caffeine-d9	hyphen_label	FALSE
+lipid_progenesis	^IS_|ISTD	^IS_	<NA>	missing_annotation	NA
+lipid_progenesis	^IS_|ISTD	ISTD	IS_Caffeine	intended	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	Caffeine_d9	intended	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	Caffeine-ISTD	intended	TRUE
+lipid_progenesis	^IS_|ISTD	ISTD	IS-Leucine	intended	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	w/o MS2: Alanine	wo_space	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	w/o MS2: Serine	wo_space	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	w/o MS2: Valine	wo_space	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	w/o MS2: Citric acid	wo_space	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	HIS-LEU	capitalised	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	cis-Aconitic acid	control	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	PC 15:0_18:1(d7)	control	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	Unknown	control	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	no MS2: Glucose	ms5_no	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	low score: Glucose	ms5_low	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	Caffeine-d9	hyphen_label	FALSE
+lipid_progenesis	^IS_|ISTD	ISTD	<NA>	missing_annotation	NA
+lipid_xcms	^IS_|ISTD	whole	IS_Caffeine	intended	TRUE
+lipid_xcms	^IS_|ISTD	whole	Caffeine_d9	intended	FALSE
+lipid_xcms	^IS_|ISTD	whole	Caffeine-ISTD	intended	TRUE
+lipid_xcms	^IS_|ISTD	whole	IS-Leucine	intended	FALSE
+lipid_xcms	^IS_|ISTD	whole	w/o MS2: Alanine	wo_space	FALSE
+lipid_xcms	^IS_|ISTD	whole	w/o MS2: Serine	wo_space	FALSE
+lipid_xcms	^IS_|ISTD	whole	w/o MS2: Valine	wo_space	FALSE
+lipid_xcms	^IS_|ISTD	whole	w/o MS2: Citric acid	wo_space	FALSE
+lipid_xcms	^IS_|ISTD	whole	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_xcms	^IS_|ISTD	whole	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_xcms	^IS_|ISTD	whole	HIS-LEU	capitalised	FALSE
+lipid_xcms	^IS_|ISTD	whole	cis-Aconitic acid	control	FALSE
+lipid_xcms	^IS_|ISTD	whole	PC 15:0_18:1(d7)	control	FALSE
+lipid_xcms	^IS_|ISTD	whole	Unknown	control	FALSE
+lipid_xcms	^IS_|ISTD	whole	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_xcms	^IS_|ISTD	whole	no MS2: Glucose	ms5_no	FALSE
+lipid_xcms	^IS_|ISTD	whole	low score: Glucose	ms5_low	FALSE
+lipid_xcms	^IS_|ISTD	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_xcms	^IS_|ISTD	whole	Caffeine-d9	hyphen_label	FALSE
+lipid_xcms	^IS_|ISTD	whole	<NA>	missing_annotation	NA
+lipid_xcms	^IS_|ISTD	^IS_	IS_Caffeine	intended	TRUE
+lipid_xcms	^IS_|ISTD	^IS_	Caffeine_d9	intended	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	Caffeine-ISTD	intended	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	IS-Leucine	intended	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	w/o MS2: Alanine	wo_space	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	w/o MS2: Serine	wo_space	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	w/o MS2: Valine	wo_space	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	w/o MS2: Citric acid	wo_space	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	HIS-LEU	capitalised	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	cis-Aconitic acid	control	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	PC 15:0_18:1(d7)	control	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	Unknown	control	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	no MS2: Glucose	ms5_no	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	low score: Glucose	ms5_low	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	Caffeine-d9	hyphen_label	FALSE
+lipid_xcms	^IS_|ISTD	^IS_	<NA>	missing_annotation	NA
+lipid_xcms	^IS_|ISTD	ISTD	IS_Caffeine	intended	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	Caffeine_d9	intended	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	Caffeine-ISTD	intended	TRUE
+lipid_xcms	^IS_|ISTD	ISTD	IS-Leucine	intended	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	w/o MS2: Alanine	wo_space	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	w/o MS2: Serine	wo_space	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	w/o MS2: Valine	wo_space	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	w/o MS2: Citric acid	wo_space	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	HIS-LEU	capitalised	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	cis-Aconitic acid	control	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	PC 15:0_18:1(d7)	control	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	Unknown	control	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	no MS2: Glucose	ms5_no	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	low score: Glucose	ms5_low	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	Caffeine-d9	hyphen_label	FALSE
+lipid_xcms	^IS_|ISTD	ISTD	<NA>	missing_annotation	NA
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	IS_Caffeine	intended	TRUE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	Caffeine_d9	intended	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	Caffeine-ISTD	intended	TRUE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	IS-Leucine	intended	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	w/o MS2: Alanine	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	w/o MS2: Serine	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	w/o MS2: Valine	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	w/o MS2: Citric acid	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	HIS-LEU	capitalised	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	cis-Aconitic acid	control	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	PC 15:0_18:1(d7)	control	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	Unknown	control	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	no MS2: Glucose	ms5_no	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	low score: Glucose	ms5_low	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	Caffeine-d9	hyphen_label	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	whole	<NA>	missing_annotation	NA
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	IS_Caffeine	intended	TRUE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	Caffeine_d9	intended	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	Caffeine-ISTD	intended	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	IS-Leucine	intended	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	w/o MS2: Alanine	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	w/o MS2: Serine	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	w/o MS2: Valine	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	w/o MS2: Citric acid	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	HIS-LEU	capitalised	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	cis-Aconitic acid	control	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	PC 15:0_18:1(d7)	control	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	Unknown	control	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	no MS2: Glucose	ms5_no	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	low score: Glucose	ms5_low	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	Caffeine-d9	hyphen_label	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	^IS_	<NA>	missing_annotation	NA
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	IS_Caffeine	intended	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	Caffeine_d9	intended	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	Caffeine-ISTD	intended	TRUE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	IS-Leucine	intended	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	w/o MS2: Alanine	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	w/o MS2: Serine	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	w/o MS2: Valine	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	w/o MS2: Citric acid	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	HIS-LEU	capitalised	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	cis-Aconitic acid	control	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	PC 15:0_18:1(d7)	control	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	Unknown	control	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	no MS2: Glucose	ms5_no	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	low score: Glucose	ms5_low	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	Caffeine-d9	hyphen_label	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	ISTD	<NA>	missing_annotation	NA
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	IS_Caffeine	intended	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	Caffeine_d9	intended	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	Caffeine-ISTD	intended	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	IS-Leucine	intended	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	w/o MS2: Alanine	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	w/o MS2: Serine	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	w/o MS2: Valine	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	w/o MS2: Citric acid	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	HIS-LEU	capitalised	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	cis-Aconitic acid	control	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	PC 15:0_18:1(d7)	control	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	Unknown	control	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	no MS2: Glucose	ms5_no	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	low score: Glucose	ms5_low	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	Caffeine-d9	hyphen_label	FALSE
+lipid_compound_discoverer	^IS_|ISTD|Internal	Internal	<NA>	missing_annotation	NA
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	IS_Caffeine	intended	TRUE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	Caffeine_d9	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	Caffeine-ISTD	intended	TRUE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	IS-Leucine	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	w/o MS2: Alanine	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	w/o MS2: Serine	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	w/o MS2: Valine	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	w/o MS2: Citric acid	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	HIS-LEU	capitalised	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	cis-Aconitic acid	control	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	PC 15:0_18:1(d7)	control	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	Unknown	control	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	no MS2: Glucose	ms5_no	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	low score: Glucose	ms5_low	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	Caffeine-d9	hyphen_label	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	whole	<NA>	missing_annotation	NA
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	IS_Caffeine	intended	TRUE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	Caffeine_d9	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	Caffeine-ISTD	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	IS-Leucine	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	w/o MS2: Alanine	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	w/o MS2: Serine	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	w/o MS2: Valine	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	w/o MS2: Citric acid	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	HIS-LEU	capitalised	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	cis-Aconitic acid	control	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	PC 15:0_18:1(d7)	control	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	Unknown	control	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	no MS2: Glucose	ms5_no	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	low score: Glucose	ms5_low	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	Caffeine-d9	hyphen_label	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	^IS_	<NA>	missing_annotation	NA
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	IS_Caffeine	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	Caffeine_d9	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	Caffeine-ISTD	intended	TRUE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	IS-Leucine	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	w/o MS2: Alanine	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	w/o MS2: Serine	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	w/o MS2: Valine	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	w/o MS2: Citric acid	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	HIS-LEU	capitalised	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	cis-Aconitic acid	control	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	PC 15:0_18:1(d7)	control	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	Unknown	control	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	no MS2: Glucose	ms5_no	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	low score: Glucose	ms5_low	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	Caffeine-d9	hyphen_label	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	ISTD	<NA>	missing_annotation	NA
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	IS_Caffeine	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	Caffeine_d9	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	Caffeine-ISTD	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	IS-Leucine	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	w/o MS2: Alanine	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	w/o MS2: Serine	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	w/o MS2: Valine	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	w/o MS2: Citric acid	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	HIS-LEU	capitalised	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	cis-Aconitic acid	control	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	PC 15:0_18:1(d7)	control	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	Unknown	control	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	no MS2: Glucose	ms5_no	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	low score: Glucose	ms5_low	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	Caffeine-d9	hyphen_label	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	Internal	<NA>	missing_annotation	NA
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	IS_Caffeine	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	Caffeine_d9	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	Caffeine-ISTD	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	IS-Leucine	intended	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	w/o MS2: Alanine	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	w/o MS2: Serine	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	w/o MS2: Valine	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	w/o MS2: Citric acid	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	w/o MS2: Lactic acid	wo_space	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	CIS-ACONITIC ACID	capitalised	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	HIS-LEU	capitalised	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	cis-Aconitic acid	control	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	PC 15:0_18:1(d7)	control	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	Unknown	control	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	w/o MS2:Glucose	wo_nospace	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	no MS2: Glucose	ms5_no	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	low score: Glucose	ms5_low	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	Caffeine-d9	hyphen_label	FALSE
+lipid_lipidsearch	^IS_|ISTD|Internal|_IS	_IS	<NA>	missing_annotation	NA
+lipid_custom	NA	whole	IS_Caffeine	intended	NA
+lipid_custom	NA	whole	Caffeine_d9	intended	NA
+lipid_custom	NA	whole	Caffeine-ISTD	intended	NA
+lipid_custom	NA	whole	IS-Leucine	intended	NA
+lipid_custom	NA	whole	w/o MS2: Alanine	wo_space	NA
+lipid_custom	NA	whole	w/o MS2: Serine	wo_space	NA
+lipid_custom	NA	whole	w/o MS2: Valine	wo_space	NA
+lipid_custom	NA	whole	w/o MS2: Citric acid	wo_space	NA
+lipid_custom	NA	whole	w/o MS2: Lactic acid	wo_space	NA
+lipid_custom	NA	whole	CIS-ACONITIC ACID	capitalised	NA
+lipid_custom	NA	whole	HIS-LEU	capitalised	NA
+lipid_custom	NA	whole	cis-Aconitic acid	control	NA
+lipid_custom	NA	whole	PC 15:0_18:1(d7)	control	NA
+lipid_custom	NA	whole	Unknown	control	NA
+lipid_custom	NA	whole	w/o MS2:Glucose	wo_nospace	NA
+lipid_custom	NA	whole	no MS2: Glucose	ms5_no	NA
+lipid_custom	NA	whole	low score: Glucose	ms5_low	NA
+lipid_custom	NA	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	NA
+lipid_custom	NA	whole	Caffeine-d9	hyphen_label	NA
+lipid_custom	NA	whole	<NA>	missing_annotation	NA
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	IS_Caffeine	intended	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	Caffeine_d9	intended	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	Caffeine-ISTD	intended	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	IS-Leucine	intended	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2: Alanine	wo_space	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2: Serine	wo_space	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2: Valine	wo_space	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2: Citric acid	wo_space	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2: Lactic acid	wo_space	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	CIS-ACONITIC ACID	capitalised	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	HIS-LEU	capitalised	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	cis-Aconitic acid	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	PC 15:0_18:1(d7)	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	Unknown	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2:Glucose	wo_nospace	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	no MS2: Glucose	ms5_no	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	low score: Glucose	ms5_low	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	Caffeine-d9	hyphen_label	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	<NA>	missing_annotation	NA
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	IS_Caffeine	intended	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	Caffeine_d9	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	Caffeine-ISTD	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	IS-Leucine	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2: Alanine	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2: Serine	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2: Valine	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2: Citric acid	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2: Lactic acid	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	CIS-ACONITIC ACID	capitalised	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	HIS-LEU	capitalised	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	cis-Aconitic acid	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	PC 15:0_18:1(d7)	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	Unknown	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2:Glucose	wo_nospace	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	no MS2: Glucose	ms5_no	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	low score: Glucose	ms5_low	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	Caffeine-d9	hyphen_label	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	<NA>	missing_annotation	NA
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	IS_Caffeine	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	Caffeine_d9	intended	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	Caffeine-ISTD	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	IS-Leucine	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2: Alanine	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2: Serine	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2: Valine	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2: Citric acid	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2: Lactic acid	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	CIS-ACONITIC ACID	capitalised	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	HIS-LEU	capitalised	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	cis-Aconitic acid	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	PC 15:0_18:1(d7)	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	Unknown	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2:Glucose	wo_nospace	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	no MS2: Glucose	ms5_no	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	low score: Glucose	ms5_low	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	Caffeine-d9	hyphen_label	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	<NA>	missing_annotation	NA
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	IS_Caffeine	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	Caffeine_d9	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	Caffeine-ISTD	intended	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	IS-Leucine	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2: Alanine	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2: Serine	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2: Valine	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2: Citric acid	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2: Lactic acid	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	CIS-ACONITIC ACID	capitalised	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	HIS-LEU	capitalised	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	cis-Aconitic acid	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	PC 15:0_18:1(d7)	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	Unknown	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2:Glucose	wo_nospace	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	no MS2: Glucose	ms5_no	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	low score: Glucose	ms5_low	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	Caffeine-d9	hyphen_label	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	<NA>	missing_annotation	NA
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	IS_Caffeine	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	Caffeine_d9	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	Caffeine-ISTD	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	IS-Leucine	intended	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2: Alanine	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2: Serine	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2: Valine	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2: Citric acid	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2: Lactic acid	wo_space	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	CIS-ACONITIC ACID	capitalised	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	HIS-LEU	capitalised	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	cis-Aconitic acid	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	PC 15:0_18:1(d7)	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	Unknown	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2:Glucose	wo_nospace	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	no MS2: Glucose	ms5_no	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	low score: Glucose	ms5_low	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	Caffeine-d9	hyphen_label	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	<NA>	missing_annotation	NA
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	IS_Caffeine	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	Caffeine_d9	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	Caffeine-ISTD	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	IS-Leucine	intended	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2: Alanine	wo_space	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2: Serine	wo_space	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2: Valine	wo_space	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2: Citric acid	wo_space	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2: Lactic acid	wo_space	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	CIS-ACONITIC ACID	capitalised	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	HIS-LEU	capitalised	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	cis-Aconitic acid	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	PC 15:0_18:1(d7)	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	Unknown	control	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2:Glucose	wo_nospace	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	no MS2: Glucose	ms5_no	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	low score: Glucose	ms5_low	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2:IS_Caffeine	wo_prefixed_standard	TRUE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	Caffeine-d9	hyphen_label	FALSE
+metab_msdial	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	<NA>	missing_annotation	NA
+metab_progenesis	^IS_|ISTD	whole	IS_Caffeine	intended	TRUE
+metab_progenesis	^IS_|ISTD	whole	Caffeine_d9	intended	FALSE
+metab_progenesis	^IS_|ISTD	whole	Caffeine-ISTD	intended	TRUE
+metab_progenesis	^IS_|ISTD	whole	IS-Leucine	intended	FALSE
+metab_progenesis	^IS_|ISTD	whole	w/o MS2: Alanine	wo_space	FALSE
+metab_progenesis	^IS_|ISTD	whole	w/o MS2: Serine	wo_space	FALSE
+metab_progenesis	^IS_|ISTD	whole	w/o MS2: Valine	wo_space	FALSE
+metab_progenesis	^IS_|ISTD	whole	w/o MS2: Citric acid	wo_space	FALSE
+metab_progenesis	^IS_|ISTD	whole	w/o MS2: Lactic acid	wo_space	FALSE
+metab_progenesis	^IS_|ISTD	whole	CIS-ACONITIC ACID	capitalised	FALSE
+metab_progenesis	^IS_|ISTD	whole	HIS-LEU	capitalised	FALSE
+metab_progenesis	^IS_|ISTD	whole	cis-Aconitic acid	control	FALSE
+metab_progenesis	^IS_|ISTD	whole	PC 15:0_18:1(d7)	control	FALSE
+metab_progenesis	^IS_|ISTD	whole	Unknown	control	FALSE
+metab_progenesis	^IS_|ISTD	whole	w/o MS2:Glucose	wo_nospace	FALSE
+metab_progenesis	^IS_|ISTD	whole	no MS2: Glucose	ms5_no	FALSE
+metab_progenesis	^IS_|ISTD	whole	low score: Glucose	ms5_low	FALSE
+metab_progenesis	^IS_|ISTD	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+metab_progenesis	^IS_|ISTD	whole	Caffeine-d9	hyphen_label	FALSE
+metab_progenesis	^IS_|ISTD	whole	<NA>	missing_annotation	NA
+metab_progenesis	^IS_|ISTD	^IS_	IS_Caffeine	intended	TRUE
+metab_progenesis	^IS_|ISTD	^IS_	Caffeine_d9	intended	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	Caffeine-ISTD	intended	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	IS-Leucine	intended	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	w/o MS2: Alanine	wo_space	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	w/o MS2: Serine	wo_space	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	w/o MS2: Valine	wo_space	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	w/o MS2: Citric acid	wo_space	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	w/o MS2: Lactic acid	wo_space	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	CIS-ACONITIC ACID	capitalised	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	HIS-LEU	capitalised	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	cis-Aconitic acid	control	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	PC 15:0_18:1(d7)	control	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	Unknown	control	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	w/o MS2:Glucose	wo_nospace	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	no MS2: Glucose	ms5_no	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	low score: Glucose	ms5_low	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	Caffeine-d9	hyphen_label	FALSE
+metab_progenesis	^IS_|ISTD	^IS_	<NA>	missing_annotation	NA
+metab_progenesis	^IS_|ISTD	ISTD	IS_Caffeine	intended	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	Caffeine_d9	intended	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	Caffeine-ISTD	intended	TRUE
+metab_progenesis	^IS_|ISTD	ISTD	IS-Leucine	intended	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	w/o MS2: Alanine	wo_space	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	w/o MS2: Serine	wo_space	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	w/o MS2: Valine	wo_space	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	w/o MS2: Citric acid	wo_space	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	w/o MS2: Lactic acid	wo_space	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	CIS-ACONITIC ACID	capitalised	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	HIS-LEU	capitalised	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	cis-Aconitic acid	control	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	PC 15:0_18:1(d7)	control	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	Unknown	control	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	w/o MS2:Glucose	wo_nospace	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	no MS2: Glucose	ms5_no	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	low score: Glucose	ms5_low	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	Caffeine-d9	hyphen_label	FALSE
+metab_progenesis	^IS_|ISTD	ISTD	<NA>	missing_annotation	NA
+metab_xcms	^IS_|ISTD	whole	IS_Caffeine	intended	TRUE
+metab_xcms	^IS_|ISTD	whole	Caffeine_d9	intended	FALSE
+metab_xcms	^IS_|ISTD	whole	Caffeine-ISTD	intended	TRUE
+metab_xcms	^IS_|ISTD	whole	IS-Leucine	intended	FALSE
+metab_xcms	^IS_|ISTD	whole	w/o MS2: Alanine	wo_space	FALSE
+metab_xcms	^IS_|ISTD	whole	w/o MS2: Serine	wo_space	FALSE
+metab_xcms	^IS_|ISTD	whole	w/o MS2: Valine	wo_space	FALSE
+metab_xcms	^IS_|ISTD	whole	w/o MS2: Citric acid	wo_space	FALSE
+metab_xcms	^IS_|ISTD	whole	w/o MS2: Lactic acid	wo_space	FALSE
+metab_xcms	^IS_|ISTD	whole	CIS-ACONITIC ACID	capitalised	FALSE
+metab_xcms	^IS_|ISTD	whole	HIS-LEU	capitalised	FALSE
+metab_xcms	^IS_|ISTD	whole	cis-Aconitic acid	control	FALSE
+metab_xcms	^IS_|ISTD	whole	PC 15:0_18:1(d7)	control	FALSE
+metab_xcms	^IS_|ISTD	whole	Unknown	control	FALSE
+metab_xcms	^IS_|ISTD	whole	w/o MS2:Glucose	wo_nospace	FALSE
+metab_xcms	^IS_|ISTD	whole	no MS2: Glucose	ms5_no	FALSE
+metab_xcms	^IS_|ISTD	whole	low score: Glucose	ms5_low	FALSE
+metab_xcms	^IS_|ISTD	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+metab_xcms	^IS_|ISTD	whole	Caffeine-d9	hyphen_label	FALSE
+metab_xcms	^IS_|ISTD	whole	<NA>	missing_annotation	NA
+metab_xcms	^IS_|ISTD	^IS_	IS_Caffeine	intended	TRUE
+metab_xcms	^IS_|ISTD	^IS_	Caffeine_d9	intended	FALSE
+metab_xcms	^IS_|ISTD	^IS_	Caffeine-ISTD	intended	FALSE
+metab_xcms	^IS_|ISTD	^IS_	IS-Leucine	intended	FALSE
+metab_xcms	^IS_|ISTD	^IS_	w/o MS2: Alanine	wo_space	FALSE
+metab_xcms	^IS_|ISTD	^IS_	w/o MS2: Serine	wo_space	FALSE
+metab_xcms	^IS_|ISTD	^IS_	w/o MS2: Valine	wo_space	FALSE
+metab_xcms	^IS_|ISTD	^IS_	w/o MS2: Citric acid	wo_space	FALSE
+metab_xcms	^IS_|ISTD	^IS_	w/o MS2: Lactic acid	wo_space	FALSE
+metab_xcms	^IS_|ISTD	^IS_	CIS-ACONITIC ACID	capitalised	FALSE
+metab_xcms	^IS_|ISTD	^IS_	HIS-LEU	capitalised	FALSE
+metab_xcms	^IS_|ISTD	^IS_	cis-Aconitic acid	control	FALSE
+metab_xcms	^IS_|ISTD	^IS_	PC 15:0_18:1(d7)	control	FALSE
+metab_xcms	^IS_|ISTD	^IS_	Unknown	control	FALSE
+metab_xcms	^IS_|ISTD	^IS_	w/o MS2:Glucose	wo_nospace	FALSE
+metab_xcms	^IS_|ISTD	^IS_	no MS2: Glucose	ms5_no	FALSE
+metab_xcms	^IS_|ISTD	^IS_	low score: Glucose	ms5_low	FALSE
+metab_xcms	^IS_|ISTD	^IS_	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+metab_xcms	^IS_|ISTD	^IS_	Caffeine-d9	hyphen_label	FALSE
+metab_xcms	^IS_|ISTD	^IS_	<NA>	missing_annotation	NA
+metab_xcms	^IS_|ISTD	ISTD	IS_Caffeine	intended	FALSE
+metab_xcms	^IS_|ISTD	ISTD	Caffeine_d9	intended	FALSE
+metab_xcms	^IS_|ISTD	ISTD	Caffeine-ISTD	intended	TRUE
+metab_xcms	^IS_|ISTD	ISTD	IS-Leucine	intended	FALSE
+metab_xcms	^IS_|ISTD	ISTD	w/o MS2: Alanine	wo_space	FALSE
+metab_xcms	^IS_|ISTD	ISTD	w/o MS2: Serine	wo_space	FALSE
+metab_xcms	^IS_|ISTD	ISTD	w/o MS2: Valine	wo_space	FALSE
+metab_xcms	^IS_|ISTD	ISTD	w/o MS2: Citric acid	wo_space	FALSE
+metab_xcms	^IS_|ISTD	ISTD	w/o MS2: Lactic acid	wo_space	FALSE
+metab_xcms	^IS_|ISTD	ISTD	CIS-ACONITIC ACID	capitalised	FALSE
+metab_xcms	^IS_|ISTD	ISTD	HIS-LEU	capitalised	FALSE
+metab_xcms	^IS_|ISTD	ISTD	cis-Aconitic acid	control	FALSE
+metab_xcms	^IS_|ISTD	ISTD	PC 15:0_18:1(d7)	control	FALSE
+metab_xcms	^IS_|ISTD	ISTD	Unknown	control	FALSE
+metab_xcms	^IS_|ISTD	ISTD	w/o MS2:Glucose	wo_nospace	FALSE
+metab_xcms	^IS_|ISTD	ISTD	no MS2: Glucose	ms5_no	FALSE
+metab_xcms	^IS_|ISTD	ISTD	low score: Glucose	ms5_low	FALSE
+metab_xcms	^IS_|ISTD	ISTD	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+metab_xcms	^IS_|ISTD	ISTD	Caffeine-d9	hyphen_label	FALSE
+metab_xcms	^IS_|ISTD	ISTD	<NA>	missing_annotation	NA
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	IS_Caffeine	intended	TRUE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	Caffeine_d9	intended	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	Caffeine-ISTD	intended	TRUE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	IS-Leucine	intended	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	w/o MS2: Alanine	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	w/o MS2: Serine	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	w/o MS2: Valine	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	w/o MS2: Citric acid	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	w/o MS2: Lactic acid	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	CIS-ACONITIC ACID	capitalised	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	HIS-LEU	capitalised	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	cis-Aconitic acid	control	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	PC 15:0_18:1(d7)	control	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	Unknown	control	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	w/o MS2:Glucose	wo_nospace	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	no MS2: Glucose	ms5_no	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	low score: Glucose	ms5_low	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	Caffeine-d9	hyphen_label	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	whole	<NA>	missing_annotation	NA
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	IS_Caffeine	intended	TRUE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	Caffeine_d9	intended	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	Caffeine-ISTD	intended	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	IS-Leucine	intended	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	w/o MS2: Alanine	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	w/o MS2: Serine	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	w/o MS2: Valine	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	w/o MS2: Citric acid	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	w/o MS2: Lactic acid	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	CIS-ACONITIC ACID	capitalised	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	HIS-LEU	capitalised	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	cis-Aconitic acid	control	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	PC 15:0_18:1(d7)	control	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	Unknown	control	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	w/o MS2:Glucose	wo_nospace	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	no MS2: Glucose	ms5_no	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	low score: Glucose	ms5_low	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	Caffeine-d9	hyphen_label	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	^IS_	<NA>	missing_annotation	NA
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	IS_Caffeine	intended	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	Caffeine_d9	intended	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	Caffeine-ISTD	intended	TRUE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	IS-Leucine	intended	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	w/o MS2: Alanine	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	w/o MS2: Serine	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	w/o MS2: Valine	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	w/o MS2: Citric acid	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	w/o MS2: Lactic acid	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	CIS-ACONITIC ACID	capitalised	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	HIS-LEU	capitalised	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	cis-Aconitic acid	control	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	PC 15:0_18:1(d7)	control	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	Unknown	control	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	w/o MS2:Glucose	wo_nospace	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	no MS2: Glucose	ms5_no	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	low score: Glucose	ms5_low	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	Caffeine-d9	hyphen_label	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	ISTD	<NA>	missing_annotation	NA
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	IS_Caffeine	intended	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	Caffeine_d9	intended	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	Caffeine-ISTD	intended	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	IS-Leucine	intended	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	w/o MS2: Alanine	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	w/o MS2: Serine	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	w/o MS2: Valine	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	w/o MS2: Citric acid	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	w/o MS2: Lactic acid	wo_space	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	CIS-ACONITIC ACID	capitalised	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	HIS-LEU	capitalised	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	cis-Aconitic acid	control	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	PC 15:0_18:1(d7)	control	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	Unknown	control	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	w/o MS2:Glucose	wo_nospace	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	no MS2: Glucose	ms5_no	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	low score: Glucose	ms5_low	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	Caffeine-d9	hyphen_label	FALSE
+metab_compound_discoverer	^IS_|ISTD|Internal	Internal	<NA>	missing_annotation	NA
+metab_custom	NA	whole	IS_Caffeine	intended	NA
+metab_custom	NA	whole	Caffeine_d9	intended	NA
+metab_custom	NA	whole	Caffeine-ISTD	intended	NA
+metab_custom	NA	whole	IS-Leucine	intended	NA
+metab_custom	NA	whole	w/o MS2: Alanine	wo_space	NA
+metab_custom	NA	whole	w/o MS2: Serine	wo_space	NA
+metab_custom	NA	whole	w/o MS2: Valine	wo_space	NA
+metab_custom	NA	whole	w/o MS2: Citric acid	wo_space	NA
+metab_custom	NA	whole	w/o MS2: Lactic acid	wo_space	NA
+metab_custom	NA	whole	CIS-ACONITIC ACID	capitalised	NA
+metab_custom	NA	whole	HIS-LEU	capitalised	NA
+metab_custom	NA	whole	cis-Aconitic acid	control	NA
+metab_custom	NA	whole	PC 15:0_18:1(d7)	control	NA
+metab_custom	NA	whole	Unknown	control	NA
+metab_custom	NA	whole	w/o MS2:Glucose	wo_nospace	NA
+metab_custom	NA	whole	no MS2: Glucose	ms5_no	NA
+metab_custom	NA	whole	low score: Glucose	ms5_low	NA
+metab_custom	NA	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	NA
+metab_custom	NA	whole	Caffeine-d9	hyphen_label	NA
+metab_custom	NA	whole	<NA>	missing_annotation	NA
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	IS_Caffeine	intended	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	Caffeine_d9	intended	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	Caffeine-ISTD	intended	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	IS-Leucine	intended	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2: Alanine	wo_space	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2: Serine	wo_space	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2: Valine	wo_space	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2: Citric acid	wo_space	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2: Lactic acid	wo_space	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	CIS-ACONITIC ACID	capitalised	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	HIS-LEU	capitalised	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	cis-Aconitic acid	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	PC 15:0_18:1(d7)	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	Unknown	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2:Glucose	wo_nospace	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	no MS2: Glucose	ms5_no	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	low score: Glucose	ms5_low	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	Caffeine-d9	hyphen_label	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	whole	<NA>	missing_annotation	NA
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	IS_Caffeine	intended	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	Caffeine_d9	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	Caffeine-ISTD	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	IS-Leucine	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2: Alanine	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2: Serine	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2: Valine	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2: Citric acid	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2: Lactic acid	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	CIS-ACONITIC ACID	capitalised	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	HIS-LEU	capitalised	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	cis-Aconitic acid	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	PC 15:0_18:1(d7)	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	Unknown	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2:Glucose	wo_nospace	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	no MS2: Glucose	ms5_no	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	low score: Glucose	ms5_low	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	Caffeine-d9	hyphen_label	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	^IS_	<NA>	missing_annotation	NA
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	IS_Caffeine	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	Caffeine_d9	intended	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	Caffeine-ISTD	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	IS-Leucine	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2: Alanine	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2: Serine	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2: Valine	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2: Citric acid	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2: Lactic acid	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	CIS-ACONITIC ACID	capitalised	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	HIS-LEU	capitalised	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	cis-Aconitic acid	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	PC 15:0_18:1(d7)	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	Unknown	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2:Glucose	wo_nospace	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	no MS2: Glucose	ms5_no	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	low score: Glucose	ms5_low	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	Caffeine-d9	hyphen_label	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	_d[0-9]+$	<NA>	missing_annotation	NA
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	IS_Caffeine	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	Caffeine_d9	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	Caffeine-ISTD	intended	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	IS-Leucine	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2: Alanine	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2: Serine	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2: Valine	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2: Citric acid	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2: Lactic acid	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	CIS-ACONITIC ACID	capitalised	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	HIS-LEU	capitalised	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	cis-Aconitic acid	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	PC 15:0_18:1(d7)	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	Unknown	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2:Glucose	wo_nospace	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	no MS2: Glucose	ms5_no	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	low score: Glucose	ms5_low	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	Caffeine-d9	hyphen_label	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	ISTD	<NA>	missing_annotation	NA
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	IS_Caffeine	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	Caffeine_d9	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	Caffeine-ISTD	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	IS-Leucine	intended	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2: Alanine	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2: Serine	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2: Valine	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2: Citric acid	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2: Lactic acid	wo_space	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	CIS-ACONITIC ACID	capitalised	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	HIS-LEU	capitalised	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	cis-Aconitic acid	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	PC 15:0_18:1(d7)	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	Unknown	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2:Glucose	wo_nospace	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	no MS2: Glucose	ms5_no	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	low score: Glucose	ms5_low	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	Caffeine-d9	hyphen_label	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	IS-	<NA>	missing_annotation	NA
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	IS_Caffeine	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	Caffeine_d9	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	Caffeine-ISTD	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	IS-Leucine	intended	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2: Alanine	wo_space	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2: Serine	wo_space	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2: Valine	wo_space	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2: Citric acid	wo_space	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2: Lactic acid	wo_space	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	CIS-ACONITIC ACID	capitalised	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	HIS-LEU	capitalised	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	cis-Aconitic acid	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	PC 15:0_18:1(d7)	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	Unknown	control	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2:Glucose	wo_nospace	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	no MS2: Glucose	ms5_no	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	low score: Glucose	ms5_low	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	w/o MS2:IS_Caffeine	wo_prefixed_standard	TRUE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	Caffeine-d9	hyphen_label	FALSE
+option_base	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	w/o MS2:	<NA>	missing_annotation	NA
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	IS_Caffeine	intended	TRUE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	Caffeine_d9	intended	TRUE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	Caffeine-ISTD	intended	TRUE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	IS-Leucine	intended	TRUE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	w/o MS2: Alanine	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	w/o MS2: Serine	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	w/o MS2: Valine	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	w/o MS2: Citric acid	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	w/o MS2: Lactic acid	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	CIS-ACONITIC ACID	capitalised	TRUE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	HIS-LEU	capitalised	TRUE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	cis-Aconitic acid	control	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	PC 15:0_18:1(d7)	control	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	Unknown	control	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	w/o MS2:Glucose	wo_nospace	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	no MS2: Glucose	ms5_no	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	low score: Glucose	ms5_low	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	Caffeine-d9	hyphen_label	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	whole	<NA>	missing_annotation	NA
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	IS_Caffeine	intended	TRUE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	Caffeine_d9	intended	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	Caffeine-ISTD	intended	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	IS-Leucine	intended	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	w/o MS2: Alanine	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	w/o MS2: Serine	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	w/o MS2: Valine	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	w/o MS2: Citric acid	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	w/o MS2: Lactic acid	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	CIS-ACONITIC ACID	capitalised	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	HIS-LEU	capitalised	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	cis-Aconitic acid	control	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	PC 15:0_18:1(d7)	control	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	Unknown	control	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	w/o MS2:Glucose	wo_nospace	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	no MS2: Glucose	ms5_no	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	low score: Glucose	ms5_low	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	Caffeine-d9	hyphen_label	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	^IS_	<NA>	missing_annotation	NA
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	IS_Caffeine	intended	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	Caffeine_d9	intended	TRUE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	Caffeine-ISTD	intended	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	IS-Leucine	intended	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	w/o MS2: Alanine	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	w/o MS2: Serine	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	w/o MS2: Valine	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	w/o MS2: Citric acid	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	w/o MS2: Lactic acid	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	CIS-ACONITIC ACID	capitalised	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	HIS-LEU	capitalised	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	cis-Aconitic acid	control	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	PC 15:0_18:1(d7)	control	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	Unknown	control	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	w/o MS2:Glucose	wo_nospace	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	no MS2: Glucose	ms5_no	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	low score: Glucose	ms5_low	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	Caffeine-d9	hyphen_label	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	_d[0-9]+$	<NA>	missing_annotation	NA
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	IS_Caffeine	intended	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	Caffeine_d9	intended	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	Caffeine-ISTD	intended	TRUE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	IS-Leucine	intended	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	w/o MS2: Alanine	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	w/o MS2: Serine	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	w/o MS2: Valine	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	w/o MS2: Citric acid	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	w/o MS2: Lactic acid	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	CIS-ACONITIC ACID	capitalised	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	HIS-LEU	capitalised	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	cis-Aconitic acid	control	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	PC 15:0_18:1(d7)	control	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	Unknown	control	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	w/o MS2:Glucose	wo_nospace	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	no MS2: Glucose	ms5_no	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	low score: Glucose	ms5_low	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	Caffeine-d9	hyphen_label	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	ISTD	<NA>	missing_annotation	NA
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	IS_Caffeine	intended	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	Caffeine_d9	intended	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	Caffeine-ISTD	intended	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	IS-Leucine	intended	TRUE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	w/o MS2: Alanine	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	w/o MS2: Serine	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	w/o MS2: Valine	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	w/o MS2: Citric acid	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	w/o MS2: Lactic acid	wo_space	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	CIS-ACONITIC ACID	capitalised	TRUE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	HIS-LEU	capitalised	TRUE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	cis-Aconitic acid	control	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	PC 15:0_18:1(d7)	control	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	Unknown	control	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	w/o MS2:Glucose	wo_nospace	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	no MS2: Glucose	ms5_no	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	low score: Glucose	ms5_low	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	Caffeine-d9	hyphen_label	FALSE
+option_a	^IS_|_d[0-9]+$|ISTD|IS-	IS-	<NA>	missing_annotation	NA
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	IS_Caffeine	intended	TRUE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	Caffeine_d9	intended	TRUE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	Caffeine-ISTD	intended	TRUE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	IS-Leucine	intended	TRUE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	w/o MS2: Alanine	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	w/o MS2: Serine	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	w/o MS2: Valine	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	w/o MS2: Citric acid	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	w/o MS2: Lactic acid	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	CIS-ACONITIC ACID	capitalised	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	HIS-LEU	capitalised	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	cis-Aconitic acid	control	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	PC 15:0_18:1(d7)	control	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	Unknown	control	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	w/o MS2:Glucose	wo_nospace	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	no MS2: Glucose	ms5_no	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	low score: Glucose	ms5_low	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	Caffeine-d9	hyphen_label	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	whole	<NA>	missing_annotation	NA
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	IS_Caffeine	intended	TRUE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	Caffeine_d9	intended	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	Caffeine-ISTD	intended	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	IS-Leucine	intended	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	w/o MS2: Alanine	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	w/o MS2: Serine	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	w/o MS2: Valine	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	w/o MS2: Citric acid	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	w/o MS2: Lactic acid	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	CIS-ACONITIC ACID	capitalised	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	HIS-LEU	capitalised	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	cis-Aconitic acid	control	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	PC 15:0_18:1(d7)	control	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	Unknown	control	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	w/o MS2:Glucose	wo_nospace	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	no MS2: Glucose	ms5_no	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	low score: Glucose	ms5_low	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	Caffeine-d9	hyphen_label	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS_	<NA>	missing_annotation	NA
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	IS_Caffeine	intended	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	Caffeine_d9	intended	TRUE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	Caffeine-ISTD	intended	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	IS-Leucine	intended	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	w/o MS2: Alanine	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	w/o MS2: Serine	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	w/o MS2: Valine	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	w/o MS2: Citric acid	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	w/o MS2: Lactic acid	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	CIS-ACONITIC ACID	capitalised	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	HIS-LEU	capitalised	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	cis-Aconitic acid	control	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	PC 15:0_18:1(d7)	control	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	Unknown	control	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	w/o MS2:Glucose	wo_nospace	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	no MS2: Glucose	ms5_no	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	low score: Glucose	ms5_low	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	Caffeine-d9	hyphen_label	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	_d[0-9]+$	<NA>	missing_annotation	NA
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	IS_Caffeine	intended	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	Caffeine_d9	intended	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	Caffeine-ISTD	intended	TRUE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	IS-Leucine	intended	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	w/o MS2: Alanine	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	w/o MS2: Serine	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	w/o MS2: Valine	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	w/o MS2: Citric acid	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	w/o MS2: Lactic acid	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	CIS-ACONITIC ACID	capitalised	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	HIS-LEU	capitalised	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	cis-Aconitic acid	control	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	PC 15:0_18:1(d7)	control	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	Unknown	control	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	w/o MS2:Glucose	wo_nospace	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	no MS2: Glucose	ms5_no	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	low score: Glucose	ms5_low	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	Caffeine-d9	hyphen_label	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	ISTD	<NA>	missing_annotation	NA
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	IS_Caffeine	intended	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	Caffeine_d9	intended	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	Caffeine-ISTD	intended	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	IS-Leucine	intended	TRUE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	w/o MS2: Alanine	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	w/o MS2: Serine	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	w/o MS2: Valine	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	w/o MS2: Citric acid	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	w/o MS2: Lactic acid	wo_space	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	CIS-ACONITIC ACID	capitalised	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	HIS-LEU	capitalised	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	cis-Aconitic acid	control	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	PC 15:0_18:1(d7)	control	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	Unknown	control	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	w/o MS2:Glucose	wo_nospace	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	no MS2: Glucose	ms5_no	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	low score: Glucose	ms5_low	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	Caffeine-d9	hyphen_label	FALSE
+option_b	^IS_|_d[0-9]+$|ISTD|^IS-	^IS-	<NA>	missing_annotation	NA
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	IS_Caffeine	intended	TRUE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	Caffeine_d9	intended	TRUE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	Caffeine-ISTD	intended	TRUE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	IS-Leucine	intended	TRUE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	w/o MS2: Alanine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	w/o MS2: Serine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	w/o MS2: Valine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	w/o MS2: Citric acid	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	w/o MS2: Lactic acid	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	CIS-ACONITIC ACID	capitalised	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	HIS-LEU	capitalised	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	cis-Aconitic acid	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	PC 15:0_18:1(d7)	control	TRUE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	Unknown	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	w/o MS2:Glucose	wo_nospace	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	no MS2: Glucose	ms5_no	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	low score: Glucose	ms5_low	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	Caffeine-d9	hyphen_label	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	<NA>	missing_annotation	NA
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	IS_Caffeine	intended	TRUE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	Caffeine_d9	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	Caffeine-ISTD	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	IS-Leucine	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	w/o MS2: Alanine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	w/o MS2: Serine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	w/o MS2: Valine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	w/o MS2: Citric acid	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	w/o MS2: Lactic acid	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	CIS-ACONITIC ACID	capitalised	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	HIS-LEU	capitalised	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	cis-Aconitic acid	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	PC 15:0_18:1(d7)	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	Unknown	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	w/o MS2:Glucose	wo_nospace	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	no MS2: Glucose	ms5_no	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	low score: Glucose	ms5_low	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	Caffeine-d9	hyphen_label	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	<NA>	missing_annotation	NA
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	IS_Caffeine	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	Caffeine_d9	intended	TRUE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	Caffeine-ISTD	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	IS-Leucine	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	w/o MS2: Alanine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	w/o MS2: Serine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	w/o MS2: Valine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	w/o MS2: Citric acid	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	w/o MS2: Lactic acid	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	CIS-ACONITIC ACID	capitalised	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	HIS-LEU	capitalised	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	cis-Aconitic acid	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	PC 15:0_18:1(d7)	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	Unknown	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	w/o MS2:Glucose	wo_nospace	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	no MS2: Glucose	ms5_no	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	low score: Glucose	ms5_low	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	Caffeine-d9	hyphen_label	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	_d[0-9]+$	<NA>	missing_annotation	NA
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	IS_Caffeine	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	Caffeine_d9	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	Caffeine-ISTD	intended	TRUE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	IS-Leucine	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	w/o MS2: Alanine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	w/o MS2: Serine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	w/o MS2: Valine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	w/o MS2: Citric acid	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	w/o MS2: Lactic acid	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	CIS-ACONITIC ACID	capitalised	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	HIS-LEU	capitalised	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	cis-Aconitic acid	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	PC 15:0_18:1(d7)	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	Unknown	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	w/o MS2:Glucose	wo_nospace	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	no MS2: Glucose	ms5_no	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	low score: Glucose	ms5_low	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	Caffeine-d9	hyphen_label	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	<NA>	missing_annotation	NA
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	IS_Caffeine	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	Caffeine_d9	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	Caffeine-ISTD	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	IS-Leucine	intended	TRUE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	w/o MS2: Alanine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	w/o MS2: Serine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	w/o MS2: Valine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	w/o MS2: Citric acid	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	w/o MS2: Lactic acid	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	CIS-ACONITIC ACID	capitalised	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	HIS-LEU	capitalised	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	cis-Aconitic acid	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	PC 15:0_18:1(d7)	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	Unknown	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	w/o MS2:Glucose	wo_nospace	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	no MS2: Glucose	ms5_no	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	low score: Glucose	ms5_low	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	Caffeine-d9	hyphen_label	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	<NA>	missing_annotation	NA
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	IS_Caffeine	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	Caffeine_d9	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	Caffeine-ISTD	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	IS-Leucine	intended	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2: Alanine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2: Serine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2: Valine	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2: Citric acid	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2: Lactic acid	wo_space	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	CIS-ACONITIC ACID	capitalised	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	HIS-LEU	capitalised	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	cis-Aconitic acid	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	PC 15:0_18:1(d7)	control	TRUE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	Unknown	control	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2:Glucose	wo_nospace	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	no MS2: Glucose	ms5_no	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	low score: Glucose	ms5_low	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	Caffeine-d9	hyphen_label	FALSE
+option_c	^IS_|_d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	<NA>	missing_annotation	NA
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	IS_Caffeine	intended	TRUE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	Caffeine_d9	intended	TRUE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	Caffeine-ISTD	intended	TRUE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	IS-Leucine	intended	TRUE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	w/o MS2: Alanine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	w/o MS2: Serine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	w/o MS2: Valine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	w/o MS2: Citric acid	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	w/o MS2: Lactic acid	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	CIS-ACONITIC ACID	capitalised	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	HIS-LEU	capitalised	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	cis-Aconitic acid	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	PC 15:0_18:1(d7)	control	TRUE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	Unknown	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	w/o MS2:Glucose	wo_nospace	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	no MS2: Glucose	ms5_no	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	low score: Glucose	ms5_low	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	Caffeine-d9	hyphen_label	TRUE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	whole	<NA>	missing_annotation	NA
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	IS_Caffeine	intended	TRUE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	Caffeine_d9	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	Caffeine-ISTD	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	IS-Leucine	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	w/o MS2: Alanine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	w/o MS2: Serine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	w/o MS2: Valine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	w/o MS2: Citric acid	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	w/o MS2: Lactic acid	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	CIS-ACONITIC ACID	capitalised	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	HIS-LEU	capitalised	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	cis-Aconitic acid	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	PC 15:0_18:1(d7)	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	Unknown	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	w/o MS2:Glucose	wo_nospace	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	no MS2: Glucose	ms5_no	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	low score: Glucose	ms5_low	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	Caffeine-d9	hyphen_label	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS_	<NA>	missing_annotation	NA
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	IS_Caffeine	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	Caffeine_d9	intended	TRUE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	Caffeine-ISTD	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	IS-Leucine	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	w/o MS2: Alanine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	w/o MS2: Serine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	w/o MS2: Valine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	w/o MS2: Citric acid	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	w/o MS2: Lactic acid	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	CIS-ACONITIC ACID	capitalised	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	HIS-LEU	capitalised	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	cis-Aconitic acid	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	PC 15:0_18:1(d7)	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	Unknown	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	w/o MS2:Glucose	wo_nospace	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	no MS2: Glucose	ms5_no	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	low score: Glucose	ms5_low	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	Caffeine-d9	hyphen_label	TRUE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	[_-]d[0-9]+$	<NA>	missing_annotation	NA
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	IS_Caffeine	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	Caffeine_d9	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	Caffeine-ISTD	intended	TRUE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	IS-Leucine	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	w/o MS2: Alanine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	w/o MS2: Serine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	w/o MS2: Valine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	w/o MS2: Citric acid	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	w/o MS2: Lactic acid	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	CIS-ACONITIC ACID	capitalised	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	HIS-LEU	capitalised	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	cis-Aconitic acid	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	PC 15:0_18:1(d7)	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	Unknown	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	w/o MS2:Glucose	wo_nospace	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	no MS2: Glucose	ms5_no	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	low score: Glucose	ms5_low	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	Caffeine-d9	hyphen_label	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	ISTD	<NA>	missing_annotation	NA
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	IS_Caffeine	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	Caffeine_d9	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	Caffeine-ISTD	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	IS-Leucine	intended	TRUE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	w/o MS2: Alanine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	w/o MS2: Serine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	w/o MS2: Valine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	w/o MS2: Citric acid	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	w/o MS2: Lactic acid	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	CIS-ACONITIC ACID	capitalised	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	HIS-LEU	capitalised	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	cis-Aconitic acid	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	PC 15:0_18:1(d7)	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	Unknown	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	w/o MS2:Glucose	wo_nospace	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	no MS2: Glucose	ms5_no	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	low score: Glucose	ms5_low	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	Caffeine-d9	hyphen_label	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	^IS-	<NA>	missing_annotation	NA
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	IS_Caffeine	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	Caffeine_d9	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	Caffeine-ISTD	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	IS-Leucine	intended	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2: Alanine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2: Serine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2: Valine	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2: Citric acid	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2: Lactic acid	wo_space	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	CIS-ACONITIC ACID	capitalised	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	HIS-LEU	capitalised	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	cis-Aconitic acid	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	PC 15:0_18:1(d7)	control	TRUE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	Unknown	control	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2:Glucose	wo_nospace	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	no MS2: Glucose	ms5_no	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	low score: Glucose	ms5_low	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	Caffeine-d9	hyphen_label	FALSE
+option_c_hyphen	^IS_|[_-]d[0-9]+$|ISTD|^IS-|\(d[0-9]+\)	\(d[0-9]+\)	<NA>	missing_annotation	NA
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	IS_Caffeine	intended	TRUE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	Caffeine_d9	intended	TRUE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	Caffeine-ISTD	intended	TRUE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	IS-Leucine	intended	TRUE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	w/o MS2: Alanine	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	w/o MS2: Serine	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	w/o MS2: Valine	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	w/o MS2: Citric acid	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	w/o MS2: Lactic acid	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	CIS-ACONITIC ACID	capitalised	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	HIS-LEU	capitalised	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	cis-Aconitic acid	control	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	PC 15:0_18:1(d7)	control	TRUE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	Unknown	control	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	w/o MS2:Glucose	wo_nospace	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	no MS2: Glucose	ms5_no	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	low score: Glucose	ms5_low	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	w/o MS2:IS_Caffeine	wo_prefixed_standard	TRUE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	Caffeine-d9	hyphen_label	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	whole	<NA>	missing_annotation	NA
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	IS_Caffeine	intended	TRUE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	Caffeine_d9	intended	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	Caffeine-ISTD	intended	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	IS-Leucine	intended	TRUE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	w/o MS2: Alanine	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	w/o MS2: Serine	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	w/o MS2: Valine	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	w/o MS2: Citric acid	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	w/o MS2: Lactic acid	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	CIS-ACONITIC ACID	capitalised	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	HIS-LEU	capitalised	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	cis-Aconitic acid	control	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	PC 15:0_18:1(d7)	control	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	Unknown	control	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	w/o MS2:Glucose	wo_nospace	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	no MS2: Glucose	ms5_no	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	low score: Glucose	ms5_low	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	w/o MS2:IS_Caffeine	wo_prefixed_standard	TRUE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	Caffeine-d9	hyphen_label	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	^((w/o|no) MS2: ?|low score: )?IS[_-]	<NA>	missing_annotation	NA
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	IS_Caffeine	intended	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	Caffeine_d9	intended	TRUE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	Caffeine-ISTD	intended	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	IS-Leucine	intended	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	w/o MS2: Alanine	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	w/o MS2: Serine	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	w/o MS2: Valine	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	w/o MS2: Citric acid	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	w/o MS2: Lactic acid	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	CIS-ACONITIC ACID	capitalised	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	HIS-LEU	capitalised	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	cis-Aconitic acid	control	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	PC 15:0_18:1(d7)	control	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	Unknown	control	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	w/o MS2:Glucose	wo_nospace	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	no MS2: Glucose	ms5_no	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	low score: Glucose	ms5_low	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	Caffeine-d9	hyphen_label	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	_d[0-9]+$	<NA>	missing_annotation	NA
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	IS_Caffeine	intended	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	Caffeine_d9	intended	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	Caffeine-ISTD	intended	TRUE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	IS-Leucine	intended	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	w/o MS2: Alanine	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	w/o MS2: Serine	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	w/o MS2: Valine	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	w/o MS2: Citric acid	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	w/o MS2: Lactic acid	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	CIS-ACONITIC ACID	capitalised	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	HIS-LEU	capitalised	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	cis-Aconitic acid	control	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	PC 15:0_18:1(d7)	control	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	Unknown	control	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	w/o MS2:Glucose	wo_nospace	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	no MS2: Glucose	ms5_no	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	low score: Glucose	ms5_low	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	Caffeine-d9	hyphen_label	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	ISTD	<NA>	missing_annotation	NA
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	IS_Caffeine	intended	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	Caffeine_d9	intended	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	Caffeine-ISTD	intended	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	IS-Leucine	intended	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2: Alanine	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2: Serine	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2: Valine	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2: Citric acid	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2: Lactic acid	wo_space	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	CIS-ACONITIC ACID	capitalised	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	HIS-LEU	capitalised	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	cis-Aconitic acid	control	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	PC 15:0_18:1(d7)	control	TRUE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	Unknown	control	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2:Glucose	wo_nospace	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	no MS2: Glucose	ms5_no	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	low score: Glucose	ms5_low	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	w/o MS2:IS_Caffeine	wo_prefixed_standard	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	Caffeine-d9	hyphen_label	FALSE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]|_d[0-9]+$|ISTD|\(d[0-9]+\)	\(d[0-9]+\)	<NA>	missing_annotation	NA

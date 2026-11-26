@@ -1,0 +1,465 @@
+# blocks cut at 6,000 characters; test-prot-norm-core.R blocks left out (identical failures, same verdict)
+== test-omic-norm-module.R | message-changed | (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+-- base:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "3e4a3785ac0fc041935a32677748982fa1c7292f46169d1a10e869e136f931d0"
+  `expected`: "701a6ac1d87ea09b693aac28f20a465e43f8c30008b3c50d175c8b49582187f8"
+  
+  lipid manual skip_correlation outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "4b6da3b69230309d59b92983e80bcbe854db5f5c47fba6d742d20e23d4d19ed4"
+  `expected`: "5da4f0b6387ef3a1d46478bbcd2cb73afe45d205224c67659c8869897784912a"
+  
+  lipid manual run states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "7b64e2c24f85865c99354c213f5ade348606cf899117a21885f1efab4176571b"
+  `expected`: "3a4f085c66ea18873418f52fa26eb53d66b7b88bcad7ecf7f680d0c6cb248b6f"
+  
+  lipid manual reset outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "95619cf9609550706907e17b607a512edadec024bbced8f5481b28e4f8c305fb"
+  `expected`: "a8a2cb84e449727a31e0dc2112ec3cf9faa4a4fb81bf734ea0b31536ec285c6c"
+  
+  lipid manual run outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "970e63b8fad261c22d06bfb55036b03af1301eb1dac6ef6fad94caa9b4d3de60"
+  `expected`: "b9369bc84f613b52d6bfcdc0a33262d45a453f050a90400c2632341a2b7eb25e"
+  
+  lipid manual reset states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "ac6c2911efa3f5e4fdd9dc0bf01868fbd89dca147a1154ac4f3cc3d72433d0c0"
+  `expected`: "a7117e34760a3ebf989bb64dfc1585dd3d9f6bfdd112cf7483068a4a6b114ecb"
+  
+  lipid manual skip_correlation states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "b7b37de93400d9ef732915720437c4eab6c7c23e37818a07fc0cdc439e8dab8c"
+  `expected`: "a9b7326e2a270b95a32381ae27ffff05d2ce7e032116b273a7cd983bb72c550b"
+  
+  lipid manual skip_correlation provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "c5f48a711a1f017bd34e9593b442a06d0b2f885305a847d1563cf282e0c883b6"
+  `expected`: "56e0f5614543ba4ed0027756f65aeb31be2cf65ef3364290cd24b6c495998dec"
+  
+  lipid manual reset provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "e76a76c5c851346b87289c7e991a50fe3fdd653fedfad9c8cad38a5e381b6a1e"
+  `expected`: "70d15badd8b75ecacecaf1a1828f9f98be516a19f6630d390d8e34a85990d090"
+  
+  lipid manual run provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "3586083c9fc2eab6fe11208b9c7da2560ffd49f0f19c996d7e085ddf254157f7"
+  + "908f7c3252e7327e99946634fd0672f2959ddb85d014c61901a8c6a8a2cdcf99"
+  
+  lipid manual run final_pca
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "3586083c9fc2eab6fe11208b9c7da2560ffd49f0f19c996d7e085ddf254157f7"
+  + "908f7c3252e7327e99946634fd0672f2959ddb85d014c61901a8c6a8a2cdcf99"
+  
+  lipid manual skip_correlation final_pca
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[5:11] vs expected[5:10]
+    "Assay LCMS_Pos : 1 ITSD features selected"
+    "Assay GCMS : 1 ITSD features selected"
+    "ITSD normalization complete"
+  - "Internal standards used per assay: LCMS_Pos 1; GCMS 1"
+    "Applying log2 transformation"
+    "Log2 transformation complete"
+    "Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; GCMS 0 non-positive, 0 non-finite"
+  
+  actual[14:20] vs expected[13:19]
+    "Post-normalization QC plots generated"
+    "Running RUV-III (mode: manual )"
+    "RUV optimization complete. Best k per assay: LCMS_Pos = 2, GCMS = 2"
+  - "RUV-III not applied: no assay could be corrected (see the warnings above); the data continue without RUV"
+  + "RUV-III correction applied"
+    "RUV QC plots generated"
+    "Generating composite QC figure..."
+    "Composite QC figure saved to: <ROOT>/qc/composite_QC_figure"
+  
+  lipid manual run log
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "0100859bb3a50c0122d87f9629c23467ee1bf1ef02c582a430e536f6f481fc96"
+  `expected`: "e1058a016b6290767718154fea3003b12384442225ca601b158afa38b1a02ffd"
+  
+  lipid manual skip_correlation outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "257b7fcacf230304c4bf38116b9857241d66e94b604d5caf770b7f725d41306f"
+  `expected`: "1c3646ad814d6ae58bf628301f6aeae3b1ee8f3a751ddca396a3682a1114a0d1"
+  
+  lipid manual reset outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "4b6da3b69230309d59b92983e80bcbe854db5f5c47fba6d742d20e23d4d19ed4"
+  `expected`: "5da4f0b6387ef3a1d46478bbcd2cb73afe45d205224c67659c8869897784912a"
+  
+  lipid manual run states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "6b3257380985053f717deb20ad965f7f196ccf5943582871e36bdd4f5017b8d2"
+  `expected`: "d3cc98f4ee7167dee0764a30300f87b96c7f394c3fb464d70cce6590934892d5"
+  
+  lipid manual run outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to
+== test-omic-norm-module.R | message-changed | (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+-- base:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "0527a0ad99f6485d1ad46f8c4c75fd161cb5d846ab98dbd97947bc780d45d024"
+  `expected`: "d3532d85f8088b09bd9e3a7e5b3cb43f2949fdc6c6063b95826cbf135df5ebaf"
+  
+  metab manual skip_correlation states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "285937aac8040e8cba9e44514ed6b5a2972516f310e0188d3cb9094ff557ef2d"
+  `expected`: "357815f322e924dde66af6e38355a135eda96220161075443076b7fc176a29dc"
+  
+  metab manual skip_correlation provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "2d2e38f6012d3fafc24d82c4d2be212e3f37f93451ca8fdf81d09da3c86178d7"
+  `expected`: "93eee0d874dd9b3b3ad622a3275f8d1c945d772f1f21cea1613f2ec461edc593"
+  
+  metab manual run states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "3e4a3785ac0fc041935a32677748982fa1c7292f46169d1a10e869e136f931d0"
+  `expected`: "701a6ac1d87ea09b693aac28f20a465e43f8c30008b3c50d175c8b49582187f8"
+  
+  metab manual skip_correlation outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "59fb25ea2ca3d813183e2a3e8efca4b9559b7630f0cdfa38a455346cd5da1045"
+  `expected`: "54190570168222bd4009ff992fe6585e852580faf7c06f8da9a741234b34a890"
+  
+  metab manual reset provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "7b64e2c24f85865c99354c213f5ade348606cf899117a21885f1efab4176571b"
+  `expected`: "3a4f085c66ea18873418f52fa26eb53d66b7b88bcad7ecf7f680d0c6cb248b6f"
+  
+  metab manual reset outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "95619cf9609550706907e17b607a512edadec024bbced8f5481b28e4f8c305fb"
+  `expected`: "a8a2cb84e449727a31e0dc2112ec3cf9faa4a4fb81bf734ea0b31536ec285c6c"
+  
+  metab manual run outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "b56c85e24be790b51a2684ddc08a2969c9f5857717d4120ef430477b9246406b"
+  `expected`: "9f3dc69aebe34ac437e7da9abd85c2bc560af6548b0fb66c698b423b04c0de69"
+  
+  metab manual run provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "fd41081265fcca6f1b01acbf6808be5042dd8d10c7cec6aa62f8ad54a3f3eb04"
+  `expected`: "b865c20134607feee16279faa1e4ede58b83f7744ac02a98f0abe79edd18d25e"
+  
+  metab manual reset states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "2df61485a2829452979720fb320007d95bc0713fe0b391eadc15cb311362e061"
+  + "d5cec69e686991753afdf978e702b260cd79fd696bb920128731de242e51cedf"
+  
+  metab manual run final_pca
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "2df61485a2829452979720fb320007d95bc0713fe0b391eadc15cb311362e061"
+  + "d5cec69e686991753afdf978e702b260cd79fd696bb920128731de242e51cedf"
+  
+  metab manual skip_correlation final_pca
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[5:11] vs expected[5:10]
+    "Assay LCMS_Pos : 1 ITSD features selected"
+    "Assay GCMS : 1 ITSD features selected"
+    "ITSD normalization complete"
+  - "Internal standards used per assay: LCMS_Pos 1; GCMS 1"
+    "Applying log2 transformation"
+    "Log2 transformation complete"
+    "Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; GCMS 0 non-positive, 0 non-finite"
+  
+  actual[14:20] vs expected[13:19]
+    "Post-normalization QC plots generated"
+    "Running RUV-III (mode: manual )"
+    "RUV optimization complete. Best k per assay: LCMS_Pos = 2, GCMS = 2"
+  - "RUV-III not applied: no assay could be corrected (see the warnings above); the data continue without RUV"
+  + "RUV-III correction applied"
+    "RUV QC plots generated"
+    "Generating composite QC figure..."
+    "Composite QC figure saved to: <ROOT>/qc/composite_QC_figure"
+  
+  metab manual run log
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "0527a0ad99f6485d1ad46f8c4c75fd161cb5d846ab98dbd97947bc780d45d024"
+  `expected`: "d3532d85f8088b09bd9e3a7e5b3cb43f2949fdc6c6063b95826cbf135df5ebaf"
+  
+  metab manual skip_correlation states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "285937aac8040e8cba9e44514ed6b5a2972516f310e0188d3cb9094ff557ef2d"
+  `expected`: "357815f322e924dde66af6e38355a135eda96220161075443076b7fc176a29dc"
+  
+  metab manual skip_correlation provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "2d2e38f6012d3fafc24d82c4d2be212e3f37f93451ca8fdf81d09da3c86178d7"
+  `expected`: "93eee0d874dd9b3b3ad622a3275f8d1c945d772f1f21cea1613f2ec461edc593"
+  
+  metab manual run states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "433336fdb161af9ba079ecc28bc249a9e34ce9524511425608a0f5abe9e38796"
+  `expected`: "9d473dbca0ede8af25475634752283310652012facc2cf169780a2303873f12b"
+  
+  metab manual skip_correlation outputs
+  Expected `actual$captures[[step]][[f
+== test-omic-norm-module.R | message-changed | (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+-- base:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "5e9bf639c8c496b222e6b3bfe716b42b426035166ee459d52a92730e04360200"
+  `expected`: "301fdb2e29f92af0bcf0f6a22f93d8e04261e056b1cadee3a126953d35a1d8dc"
+  
+  lipid automatic final_plot states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "5e9bf639c8c496b222e6b3bfe716b42b426035166ee459d52a92730e04360200"
+  `expected`: "301fdb2e29f92af0bcf0f6a22f93d8e04261e056b1cadee3a126953d35a1d8dc"
+  
+  lipid automatic final_plot_failing states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "5e9bf639c8c496b222e6b3bfe716b42b426035166ee459d52a92730e04360200"
+  `expected`: "301fdb2e29f92af0bcf0f6a22f93d8e04261e056b1cadee3a126953d35a1d8dc"
+  
+  lipid automatic run states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "8a7e7ba293184f053ad260ca1dec013777802252580f84a6d0f4b6e3bd1d311f"
+  `expected`: "ff4392a8e096ed84963eb0a6c5d2ab8b0d9faf12d4916215a5e38a346f435b30"
+  
+  lipid automatic final_plot provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "8a7e7ba293184f053ad260ca1dec013777802252580f84a6d0f4b6e3bd1d311f"
+  `expected`: "ff4392a8e096ed84963eb0a6c5d2ab8b0d9faf12d4916215a5e38a346f435b30"
+  
+  lipid automatic final_plot_failing provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "8a7e7ba293184f053ad260ca1dec013777802252580f84a6d0f4b6e3bd1d311f"
+  `expected`: "ff4392a8e096ed84963eb0a6c5d2ab8b0d9faf12d4916215a5e38a346f435b30"
+  
+  lipid automatic run provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "ed1766dae0e5c010ab2c3749a23a65e6255dde3e66d315bb570b4aac7c105bdf"
+  `expected`: "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9"
+  
+  lipid automatic final_plot outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "ed1766dae0e5c010ab2c3749a23a65e6255dde3e66d315bb570b4aac7c105bdf"
+  `expected`: "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9"
+  
+  lipid automatic final_plot_failing outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "ed1766dae0e5c010ab2c3749a23a65e6255dde3e66d315bb570b4aac7c105bdf"
+  `expected`: "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9"
+  
+  lipid automatic run outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "90ac00f16b1aea04b8b6d6ddd25239e5d5067afada0fe9854ffd5c005ac81b42"
+  + "f5e52403880531a79194326125381470c78ecf65fae7b0da86127fc4f1553f4b"
+  
+  lipid automatic run final_pca
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[3:9] vs expected[3:8]
+    "Pre-normalization QC plots generated"
+    "Applying ITSD normalization (aggregation: median )"
+    "ITSD normalization complete"
+  - "Internal standards used per assay: LCMS_Pos 2; GCMS 2"
+    "Applying log2 transformation"
+    "Log2 transformation complete"
+    "Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; GCMS 0 non-positive, 0 non-finite"
+  
+  actual[12:18] vs expected[11:17]
+    "Post-normalization QC plots generated"
+    "Running RUV-III (mode: automatic )"
+    "RUV optimization complete. Best k per assay: LCMS_Pos = 1, GCMS = 2"
+  - "RUV-III not applied: no assay could be corrected (see the warnings above); the data continue without RUV"
+  + "RUV-III correction applied"
+    "RUV QC plots generated"
+    "Generating composite QC figure..."
+    "Composite QC figure saved to: <ROOT>/qc/composite_QC_figure"
+  
+  lipid automatic run log
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "5e9bf639c8c496b222e6b3bfe716b42b426035166ee459d52a92730e04360200"
+  `expected`: "301fdb2e29f92af0bcf0f6a22f93d8e04261e056b1cadee3a126953d35a1d8dc"
+  
+  lipid automatic final_plot states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "5e9bf639c8c496b222e6b3bfe716b42b426035166ee459d52a92730e04360200"
+  `expected`: "301fdb2e29f92af0bcf0f6a22f93d8e04261e056b1cadee3a126953d35a1d8dc"
+  
+  lipid automatic final_plot_failing states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "5e9bf639c8c496b222e6b3bfe716b42b426035166ee459d52a92730e04360200"
+  `expected`: "301fdb2e29f92af0bcf0f6a22f93d8e04261e056b1cadee3a126953d35a1d8dc"
+  
+  lipid automatic run states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "8a7e7ba293184f053ad260ca1dec013777802252580f84a6d0f4b6e3bd1d311f"
+  `expected`: "ff4392a8e096ed84963eb0a6c5d2ab8b0d9faf12d4916215a5e38a346f435b30"
+  
+  lipid automatic final_plot provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "8a7e7ba293184f053ad260ca1dec013777802252580f84a6d0f4b6e3bd1d311f"
+  `expected`: "ff4392a8e096ed84963eb0a6c5d2ab8b0d9fa
+== test-omic-norm-module.R | message-changed | (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+-- base:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "706a759f462a32a350b711bbf446c15879607eb99655fb30b4c3a94246c3b72d"
+  `expected`: "174620d5e83109cb6c10bc35e110cccd7d446b5585a0e3004f5fc1f6c82a254d"
+  
+  metab automatic final_plot states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "706a759f462a32a350b711bbf446c15879607eb99655fb30b4c3a94246c3b72d"
+  `expected`: "174620d5e83109cb6c10bc35e110cccd7d446b5585a0e3004f5fc1f6c82a254d"
+  
+  metab automatic final_plot_failing states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "706a759f462a32a350b711bbf446c15879607eb99655fb30b4c3a94246c3b72d"
+  `expected`: "174620d5e83109cb6c10bc35e110cccd7d446b5585a0e3004f5fc1f6c82a254d"
+  
+  metab automatic run states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "a930823a4a647121aa77eee6672d4d0546e1120c154947c83e25736d113dfeec"
+  `expected`: "e30a4c778dfd8d9cdc90cff9a0776ec84a3a92b58fdcc8b32827c572f98b00ad"
+  
+  metab automatic final_plot provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "a930823a4a647121aa77eee6672d4d0546e1120c154947c83e25736d113dfeec"
+  `expected`: "e30a4c778dfd8d9cdc90cff9a0776ec84a3a92b58fdcc8b32827c572f98b00ad"
+  
+  metab automatic final_plot_failing provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "a930823a4a647121aa77eee6672d4d0546e1120c154947c83e25736d113dfeec"
+  `expected`: "e30a4c778dfd8d9cdc90cff9a0776ec84a3a92b58fdcc8b32827c572f98b00ad"
+  
+  metab automatic run provenance
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "ed1766dae0e5c010ab2c3749a23a65e6255dde3e66d315bb570b4aac7c105bdf"
+  `expected`: "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9"
+  
+  metab automatic final_plot outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "ed1766dae0e5c010ab2c3749a23a65e6255dde3e66d315bb570b4aac7c105bdf"
+  `expected`: "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9"
+  
+  metab automatic final_plot_failing outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "ed1766dae0e5c010ab2c3749a23a65e6255dde3e66d315bb570b4aac7c105bdf"
+  `expected`: "2ae8151f2d2a90bababe866ccf367b11b51981e4f62d6fd807352bb70c0649b9"
+  
+  metab automatic run outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[[1]]$state vs expected[[1]]$state
+  - "cc4cbc39c9d8594d039c228c567b08446c19ce78c8bb687673df2a4ec955ba8d"
+  + "c9534f2ae128e82c5bb75448777ab0e608bb762dd5b1e7cd49543b3d5e05d6c0"
+  
+  metab automatic run final_pca
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  actual[3:9] vs expected[3:8]
+    "Pre-normalization QC plots generated"
+    "Applying ITSD normalization (aggregation: median )"
+    "ITSD normalization complete"
+  - "Internal standards used per assay: LCMS_Pos 2; GCMS 2"
+    "Applying log2 transformation"
+    "Log2 transformation complete"
+    "Log2 step: values set to missing (0 or below; not finite): LCMS_Pos 0 non-positive, 0 non-finite; GCMS 0 non-positive, 0 non-finite"
+  
+  actual[12:18] vs expected[11:17]
+    "Post-normalization QC plots generated"
+    "Running RUV-III (mode: automatic )"
+    "RUV optimization complete. Best k per assay: LCMS_Pos = 1, GCMS = 2"
+  - "RUV-III not applied: no assay could be corrected (see the warnings above); the data continue without RUV"
+  + "RUV-III correction applied"
+    "RUV QC plots generated"
+    "Generating composite QC figure..."
+    "Composite QC figure saved to: <ROOT>/qc/composite_QC_figure"
+  
+  metab automatic run log
+-- head:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "295c409a7898fb8180ab1f22ae0ed6493df785b0421a9a68f5057984970ce642"
+  `expected`: "3704d8a5534af4a8d928fccf30ee451efa65ba801e30321ead9441c572df5018"
+  
+  metab automatic final_plot outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "295c409a7898fb8180ab1f22ae0ed6493df785b0421a9a68f5057984970ce642"
+  `expected`: "3704d8a5534af4a8d928fccf30ee451efa65ba801e30321ead9441c572df5018"
+  
+  metab automatic final_plot_failing outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "295c409a7898fb8180ab1f22ae0ed6493df785b0421a9a68f5057984970ce642"
+  `expected`: "3704d8a5534af4a8d928fccf30ee451efa65ba801e30321ead9441c572df5018"
+  
+  metab automatic run outputs
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "706a759f462a32a350b711bbf446c15879607eb99655fb30b4c3a94246c3b72d"
+  `expected`: "174620d5e83109cb6c10bc35e110cccd7d446b5585a0e3004f5fc1f6c82a254d"
+  
+  metab automatic final_plot states
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "706a759f462a32a350b711bbf446c15879607eb99655fb30b4c3a94246c3b72d"
+  `expected`: "174620d5e83109cb6c10bc35e110cccd7d446b

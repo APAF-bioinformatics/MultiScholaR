@@ -1,0 +1,818 @@
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E14: lipid legacy RUV-III-C with no control found in A2 keeps A2 uncorrected, with a classed warning
+kind: failure
+message:
+  Expected `names(methods::slot(run$value, binding$data_slot))` to be identical to `c("A1", "A2")`.
+  Differences:
+  `actual`:   "A1"     
+  `expected`: "A1" "A2"
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E14: lipid legacy RUV-III-C with no control found in A2 keeps A2 uncorrected, with a classed warning
+kind: failure
+message:
+  Expected `run$kept` to have length 1.
+  Actual length: 0.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E14: lipid legacy RUV-III-C with no control found in A2 keeps A2 uncorrected, with a classed warning
+kind: failure
+message:
+  Expected `is.null(a2)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E15: lipid legacy RUV-III-C with no control in any assay keeps both, each with a classed warning
+kind: failure
+message:
+  Expected `vapply(run$kept, function(w) w$assay, "")` to be identical to `c("A1", "A2")`.
+  Differences:
+  `actual`:            
+  `expected`: "A1" "A2"
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E16: lipid legacy RUV-III-C with k = -1 for A2 stops with omics_ruv_failed (invalid_k)
+kind: failure
+message:
+  Expected `suppressWarnings(...)` to throw a error with class <omics_ruv_failed>.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E16: lipid legacy RUV-III-C with k = -1 for A2 stops with omics_ruv_failed (invalid_k)
+kind: failure
+message:
+  Expected `err$assay` to be identical to "A2".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('A2')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E16: lipid legacy RUV-III-C with k = -1 for A2 stops with omics_ruv_failed (invalid_k)
+kind: failure
+message:
+  Expected `err$reason` to be identical to "invalid_k".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('invalid_k')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E18: lipid legacy Automatic RUV corrects A2 without B_6, keeps B_6 empty there and in A1 keeps it
+kind: failure
+message:
+  Expected `is.null(a2)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E19: lipid legacy Manual RUV corrects A2 without B_6 and keeps B_6 empty there
+kind: failure
+message:
+  Expected `inherits(run, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E20: lipid the declared design computes A2's factors on the 11 samples and leaves B_6 out of A2's DA
+kind: failure
+message:
+  Expected `inherits(run, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E22: lipid a feature with one value is not a control and the search and correction of A2 run
+kind: failure
+message:
+  Expected `is.null(a2)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E22: lipid a feature with one value is not a control and the search and correction of A2 run
+kind: failure
+message:
+  Expected `run$value$ruv_status$A2` to be identical to "corrected".
+  Differences:
+  `actual`:   "dropped"  
+  `expected`: "corrected"
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E23: lipid a feature with no value is left out of the search and correction and kept empty
+kind: failure
+message:
+  Expected `is.null(a2)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: lipid an assay with no usable controls keeps its values without RUV, recorded per assay
+kind: failure
+message:
+  Expected `is.null(a2)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: lipid an assay with no usable controls keeps its values without RUV, recorded per assay
+kind: failure
+message:
+  Expected `outcomes$ruv_applied_per_assay` to be identical to `list(A1 = TRUE, A2 = FALSE)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: lipid an assay with no usable controls keeps its values without RUV, recorded per assay
+kind: failure
+message:
+  Expected `outcomes$ruv_not_applied_reason_per_assay$A2 %in% c("no_usable_controls", "no_factor_supported")` to be TRUE.
+  Differences:
+  `actual`:       
+  `expected`: TRUE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: lipid an assay with no usable controls keeps its values without RUV, recorded per assay
+kind: error
+message:
+  Error in `expect_match(run$value$ruv_not_applied_text$A2, "RUV-III was not applied to assay A2", fixed = TRUE)`: `object` must be a character vector, not `NULL`.
+trace (first lines):
+      ▆
+   1. └─testthat::expect_match(object = run$value$ruv_not_applied_text$A2) at test-kit242-normalisation-fallback.R:991:5
+   2.   └─testthat:::check_character(object)
+   3.     └─testthat:::stop_input_type(...)
+   4.       └─rlang::abort(message, ..., call = call, arg = arg)
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: lipid managed tab names A2 as not corrected and warns
+kind: failure
+message:
+  Expected `any(grepl("RUV-III was not applied to assay A2", tab$log, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Starting normalization pipeline... | Post-filtering state captured | Pre-normalization QC plots generated | ITSD normalization skipped | Applying log2 transformation | Log2 transformation complete | Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite | Applying between-sample normalization (method: cyclicloess ) | Between-sample normalization complete | Post-normalization QC plots generated | Running RUV-III (mode: automatic ) | Warning: A1: the automatic search found 4 unwanted factors. With 12 samples the application removes at most 2 (the limit proteomics uses), so 2 were removed. | RUV optimization complete. Best k per assay: A1 = 2, A2 = NA | RUV-III correction applied | RUV QC plots generated | Normalization pipeline complete!
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: lipid managed tab names A2 as not corrected and warns
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: lipid in process tab names A2 as not corrected and warns
+kind: failure
+message:
+  Expected `any(grepl("RUV-III was not applied to assay A2", tab$log, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Starting normalization pipeline... | Post-filtering state captured | Pre-normalization QC plots generated | ITSD normalization skipped | Applying log2 transformation | Log2 transformation complete | Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite | Applying between-sample normalization (method: cyclicloess ) | Between-sample normalization complete | Post-normalization QC plots generated | Running RUV-III (mode: automatic ) | Warning: A1: the automatic search found 4 unwanted factors. With 12 samples the application removes at most 2 (the limit proteomics uses), so 2 were removed. | RUV optimization complete. Best k per assay: A1 = 2, A2 = NA | RUV-III correction applied | RUV QC plots generated | Generating composite QC figure... | Normalization pipeline complete!
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: lipid in process tab names A2 as not corrected and warns
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25: lipid a RUV-III-C error in A2 stops with omics_ruv_failed naming A2 and the step
+kind: failure
+message:
+  Expected `suppressWarnings(...)` to throw a error with class <omics_ruv_failed>.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25: lipid a RUV-III-C error in A2 stops with omics_ruv_failed naming A2 and the step
+kind: failure
+message:
+  Expected `err$assay` to be identical to "A2".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('A2')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25: lipid a RUV-III-C error in A2 stops with omics_ruv_failed naming A2 and the step
+kind: failure
+message:
+  Expected `err$reason` to be identical to "correction_error".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correction_error')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25e: lipid when no number of factors is supported by the data, every assay keeps its values, recorded
+kind: failure
+message:
+  Expected `isTRUE(outcomes$ruv_applied)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25e: lipid when no number of factors is supported by the data, every assay keeps its values, recorded
+kind: failure
+message:
+  Expected `outcomes$ruv_applied_per_assay` to be identical to `list(A1 = FALSE, A2 = FALSE)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25e: lipid when no number of factors is supported by the data, every assay keeps its values, recorded
+kind: failure
+message:
+  Expected `outcomes$ruv_not_applied_reason_per_assay` to be identical to `list(A1 = "no_factor_supported", A2 = "no_factor_supported")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25e: lipid when no number of factors is supported by the data, every assay keeps its values, recorded
+kind: error
+message:
+  Error in `expect_match(run$value$ruv_not_applied_text$A1, "no number of unwanted factors was supported by the data", fixed = TRUE)`: `object` must be a character vector, not `NULL`.
+trace (first lines):
+      ▆
+   1. └─testthat::expect_match(object = run$value$ruv_not_applied_text$A1) at test-kit242-normalisation-fallback.R:1040:5
+   2.   └─testthat:::check_character(object)
+   3.     └─testthat:::stop_input_type(...)
+   4.       └─rlang::abort(message, ..., call = call, arg = arg)
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25e: lipid in process tab says RUV-III was not applied
+kind: failure
+message:
+  Expected `any(startsWith(tab$log, "RUV-III not applied"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Starting normalization pipeline... | Post-filtering state captured | Pre-normalization QC plots generated | ITSD normalization skipped | Applying log2 transformation | Log2 transformation complete | Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite | Applying between-sample normalization (method: cyclicloess ) | Between-sample normalization complete | Post-normalization QC plots generated | Running RUV-III (mode: automatic ) | RUV optimization complete. Best k per assay: A1 = NA, A2 = NA | RUV-III correction applied | RUV QC plots generated | Generating composite QC figure... | Normalization pipeline complete!
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25e: lipid in process tab says RUV-III was not applied
+kind: failure
+message:
+  Expected `any(tab$log == "RUV-III correction applied")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 ruling 7: lipid when the correction fails after the search, the tab neither completes RUV nor shows k as removed
+kind: failure
+message:
+  Expected `isTRUE(tab$ruv_complete)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 ruling 7: lipid when the correction fails after the search, the tab neither completes RUV nor shows k as removed
+kind: failure
+message:
+  Expected `any(tab$log == "RUV-III correction applied")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 ruling 7: lipid when the correction fails after the search, the tab neither completes RUV nor shows k as removed
+kind: failure
+message:
+  Expected `startsWith(summary, "Best k") || startsWith(summary, "Factors removed")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  A1 Factors removed: 2 (the search found 5; at most 2 with 12 samples)
+  Best %: 12
+  Separation: 0.3851
+  Controls: 5
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 ruling 7: lipid when the correction fails after the search, the tab neither completes RUV nor shows k as removed
+kind: failure
+message:
+  Expected `startsWith(summary, "Best k") || startsWith(summary, "Factors removed")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  A2 Factors removed: 2 (the search found 5; at most 2 with 12 samples)
+  Best %: 12
+  Separation: 0.1452
+  Controls: 5
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA3: lipid every assay the legacy RUV record names is in the RUV state, FALSE where uncorrected
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A1 per-assay outcome present
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA3: lipid every assay the legacy RUV record names is in the RUV state, FALSE where uncorrected
+kind: failure
+message:
+  Expected `is.null(corrected)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  A2 named by the record, present in the RUV state
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA3: lipid every assay the legacy RUV record names is in the RUV state, FALSE where uncorrected
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A2 per-assay outcome present
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11c: lipid the RUV marker: current 'by_cause', earlier 'drop' reproduces the earlier result, and replays
+kind: failure
+message:
+  Expected `marker$option` to be identical to "MultiScholaR.ruv_fallback".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('MultiScholaR.ruv_fallback')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11c: lipid the RUV marker: current 'by_cause', earlier 'drop' reproduces the earlier result, and replays
+kind: failure
+message:
+  Expected `marker$current` to be identical to "by_cause".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('by_cause')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11c: lipid the RUV marker: current 'by_cause', earlier 'drop' reproduces the earlier result, and replays
+kind: failure
+message:
+  Expected `marker$earlier` to be identical to "drop".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('drop')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11c: lipid the RUV marker: current 'by_cause', earlier 'drop' reproduces the earlier result, and replays
+kind: failure
+message:
+  Expected `workflowOperationEntry(paste0(prefix, "_ruv"))$declaration$fixed$ruv_fallback` to be identical to "by_cause".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('by_cause')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11c: lipid the RUV marker: current 'by_cause', earlier 'drop' reproduces the earlier result, and replays
+kind: failure
+message:
+  Expected `omicsRuvOperation(binding, "declared")$fixed$ruv_fallback` to be identical to "by_cause".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('by_cause')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11c: lipid the RUV marker: current 'by_cause', earlier 'drop' reproduces the earlier result, and replays
+kind: failure
+message:
+  Expected `has_marker` to be identical to `identical(rule, "by_cause")`.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  by_cause
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E14: metab legacy RUV-III-C with no control found in A2 keeps A2 uncorrected, with a classed warning
+kind: failure
+message:
+  Expected `names(methods::slot(run$value, binding$data_slot))` to be identical to `c("A1", "A2")`.
+  Differences:
+  `actual`:   "A1"     
+  `expected`: "A1" "A2"
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E14: metab legacy RUV-III-C with no control found in A2 keeps A2 uncorrected, with a classed warning
+kind: failure
+message:
+  Expected `run$kept` to have length 1.
+  Actual length: 0.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E14: metab legacy RUV-III-C with no control found in A2 keeps A2 uncorrected, with a classed warning
+kind: failure
+message:
+  Expected `is.null(a2)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E15: metab legacy RUV-III-C with no control in any assay keeps both, each with a classed warning
+kind: failure
+message:
+  Expected `vapply(run$kept, function(w) w$assay, "")` to be identical to `c("A1", "A2")`.
+  Differences:
+  `actual`:            
+  `expected`: "A1" "A2"
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E16: metab legacy RUV-III-C with k = -1 for A2 stops with omics_ruv_failed (invalid_k)
+kind: failure
+message:
+  Expected `suppressWarnings(...)` to throw a error with class <omics_ruv_failed>.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E16: metab legacy RUV-III-C with k = -1 for A2 stops with omics_ruv_failed (invalid_k)
+kind: failure
+message:
+  Expected `err$assay` to be identical to "A2".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('A2')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E16: metab legacy RUV-III-C with k = -1 for A2 stops with omics_ruv_failed (invalid_k)
+kind: failure
+message:
+  Expected `err$reason` to be identical to "invalid_k".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('invalid_k')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E18: metab legacy Automatic RUV corrects A2 without B_6, keeps B_6 empty there and in A1 keeps it
+kind: failure
+message:
+  Expected `is.null(a2)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E19: metab legacy Manual RUV corrects A2 without B_6 and keeps B_6 empty there
+kind: failure
+message:
+  Expected `inherits(run, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E20: metab the declared design computes A2's factors on the 11 samples and leaves B_6 out of A2's DA
+kind: failure
+message:
+  Expected `inherits(run, "error")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E22: metab a feature with one value is not a control and the search and correction of A2 run
+kind: failure
+message:
+  Expected `is.null(a2)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E22: metab a feature with one value is not a control and the search and correction of A2 run
+kind: failure
+message:
+  Expected `run$value$ruv_status$A2` to be identical to "corrected".
+  Differences:
+  `actual`:   "dropped"  
+  `expected`: "corrected"
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E23: metab a feature with no value is left out of the search and correction and kept empty
+kind: failure
+message:
+  Expected `is.null(a2)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: metab an assay with no usable controls keeps its values without RUV, recorded per assay
+kind: failure
+message:
+  Expected `is.null(a2)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: metab an assay with no usable controls keeps its values without RUV, recorded per assay
+kind: failure
+message:
+  Expected `outcomes$ruv_applied_per_assay` to be identical to `list(A1 = TRUE, A2 = FALSE)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: metab an assay with no usable controls keeps its values without RUV, recorded per assay
+kind: failure
+message:
+  Expected `outcomes$ruv_not_applied_reason_per_assay$A2 %in% c("no_usable_controls", "no_factor_supported")` to be TRUE.
+  Differences:
+  `actual`:       
+  `expected`: TRUE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: metab an assay with no usable controls keeps its values without RUV, recorded per assay
+kind: error
+message:
+  Error in `expect_match(run$value$ruv_not_applied_text$A2, "RUV-III was not applied to assay A2", fixed = TRUE)`: `object` must be a character vector, not `NULL`.
+trace (first lines):
+      ▆
+   1. └─testthat::expect_match(object = run$value$ruv_not_applied_text$A2) at test-kit242-normalisation-fallback.R:991:5
+   2.   └─testthat:::check_character(object)
+   3.     └─testthat:::stop_input_type(...)
+   4.       └─rlang::abort(message, ..., call = call, arg = arg)
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: metab managed tab names A2 as not corrected and warns
+kind: failure
+message:
+  Expected `any(grepl("RUV-III was not applied to assay A2", tab$log, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Starting normalization pipeline... | Post-filtering state captured | Pre-normalization QC plots generated | ITSD normalization skipped | Applying log2 transformation | Log2 transformation complete | Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite | Applying between-sample normalization (method: cyclicloess ) | Between-sample normalization complete | Post-normalization QC plots generated | Running RUV-III (mode: automatic ) | Warning: A1: the automatic search found 4 unwanted factors. With 12 samples the application removes at most 2 (the limit proteomics uses), so 2 were removed. | RUV optimization complete. Best k per assay: A1 = 2, A2 = NA | RUV-III correction applied | RUV QC plots generated | Normalization pipeline complete!
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: metab managed tab names A2 as not corrected and warns
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: metab in process tab names A2 as not corrected and warns
+kind: failure
+message:
+  Expected `any(grepl("RUV-III was not applied to assay A2", tab$log, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Starting normalization pipeline... | Post-filtering state captured | Pre-normalization QC plots generated | ITSD normalization skipped | Applying log2 transformation | Log2 transformation complete | Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite | Applying between-sample normalization (method: cyclicloess ) | Between-sample normalization complete | Post-normalization QC plots generated | Running RUV-III (mode: automatic ) | Warning: A1: the automatic search found 4 unwanted factors. With 12 samples the application removes at most 2 (the limit proteomics uses), so 2 were removed. | RUV optimization complete. Best k per assay: A1 = 2, A2 = NA | RUV-III correction applied | RUV QC plots generated | Generating composite QC figure... | Normalization pipeline complete!
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E24: metab in process tab names A2 as not corrected and warns
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25: metab a RUV-III-C error in A2 stops with omics_ruv_failed naming A2 and the step
+kind: failure
+message:
+  Expected `suppressWarnings(...)` to throw a error with class <omics_ruv_failed>.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25: metab a RUV-III-C error in A2 stops with omics_ruv_failed naming A2 and the step
+kind: failure
+message:
+  Expected `err$assay` to be identical to "A2".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('A2')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25: metab a RUV-III-C error in A2 stops with omics_ruv_failed naming A2 and the step
+kind: failure
+message:
+  Expected `err$reason` to be identical to "correction_error".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('correction_error')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25e: metab when no number of factors is supported by the data, every assay keeps its values, recorded
+kind: failure
+message:
+  Expected `isTRUE(outcomes$ruv_applied)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25e: metab when no number of factors is supported by the data, every assay keeps its values, recorded
+kind: failure
+message:
+  Expected `outcomes$ruv_applied_per_assay` to be identical to `list(A1 = FALSE, A2 = FALSE)`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25e: metab when no number of factors is supported by the data, every assay keeps its values, recorded
+kind: failure
+message:
+  Expected `outcomes$ruv_not_applied_reason_per_assay` to be identical to `list(A1 = "no_factor_supported", A2 = "no_factor_supported")`.
+  Differences:
+  `actual` is NULL
+  `expected` is a list
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25e: metab when no number of factors is supported by the data, every assay keeps its values, recorded
+kind: error
+message:
+  Error in `expect_match(run$value$ruv_not_applied_text$A1, "no number of unwanted factors was supported by the data", fixed = TRUE)`: `object` must be a character vector, not `NULL`.
+trace (first lines):
+      ▆
+   1. └─testthat::expect_match(object = run$value$ruv_not_applied_text$A1) at test-kit242-normalisation-fallback.R:1040:5
+   2.   └─testthat:::check_character(object)
+   3.     └─testthat:::stop_input_type(...)
+   4.       └─rlang::abort(message, ..., call = call, arg = arg)
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25e: metab in process tab says RUV-III was not applied
+kind: failure
+message:
+  Expected `any(startsWith(tab$log, "RUV-III not applied"))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  Starting normalization pipeline... | Post-filtering state captured | Pre-normalization QC plots generated | ITSD normalization skipped | Applying log2 transformation | Log2 transformation complete | Log2 step: values set to missing (0 or below; not finite): A1 0 non-positive, 0 non-finite; A2 0 non-positive, 0 non-finite | Applying between-sample normalization (method: cyclicloess ) | Between-sample normalization complete | Post-normalization QC plots generated | Running RUV-III (mode: automatic ) | RUV optimization complete. Best k per assay: A1 = NA, A2 = NA | RUV-III correction applied | RUV QC plots generated | Generating composite QC figure... | Normalization pipeline complete!
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E25e: metab in process tab says RUV-III was not applied
+kind: failure
+message:
+  Expected `any(tab$log == "RUV-III correction applied")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 ruling 7: metab when the correction fails after the search, the tab neither completes RUV nor shows k as removed
+kind: failure
+message:
+  Expected `isTRUE(tab$ruv_complete)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 ruling 7: metab when the correction fails after the search, the tab neither completes RUV nor shows k as removed
+kind: failure
+message:
+  Expected `any(tab$log == "RUV-III correction applied")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 ruling 7: metab when the correction fails after the search, the tab neither completes RUV nor shows k as removed
+kind: failure
+message:
+  Expected `startsWith(summary, "Best k") || startsWith(summary, "Factors removed")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  A1 Factors removed: 2 (the search found 5; at most 2 with 12 samples)
+  Best %: 12
+  Separation: 0.3851
+  Controls: 5
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 ruling 7: metab when the correction fails after the search, the tab neither completes RUV nor shows k as removed
+kind: failure
+message:
+  Expected `startsWith(summary, "Best k") || startsWith(summary, "Factors removed")` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  A2 Factors removed: 2 (the search found 5; at most 2 with 12 samples)
+  Best %: 12
+  Separation: 0.1452
+  Controls: 5
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA3: metab every assay the legacy RUV record names is in the RUV state, FALSE where uncorrected
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A1 per-assay outcome present
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA3: metab every assay the legacy RUV record names is in the RUV state, FALSE where uncorrected
+kind: failure
+message:
+  Expected `is.null(corrected)` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  A2 named by the record, present in the RUV state
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA3: metab every assay the legacy RUV record names is in the RUV state, FALSE where uncorrected
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A2 per-assay outcome present
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11c: metab the RUV marker: current 'by_cause', earlier 'drop' reproduces the earlier result, and replays
+kind: failure
+message:
+  Expected `marker$option` to be identical to "MultiScholaR.ruv_fallback".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('MultiScholaR.ruv_fallback')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11c: metab the RUV marker: current 'by_cause', earlier 'drop' reproduces the earlier result, and replays
+kind: failure
+message:
+  Expected `marker$current` to be identical to "by_cause".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('by_cause')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11c: metab the RUV marker: current 'by_cause', earlier 'drop' reproduces the earlier result, and replays
+kind: failure
+message:
+  Expected `marker$earlier` to be identical to "drop".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('drop')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11c: metab the RUV marker: current 'by_cause', earlier 'drop' reproduces the earlier result, and replays
+kind: failure
+message:
+  Expected `workflowOperationEntry(paste0(prefix, "_ruv"))$declaration$fixed$ruv_fallback` to be identical to "by_cause".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('by_cause')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11c: metab the RUV marker: current 'by_cause', earlier 'drop' reproduces the earlier result, and replays
+kind: failure
+message:
+  Expected `omicsRuvOperation(binding, "declared")$fixed$ruv_fallback` to be identical to "by_cause".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('by_cause')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E11c: metab the RUV marker: current 'by_cause', earlier 'drop' reproduces the earlier result, and replays
+kind: failure
+message:
+  Expected `has_marker` to be identical to `identical(rule, "by_cause")`.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  by_cause
+

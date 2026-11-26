@@ -1,0 +1,61 @@
+version	arm	method	ruv	assay	status	itsd_count	rows_kept_after_itsd	ruv_k	ruv_controls	da_rows
+complete	A	cyclicloess	FALSE	A1	ok	11	43	NA	NA	43
+complete	A	cyclicloess	FALSE	A2	ok	11	43	NA	NA	43
+complete	A	quantile	FALSE	A1	ok	11	43	NA	NA	43
+complete	A	quantile	FALSE	A2	ok	11	43	NA	NA	43
+complete	A	scale	FALSE	A1	ok	11	43	NA	NA	43
+complete	A	scale	FALSE	A2	ok	11	43	NA	NA	43
+complete	A	none	FALSE	A1	da failed: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types. ℹ `x$metabolite_id` is a <character>. ℹ `y$metabolite_id` is a <integer>.	11	43	NA	NA	NA
+complete	A	none	FALSE	A2	da failed: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types. ℹ `x$metabolite_id` is a <character>. ℹ `y$metabolite_id` is a <integer>.	11	43	NA	NA	NA
+complete	A	cyclicloess	TRUE	A1	ok	11	43	1	8	43
+complete	A	cyclicloess	TRUE	A2	ok	11	43	5	5	43
+complete	B	cyclicloess	FALSE	A1	ok	4	43	NA	NA	43
+complete	B	cyclicloess	FALSE	A2	ok	4	43	NA	NA	43
+complete	B	quantile	FALSE	A1	ok	4	43	NA	NA	43
+complete	B	quantile	FALSE	A2	ok	4	43	NA	NA	43
+complete	B	scale	FALSE	A1	ok	4	43	NA	NA	43
+complete	B	scale	FALSE	A2	ok	4	43	NA	NA	43
+complete	B	none	FALSE	A1	da failed: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types. ℹ `x$metabolite_id` is a <character>. ℹ `y$metabolite_id` is a <integer>.	4	43	NA	NA	NA
+complete	B	none	FALSE	A2	da failed: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types. ℹ `x$metabolite_id` is a <character>. ℹ `y$metabolite_id` is a <integer>.	4	43	NA	NA	NA
+complete	B	cyclicloess	TRUE	A1	ok	4	43	1	8	43
+complete	B	cyclicloess	TRUE	A2	ok	4	43	5	5	43
+complete	C	cyclicloess	FALSE	A1	ok	4	50	NA	NA	50
+complete	C	cyclicloess	FALSE	A2	ok	4	50	NA	NA	50
+complete	C	quantile	FALSE	A1	ok	4	50	NA	NA	50
+complete	C	quantile	FALSE	A2	ok	4	50	NA	NA	50
+complete	C	scale	FALSE	A1	ok	4	50	NA	NA	50
+complete	C	scale	FALSE	A2	ok	4	50	NA	NA	50
+complete	C	none	FALSE	A1	da failed: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types. ℹ `x$metabolite_id` is a <character>. ℹ `y$metabolite_id` is a <integer>.	4	50	NA	NA	NA
+complete	C	none	FALSE	A2	da failed: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types. ℹ `x$metabolite_id` is a <character>. ℹ `y$metabolite_id` is a <integer>.	4	50	NA	NA	NA
+complete	C	cyclicloess	TRUE	A1	ok	4	50	2	5	50
+complete	C	cyclicloess	TRUE	A2	ok	4	50	1	7	50
+missing	A	cyclicloess	FALSE	A1	ok	11	43	NA	NA	43
+missing	A	cyclicloess	FALSE	A2	ok	11	43	NA	NA	43
+missing	A	quantile	FALSE	A1	ok	11	43	NA	NA	43
+missing	A	quantile	FALSE	A2	ok	11	43	NA	NA	43
+missing	A	scale	FALSE	A1	ok	11	43	NA	NA	43
+missing	A	scale	FALSE	A2	ok	11	43	NA	NA	43
+missing	A	none	FALSE	A1	da failed: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types. ℹ `x$metabolite_id` is a <character>. ℹ `y$metabolite_id` is a <integer>.	11	43	NA	NA	NA
+missing	A	none	FALSE	A2	da failed: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types. ℹ `x$metabolite_id` is a <character>. ℹ `y$metabolite_id` is a <integer>.	11	43	NA	NA	NA
+missing	A	cyclicloess	TRUE	A1	ok	11	43	NA	NA	0
+missing	A	cyclicloess	TRUE	A2	ok	11	43	1	7	43
+missing	B	cyclicloess	FALSE	A1	ok	4	43	NA	NA	43
+missing	B	cyclicloess	FALSE	A2	ok	4	43	NA	NA	43
+missing	B	quantile	FALSE	A1	ok	4	43	NA	NA	43
+missing	B	quantile	FALSE	A2	ok	4	43	NA	NA	43
+missing	B	scale	FALSE	A1	ok	4	43	NA	NA	43
+missing	B	scale	FALSE	A2	ok	4	43	NA	NA	43
+missing	B	none	FALSE	A1	da failed: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types. ℹ `x$metabolite_id` is a <character>. ℹ `y$metabolite_id` is a <integer>.	4	43	NA	NA	NA
+missing	B	none	FALSE	A2	da failed: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types. ℹ `x$metabolite_id` is a <character>. ℹ `y$metabolite_id` is a <integer>.	4	43	NA	NA	NA
+missing	B	cyclicloess	TRUE	A1	ok	4	43	NA	NA	0
+missing	B	cyclicloess	TRUE	A2	ok	4	43	1	7	43
+missing	C	cyclicloess	FALSE	A1	ok	4	50	NA	NA	50
+missing	C	cyclicloess	FALSE	A2	ok	4	50	NA	NA	50
+missing	C	quantile	FALSE	A1	ok	4	50	NA	NA	50
+missing	C	quantile	FALSE	A2	ok	4	50	NA	NA	50
+missing	C	scale	FALSE	A1	ok	4	50	NA	NA	50
+missing	C	scale	FALSE	A2	ok	4	50	NA	NA	50
+missing	C	none	FALSE	A1	da failed: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types. ℹ `x$metabolite_id` is a <character>. ℹ `y$metabolite_id` is a <integer>.	4	50	NA	NA	NA
+missing	C	none	FALSE	A2	da failed: Can't join `x$metabolite_id` with `y$metabolite_id` due to incompatible types. ℹ `x$metabolite_id` is a <character>. ℹ `y$metabolite_id` is a <integer>.	4	50	NA	NA	NA
+missing	C	cyclicloess	TRUE	A1	ok	4	50	2	5	50
+missing	C	cyclicloess	TRUE	A2	ok	4	50	2	10	50

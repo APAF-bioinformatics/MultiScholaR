@@ -1,0 +1,167 @@
+case	class	arm	item	value
+D0	-	defaults	lipid and metab 'msdial' strings identical	TRUE
+D0	-	defaults	lipid and metab 'progenesis' strings identical	TRUE
+D0	-	defaults	lipid and metab 'xcms' strings identical	TRUE
+D0	-	defaults	lipid and metab 'compound_discoverer' strings identical	TRUE
+D0	-	defaults	lipid and metab 'custom' strings identical	TRUE
+D0	-	defaults	lipid msdial string at this commit	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:
+D0	-	defaults	metab msdial string at this commit	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:
+D0	-	defaults	base MS-DIAL string equals the ticket's	TRUE
+D1	metab	object	regex / annotation column / id column	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:;Metabolite name                 ;Alignment ID                    
+D1	metab	declaration (runSavedOperation)	step	completed
+D1	metab	declaration (runSavedOperation)	console 'Identified ... via regex' lines	   Identified NA ITSD features via regex. ;   Identified NA ITSD features via regex. 
+D1	metab	declaration (runSavedOperation)	console 'Using ... ITSD features' lines	   Using 13 ITSD features for normalization. ;   Using 13 ITSD features for normalization. 
+D1	metab	declaration (runSavedOperation)	A1 rows in -> out	60 -> 46
+D1	metab	declaration (runSavedOperation)	A1 named rows absent after	IS_Caffeine         ;Caffeine_d9         ;Caffeine-ISTD       ;IS-Leucine          ;w/o MS2: Alanine    ;w/o MS2: Serine     ;w/o MS2: Valine     ;w/o MS2: Citric acid;w/o MS2: Lactic acid;CIS-ACONITIC ACID   ;HIS-LEU             ;w/o MS2:Glucose     ;w/o MS2:IS_Caffeine ;<NA annotation>     
+D1	metab	declaration (runSavedOperation)	A1 named rows present after	cis-Aconitic acid ;PC 15:0_18:1(d7)  ;Unknown           ;no MS2: Glucose   ;low score: Glucose;Caffeine-d9       
+D1	metab	declaration (runSavedOperation)	A1 ordinary rows present after (of 40)	40
+D1	metab	declaration (runSavedOperation)	A2 rows in -> out	60 -> 46
+D1	metab	declaration (runSavedOperation)	A2 named rows absent after	IS_Caffeine         ;Caffeine_d9         ;Caffeine-ISTD       ;IS-Leucine          ;w/o MS2: Alanine    ;w/o MS2: Serine     ;w/o MS2: Valine     ;w/o MS2: Citric acid;w/o MS2: Lactic acid;CIS-ACONITIC ACID   ;HIS-LEU             ;w/o MS2:Glucose     ;w/o MS2:IS_Caffeine ;<NA annotation>     
+D1	metab	declaration (runSavedOperation)	A2 named rows present after	cis-Aconitic acid ;PC 15:0_18:1(d7)  ;Unknown           ;no MS2: Glucose   ;low score: Glucose;Caffeine-d9       
+D1	metab	declaration (runSavedOperation)	A2 ordinary rows present after (of 40)	40
+D1	metab	declaration (runSavedOperation)	args ITSDNormalization applied	TRUE
+D1	metab	declaration (runSavedOperation)	args itsd_counts_per_assay	{"A1":13,"A2":13}
+D1	metab	declaration (runSavedOperation)	args itsd_features_per_assay (assays)	A1;A2
+D1	metab	declaration (runSavedOperation)	args itsd_features_per_assay A1	41;42;43;44;45;46;47;48;49;50;51;55;58
+D1	metab	declaration (runSavedOperation)	args itsd_features_per_assay A2	41;42;43;44;45;46;47;48;49;50;51;55;58
+D1	metab	declaration (runSavedOperation)	study_parameters.txt ITSD block	ITSD Normalization: | ------------------- | * Applied: Yes | * Method Type: average_centered | * Aggregation: median | * Pattern Columns: Metabolite name | * ITSD Removed After Normalization: Yes | * Timestamp: 2026-11-25 10:25:50 | * ITSD Features Per Assay: |     - A1 (13 features): 41, 42, 43, 44, 45, ... +8 more |     - A2 (13 features): 41, 42, 43, 44, 45, ... +8 more
+D1	metab	declaration (runSavedOperation)	record metab_itsd_norm operation	metab_itsd_normalisation
+D1	metab	declaration (runSavedOperation)	record metab_itsd_norm parameters	itsd_aggregation=median; itsd_feature_ids=NULL; method=ITSD
+D1	metab	declaration (runSavedOperation)	record metab_itsd_norm outcomes	{"rows":92,"columns":14,"itsd_applied":true}
+D1	metab	declaration (runSavedOperation)	record JSON contains 'w/o MS2' / 'CIS-ACONITIC'	FALSE;FALSE
+D1	metab	worker (omicsWorkerRun)	handoff status / error	complete;none    
+D1	metab	worker (omicsWorkerRun)	A1 rows in -> out	60 -> 46
+D1	metab	worker (omicsWorkerRun)	A1 named rows absent after	IS_Caffeine         ;Caffeine_d9         ;Caffeine-ISTD       ;IS-Leucine          ;w/o MS2: Alanine    ;w/o MS2: Serine     ;w/o MS2: Valine     ;w/o MS2: Citric acid;w/o MS2: Lactic acid;CIS-ACONITIC ACID   ;HIS-LEU             ;w/o MS2:Glucose     ;w/o MS2:IS_Caffeine ;<NA annotation>     
+D1	metab	worker (omicsWorkerRun)	A1 named rows present after	cis-Aconitic acid ;PC 15:0_18:1(d7)  ;Unknown           ;no MS2: Glucose   ;low score: Glucose;Caffeine-d9       
+D1	metab	worker (omicsWorkerRun)	A1 ordinary rows present after (of 40)	40
+D1	metab	worker (omicsWorkerRun)	A2 rows in -> out	60 -> 46
+D1	metab	worker (omicsWorkerRun)	A2 named rows absent after	IS_Caffeine         ;Caffeine_d9         ;Caffeine-ISTD       ;IS-Leucine          ;w/o MS2: Alanine    ;w/o MS2: Serine     ;w/o MS2: Valine     ;w/o MS2: Citric acid;w/o MS2: Lactic acid;CIS-ACONITIC ACID   ;HIS-LEU             ;w/o MS2:Glucose     ;w/o MS2:IS_Caffeine ;<NA annotation>     
+D1	metab	worker (omicsWorkerRun)	A2 named rows present after	cis-Aconitic acid ;PC 15:0_18:1(d7)  ;Unknown           ;no MS2: Glucose   ;low score: Glucose;Caffeine-d9       
+D1	metab	worker (omicsWorkerRun)	A2 ordinary rows present after (of 40)	40
+D1	metab	worker (omicsWorkerRun)	args ITSDNormalization applied	TRUE
+D1	metab	worker (omicsWorkerRun)	args itsd_counts_per_assay	{"A1":13,"A2":13}
+D1	metab	worker (omicsWorkerRun)	args itsd_features_per_assay (assays)	A1;A2
+D1	metab	worker (omicsWorkerRun)	args itsd_features_per_assay A1	41;42;43;44;45;46;47;48;49;50;51;55;58
+D1	metab	worker (omicsWorkerRun)	args itsd_features_per_assay A2	41;42;43;44;45;46;47;48;49;50;51;55;58
+D2	lipid	object	regex / annotation column / id column	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:;Name                            ;Alignment ID                    
+D2	lipid	declaration (runSavedOperation)	step	completed
+D2	lipid	declaration (runSavedOperation)	console 'Identified ... via regex' lines	   Identified NA ITSD features via regex. ;   Identified NA ITSD features via regex. 
+D2	lipid	declaration (runSavedOperation)	console 'Using ... ITSD features' lines	   Using 13 ITSD features for normalization. ;   Using 13 ITSD features for normalization. 
+D2	lipid	declaration (runSavedOperation)	A1 rows in -> out	60 -> 46
+D2	lipid	declaration (runSavedOperation)	A1 named rows absent after	IS_Caffeine         ;Caffeine_d9         ;Caffeine-ISTD       ;IS-Leucine          ;w/o MS2: Alanine    ;w/o MS2: Serine     ;w/o MS2: Valine     ;w/o MS2: Citric acid;w/o MS2: Lactic acid;CIS-ACONITIC ACID   ;HIS-LEU             ;w/o MS2:Glucose     ;w/o MS2:IS_Caffeine ;<NA annotation>     
+D2	lipid	declaration (runSavedOperation)	A1 named rows present after	cis-Aconitic acid ;PC 15:0_18:1(d7)  ;Unknown           ;no MS2: Glucose   ;low score: Glucose;Caffeine-d9       
+D2	lipid	declaration (runSavedOperation)	A1 ordinary rows present after (of 40)	40
+D2	lipid	declaration (runSavedOperation)	A2 rows in -> out	60 -> 46
+D2	lipid	declaration (runSavedOperation)	A2 named rows absent after	IS_Caffeine         ;Caffeine_d9         ;Caffeine-ISTD       ;IS-Leucine          ;w/o MS2: Alanine    ;w/o MS2: Serine     ;w/o MS2: Valine     ;w/o MS2: Citric acid;w/o MS2: Lactic acid;CIS-ACONITIC ACID   ;HIS-LEU             ;w/o MS2:Glucose     ;w/o MS2:IS_Caffeine ;<NA annotation>     
+D2	lipid	declaration (runSavedOperation)	A2 named rows present after	cis-Aconitic acid ;PC 15:0_18:1(d7)  ;Unknown           ;no MS2: Glucose   ;low score: Glucose;Caffeine-d9       
+D2	lipid	declaration (runSavedOperation)	A2 ordinary rows present after (of 40)	40
+D2	lipid	declaration (runSavedOperation)	args ITSDNormalization applied	TRUE
+D2	lipid	declaration (runSavedOperation)	args itsd_counts_per_assay	{"A1":13,"A2":13}
+D2	lipid	declaration (runSavedOperation)	args itsd_features_per_assay (assays)	A1;A2
+D2	lipid	declaration (runSavedOperation)	args itsd_features_per_assay A1	41;42;43;44;45;46;47;48;49;50;51;55;58
+D2	lipid	declaration (runSavedOperation)	args itsd_features_per_assay A2	41;42;43;44;45;46;47;48;49;50;51;55;58
+D2	lipid	declaration (runSavedOperation)	study_parameters.txt ITSD block	ITSD Normalization: | ------------------- | * Applied: Yes | * Method Type: average_centered | * Aggregation: median | * Pattern Columns: Name | * ITSD Removed After Normalization: Yes | * Timestamp: 2026-11-25 10:25:58 | * ITSD Features Per Assay: |     - A1 (13 features): 41, 42, 43, 44, 45, ... +8 more |     - A2 (13 features): 41, 42, 43, 44, 45, ... +8 more
+D2	lipid	declaration (runSavedOperation)	record lipid_itsd_norm operation	lipid_itsd_normalisation
+D2	lipid	declaration (runSavedOperation)	record lipid_itsd_norm parameters	itsd_aggregation=median; itsd_feature_ids=NULL; method=ITSD
+D2	lipid	declaration (runSavedOperation)	record lipid_itsd_norm outcomes	{"rows":92,"columns":14,"itsd_applied":true}
+D2	lipid	declaration (runSavedOperation)	record JSON contains 'w/o MS2' / 'CIS-ACONITIC'	FALSE;FALSE
+D2	lipid	worker (omicsWorkerRun)	handoff status / error	complete;none    
+D2	lipid	worker (omicsWorkerRun)	A1 rows in -> out	60 -> 46
+D2	lipid	worker (omicsWorkerRun)	A1 named rows absent after	IS_Caffeine         ;Caffeine_d9         ;Caffeine-ISTD       ;IS-Leucine          ;w/o MS2: Alanine    ;w/o MS2: Serine     ;w/o MS2: Valine     ;w/o MS2: Citric acid;w/o MS2: Lactic acid;CIS-ACONITIC ACID   ;HIS-LEU             ;w/o MS2:Glucose     ;w/o MS2:IS_Caffeine ;<NA annotation>     
+D2	lipid	worker (omicsWorkerRun)	A1 named rows present after	cis-Aconitic acid ;PC 15:0_18:1(d7)  ;Unknown           ;no MS2: Glucose   ;low score: Glucose;Caffeine-d9       
+D2	lipid	worker (omicsWorkerRun)	A1 ordinary rows present after (of 40)	40
+D2	lipid	worker (omicsWorkerRun)	A2 rows in -> out	60 -> 46
+D2	lipid	worker (omicsWorkerRun)	A2 named rows absent after	IS_Caffeine         ;Caffeine_d9         ;Caffeine-ISTD       ;IS-Leucine          ;w/o MS2: Alanine    ;w/o MS2: Serine     ;w/o MS2: Valine     ;w/o MS2: Citric acid;w/o MS2: Lactic acid;CIS-ACONITIC ACID   ;HIS-LEU             ;w/o MS2:Glucose     ;w/o MS2:IS_Caffeine ;<NA annotation>     
+D2	lipid	worker (omicsWorkerRun)	A2 named rows present after	cis-Aconitic acid ;PC 15:0_18:1(d7)  ;Unknown           ;no MS2: Glucose   ;low score: Glucose;Caffeine-d9       
+D2	lipid	worker (omicsWorkerRun)	A2 ordinary rows present after (of 40)	40
+D2	lipid	worker (omicsWorkerRun)	args ITSDNormalization applied	TRUE
+D2	lipid	worker (omicsWorkerRun)	args itsd_counts_per_assay	{"A1":13,"A2":13}
+D2	lipid	worker (omicsWorkerRun)	args itsd_features_per_assay (assays)	A1;A2
+D2	lipid	worker (omicsWorkerRun)	args itsd_features_per_assay A1	41;42;43;44;45;46;47;48;49;50;51;55;58
+D2	lipid	worker (omicsWorkerRun)	args itsd_features_per_assay A2	41;42;43;44;45;46;47;48;49;50;51;55;58
+D2n	lipid	preview	detected_format / is_pattern	msdial                          ;^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:
+D2n	lipid	preview	id selected / annotation selected	Alignment ID;NULL        
+D2n	lipid	object	regex / annotation column	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:;NA
+D2n	lipid	declaration ITSD	step	completed
+D2n	lipid	declaration ITSD	A1 rows in -> out	60 -> 60
+D2n	lipid	declaration ITSD	A1 named rows absent after	<empty>
+D2n	lipid	declaration ITSD	A1 named rows present after	IS_Caffeine         ;Caffeine_d9         ;Caffeine-ISTD       ;IS-Leucine          ;w/o MS2: Alanine    ;w/o MS2: Serine     ;w/o MS2: Valine     ;w/o MS2: Citric acid;w/o MS2: Lactic acid;CIS-ACONITIC ACID   ;HIS-LEU             ;cis-Aconitic acid   ;PC 15:0_18:1(d7)    ;Unknown             ;w/o MS2:Glucose     ;no MS2: Glucose     ;low score: Glucose  ;w/o MS2:IS_Caffeine ;Caffeine-d9         ;<NA annotation>     
+D2n	lipid	declaration ITSD	A1 ordinary rows present after (of 40)	40
+D2n	lipid	declaration ITSD	A2 rows in -> out	60 -> 60
+D2n	lipid	declaration ITSD	A2 named rows absent after	<empty>
+D2n	lipid	declaration ITSD	A2 named rows present after	IS_Caffeine         ;Caffeine_d9         ;Caffeine-ISTD       ;IS-Leucine          ;w/o MS2: Alanine    ;w/o MS2: Serine     ;w/o MS2: Valine     ;w/o MS2: Citric acid;w/o MS2: Lactic acid;CIS-ACONITIC ACID   ;HIS-LEU             ;cis-Aconitic acid   ;PC 15:0_18:1(d7)    ;Unknown             ;w/o MS2:Glucose     ;no MS2: Glucose     ;low score: Glucose  ;w/o MS2:IS_Caffeine ;Caffeine-d9         ;<NA annotation>     
+D2n	lipid	declaration ITSD	A2 ordinary rows present after (of 40)	40
+D2n	lipid	declaration ITSD	args ITSDNormalization applied	TRUE
+D2n	lipid	declaration ITSD	args itsd_counts_per_assay	absent
+D2n	lipid	declaration ITSD	args itsd_features_per_assay (assays)	none
+D2n	lipid	integration input, ITSD unticked	lipidomics_A1 rows marked is_internal_standard	0
+D2n	lipid	integration input, ITSD unticked	lipidomics_A1 marked rows (annotation, else id)	none
+D2n	lipid	integration input, ITSD unticked	lipidomics_A1 integrationInternalStandards() count (the model's drop)	0
+D2n	lipid	integration input, ITSD unticked	lipidomics_A1 integrationInternalStandards() count, column read back as text	0
+D2n	lipid	integration input, ITSD unticked	lipidomics_A2 rows marked is_internal_standard	0
+D2n	lipid	integration input, ITSD unticked	lipidomics_A2 marked rows (annotation, else id)	none
+D2n	lipid	integration input, ITSD unticked	lipidomics_A2 integrationInternalStandards() count (the model's drop)	0
+D2n	lipid	integration input, ITSD unticked	lipidomics_A2 integrationInternalStandards() count, column read back as text	0
+D2n	lipid	integration input, ITSD unticked	manifest standards rule	{"regex":"^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:","columns":["Alignment ID","NA"],"selected_by_hand":false,"selected_count":0}
+D3	lipid	object	regex / annotation column	^IS_|ISTD|Internal|_IS;LipidClass            
+D3	lipid	declaration ITSD	step	completed
+D3	lipid	declaration ITSD	A1 rows in -> out	42 -> 42
+D3	lipid	declaration ITSD	A1 'IS_PC 15:0' / 'PC(15:0_18:1(d7))' present after	TRUE;TRUE
+D3	lipid	declaration ITSD	A2 rows in -> out	42 -> 42
+D3	lipid	declaration ITSD	A2 'IS_PC 15:0' / 'PC(15:0_18:1(d7))' present after	TRUE;TRUE
+D3	lipid	declaration ITSD	args ITSDNormalization applied	TRUE
+D3	lipid	declaration ITSD	args itsd_counts_per_assay	absent
+D3	lipid	declaration ITSD	args itsd_features_per_assay (assays)	none
+D3	lipid	integration input, ITSD unticked	lipidomics_A1 rows marked is_internal_standard	1
+D3	lipid	integration input, ITSD unticked	lipidomics_A1 marked rows (annotation, else id)	PC
+D3	lipid	integration input, ITSD unticked	lipidomics_A1 missing-annotation row marked	no such row
+D3	lipid	integration input, ITSD unticked	lipidomics_A1 integrationInternalStandards() count (the model's drop)	1
+D3	lipid	integration input, ITSD unticked	lipidomics_A1 integrationInternalStandards() count, column read back as text	1
+D3	lipid	integration input, ITSD unticked	lipidomics_A2 rows marked is_internal_standard	1
+D3	lipid	integration input, ITSD unticked	lipidomics_A2 marked rows (annotation, else id)	PC
+D3	lipid	integration input, ITSD unticked	lipidomics_A2 missing-annotation row marked	no such row
+D3	lipid	integration input, ITSD unticked	lipidomics_A2 integrationInternalStandards() count (the model's drop)	1
+D3	lipid	integration input, ITSD unticked	lipidomics_A2 integrationInternalStandards() count, column read back as text	1
+D3	lipid	integration input, ITSD unticked	manifest standards rule	{"regex":"^IS_|ISTD|Internal|_IS","columns":["LipidName","LipidClass"],"selected_by_hand":false,"selected_count":0}
+D4	metab	integration input, ITSD unticked	metabolomics_A1 rows marked is_internal_standard	13
+D4	metab	integration input, ITSD unticked	metabolomics_A1 marked rows (annotation, else id)	IS_Caffeine         ;Caffeine_d9         ;Caffeine-ISTD       ;IS-Leucine          ;w/o MS2: Alanine    ;w/o MS2: Serine     ;w/o MS2: Valine     ;w/o MS2: Citric acid;w/o MS2: Lactic acid;CIS-ACONITIC ACID   ;HIS-LEU             ;w/o MS2:Glucose     ;w/o MS2:IS_Caffeine 
+D4	metab	integration input, ITSD unticked	metabolomics_A1 missing-annotation row marked	FALSE
+D4	metab	integration input, ITSD unticked	metabolomics_A1 integrationInternalStandards() count (the model's drop)	13
+D4	metab	integration input, ITSD unticked	metabolomics_A1 integrationInternalStandards() count, column read back as text	13
+D4	metab	integration input, ITSD unticked	metabolomics_A2 rows marked is_internal_standard	13
+D4	metab	integration input, ITSD unticked	metabolomics_A2 marked rows (annotation, else id)	IS_Caffeine         ;Caffeine_d9         ;Caffeine-ISTD       ;IS-Leucine          ;w/o MS2: Alanine    ;w/o MS2: Serine     ;w/o MS2: Valine     ;w/o MS2: Citric acid;w/o MS2: Lactic acid;CIS-ACONITIC ACID   ;HIS-LEU             ;w/o MS2:Glucose     ;w/o MS2:IS_Caffeine 
+D4	metab	integration input, ITSD unticked	metabolomics_A2 missing-annotation row marked	FALSE
+D4	metab	integration input, ITSD unticked	metabolomics_A2 integrationInternalStandards() count (the model's drop)	13
+D4	metab	integration input, ITSD unticked	metabolomics_A2 integrationInternalStandards() count, column read back as text	13
+D4	metab	integration input, ITSD unticked	manifest standards rule	{"regex":"^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:","columns":["Alignment ID","Metabolite name"],"selected_by_hand":false,"selected_count":0}
+D5	metab	QC analysis	pattern used	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:
+D5	metab	QC analysis	total	26
+D5	metab	QC analysis	A1 standards reported	13
+D5	metab	QC analysis	A1 reported ids	Caffeine_d9         ;Caffeine-ISTD       ;CIS-ACONITIC ACID   ;HIS-LEU             ;IS_Caffeine         ;IS-Leucine          ;w/o MS2: Alanine    ;w/o MS2: Citric acid;w/o MS2: Lactic acid;w/o MS2: Serine     ;w/o MS2: Valine     ;w/o MS2:Glucose     ;w/o MS2:IS_Caffeine 
+D5	metab	QC analysis	A2 standards reported	13
+D5	metab	QC analysis	A2 reported ids	Caffeine_d9         ;Caffeine-ISTD       ;CIS-ACONITIC ACID   ;HIS-LEU             ;IS_Caffeine         ;IS-Leucine          ;w/o MS2: Alanine    ;w/o MS2: Citric acid;w/o MS2: Lactic acid;w/o MS2: Serine     ;w/o MS2: Valine     ;w/o MS2:Glucose     ;w/o MS2:IS_Caffeine 
+D5	metab	QC analysis	logger 'Found IS in column' lines	INFO [2026-11-25 10:26:27] Found IS in column: Metabolite name;INFO [2026-11-25 10:26:27] Found IS in column: Metabolite name
+D6	metab	design	rows per assay / ordinary matched rows / intended rows	54; 7; 4
+D6	metab	design	missing cells per assay (ordinary matched rows; other rows)	17; 28;17; 28
+D7	metab	import	the box's proposed pattern (preview)	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:
+D7	metab	import	status	success
+D7	metab	import	workflow$column_mapping$is_pattern	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:
+D7	metab	import	column_mapping.json is_pattern	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:
+D7	metab	import	project files holding the pattern text	source/column_mapping.json
+D7	metab	design object	instrument: the mocked default	^KIT260_CHANGED_DEFAULT$
+D7	metab	design object	internal_standard_regex of the design object	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:
+D7	metab	record and replay	origin itsd_counts_per_assay	{"A1":13,"A2":13}
+D7	metab	record and replay	record valid	TRUE
+D7	metab	record and replay	record file contains the pattern text	FALSE
+D7	metab	record and replay	record step initial (import): parameters naming a pattern	none
+D7	metab	record and replay	record step metab_raw_data_s4 (design_builder): parameters naming a pattern	none
+D7	metab	record and replay	record step metab_qc_complete (metab_qc_finalize): parameters naming a pattern	none
+D7	metab	record and replay	record step metab_itsd_norm (metab_itsd_normalisation): parameters naming a pattern	none
+D7	metab	record and replay	record step metab_log2 (metab_log2): parameters naming a pattern	none
+D7	metab	record and replay	record step metab_normalized (metab_between_sample_normalisation): parameters naming a pattern	none
+D7	metab	record and replay	replay preconditions (taken from the stored project)	initial          ;metab_raw_data_s4
+D7	metab	record and replay	instrument: the mocked default during replay	^KIT260_CHANGED_DEFAULT$
+D7	metab	record and replay	replay states equal history	TRUE
+D7	metab	record and replay	replay mismatches	none
+D7	metab	record and replay	replayed operations	metab_qc_finalize                 ;metab_itsd_normalisation          ;metab_log2                        ;metab_between_sample_normalisation
+D7	metab	record and replay	replay ITSD 'Identified/Using' console lines	   Using 13 ITSD features for normalization. ;   Using 13 ITSD features for normalization. 

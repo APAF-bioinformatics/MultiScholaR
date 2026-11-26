@@ -182,13 +182,13 @@ test_that("I1 the header reader is today's default reader (lipid and metab) (fro
 # identical, so the digest holds them to identity.
 omicsImportFrozen_i2_lipid <- list(
     lipidsearch = "367c941b05e85813ade6b7da05bc3cc2bc37ab36af3dead72f35d328cccc1954",
-    msdial = "c1f74268aa5e253cf58db05ab395724d797ca1368b51cbae4bd5c701b26a0707",
-    no_annotation = "5c09c824a94d7a3c1cf83d6416160405dc09aaf8fbccedbf11d6d38acb5988fc",
-    custom = "d6d49c2fe3b8a0831152feb04900148cb1bf411a37c14abb95723ffe15d91b5c",
-    malformed = "0405d2d917a16835bb4b0ef14416e8a3051f013119898c61cae53cf55ad0861d")
+    msdial = "d0c360c5b4195665e3209a6b1fa7b949d2d4007506276aeb018b4860ddba172c",
+    no_annotation = "77962b1fa5f3d0ff30f46bc5e7128c255f8e959d453d0ef2884fd160cfd998d7",
+    custom = "745d83b9d57b138838d5b75cee976b7d2aaa22bf399c39ae75dedc32faea1336",
+    malformed = "01abb39641228ddb38702ca20e1d6a7ddc1f96dc7f31a700f65456cbd7a72857")
 omicsImportFrozen_i2_metab <- list(
-    msdial = "4dafeb9431acac7eed9eaec249c4d34cbf48e4f5eb5bfac7e40142c488fd024b",
-    custom = "a21786b3d6bca9f67dabd05dcbee846499e3a385e3a1fd87710dbb89f42cc628")
+    msdial = "47a6b79b5821aa1dc72fc4e0040c40ef43b8227ce00bd01476bde4a630c42386",
+    custom = "99fe68ea78469e229008a1538dd864ab34d9bfaea738a6208383ba98e112c54d")
 omicsImportFrozen_i2_trx <- list(
     trx_screen = "4ddf739c1b81961996334b712d83a73281175be90d424227b5676c88683ebb53",
     counts_negative = "cc331cc3dac4fc7778710164b15c939c16b77262db33356a416a4a415b2c839b")
