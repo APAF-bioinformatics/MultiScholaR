@@ -1657,14 +1657,27 @@ test_that("KIT-111 W3: the DIA_LIMPA RUV covariates, unmanaged and managed, give
         fixture <- protNormW1LimpaOwner()
         managed <- protNormW3Drive(fixture, protNormW3LimpaSteps(mode), managed = TRUE)
         protNormW3ExpectW1(managed, "managed")
+        # KIT-266 (declared edit): managed, the head also roots the combined QC figure's three files, rendered assets the worker
+        # saved (unmanaged, the figure is built in the application and nothing is saved): three from the pass-through on,
+        # six from the RUV step on (a second layout), the repeat finding them saved. Counted here and set aside; every other
+        # product, and every other field, is compared as before.
+        composite_files <- c(3L, 3L, 6L, 6L)
+        for (i in seq_along(managed)) {
+            assets <- which(managed[[i]]$products == "rendered_asset")
+            expect_identical(length(assets) - sum(unmanaged[[i]]$products == "rendered_asset"), composite_files[[i]],
+                info = paste(mode, names(managed)[[i]]))
+            managed[[i]]$products <- managed[[i]]$products[-utils::tail(assets, composite_files[[i]])]
+        }
         protNormW3ExpectSame(managed, unmanaged)
         published(managed[[paste0("limpa_", mode, "_ruv")]])
         actions <- lapply(managed, `[[`, "actions")
         # KIT-122 (re-frozen: the operations only): each step's QC figures are a worker action, the pass-through's too.
         figures <- "normalization-qc-figures"
-        expect_identical(unname(lapply(actions, function(list) vapply(list, `[[`, "", "operation"))), list(figures,
-            c("pearson-pairs", "pearson-selection", figures), c("protein_ruv_covariates", figures),
-            c("protein_ruv_covariates", figures)), info = mode)
+        # KIT-266 (declared edit): the pass-through's actions are the pre figures, the source's figures and the combined
+        # figure; the RUV step's, after its stage figures, the combined figure (a first correlation builds none).
+        expect_identical(unname(lapply(actions, function(list) vapply(list, `[[`, "", "operation"))), list(rep(figures, 3L),
+            c("pearson-pairs", "pearson-selection", figures), c("protein_ruv_covariates", figures, figures),
+            c("protein_ruv_covariates", figures, figures)), info = mode)
         # The covariates' input is the tab's correlation result (the selection's checkpoint, as in process). GUI audit
         # P-35 (F111-02): the repeat's is the same recorded input, not the committed RUV state, and the head stays.
         expect_identical(actions[[4L]][[1L]]$input, actions[[3L]][[1L]]$input, info = mode)
@@ -1800,15 +1813,19 @@ test_that("GUI audit A111-01: RUV covariates queued behind a correlation re-appl
         session$setInputs(apply_ruv_covariates = 2)
         # KIT-122 (re-frozen: the actions' positions and operations only): each step's QC figures are a worker action.
         figures <- "normalization-qc-figures"
-        expect_length(probe$actions, 7L)
+        # KIT-266 (declared edit): the pass-through's three actions (the pre figures, the source's, the combined figure)
+        # and the RUV step's combined figure; the re-apply's combined figure runs from its own chain before the waiting
+        # covariates press, whose own follows its stage figures: 10 at the hold, 16 in all.
+        expect_length(probe$actions, 10L)
         probe$hold <- FALSE
         for (i in 1:3) {
             session$elapse(100)
             session$flushReact()
         }
-        expect_identical(vapply(probe$actions, `[[`, "", "operation"), c(figures, "pearson-pairs", "pearson-selection", figures,
-            "protein_ruv_covariates", figures, "pearson-pairs", "pearson-selection", figures, "protein_ruv_covariates", figures))
-        expect_false(identical(probe$actions[[10L]]$input, previous))
+        expect_identical(vapply(probe$actions, `[[`, "", "operation"), c(figures, figures, figures, "pearson-pairs",
+            "pearson-selection", figures, "protein_ruv_covariates", figures, figures, "pearson-pairs", "pearson-selection",
+            figures, figures, "protein_ruv_covariates", figures, figures))
+        expect_false(identical(probe$actions[[14L]]$input, previous))
         managed <- protNormW3Capture(fixture, norm, output, log, list())
         for (field in c("history", "head_history", "states")) {
             expect_identical(managed[[field]], unmanaged$ruv_again[[field]], info = field)

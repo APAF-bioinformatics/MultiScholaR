@@ -1,0 +1,38 @@
+case	item	predicted
+D0	pattern base: names matched (TRUE) of the 20	13: Caffeine_d9 | Caffeine-ISTD | CIS-ACONITIC ACID | HIS-LEU | IS_Caffeine | IS-Leucine | w/o MS2: Alanine | w/o MS2: Citric acid | w/o MS2: Lactic acid | w/o MS2: Serine | w/o MS2: Valine | w/o MS2:Glucose | w/o MS2:IS_Caffeine
+D0	pattern a: names matched (TRUE) of the 20	6: Caffeine_d9 | Caffeine-ISTD | CIS-ACONITIC ACID | HIS-LEU | IS_Caffeine | IS-Leucine
+D0	pattern b: names matched (TRUE) of the 20	4: Caffeine_d9 | Caffeine-ISTD | IS_Caffeine | IS-Leucine
+D0	pattern c: names matched (TRUE) of the 20	5: Caffeine_d9 | Caffeine-ISTD | IS_Caffeine | IS-Leucine | PC 15:0_18:1(d7)
+D0	pattern c_hyphen: names matched (TRUE) of the 20	6: Caffeine_d9 | Caffeine-d9 | Caffeine-ISTD | IS_Caffeine | IS-Leucine | PC 15:0_18:1(d7)
+D0	pattern e_on_c: names matched (TRUE) of the 20	6: Caffeine_d9 | Caffeine-ISTD | IS_Caffeine | IS-Leucine | PC 15:0_18:1(d7) | w/o MS2:IS_Caffeine
+D0	pattern progenesis: names matched (TRUE) of the 20	2: Caffeine-ISTD | IS_Caffeine
+D0	pattern xcms: names matched (TRUE) of the 20	2: Caffeine-ISTD | IS_Caffeine
+D0	pattern compound_discoverer: names matched (TRUE) of the 20	2: Caffeine-ISTD | IS_Caffeine
+D0	pattern lipidsearch: names matched (TRUE) of the 20	2: Caffeine-ISTD | IS_Caffeine
+D0	pattern custom: names matched (TRUE) of the 20	0: 
+D0	every pattern: the missing annotation	NA (not TRUE)
+D0	base MS-DIAL alternative '^IS_': count	1
+D0	base MS-DIAL alternative '_d[0-9]+$': count	1
+D0	base MS-DIAL alternative 'ISTD': count	1
+D0	base MS-DIAL alternative 'IS-': count	3
+D0	base MS-DIAL alternative 'w/o MS2:': count	7
+D0	lipid and metab MS-DIAL, progenesis, xcms, compound_discoverer, custom defaults: identical strings per format	TRUE (both readers hold the same strings)
+D0b	metab, every layout (msdial, custom, malformed, progenesis, xcms, compound_discoverer): updates$is_pattern	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:
+D0b	lipid, every layout except LipidSearch (msdial, custom, malformed, progenesis, xcms, compound_discoverer): updates$is_pattern	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:
+D0b	lipid, LipidSearch layout: detected_format / updates$is_pattern	lipidsearch / ^IS_|ISTD|Internal|_IS
+D1	itsd_counts_per_assay (declaration and worker)	13 per assay
+D1	rows absent after ITSD	the 13 matched rows and the missing-annotation row
+D1	rows present after ITSD	PC 15:0_18:1(d7), Caffeine-d9, no MS2: Glucose, low score: Glucose, cis-Aconitic acid, Unknown, the 40 ordinary
+D1	console line 'Identified %d ITSD features via regex'	prints NA (INFERRED); 'Using 13 ITSD features' after it
+D1	study-parameters file, ITSD Features Per Assay	13 identifiers per assay (integers), first 5 shown, '... +8 more'
+D1	record	itsd_applied TRUE; no names in the record
+D2	lipid twin, annotation 'Name'	as D1
+D2n	lipid, name column 'Metabolite name'	annotation NA (the preview proposes none); ITSD skips both assays; the integration input marks nothing
+D3	LipidSearch-built lipid object	normalisation matches nothing (class column); the integration input marks 'IS_PC 15:0' (id column) in each view
+D4	D1's object, ITSD unticked: is_internal_standard	TRUE on the 13 rows per view, FALSE on the missing-annotation row; the model's drop (integrationInternalStandards) 13 per view
+D5	QC tab analysis, box empty	the 13 rows per assay reported as internal standards (total over the two assays 26)
+D6	complete version, A against B, method none (RUV off)	every logFC differs by one common constant = minus the group contrast of log2(a_A / a_B), to 1e-9
+D6	complete version, A against B, cyclicloess and quantile (RUV off)	identical to 1e-9
+D6	complete version, A against B, scale (RUV off)	nonzero differences
+D6	missing-value version, every RUV-on row, B against C	not predicted (recorded)
+D7	where the pattern lives; what replay reads	column_mapping.json and the object slot hold the typed pattern; the design object takes the stored pattern; replay reads the stored state (INFERRED), not today's default

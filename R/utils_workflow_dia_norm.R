@@ -334,9 +334,11 @@ saveProtNormQcPlotArtifact <- function(
 #' @param filename The figure's file name (`<stage>_<kind>.png`).
 #' @param adjusted Whether the RUV figures show the RUV-III-adjusted matrix drawn for quality control only (the DIA
 #'   with limpa RUV covariates step; KIT-259 third pass, VAL-307, W11), not a corrected one.
+#' @param limpa Whether the figure belongs to the DIA with limpa route, whose first column of Figure 1 is DPC-Quant's
+#'   estimates, not the table before the between-sample normalisation (KIT-266, VAL-316 (1)).
 #' @return The name, or the file name when it is not a stage figure.
 #' @noRd
-protNormFigureTitle <- function(filename, adjusted = FALSE) {
+protNormFigureTitle <- function(filename, adjusted = FALSE, limpa = FALSE) {
   stages <- c(pre_norm = "Pre-normalisation", post_norm = "Post-normalisation", ruv_corrected = "RUV-corrected",
     ruv_covariates = "RUV-III covariates")
   kinds <- c(pca = "PCA", rle = "RLE", density = "PCA density", correlation = "Pearson correlation",
@@ -345,6 +347,7 @@ protNormFigureTitle <- function(filename, adjusted = FALSE) {
     filename))[[1L]]
   if (length(parts) != 3L) return(filename)
   if (adjusted && identical(parts[[2L]], "ruv_corrected")) stages[["ruv_corrected"]] <- "RUV-III-adjusted (for quality control)"
+  if (limpa && identical(parts[[2L]], "pre_norm")) stages[["pre_norm"]] <- "DPC-Quant estimates"
   paste(stages[[parts[[2L]]]], kinds[[parts[[3L]]]])
 }
 
@@ -355,10 +358,11 @@ protNormFigureTitle <- function(filename, adjusted = FALSE) {
 #' @param figure The figure's file name.
 #' @param reason Why it could not be drawn.
 #' @param width,height,dpi The figure's size, as it is saved.
+#' @param limpa Whether the figure names DPC-Quant's estimates as its first column (`protNormFigureTitle`).
 #' @return `path`.
 #' @noRd
-writeProtNormFigurePlaceholder <- function(path, figure, reason, width, height, dpi = 150) {
-  label <- paste(c(paste0(protNormFigureTitle(figure), ": could not be drawn."), strwrap(reason, 70L)), collapse = "\n")
+writeProtNormFigurePlaceholder <- function(path, figure, reason, width, height, dpi = 150, limpa = FALSE) {
+  label <- paste(c(paste0(protNormFigureTitle(figure, limpa = limpa), ": could not be drawn."), strwrap(reason, 70L)), collapse = "\n")
   plot <- ggplot2::ggplot() +
     ggplot2::annotate("text", x = 0.5, y = 0.5, label = label, size = 5) +
     ggplot2::xlim(0, 1) + ggplot2::ylim(0, 1) +
@@ -419,11 +423,13 @@ drawProtNormQcFigure <- function(qcDir, filename, width, height, draw, dpi = 150
 #' @param ruvMode The run's RUV mode (the figure's layout).
 #' @param qcDir The folder holding the combined figure and its inputs.
 #' @param omicType The omic (the figure's file name).
+#' @param resolveInputsFn The layout's resolver, `function(ruvMode, qcDir)`: the figure's own (KIT-266: the DIA with
+#'   limpa route's, whose canonical-correlation image has another name).
 #' @return The file written, or NULL, invisibly.
 #' @noRd
-writeProtNormCompositePlaceholders <- function(ruvMode, qcDir, omicType) {
+writeProtNormCompositePlaceholders <- function(ruvMode, qcDir, omicType, resolveInputsFn = resolveProtNormCompositeFigureInputs) {
   if (!file.exists(file.path(qcDir, paste0(omicType, "_composite_QC_figure.png")))) return(invisible(NULL))
-  inputs <- resolveProtNormCompositeFigureInputs(ruvMode, qcDir)
+  inputs <- resolveInputsFn(ruvMode, qcDir)
   panels <- sub("[)]$", "", unlist(inputs$rowLabels, use.names = FALSE))
   figures <- basename(inputs$plotFiles)
   marked <- !is.na(inputs$plotFiles) & file.exists(paste0(inputs$plotFiles, ".placeholder"))
@@ -778,6 +784,236 @@ diaLimpaPassThroughSource <- function(manager, norm_data) {
   if (manager$current_state %in% c("ruv_covariates", "ruv_corrected", "correlation_filtered") &&
     isSavedWorkflowReference(norm_data$normalization_input_reference)) return(norm_data$normalization_input_reference)
   getDIAStateReference(manager)
+}
+
+# --- KIT-266 (VAL-308, VAL-316): the DIA_LIMPA route's combined QC figure (Figure 1) ---
+# The route's normalisation commits no state, so the classic publication's builder never ran on it and the report described
+# a Figure 1 it did not contain. The figure is built from the stage images in the project's `protein_qc` folder by the
+# classic builder (`generateProtNormCompositeQcFigure`), with the layout of `resolveDiaLimpaCompositeFigureInputs`: two
+# columns (DPC-Quant's estimates; the table after the peptide count filter) after the pass-through, three after the RUV
+# covariates or correction step. Display files only: no state, number or table changes.
+
+#' The between-sample method the route's protein QC stage recorded, for Figure 1's centre caption: the `norm_method` of the
+#' `protein_normalised` state's configuration (the template reads `limpa_norm_method` of the analysis record; both take
+#' an absent method as `"none"`).
+#' @param manager The session owner.
+#' @return The method name; `"none"` when the stage was not run or recorded none.
+#' @noRd
+diaLimpaNormMethod <- function(manager) {
+  if (!inherits(manager, "DIAStateAdapter") || !"protein_normalised" %in% diaStateHistory(manager)) return("none")
+  method <- resolveDIAStateValue(manager$.context, getDIAStateReference(manager, "protein_normalised"))$config$norm_method
+  if (is.character(method) && length(method) == 1L && !is.na(method) && nzchar(method)) method else "none"
+}
+
+#' The saved table Figure 1's left column shows on this route: the DPC-Quant state's reference.
+#' @param manager The session owner.
+#' @return The reference, or NULL when the history has no `protein_dpc_quant` state.
+#' @noRd
+diaLimpaPreNormalisationSource <- function(manager) {
+  if (!"protein_dpc_quant" %in% diaStateHistory(manager)) return(NULL)
+  getDIAStateReference(manager, "protein_dpc_quant")
+}
+
+#' Make the tab's pre-normalisation figures' source the DPC-Quant state (as `diaNormalizationRequest` does for the
+#' classic route): when the persisted source is absent or another table, set it and publish the head.
+#' @param manager The session owner.
+#' @return TRUE when the source was set, so the figures are to be drawn; FALSE when they are current or there is no
+#'   DPC-Quant state.
+#' @noRd
+setDiaLimpaPreNormalisationSource <- function(manager) {
+  reference <- diaLimpaPreNormalisationSource(manager)
+  if (is.null(reference)) return(FALSE)
+  snapshot <- manager$.context$snapshot
+  drawn <- snapshot$qc_sources$pre_normalization
+  if (isSavedWorkflowReference(drawn) && identical(drawn$entity_id, reference$entity_id)) return(FALSE)
+  snapshot$qc_sources$pre_normalization <- reference
+  publishDIAStateHead(manager$.context, snapshot)
+  TRUE
+}
+
+#' Draw the tab's pre-normalisation figures from the DPC-Quant state, in process, on a press that designates the head:
+#' the source is set, the figures are drawn with the tab's own generator and the tab does not draw them again on entry.
+#' @param manager The session owner.
+#' @param normData The tab's state.
+#' @param preQc `function()`, the tab's pre-normalisation figure generator.
+#' @return TRUE when the figures were drawn, invisibly.
+#' @noRd
+drawDiaLimpaPreNormalisationFigures <- function(manager, normData, preQc) {
+  if (!inherits(manager, "DIAStateAdapter")) return(invisible(FALSE))
+  withDIAStateScope(manager, function() {
+    if (!setDiaLimpaPreNormalisationSource(manager)) return(invisible(FALSE))
+    preQc()
+    normData$pre_norm_qc_generated <- TRUE
+    invisible(TRUE)
+  })
+}
+
+#' Whether the persisted source of the left column's images is the DPC-Quant state.
+#' @param manager The session owner.
+#' @return TRUE or FALSE.
+#' @noRd
+diaLimpaLeftColumnCurrent <- function(manager) {
+  expected <- diaLimpaPreNormalisationSource(manager)
+  drawn <- manager$.context$snapshot$qc_sources$pre_normalization
+  !is.null(expected) && isSavedWorkflowReference(drawn) && identical(drawn$entity_id, expected$entity_id)
+}
+
+#' The source check of every limpa build (VAL-316 (1)): when the left column's images are not drawn from the DPC-Quant
+#' state (a session saved by an earlier build, or no DPC-Quant state), the four left cells are a labelled note instead.
+#' The notes are written straight into the project, not through `drawProtNormQcFigure`, so no step notice is signalled
+#' (the report's sentence names the panels).
+#' @param manager The session owner.
+#' @param qc_dir The project's `protein_qc` folder.
+#' @return TRUE when the notes were written, invisibly.
+#' @noRd
+writeDiaLimpaPreNormalisationNotes <- function(manager, qc_dir) {
+  if (is.null(qc_dir) || diaLimpaLeftColumnCurrent(manager)) return(invisible(FALSE))
+  reason <- paste("the figures saved in this session for this column come from a later table, or no saved table from",
+    "before the between-sample normalisation step is available.")
+  for (kind in names(diaQcStageFigureSizes)) {
+    figure <- paste0("pre_norm_", kind, ".png")
+    size <- diaQcStageFigureSizes[[kind]]
+    writeProtNormFigurePlaceholder(file.path(qc_dir, figure), figure, reason, size[[1L]], size[[2L]], limpa = TRUE)
+  }
+  invisible(TRUE)
+}
+
+#' The between-sample method's name in Figure 1's centre caption.
+#' @noRd
+diaLimpaNormMethodName <- function(method) {
+  switch(method, cyclicloess = "cyclic loess", quantile = "quantile", scale = "scale", method)
+}
+
+#' The limpa route's column captions of Figure 1 (drafts; the owner sets the final wording, VAL-41), at most three lines
+#' of thirty characters, broken explicitly.
+#' @param ruvMode `skip` (two columns), `covariates` or `correction`.
+#' @param normMethod The recorded between-sample method.
+#' @return The captions, one per column.
+#' @noRd
+diaLimpaCompositeColumnLabels <- function(ruvMode, normMethod) {
+  centre <- if (identical(normMethod, "none")) "After the peptide count filter\n(no between-sample\nnormalisation applied)" else
+    paste0("After ", diaLimpaNormMethodName(normMethod), " normalisation\nand the peptide count filter")
+  right <- if (identical(ruvMode, "skip")) NULL else if (identical(ruvMode, "correction")) "RUV-III-corrected\n(the data analysed)" else
+    "RUV-III-adjusted\n(for quality control only;\nnot the data analysed)"
+  c("DPC-Quant estimates\n(log2)", centre, right)
+}
+
+#' The layout of the limpa route's combined figure: the classic resolver's, with the limpa captions and the covariates
+#' step's own canonical-correlation image (panel m, only when it exists).
+#' @param ruvMode `skip`, `covariates` or `correction`.
+#' @param qcDir The folder holding the stage images.
+#' @param norm_method The recorded between-sample method.
+#' @return `list(ncol, plotFiles, rowLabels, columnLabels)`, as `resolveProtNormCompositeFigureInputs`.
+#' @noRd
+resolveDiaLimpaCompositeFigureInputs <- function(ruvMode, qcDir, norm_method = "none") {
+  inputs <- resolveProtNormCompositeFigureInputs(ruvMode, qcDir)
+  inputs$columnLabels <- diaLimpaCompositeColumnLabels(ruvMode, norm_method)
+  if (identical(ruvMode, "skip") || is.null(inputs$plotFiles)) return(inputs)
+  cancor <- file.path(qcDir, "ruv_covariates_cancor.png")
+  if (file.exists(cancor)) {
+    inputs$plotFiles[[14L]] <- cancor
+  } else {
+    inputs$plotFiles <- inputs$plotFiles[1:12]
+    inputs$rowLabels$cancor <- NULL
+  }
+  inputs
+}
+
+#' The layout of the limpa figure as a string, for the identities of its files in the store: the mode, the method and (for
+#' the three-column layouts) the canonical-correlation image's content, so that an identity follows the layout and its
+#' captions. It cannot collide with a classic RUV mode (the `limpa` prefix).
+#' @noRd
+diaLimpaCompositeLayoutString <- function(mode, norm_method, qc_dir) {
+  cancor <- file.path(qc_dir, "ruv_covariates_cancor.png")
+  paste("limpa", mode, norm_method, if (!identical(mode, "skip") && file.exists(cancor))
+    digest::digest(file = cancor, algo = "sha256") else "none", sep = "|")
+}
+
+#' The list of replaced panels beside the limpa figure (KIT-259's helper through the limpa layout), written afresh: an
+#' earlier build's list is removed first, since the helper writes only when a panel is replaced.
+#' @noRd
+writeDiaLimpaCompositePlaceholders <- function(mode, qc_dir, omic_type, resolveInputsFn) {
+  unlink(file.path(qc_dir, paste0(omic_type, "_composite_QC_figure.placeholders")))
+  writeProtNormCompositePlaceholders(mode, qc_dir, omic_type, resolveInputsFn = resolveInputsFn)
+}
+
+#' Build the limpa route's combined QC figure in the project's `protein_qc` folder, in the application (the in-process
+#' route, and the managed route's fallback): the source check of the left column, the classic builder through the limpa
+#' layout, then KIT-259's list of replaced panels. Nothing without a project folder or an owner.
+#' @param paths The omic's project paths (`protein_qc_dir`).
+#' @param omic_type The omic, which names the files.
+#' @param ruv_mode `skip` (two columns), `covariates` or `correction`.
+#' @param manager The session owner.
+#' @return NULL, invisibly.
+#' @noRd
+buildDiaLimpaCombinedQcFigure <- function(paths, omic_type, ruv_mode, manager) {
+  qc_dir <- paths$protein_qc_dir
+  if (is.null(qc_dir) || !inherits(manager, "DIAStateAdapter")) return(invisible(NULL))
+  withDIAStateScope(manager, function() {
+    norm_method <- diaLimpaNormMethod(manager)
+    writeDiaLimpaPreNormalisationNotes(manager, qc_dir)
+    resolver <- function(ruvMode, qcDir) resolveDiaLimpaCompositeFigureInputs(ruvMode, qcDir, norm_method)
+    generateProtNormCompositeQcFigure(ruv_mode, qc_dir, omic_type, resolveInputsFn = resolver)
+    writeDiaLimpaCompositePlaceholders(ruv_mode, qc_dir, omic_type, resolver)
+  })
+  invisible(NULL)
+}
+
+#' The managed route's delivery of the limpa figure: the files the worker saved are written into the project (their
+#' identity names the layout and the stage images), then KIT-259's list. When they are not found saved the figure is built
+#' here, as the classic publication does, and the reason is logged: it re-creates the application's memory event the
+#' worker branch removes.
+#' @param manager The session owner.
+#' @param state `list(mode, method, source)`: the layout, the method and the state the action named.
+#' @param paths,omic_type As `buildDiaLimpaCombinedQcFigure`.
+#' @return NULL, invisibly.
+#' @noRd
+deliverDiaLimpaCompositeFigure <- function(manager, state, paths, omic_type) {
+  qc_dir <- paths$protein_qc_dir
+  if (is.null(qc_dir)) return(invisible(NULL))
+  layout <- diaLimpaCompositeLayoutString(state$mode, state$method, qc_dir)
+  if (!writeDIACompositeFigureFiles(manager, state$source, layout, qc_dir, omic_type)) {
+    logger::log_warn(paste("The combined QC figure of the DIA with limpa route was not found saved by the worker",
+      "(identities not found saved); it is built in the application:", layout))
+    return(buildDiaLimpaCombinedQcFigure(paths, omic_type, state$mode, manager))
+  }
+  resolver <- function(ruvMode, qcDir) resolveDiaLimpaCompositeFigureInputs(ruvMode, qcDir, state$method)
+  writeDiaLimpaCompositePlaceholders(state$mode, qc_dir, omic_type, resolver)
+  invisible(NULL)
+}
+
+#' The layout the head has now (the managed composite action reads it when it starts, so a press that waited behind another
+#' reads what the action before it left): three columns after a RUV step that applied RUV (`ruv_covariates`: covariates,
+#' `ruv_corrected`: correction), two otherwise.
+#' @param manager The session owner (in its scope).
+#' @param normData The tab's state (`best_k`).
+#' @return `skip`, `covariates` or `correction`.
+#' @noRd
+diaLimpaCompositeLayout <- function(manager, normData) {
+  applied <- isTRUE(shiny::isolate(normData$best_k) > 0)
+  state <- manager$current_state
+  if (applied && identical(state, "ruv_covariates")) "covariates" else if (applied && identical(state, "ruv_corrected")) "correction" else "skip"
+}
+
+#' Whether a correlation filter about to run on a DIA with limpa project leaves a RUV result behind it: the head, read
+#' before the correlation runs, is a RUV state, and the filter commits `correlation_filtered` after it, so the three-column
+#' figure is rebuilt with two (a first correlation after the pass-through, or after a Reset, rebuilds nothing).
+#' @param manager The session owner.
+#' @return TRUE or FALSE.
+#' @noRd
+protNormLimpaRebuildAtCorrelation <- function(manager) {
+  inherits(manager, "DIAStateAdapter") && identical(manager$workflow_type, "DIA_LIMPA") &&
+    manager$current_state %in% c("ruv_covariates", "ruv_corrected")
+}
+
+#' The markers of the RUV figures' placeholders that a RUV covariates or correction run replaces, removed by exact name
+#' before the run, so a failed earlier run cannot make the list of replaced panels name a drawn panel.
+#' @param paths The omic's project paths (`protein_qc_dir`).
+#' @return The removed paths, invisibly; a condition of class `workflow_figure_unwritten` when one cannot be removed.
+#' @noRd
+removeDiaLimpaRuvMarkers <- function(paths) {
+  names <- paste0(c(paste0("ruv_corrected_", c("pca", "rle", "density", "correlation")), "ruv_covariates_cancor"), ".png.placeholder")
+  removeWorkflowOwnFiles(file.path(paths$protein_qc_dir, names), omicNormGuardTexts()$norm_unremoved)
 }
 
 # --- Correlation result files (#17, #18) ---

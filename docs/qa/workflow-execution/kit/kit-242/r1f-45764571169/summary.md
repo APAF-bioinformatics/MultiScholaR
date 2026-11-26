@@ -1,0 +1,22 @@
+### Tests (head): 16 files; passed 3605, failed 308, errors 0, skipped 0; ok 14, failed 2, timeout 0, crashed 0
+
+| file | passed | failed | errors | skipped | warnings | seconds | status |
+|---|---:|---:|---:|---:|---:|---:|---|
+| test-kit242-normalisation-fallback.R | 571 | 0 | 0 | 0 | 0 | 425.1 | ok |
+| test-omics-module-globals.R | 13 | 1 | 0 | 0 | 0 | 5.9 | failed |
+| test-workflow-omics-worker.R | 265 | 0 | 0 | 0 | 0 | 292.4 | ok |
+| test-module-ci-metab-norm.R | 158 | 0 | 0 | 0 | 0 | 27.3 | ok |
+| test-metab-02w-normalise-between-samples-characterization.R | 18 | 0 | 0 | 0 | 0 | 4.7 | ok |
+| test-kit172-downstream.R | 84 | 0 | 0 | 0 | 0 | 74.5 | ok |
+| test-workflow-lipid-declarations.R | 259 | 0 | 0 | 0 | 0 | 33.9 | ok |
+| test-workflow-metab-declarations.R | 259 | 0 | 0 | 0 | 0 | 35.1 | ok |
+| test-prot-norm-core.R | 1555 | 307 | 0 | 0 | 28 | 909.9 | failed |
+| test-lipid-12b-norm-ruv-helpers-shared.R | 77 | 0 | 0 | 0 | 0 | 5 | ok |
+| test-lipid-12c-ruv-s4-characterization.R | 67 | 0 | 0 | 0 | 0 | 5.7 | ok |
+| test-metab-02y-get-neg-ctrl-metab-anova-characterization.R | 26 | 0 | 0 | 0 | 0 | 4.8 | ok |
+| test-metab-04-ruv-optimization.R | 53 | 0 | 0 | 0 | 0 | 5 | ok |
+| test-metab-norm-standalone-shared.R | 21 | 0 | 0 | 0 | 0 | 4.9 | ok |
+| test-ruv-control-anova-grouping.R | 139 | 0 | 0 | 0 | 0 | 95.7 | ok |
+| test-metab-03a-ruviii-c-varying-characterization.R | 40 | 0 | 0 | 0 | 0 | 5.4 | ok |
+
+**Run outcome: success** (every head file ran to completion; failing expectations, if any, are in the tables)

@@ -268,8 +268,10 @@ restoreProtNormTabState <- function(session, workflowData, normData) {
     normData$correlation_threshold <- metadata$correlation_threshold
     normData$pre_norm_qc_generated <- FALSE
     normData$plot_refresh_trigger <- normData$plot_refresh_trigger + 1L
-    if (!is.null(metadata$normalization_method)) shiny::updateSelectInput(session, "norm_method",
-      selected = metadata$normalization_method)
+    # KIT-216 (I04): the selector is preset only with one of its own choices (a DIA-with-limpa archive states the
+    # protein QC step's method, which the classic selector may not offer).
+    if (isTRUE(metadata$normalization_method %in% omicGuiProteomicsNorm()$panels$between_sample$methods))
+      shiny::updateSelectInput(session, "norm_method", selected = metadata$normalization_method)
     invisible(NULL)
   })
 }

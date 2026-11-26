@@ -1,0 +1,15 @@
+file	exit	seconds
+test-workflow-integration-input.R	0	100.5
+test-workflow-memory-mechanism-member.R	0	7
+test-workflow-native-session.R	0	612.6
+test-workflow-analysis-record.R	0	252.4
+test-kit206-prot-norm-export-guard.R	0	361.8
+test-kit207-summary-head-guard.R	0	332.3
+test-kit172-downstream.R	0	130.8
+test-kit129-run-path.R	124	900.2
+test-workflow-omics-application-reads.R	0	621.4
+test-omics-summary-core.R	0	250.7
+test-omic-summary-module.R	0	273.5
+test-prot-12-summary-module-contracts.R	0	7
+test-prot-12a-summary-module-characterization.R	0	6.8
+test-module-ci-prot-summary.R	0	7.1

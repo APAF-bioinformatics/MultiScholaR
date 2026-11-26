@@ -444,13 +444,17 @@ test_that("KIT-139: internal standards, features seen once and few samples are s
         expect_identical(facts, c(sprintf(texts[["fact_samples"]], 5L, 4L), sprintf(texts[["fact_missing_keep_missing"]], 1L),
             sprintf(texts[["fact_replicates_average"]], "lipidomics_LCMS_Pos", 8L, 4L, 4L),
             sprintf(texts[["fact_standards_drop"]], "lipidomics_LCMS_Pos", 1L),
+            # KIT-260 (VAL-275, OD-4 (a); stored expectation approved by file): the marked rows named per data set.
+            "lipidomics_LCMS_Pos: internal standards marked: itsd1 (ITSD1).",
             sprintf(texts[["fact_replicates_single"]], "proteomics", 5L),
             sprintf(texts[["fact_sparse"]], "proteomics", 1L, 3L, 5L)))
         # KIT-240 r1.4 (AUDIT-KIT-240-impl I02): the rule applied at the defaults, half of the kept samples (5 here,
         # every sample kept as the default keeps missing ones), not "two samples"; the sample table counts the kept samples.
         expect_identical(nrow(preview$aligned$samples), 5L)
         expect_identical(integrationMinObserved(preview$parameters, nrow(preview$aligned$samples)), 3L)
-        expect_match(facts[[6L]], "proteomics: 1 features measured in fewer than 3 of the 5 biological samples", fixed = TRUE)
+        # KIT-260 (coordinator's ruling, 2026-11-26): the fact found by its text, not its position (VAL-275's names line
+        # precedes it), so a later added fact cannot move it.
+        expect_match(facts, "proteomics: 1 features measured in fewer than 3 of the 5 biological samples", fixed = TRUE, all = FALSE)
         expect_false(grepl("two samples", texts[["col_sparse"]], fixed = TRUE))
         expect_true(preview$few_samples)
         expect_match(output$alignment_status$html, sprintf(texts[["few_samples"]], 4L, INTEGRATION_FEW_SAMPLES), fixed = TRUE)

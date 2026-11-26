@@ -303,7 +303,7 @@ test_that("KIT-205 B6 (b, c): the record replay runs the enrichment step under i
                 up_cutoff = 0, down_cutoff = 0, q_cutoff = 0.05, correction_method = "gSCS", enable_organism_filter = FALSE),
             paths))))
     })
-    expect_identical(manager$current_state, "enrichment_completed")
+    expect_identical(manager$current_state, "correlation_filtered") # KIT-216 (VAL-175): the head stays the table
     # (c) the fresh run's step provenance holds the marker.
     expect_identical(manager$.context$snapshot$step_provenance$enrichment_completed$fixed,
         list(enrichment_background = "tested"))
@@ -332,7 +332,7 @@ test_that("KIT-205 B6 (b, c): the record replay runs the enrichment step under i
         list(states = replay$states, seen = seen)
     }
     as_made <- replayWith(record)
-    expect_identical(as_made$states, c("initial", "correlation_filtered", "enrichment_completed"))
+    expect_identical(as_made$states, c("initial", "correlation_filtered")) # KIT-216 (VAL-175)
     expect_gt(length(as_made$seen), 0L)
     expect_identical(unique(as_made$seen), "tested")
     expect_null(getOption("MultiScholaR.enrichment_background"))
@@ -340,7 +340,7 @@ test_that("KIT-205 B6 (b, c): the record replay runs the enrichment step under i
     earlier$steps[[step_at]]$parameters <- Filter(function(p) !identical(p$name, "enrichment_background"),
         earlier$steps[[step_at]]$parameters)
     old <- replayWith(earlier)
-    expect_identical(old$states, c("initial", "correlation_filtered", "enrichment_completed"))
+    expect_identical(old$states, c("initial", "correlation_filtered")) # KIT-216 (VAL-175)
     expect_gt(length(old$seen), 0L)
     expect_identical(unique(old$seen), "all_rows")
     expect_null(getOption("MultiScholaR.enrichment_background"))

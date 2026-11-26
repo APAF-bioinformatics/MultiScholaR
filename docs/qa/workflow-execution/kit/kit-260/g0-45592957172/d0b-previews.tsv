@@ -1,0 +1,14 @@
+class	layout	file	result	detected_format	confidence	is_pattern	id_selected	annotation_selected
+lipid	lipidsearch	ls.txt	ok	lipidsearch	1	^IS_|ISTD|Internal|_IS	LipidName	LipidClass
+lipid	msdial	msdial_positive.tsv	ok	msdial	0.95	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	Peak ID	Name
+lipid	custom	custom.tsv	ok	unknown	0	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	NULL	NULL
+lipid	malformed	malformed.tsv	ok	unknown	0	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	NULL	NULL
+lipid	progenesis	progenesis_layout.tsv	ok	progenesis	1	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	NULL	NULL
+lipid	xcms	xcms_layout.tsv	ok	xcms	1	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	NULL	NULL
+lipid	compound_discoverer	cd_layout.tsv	ok	compound_discoverer	1	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	NULL	NULL
+metab	msdial	msdial_positive.tsv	ok	msdial	0.95	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	Peak ID	Name
+metab	custom	custom.tsv	ok	unknown	0	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	NULL	NULL
+metab	malformed	malformed.tsv	ok	unknown	0	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	NULL	NULL
+metab	progenesis	progenesis_layout.tsv	ok	progenesis	1	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	NULL	NULL
+metab	xcms	xcms_layout.tsv	ok	xcms	1	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	NULL	NULL
+metab	compound_discoverer	cd_layout.tsv	ok	compound_discoverer	1	^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:	NULL	NULL

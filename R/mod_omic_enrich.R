@@ -616,6 +616,26 @@ selectOmicEnrichTab <- function(session, selected, tab, workflowData, config) {
   invisible(FALSE)
 }
 
+#' KIT-216 item 13: whether the DA manifest the tab holds is still the bus's and, on a reference-state owner, the head
+#' table's current DA (its source is the head state's reference and it is the head's DA manifest), the currency rule of
+#' `diaEnrichmentProduct`. A read error refuses.
+#' @noRd
+omicEnrichManifestCurrent <- function(workflowData, held) {
+  bus <- workflowData$da_analysis_results_list
+  if (!isDIAResultManifest(bus) || !isDIAResultManifest(held) || !identical(bus$source, held$source)) return(FALSE)
+  manager <- workflowData$state_manager
+  if (!usesDIAReferenceStates(manager)) return(TRUE)
+  tryCatch(withWorkflowStateScope(manager, function() {
+    snapshot <- manager$.context$snapshot
+    head <- getDIACurrentReference(manager)
+    !is.null(head) && identical(held$source$entity_id, head$entity_id) && isSavedWorkflowReference(snapshot$da_results) &&
+      identical(resolveDIAStateValue(manager$.context, snapshot$da_results)$source, held$source)
+  }), error = function(e) {
+    logger::log_warn(logger::skip_formatter(paste("The enrichment's DA could not be read:", conditionMessage(e))))
+    FALSE
+  })
+}
+
 #' The Run (mod_prot_enrich_observer_helpers.R:1-162 at 6129b546, the manifest path): the working notice, the core's run
 #' on the manifest the tab holds, inside the progress, then the tab's values from the core's returned list and the
 #' completion notice; on failure the error notice. The tab keeps its manifest (F107-01); the source reference is held
@@ -630,6 +650,12 @@ runOmicEnrichAnalysis <- function(input, tab, workflowData, experimentPaths, con
     # KIT-116 (AX-11): the Run stops before anything is written, as since KIT-107, and now says why.
     shiny::showNotification("Enter the organism's taxonomy ID before running the enrichment analysis.",
       type = "warning", duration = 8)
+    return(invisible(FALSE))
+  }
+  # KIT-216 item 13 (KIT-212 F3): the tab keeps its DA manifest after the DA tab clears it; the Run is refused when that
+  # manifest is no longer the current DA of the head's table.
+  if (!omicEnrichManifestCurrent(workflowData, tab$da_results_data)) {
+    shiny::showNotification(protSessionAfterEnrichmentTexts()$enrichment_da_stale, type = "warning", duration = NULL)
     return(invisible(FALSE))
   }
   shiny::showNotification("Running enrichment analysis...", id = "enrichment_working", duration = NULL)

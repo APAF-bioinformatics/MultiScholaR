@@ -384,7 +384,14 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared"), supp
             none <- factors_in_model && identical(parameters$ruv_design, "none")
             if (none && !identical(parameters$ruv_mode, "skip"))
                 cli::cli_abort("the design none runs with the skip mode only", class = "workflow_execution_invalid")
-            normalized <- normaliseBetweenSamplesFn(object, normalisation_method = parameters$norm_method)
+            # KIT-242 Part C (VAL-373 Q-C): a sample with no value leaves the design; the samples removed are carried in
+            # the value, so that the record and the tab name them (the limpa route's capture).
+            removed <- character()
+            normalized <- withCallingHandlers(normaliseBetweenSamplesFn(object, normalisation_method = parameters$norm_method),
+                omics_normalisation_sample_removed = function(w) {
+                    removed <<- unique(c(removed, w$sample))
+                    invokeRestart("muffleWarning")
+                })
             normalized_reference <- store$checkpoint(normalized, "normalized-science")
             object <- NULL
             if (parameters$ruv_mode == "skip") {
@@ -511,6 +518,8 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared"), supp
                 best_k = best_k, controls = controls, percentage = best_percentage,
                 parameters = parameters[c("norm_method", "ruv_mode", "auto_percentage_min", "auto_percentage_max",
                     "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k", "grouping")])
+            # Only when a sample was removed, so that every other product is as before.
+            if (length(removed)) value$samples_removed <- removed
             # Audit F-08: a skipped RUV step applied no design, so none is recorded on its product; the design none is
             # recorded as itself (KIT-129 integration item 2).
             if (none) value$parameters[c("ruv_design", "ruv_k_rule", "ruv_k_seed")] <- parameters[c("ruv_design", "ruv_k_rule", "ruv_k_seed")]
@@ -522,8 +531,9 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared"), supp
             value
         },
         # KIT-187 (VAL-71, D2): the clean-up after RUV decides by counts; a recorded step without this marker replays
-        # with the earlier rounded-percentage comparison (`workflowReplayRuleMarkers`).
-        fixed = list(missing_value_comparison = "counts"))
+        # with the earlier rounded-percentage comparison (`workflowReplayRuleMarkers`). KIT-242 Part C (VAL-242 OD-4 (c)):
+        # the normalisation's handling of a sample with no value, likewise.
+        fixed = list(missing_value_comparison = "counts", protein_normalisation_fallback = "remove"))
 }
 
 #' Today's normalisation declaration takes none of the new design's parameters (KIT-126 audit F-06, KIT-129 B1): its
@@ -722,7 +732,8 @@ resolveDIARuvRunDescription <- function(manager) {
     if (!usesDIAReferenceStates(manager)) return(NULL)
     states <- unique(c(manager$current_state, rev(manager$getHistory())))
     for (state in intersect(states, c("ruv_covariates", "correlation_filtered", "ruv_corrected", "normalized"))) {
-        record <- tryCatch(readDIAStateMetadata(manager, getDIAStateReference(manager, state))$data, error = function(e) NULL)
+        metadata <- tryCatch(readDIAStateMetadata(manager, getDIAStateReference(manager, state)), error = function(e) NULL)
+        record <- metadata$data
         product <- record$products$ruv_covariates_science %||% record$products$normalization_science
         if (is.null(product)) next
         value <- hydrateSavedWorkflowEntity(manager$.context$store, product)$value
@@ -730,9 +741,36 @@ resolveDIARuvRunDescription <- function(manager) {
         # KIT-129 (audit F2): a declared-rule run that applied no RUV (a count of 0, or a refused automatic k) is
         # described as such, whatever mode its parameters asked for.
         ruv_mode <- if (identical(value$ruv_applied, FALSE)) "none" else parameters$ruv_mode
-        return(list(ruv_mode = ruv_mode, grouping = parameters$grouping %||% parameters$ruv_grouping_variable))
+        # KIT-216 (I04): the normalisation method of the same run (the product's parameters, else the state's config).
+        return(list(ruv_mode = ruv_mode, grouping = parameters$grouping %||% parameters$ruv_grouping_variable,
+            norm_method = parameters$norm_method %||% metadata$config$norm_method))
     }
     NULL
+}
+
+#' KIT-216 (I04, P08, E-5): the between-sample normalisation method of the run, for the session file. On DIA, LFQ and
+#' TMT the method of the normalisation product `resolveDIARuvRunDescription` resolves (`run`), else that state's config;
+#' on DIA with limpa the protein QC step `protein_normalised`'s method when it is in the active history, else "none" once
+#' the route has a normalised table; the tab's selector only before any normalisation.
+#' @param manager The session's owner.
+#' @param run `resolveDIARuvRunDescription(manager)`.
+#' @param selector The tab's selector value.
+#' @return A method name, or `selector`.
+#' @noRd
+resolveDIANormalisationMethod <- function(manager, run, selector) {
+    if (!usesDIAReferenceStates(manager)) return(selector)
+    history <- diaStateHistory(manager)
+    if (identical(manager$workflow_type, "DIA_LIMPA")) {
+        if ("protein_normalised" %in% history) {
+            config <- tryCatch(readDIAStateMetadata(manager, getDIAStateReference(manager, "protein_normalised"))$config,
+                error = function(e) NULL)
+            method <- config$outcomes$norm_method %||% config$norm_method
+            if (!is.null(method)) return(method)
+        }
+        normalised <- any(c("ruv_covariates", "ruv_corrected", "correlation_filtered") %in% history)
+        return(if (normalised) "none" else selector)
+    }
+    run$norm_method %||% selector
 }
 
 #' The in-process normalisation: the gate, the request, the compute half, the commit and the publication half.
@@ -1033,6 +1071,11 @@ diaNormalizationCommit <- function(manager, settings, run) {
     config <- list(norm_method = settings$norm_method, ruv_mode = settings$ruv_mode,
         ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage)
     if (skipped) config$ruv_applied <- FALSE
+    # KIT-242 Part C (VAL-373 Q-C): the samples removed from the design for having no value, in the record's outcomes.
+    if (length(saved$samples_removed)) {
+        config$samples_removed <- saved$samples_removed
+        config$outcomes <- list(samples_removed = saved$samples_removed)
+    }
     # KIT-129 seventh pass item 2: a new design whose k rule gave no factor (a count of 0) keeps the state's name and its
     # normalised matrix, and records that no RUV was applied (the integration input then says not corrected).
     if (!is.null(saved$parameters$ruv_design) && identical(saved$ruv_result$ruv_applied, FALSE)) config$ruv_applied <- FALSE
@@ -1058,6 +1101,11 @@ publishDIAReferenceNormalization <- function(manager, settings, run, workflow, n
     norm_data$normalized_protein_obj <- saved$normalized
     norm_data$ruv_normalized_obj <- saved$final
     norm_data$best_k <- saved$best_k
+    # KIT-242 Part C (VAL-373 Q-C; VAL-383): the samples removed from the design, for the tab's notice. The field exists
+    # only once a run removed a sample (then cleared by a later run that removes none), so other runs' data are as before.
+    if (length(saved$samples_removed) || !is.null(shiny::isolate(norm_data$samples_removed))) {
+        norm_data$samples_removed <- saved$samples_removed
+    }
     norm_data$control_genes_index <- saved$controls
     norm_data$ruv_optimization_result <- saved$ruv_result
     workflow$ruv_optimization_result <- saved$ruv_result
@@ -1831,6 +1879,46 @@ publishDIAReferenceRuvCovariates <- function(manager, settings, run, workflow, n
     accepted
 }
 
+#' KIT-273 (VAL-317 (2), VAL-332): what the differential analysis used, delivered with the results package on DIA with
+#' limpa. Decided by the store's DA record (`manifest$model`: its model, `ruv_mode` and `w_terms`), and only when that
+#' analysis is current (`workflowDaResultStatus`); the tables are read from the record's source state, so a file left in the
+#' protein QC folder by an earlier run is never delivered. RUV-III correction: the source's protein table (the corrected
+#' matrix the model fitted) as `Publication_tables/ruv_corrected_results.tsv`. RUV-III factors as covariates: the source's
+#' whole design (study columns and W1..Wk) as `Study_report/design_matrix_with_ruv_factors.tab`. No analysis, a stale
+#' analysis, a skipped RUV step or a design that applied no RUV: nothing. The names are drafts for the wording pass.
+#' @param manager The reference-state owner (Copy reads it from the active scope).
+#' @param directory The results summary folder; its `Publication_tables` and `Study_report` folders exist.
+#' @return NULL when nothing is delivered; else `list(name, display_name, console)` and, when the table could not be
+#'   decided or written, the failure's text as `error` (nothing escapes: Copy records it as a failed copy).
+#' @noRd
+writeDIARuvDeliveryTables <- function(manager, directory) {
+    entry <- list(name = "ruv_delivery", display_name = "RUV-III delivery table")
+    tryCatch(withDIAStateScope(manager, function() {
+        if (!identical(workflowDaResultStatus(manager), "current")) return(NULL)
+        context <- manager$.context
+        manifest <- resolveWorkflowStateValue(context, context$snapshot$da_results)
+        model <- manifest$model
+        if (!identical(model$model, "dpcDE")) return(NULL)
+        if (identical(model$ruv_mode, "correction")) {
+            entry <<- list(name = "Publication_tables/ruv_corrected_results.tsv", display_name = "RUV-III Corrected Results TSV",
+                field = "protein_quant_table", console = paste0("COPY: DIA with limpa, RUV-III correction: the corrected matrix ",
+                "the analysis used is delivered as Publication_tables/ruv_corrected_results.tsv"))
+        } else if (length(model$w_terms) > 0L) {
+            entry <<- list(name = "Study_report/design_matrix_with_ruv_factors.tab", display_name = "Design Matrix with RUV-III Factors",
+                field = "design_matrix", console = paste0("COPY: DIA with limpa, RUV-III factors as covariates: the design with ",
+                "the factors the analysis used is delivered as Study_report/design_matrix_with_ruv_factors.tab"))
+        } else {
+            return(NULL)
+        }
+        components <- readDIAStateMetadata(manager, manifest$source)$data$components
+        writeDIADesignTable(manager, components[[entry$field]], file.path(directory, entry$name), vroom::vroom_write)
+        entry
+    }), error = function(error) {
+        logger::log_warn(logger::skip_formatter(paste("The RUV-III delivery table could not be written:", conditionMessage(error))))
+        c(entry, list(error = conditionMessage(error)))
+    })
+}
+
 #' Apply, skip or reapply Pearson filtering from the original saved population.
 #' @param workflow,norm_data,paths Existing module owners and publication paths.
 #' @param threshold,skipped User filtering decision.
@@ -2066,10 +2154,12 @@ diaQcStageFigureSizes <- list(pca = c(8, 6), rle = c(10, 6), density = c(8, 6), 
 #' The QC figures action's parameters: the aesthetics the tab draws with, and which figures.
 #' @param aesthetics `list(color_var, shape_var)`.
 #' @param figures `stage` (the four figures of a stage, with their images), `final_pca` (the correlation tab's PCA,
-#'   which the tab draws from the saved product; no image) or `composite` (the normalisation's composite QC figure, its
-#'   three files; `saveWorkflowDiaCompositeFigure`).
-#' @param composite For `composite` only: `list(product, ruv_mode)`, the entity id of the normalisation run's product
-#'   and the run's RUV mode.
+#'   which the tab draws from the saved product; no image), `composite` (the normalisation's composite QC figure, its
+#'   three files; `saveWorkflowDiaCompositeFigure`) or `limpa_composite` (the DIA with limpa route's combined figure,
+#'   built from the project's stage images; `saveWorkflowDiaLimpaCompositeFigure`).
+#' @param composite For `composite`: `list(product, ruv_mode)`, the entity id of the normalisation run's product
+#'   and the run's RUV mode. For `limpa_composite`: `list(ruv_mode, norm_method)`, the layout (`skip`, `covariates` or
+#'   `correction`) and the recorded between-sample method.
 #' @return The parameters.
 #' @noRd
 diaQcFiguresParameters <- function(aesthetics, figures = "stage", composite = NULL) {
@@ -2097,8 +2187,8 @@ indexWorkflowHeadProducts <- function(manager) {
 computeWorkflowDiaQcFiguresAction <- function(manager, request, variant) {
     source <- request$input_references$state
     parameters <- request$parameters
-    if (!isTRUE(parameters$figures %in% c("stage", "final_pca", "composite")))
-        cli::cli_abort("the QC figures must be stage, final_pca or composite", class = "workflow_operation_parameters")
+    if (!isTRUE(parameters$figures %in% c("stage", "final_pca", "composite", "limpa_composite")))
+        cli::cli_abort("the QC figures must be stage, final_pca, composite or limpa_composite", class = "workflow_operation_parameters")
     aesthetics <- list(color_var = parameters$color_variable, shape_var = parameters$shape_variable)
     plot <- function(kind) resolveDIAReferenceQcPlot(source, aesthetics, kind, buildProtNormQcPlotProduct,
         plotPca, plotRle, buildProtNormDensityPlot, buildProtNormCorrelationPlot)
@@ -2106,6 +2196,8 @@ computeWorkflowDiaQcFiguresAction <- function(manager, request, variant) {
         plot("pca")
     } else if (identical(parameters$figures, "composite")) {
         saveWorkflowDiaCompositeFigure(manager, request, aesthetics)
+    } else if (identical(parameters$figures, "limpa_composite")) {
+        saveWorkflowDiaLimpaCompositeFigure(manager, request)
     } else {
         # KIT-131: in a worker, not under its request-owned temporary folder (on Windows past 259 characters).
         directory <- tempfile("dia-qc-figures-", tmpdir = workflowShortScratchRoot())
@@ -2148,8 +2240,9 @@ diaCompositeFigureMediaTypes <- c(png = "image/png", pdf = "application/pdf", rd
 #' worker computes the identities on the directory it builds the figure in, the application on the publication's
 #' staged directory.
 #' @param manager The session owner.
-#' @param product The normalisation run's product reference.
-#' @param ruv_mode The run's RUV mode.
+#' @param product The normalisation run's product reference (the DIA with limpa figure: the state reference the action
+#'   names, KIT-266).
+#' @param ruv_mode The run's RUV mode (the DIA with limpa figure: its layout string, `diaLimpaCompositeLayoutString`).
 #' @param qc_dir The directory that holds the stage images.
 #' @return The identities, named by kind (`diaCompositeFigureMediaTypes`).
 #' @noRd
@@ -2182,6 +2275,7 @@ diaCompositeFigureSaved <- function(manager, identity) {
 #' @return NULL, invisibly.
 #' @noRd
 saveWorkflowDiaCompositeFigure <- function(manager, request, aesthetics) {
+    # KIT-266: the DIA with limpa route's twin is `saveWorkflowDiaLimpaCompositeFigure` (it has no normalisation product).
     store <- manager$.context$store
     parameters <- request$parameters
     product <- manager$.context$snapshot$products[[parameters$product]]
@@ -2227,12 +2321,60 @@ saveWorkflowDiaCompositeFigure <- function(manager, request, aesthetics) {
     invisible(NULL)
 }
 
+#' The DIA with limpa route's combined QC figure on the worker (the `limpa_composite` figures of
+#' `normalization-qc-figures`; KIT-266, the memory rule of VAL-316: the build is 0.9 GiB in the application, measured by
+#' G0). A SIBLING of `saveWorkflowDiaCompositeFigure`, which is left as it is: its body reads the classic run's product,
+#' which this route does not have. The stage images are in the project already (the pass-through's, the covariates
+#' publication's and the left column's, written before this action), so the worker copies from `protein_qc_dir` every file the
+#' identity digests, and the canonical-correlation image, into a short temporary folder, runs the classic builder there through the limpa
+#' layout, and saves the three files as rendered assets rooted on the request's input state. The application's delivery
+#' (`deliverDiaLimpaCompositeFigure`) writes their bytes and builds in the application only if they are not found saved.
+#' With no project folder nothing is saved (the classic action reads the published pre images from the project the same
+#' way). A figure already saved for these images and this layout is not built again.
+#' @param manager The worker's owner.
+#' @param request The request: the input state, `parameters$ruv_mode` (the layout) and `parameters$norm_method`.
+#' @return NULL, invisibly.
+#' @noRd
+saveWorkflowDiaLimpaCompositeFigure <- function(manager, request) {
+    # KIT-266: the classic route's twin is `saveWorkflowDiaCompositeFigure`.
+    parameters <- request$parameters
+    source <- request$input_references$state
+    published <- workflowRequestExperimentPaths(request)$protein_qc_dir
+    if (is.null(published)) return(invisible(NULL))
+    directory <- tempfile("dia-qc-composite-", tmpdir = workflowShortScratchRoot())
+    dir.create(directory)
+    on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+    stages <- list.files(published, pattern = "^(pre_norm|post_norm|ruv_corrected)_(pca|density|rle|correlation)[.]png$", full.names = TRUE)
+    cancor <- file.path(published, "ruv_covariates_cancor.png")
+    file.copy(c(stages, if (file.exists(cancor)) cancor), directory)
+    layout <- diaLimpaCompositeLayoutString(parameters$ruv_mode, parameters$norm_method, directory)
+    identities <- diaCompositeFigureIdentities(manager, source, layout, directory)
+    absent <- names(identities)[!vapply(identities, function(identity) diaCompositeFigureSaved(manager, identity), NA)]
+    if (!length(absent)) return(invisible(NULL))
+    omic_type <- workflowActionSpec(request$operation)$omic_type
+    generateProtNormCompositeQcFigure(parameters$ruv_mode, directory, omic_type, resolveInputsFn = function(ruvMode, qcDir)
+        resolveDiaLimpaCompositeFigureInputs(ruvMode, qcDir, parameters$norm_method))
+    files <- stats::setNames(file.path(directory, paste0(omic_type, "_composite_QC_figure.", names(identities))), names(identities))
+    # The builder reports its own failure and leaves no file; nothing is saved, and the application builds.
+    if (!all(file.exists(files))) return(invisible(NULL))
+    dimensions <- readBin(readBin(files[["png"]], "raw", n = 24L)[17:24], "integer", n = 2L, size = 4L, endian = "big")
+    for (kind in absent) {
+        asset <- newSavedWorkflowRenderedAsset(readBin(files[[kind]], "raw", n = file.size(files[[kind]])),
+            diaCompositeFigureMediaTypes[[kind]], dimensions)
+        reference <- saveWorkflowConsumerEntity(manager$.context$store, asset, basename(tempfile("dia-qc-composite-")),
+            identities[[kind]], "rendered_asset")
+        rootDIAProduct(manager, reference, list(source))
+    }
+    invisible(NULL)
+}
+
 #' Write the composite QC figure's files from the store into a QC directory, under the builder's names
 #' (`generateProtNormCompositeQcFigure`), when all three are saved for the stage images that are there.
 #' @param manager The session owner.
-#' @param product The normalisation run's product reference.
-#' @param ruv_mode The run's RUV mode.
-#' @param qc_dir The publication's staged QC directory.
+#' @param product The normalisation run's product reference (the DIA with limpa figure: the state reference the action
+#'   names, KIT-266).
+#' @param ruv_mode The run's RUV mode (the DIA with limpa figure: its layout string, `diaLimpaCompositeLayoutString`).
+#' @param qc_dir The publication's staged QC directory (the DIA with limpa figure: the project's `protein_qc` folder).
 #' @param omic_type The omic, which names the files.
 #' @return TRUE when the files were written; FALSE when one is not saved (nothing is written).
 #' @noRd

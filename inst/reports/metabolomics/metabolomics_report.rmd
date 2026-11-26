@@ -414,6 +414,9 @@ ExtractStudyParametersNew <- function(study_params) {
     itsd_aggregation = itsd_info$"Aggregation" %||% NA,
     itsd_removed = parse_yes_no(itsd_info$"ITSD Removed After Normalization", FALSE),
     itsd_features_per_assay = itsd_info$"ITSD Features Per Assay" %||% NA,
+    # KIT-260 (OD-3 (a)): the note the study-parameters file carries when the stored pattern matched names through
+    # the alternatives the corrected MS-DIAL default removed.
+    itsd_note = itsd_info$"Note" %||% NA,
 
     # Log Transformation
     log_transform_applied = parse_yes_no(log_transform_info$"Applied", TRUE),
@@ -526,10 +529,16 @@ FormatMethodDetails <- function(numbers) {
       )
     }
 
+    itsd_note_text <- if (!is.null(numbers$itsd_note) && !is.na(numbers$itsd_note) && nzchar(numbers$itsd_note)) {
+      paste0(" ", numbers$itsd_note)
+    } else {
+      ""
+    }
+
     glue::glue(
       "Internal standard (ITSD) normalization was applied using the ",
       "{itsd_method} method with {itsd_agg} aggregation across ITSD features. ",
-      "{removal_text}{itsd_feature_details}"
+      "{removal_text}{itsd_feature_details}{itsd_note_text}"
     )
   } else {
     "Internal standard normalization was not applied."

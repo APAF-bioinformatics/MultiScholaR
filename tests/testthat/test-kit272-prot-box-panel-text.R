@@ -220,7 +220,11 @@ for (name in k272Names) {
         expect_false(is.null(k272Chunk(file, "QC_metrics_placeholders")))
         skip_if(is.null(k272Chunk(file, "QC_metrics_placeholders")))
         # The chunk prints the sentence between blank lines (`cat("\n\n", text, "\n\n")`): the sentence is what is compared.
-        expect_identical(trimws(k272Placeholder(file, "d\tpre_norm_density")), k272PlaceholderSentence)
+        # KIT-266 (declared edit, VAL-308: its figure's stage words): the limpa template's first column is DPC-Quant's estimates, so
+        # its sentence names that table where the other three name "after log2 transformation"; the label of what d plots is KIT-272's.
+        expected <- if (identical(name, "DIANN_limpa")) sub("after log2 transformation", "of DPC-Quant's protein estimates",
+            k272PlaceholderSentence, fixed = TRUE) else k272PlaceholderSentence
+        expect_identical(trimws(k272Placeholder(file, "d\tpre_norm_density")), expected)
     })
 
     # --- T4: no template carries the old words anywhere ------------------------------------------------------------

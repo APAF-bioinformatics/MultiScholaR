@@ -178,7 +178,8 @@ omicImportAuxInputs <- function(ns, import) {
                     placeholder = "e.g., ^IS_|_d[0-9]+$|ISTD"),
                 import, "is_pattern"
             ),
-            shiny::helpText("Regular expression to identify internal standards")
+            # KIT-260 (OD-2 (b)): what a match does, where it is matched, and that the match is case-sensitive.
+            shiny::helpText(omicGuiItsdTexts()[["import_help"]])
         )
     )
     unname(inputs[import$aux_inputs])

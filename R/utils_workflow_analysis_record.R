@@ -442,6 +442,10 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     context <- manager$.context
     snapshot <- context$snapshot
     history <- unlist(snapshot$state_history)
+    # KIT-216 (VAL-175): the current enrichment product, kept outside the history, is the last step, as when it was the
+    # last history step; its input is the table it was made from. Its build joins the software block's builds.
+    product <- diaEnrichmentProduct(manager)
+    if (!is.null(product) && !product$state %in% history) history <- c(history, product$state)
     shipped <- readWorkflowShippedDefaults()
     defaults_path <- system.file("config", "config.ini", package = "MultiScholaR")
     installed_defaults <- if (nzchar(defaults_path)) digest::digest(file = defaults_path, algo = "sha256") else NA_character_
@@ -492,6 +496,7 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
         parameters <- workflowRecordIntensityFilterEarlier(operation, parameters)
         previous <- record$previous_state
         input <- if (is.character(previous) && length(previous) == 1L && !is.na(previous)) snapshot$states[[previous]]$entity_id else NULL
+        if (!is.null(product) && identical(state, product$state)) input <- product$source$entity_id
         products <- lapply(unname(record$data$products %||% list()), function(product) {
             if (!isSavedWorkflowReference(product)) return(NULL)
             list(entity_id = product$entity_id, kind = product$kind,
@@ -570,8 +575,12 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
             # KIT-076: a v2 manifest is keyed by contrast, one entry per contrast and assay; a v1 entry keeps its reading
             # (the omics v1 manifests put the assay names under `contrast`).
             results = if (identical(output$version, 2L)) unlist(lapply(names(manifest$results), function(name) {
-                lapply(manifest$results[[name]]$assays, function(entry) list(contrast = name, assay = entry$assay,
-                    entity_id = entry$tables[[long_table]]$entity_id %||% NA_character_, rows = entry$rows %||% NA_integer_))
+                lapply(manifest$results[[name]]$assays, function(entry) c(list(contrast = name, assay = entry$assay,
+                    entity_id = entry$tables[[long_table]]$entity_id %||% NA_character_, rows = entry$rows %||% NA_integer_),
+                    # KIT-242 (outcome 7): the lipid and metabolite entries name the FDR method per comparison and assay, by
+                    # proteomics' rule (`workflowRecordDaFdrMethod`), from the contrast's q-value fallbacks.
+                    if (da_operation %in% c("lipid_da_contrast", "metab_da_contrast")) workflowRecordDaFdrMethod("DA-contrast-output",
+                        list(qvalue_warnings = manifest$results[[name]]$qvalue_warnings[[entry$assay]]))))
             }), recursive = FALSE, use.names = FALSE) else lapply(names(manifest$results), function(name) c(list(contrast = name,
                 entity_id = manifest$results[[name]]$tables[[long_table]]$entity_id %||% NA_character_,
                 rows = manifest$results[[name]]$rows %||% NA_integer_),
@@ -756,7 +765,25 @@ workflowReplayRuleMarkers <- list(
     # made before pooled the decision ("design_pooled": the column left only the assay where the sample failed, the design
     # lost the sample if it failed in any assay).
     correlation_exclusion = list(option = "MultiScholaR.correlation_exclusion", current = "within_assay",
-        earlier = "design_pooled"))
+        earlier = "design_pooled"),
+    # KIT-242 (VAL-242 OD-1 (c), OD-4 (c)): lipid and metabolite between-sample normalisation leaves a sample with no value
+    # out of the method and keeps it empty in that assay only, and stops on a method failure or a malformed assay
+    # ("exclude"); records made before skipped such an assay with a warning ("warn").
+    normalisation_fallback = list(option = "MultiScholaR.normalisation_fallback", current = "exclude", earlier = "warn"),
+    # KIT-242 Part C: proteomics between-sample normalisation removes a sample with no value from the protein table, the
+    # DPC EList and the design ("remove"); records made before kept it, so scale emptied the whole table ("keep").
+    protein_normalisation_fallback = list(option = "MultiScholaR.protein_normalisation_fallback", current = "remove",
+        earlier = "keep"),
+    # KIT-242 (OD-4 (c)) and KIT-260 (VAL-276): one marker for both tickets' internal-standard fields. A step recorded with
+    # it ("per_assay") writes the per-assay fields (KIT-260: the rows used, their identifier column and the rows matched
+    # through the removed alternatives, in the ITSD product); a record made before replays with the earlier ITSD product
+    # ("applied_flag": none of these fields), so that it replays exactly. Same name, option and tokens as KIT-242's row.
+    itsd_outcome = list(option = "MultiScholaR.itsd_outcome", current = "per_assay", earlier = "applied_flag"),
+    # KIT-242 (VAL-242 OD-1 (c), Q6.1, Q6.2 (c), OD-4 (c); VAL-290): lipid and metabolite RUV (legacy and declared) leaves a
+    # sample or feature with no value out of the search and the correction and puts it back as missing, keeps an assay
+    # with no usable controls or no supported number of factors without RUV, and stops on a failed computation
+    # ("by_cause"); records made before dropped an assay whose correction failed ("drop").
+    ruv_fallback = list(option = "MultiScholaR.ruv_fallback", current = "by_cause", earlier = "drop"))
 
 #' Whether TREAT takes the moderated test's trend and robust settings (KIT-201, VAL-131): TRUE under the current rule,
 #' FALSE only while a DA recorded before the change replays (`workflowReplayRuleMarkers$treat_moderation`).
@@ -1127,8 +1154,12 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             withr::with_options(workflowReplayRuleOptions(step, workflowOperationEntry("enrichment")$declaration),
                 withWorkflowStateScope(manager, function() replayWorkflowEnrichmentStep(manager, step, parameters,
                     da_manifest, contrasts, paths, scratch, recorded_resources = record$external_resources)))
-            if (!identical(manager$current_state, step$state))
-                cli::cli_abort("replayed step {.val {step$state}} committed {.val {manager$current_state}}", class = "workflow_replay_invalid")
+            # KIT-216 (VAL-175, P01): the enrichment is a product of the DA's table; the head stays that table. A record
+            # saved before (the enrichment its last history step) and one saved after replay through this same check.
+            if (!identical(getDIACurrentReference(manager)$entity_id, da_manifest$source$entity_id) ||
+                is.null(diaEnrichmentProduct(manager)))
+                cli::cli_abort("replayed step {.val {step$state}} left no current enrichment of the DA's table (head {.val {manager$current_state}})",
+                    class = "workflow_replay_invalid")
             if (is.function(on_step)) on_step(step, manager)
         }
     }
