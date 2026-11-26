@@ -1,0 +1,418 @@
+KIT277DIAG3 B3_before_save export_pending_is_null =  logi TRUE 
+KIT277DIAG3 B3_before_save export_pending =  NULL 
+KIT277DIAG3 B3_before_save head_entity =  chr "1c1b2fbcd209a5c278260072f687b2f0d7f728ea51a0e7757176444e2623e248" 
+KIT277DIAG3 B3_before_save owned_export_generation =  chr "94cad2864f88a02440ba822c6a83b7a4bcc13084653854538a8ca2a995929b2f" 
+KIT277DIAG3 B3_before_save owned_generation_equals_head =  logi FALSE 
+KIT277DIAG3 B3_before_save runner = List of 2  $ session_application_is_null: logi TRUE  $ class                      : chr "NULL" 
+KIT277DIAG3 B3_before_save archive_members = List of 2  $ n         : int 505  $ da_members: chr(0)  
+KIT277DIAG3 B3 refresh called | early return expected = FALSE | owned generation = 94cad2864f88a02440ba822c6a83b7a4bcc13084653854538a8ca2a995929b2f | head = 1c1b2fbcd209a5c278260072f687b2f0d7f728ea51a0e7757176444e2623e248 
+KIT277DIAG3 B3 runDIANativeSessionExport called 
+KIT277DIAG3 B3 export ERROR class = saved_entity_corrupt/rlang_error/error/condition | call = workflowTableFileIdentity(path) | message = saved table changed during read 
+KIT277DIAG3 B3 refresh ERROR class = saved_entity_corrupt/rlang_error/error/condition | call = workflowTableFileIdentity(path) | message = saved table changed during read 
+KIT277DIAG3 B3 save console | SESSION SUMMARY: Starting workflow args save process 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Starting parameter extraction 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Extracting parameters from S4 @args slot 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Found 29 function groups in S4 @args 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'globalParameters' has 5 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'srlQvalueProteotypicPeptideClean' has 14 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'peptideIntensityFiltering' has 14 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'filterMinNumPeptidesPerSample' has 8 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'removePeptidesWithOnlyOneReplicate' has 8 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'peptideMissingValueImputation' has 7 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'filterMinNumPeptidesPerProtein' has 5 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'chooseBestProteinAccession' has 2 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'limpaDpcQuant' has 3 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'limpaProteinNormalisation' has 1 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'ruvCovariates' has 9 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'removeRowsWithMissingValuesPercent' has 4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'removeProteinsWithOnlyOneReplicate' has 2 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'metaboliteIntensityFiltering' has 4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'proteinTechRepCorrelation' has 2 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'pearsonCorForSamplePairs' has 1 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'plotRle' has 1 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'normaliseBetweenSamples' has 1 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'ruvIII_C_Varying' has 2 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'deAnalysisParameters' has 9 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'rollUpPrecursorToPeptide' has 2 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'rollupFn' has 1 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'chooseBestProteinAccessionFn' has 5 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'protein_accession_cleanup' has 4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'removeProteinsWithOnlyOneReplicateFn' has 2 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'normaliseBetweenSamplesFn' has 1 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'filterSamplesFn' has 2 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'differentialAbundanceAnalysis' has 10 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Function 'daAnalysisUI' has 4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Fallback config_list has 21 sections 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Checking for RUV optimization results in workflow_data 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Found RUV optimization results in the accepted normalisation product 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Merging S4 parameters with config_list 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'globalParameters' section with 5 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'srlQvalueProteotypicPeptideClean' section with 14 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'peptideIntensityFiltering' section with 14 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'filterMinNumPeptidesPerSample' section with 8 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'removePeptidesWithOnlyOneReplicate' section with 8 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'peptideMissingValueImputation' section with 7 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'filterMinNumPeptidesPerProtein' section with 5 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'chooseBestProteinAccession' section with 2 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'limpaDpcQuant' section with 3 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'limpaProteinNormalisation' section with 1 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'ruvCovariates' section with 9 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'removeRowsWithMissingValuesPercent' section with 4 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'removeProteinsWithOnlyOneReplicate' section with 2 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'proteinTechRepCorrelation' section with 2 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'pearsonCorForSamplePairs' section with 1 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'plotRle' section with 1 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'normaliseBetweenSamples' section with 1 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'ruvIII_C_Varying' section with 2 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'deAnalysisParameters' section with 9 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'rollUpPrecursorToPeptide' section with 2 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'rollupFn' section with 1 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'chooseBestProteinAccessionFn' section with 5 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'protein_accession_cleanup' section with 4 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'removeProteinsWithOnlyOneReplicateFn' section with 2 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'normaliseBetweenSamplesFn' section with 1 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'filterSamplesFn' section with 2 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'differentialAbundanceAnalysis' section with 10 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Updated 'daAnalysisUI' section with 4 S4 parameters 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Found local git repo at /home/runner/work/MultiScholaR/MultiScholaR/pkg 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: RUV was skipped - writing skip section 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Adding FASTA processing information 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Adding mixed species analysis information 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Adding enrichment organism filtering information 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Adding accession cleanup results 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Adding protein filtering summary 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: About to format S4 parameters using functional approach 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'globalParameters' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'srlQvalueProteotypicPeptideClean' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'peptideIntensityFiltering' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'filterMinNumPeptidesPerSample' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'removePeptidesWithOnlyOneReplicate' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'peptideMissingValueImputation' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'filterMinNumPeptidesPerProtein' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'chooseBestProteinAccession' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'limpaDpcQuant' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'limpaProteinNormalisation' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'ruvCovariates' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'removeRowsWithMissingValuesPercent' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'removeProteinsWithOnlyOneReplicate' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'proteinTechRepCorrelation' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'pearsonCorForSamplePairs' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'plotRle' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'normaliseBetweenSamples' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'ruvIII_C_Varying' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'deAnalysisParameters' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'rollUpPrecursorToPeptide' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'rollupFn' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'chooseBestProteinAccessionFn' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'protein_accession_cleanup' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'removeProteinsWithOnlyOneReplicateFn' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'normaliseBetweenSamplesFn' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'filterSamplesFn' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'differentialAbundanceAnalysis' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing S4 function group 'daAnalysisUI' 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: S4 parameters formatted successfully 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Checking for UI parameters in workflow_data 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Found DE UI parameters in workflow_data 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Found Enrichment UI parameters in workflow_data 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Added UI parameters to output 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: About to format remaining config list 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Calling formatConfigList... 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Adding config lines to output 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Processing contrasts information 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Adding contrasts to output 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Contrasts added successfully 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: About to write file 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Target file path: /tmp/RtmpPDrJVF/k277-prot_dia-4bc74b49a40d/project/prot_dia/scripts/proteomics/study_parameters.txt 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Calling writeLines... 
+KIT277DIAG3 B3 save console | WORKFLOW ARGS: Study parameters saved to: /tmp/RtmpPDrJVF/k277-prot_dia-4bc74b49a40d/project/prot_dia/scripts/proteomics/study_parameters.txt 
+KIT277DIAG3 B3 save console | SESSION SUMMARY ERROR: saved table changed during read  
+KIT277DIAG3 B3 save_notes_full = Study parameters saved with warnings 
+KIT277DIAG3 B3_after_save export_pending_is_null =  logi FALSE 
+KIT277DIAG3 B3_after_save export_pending = List of 3  $ status    : chr "outputs_pending"  $ generation: chr "1c1b2fbcd209a5c278260072f687b2f0d7f728ea51a0e7757176444e2623e248"  $ request_id: chr "native-export-4bc75e088173" 
+KIT277DIAG3 B3_after_save head_entity =  chr "1c1b2fbcd209a5c278260072f687b2f0d7f728ea51a0e7757176444e2623e248" 
+KIT277DIAG3 B3_after_save owned_export_generation =  chr "94cad2864f88a02440ba822c6a83b7a4bcc13084653854538a8ca2a995929b2f" 
+KIT277DIAG3 B3_after_save owned_generation_equals_head =  logi FALSE 
+KIT277DIAG3 B3_after_save runner = List of 2  $ session_application_is_null: logi TRUE  $ class                      : chr "NULL" 
+KIT277DIAG3 B3_after_save archive_members = List of 2  $ n         : int 505  $ da_members: chr(0)  
+KIT277DIAG3 D3_pre_da_press export_pending_is_null =  logi FALSE 
+KIT277DIAG3 D3_pre_da_press export_pending = List of 3  $ status    : chr "outputs_pending"  $ generation: chr "1c1b2fbcd209a5c278260072f687b2f0d7f728ea51a0e7757176444e2623e248"  $ request_id: chr "native-export-4bc75e088173" 
+KIT277DIAG3 D3_pre_da_press head_entity =  chr "1c1b2fbcd209a5c278260072f687b2f0d7f728ea51a0e7757176444e2623e248" 
+KIT277DIAG3 D3_pre_da_press owned_export_generation =  chr "94cad2864f88a02440ba822c6a83b7a4bcc13084653854538a8ca2a995929b2f" 
+KIT277DIAG3 D3_pre_da_press owned_generation_equals_head =  logi FALSE 
+KIT277DIAG3 D3_pre_da_press runner = List of 2  $ session_application_is_null: logi TRUE  $ class                      : chr "NULL" 
+KIT277DIAG3 D3_pre_da_press archive_members = List of 2  $ n         : int 505  $ da_members: chr(0)  
+KIT277DIAG3 F3_before_save export_pending_is_null =  logi FALSE 
+KIT277DIAG3 F3_before_save export_pending = List of 3  $ status    : chr "outputs_pending"  $ generation: chr "1c1b2fbcd209a5c278260072f687b2f0d7f728ea51a0e7757176444e2623e248"  $ request_id: chr "native-export-4bc75e088173" 
+KIT277DIAG3 F3_before_save head_entity =  chr "1c1b2fbcd209a5c278260072f687b2f0d7f728ea51a0e7757176444e2623e248" 
+KIT277DIAG3 F3_before_save owned_export_generation =  chr "94cad2864f88a02440ba822c6a83b7a4bcc13084653854538a8ca2a995929b2f" 
+KIT277DIAG3 F3_before_save owned_generation_equals_head =  logi FALSE 
+KIT277DIAG3 F3_before_save runner = List of 2  $ session_application_is_null: logi TRUE  $ class                      : chr "NULL" 
+KIT277DIAG3 F3_before_save archive_members = List of 2  $ n         : int 505  $ da_members: chr(0)  
+KIT277DIAG3 F3 refresh called | early return expected = FALSE | owned generation = 94cad2864f88a02440ba822c6a83b7a4bcc13084653854538a8ca2a995929b2f | head = 1c1b2fbcd209a5c278260072f687b2f0d7f728ea51a0e7757176444e2623e248 
+KIT277DIAG3 F3 refresh ERROR class = saved_entity_outputs_pending/rlang_error/error/condition | call = assertDIAExportReady(manager) | message = session outputs are pending; retry export before dependent actions 
+KIT277DIAG3 F3 save console | SESSION SUMMARY: Starting workflow args save process 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Starting parameter extraction 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Extracting parameters from S4 @args slot 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Found 29 function groups in S4 @args 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'globalParameters' has 5 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'srlQvalueProteotypicPeptideClean' has 14 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'peptideIntensityFiltering' has 14 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'filterMinNumPeptidesPerSample' has 8 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'removePeptidesWithOnlyOneReplicate' has 8 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'peptideMissingValueImputation' has 7 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'filterMinNumPeptidesPerProtein' has 5 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'chooseBestProteinAccession' has 2 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'limpaDpcQuant' has 3 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'limpaProteinNormalisation' has 1 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'ruvCovariates' has 9 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'removeRowsWithMissingValuesPercent' has 4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'removeProteinsWithOnlyOneReplicate' has 2 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'metaboliteIntensityFiltering' has 4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'proteinTechRepCorrelation' has 2 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'pearsonCorForSamplePairs' has 1 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'plotRle' has 1 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'normaliseBetweenSamples' has 1 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'ruvIII_C_Varying' has 2 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'deAnalysisParameters' has 9 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'rollUpPrecursorToPeptide' has 2 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'rollupFn' has 1 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'chooseBestProteinAccessionFn' has 5 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'protein_accession_cleanup' has 4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'removeProteinsWithOnlyOneReplicateFn' has 2 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'normaliseBetweenSamplesFn' has 1 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'filterSamplesFn' has 2 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'differentialAbundanceAnalysis' has 10 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Function 'daAnalysisUI' has 4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Fallback config_list has 21 sections 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Checking for RUV optimization results in workflow_data 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Found RUV optimization results in the accepted normalisation product 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Merging S4 parameters with config_list 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'globalParameters' section with 5 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'srlQvalueProteotypicPeptideClean' section with 14 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'peptideIntensityFiltering' section with 14 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'filterMinNumPeptidesPerSample' section with 8 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'removePeptidesWithOnlyOneReplicate' section with 8 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'peptideMissingValueImputation' section with 7 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'filterMinNumPeptidesPerProtein' section with 5 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'chooseBestProteinAccession' section with 2 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'limpaDpcQuant' section with 3 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'limpaProteinNormalisation' section with 1 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'ruvCovariates' section with 9 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'removeRowsWithMissingValuesPercent' section with 4 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'removeProteinsWithOnlyOneReplicate' section with 2 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'proteinTechRepCorrelation' section with 2 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'pearsonCorForSamplePairs' section with 1 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'plotRle' section with 1 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'normaliseBetweenSamples' section with 1 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'ruvIII_C_Varying' section with 2 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'deAnalysisParameters' section with 9 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'rollUpPrecursorToPeptide' section with 2 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'rollupFn' section with 1 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'chooseBestProteinAccessionFn' section with 5 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'protein_accession_cleanup' section with 4 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'removeProteinsWithOnlyOneReplicateFn' section with 2 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'normaliseBetweenSamplesFn' section with 1 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'filterSamplesFn' section with 2 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'differentialAbundanceAnalysis' section with 10 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Updated 'daAnalysisUI' section with 4 S4 parameters 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Found local git repo at /home/runner/work/MultiScholaR/MultiScholaR/pkg 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: RUV was skipped - writing skip section 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Adding FASTA processing information 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Adding mixed species analysis information 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Adding enrichment organism filtering information 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Adding accession cleanup results 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Adding protein filtering summary 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: About to format S4 parameters using functional approach 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'globalParameters' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'srlQvalueProteotypicPeptideClean' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'peptideIntensityFiltering' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'filterMinNumPeptidesPerSample' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'removePeptidesWithOnlyOneReplicate' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'peptideMissingValueImputation' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'filterMinNumPeptidesPerProtein' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'chooseBestProteinAccession' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'limpaDpcQuant' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'limpaProteinNormalisation' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'ruvCovariates' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'removeRowsWithMissingValuesPercent' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'removeProteinsWithOnlyOneReplicate' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'proteinTechRepCorrelation' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'pearsonCorForSamplePairs' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'plotRle' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'normaliseBetweenSamples' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'ruvIII_C_Varying' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'deAnalysisParameters' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'rollUpPrecursorToPeptide' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'rollupFn' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'chooseBestProteinAccessionFn' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'protein_accession_cleanup' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'removeProteinsWithOnlyOneReplicateFn' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'normaliseBetweenSamplesFn' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'filterSamplesFn' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'differentialAbundanceAnalysis' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing S4 function group 'daAnalysisUI' 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: S4 parameters formatted successfully 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Checking for UI parameters in workflow_data 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Found DE UI parameters in workflow_data 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Found Enrichment UI parameters in workflow_data 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Added UI parameters to output 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: About to format remaining config list 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Calling formatConfigList... 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Adding config lines to output 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Processing contrasts information 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Adding contrasts to output 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Contrasts added successfully 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: About to write file 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Target file path: /tmp/RtmpPDrJVF/k277-prot_dia-4bc74b49a40d/project/prot_dia/scripts/proteomics/study_parameters.txt 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Calling writeLines... 
+KIT277DIAG3 F3 save console | WORKFLOW ARGS: Study parameters saved to: /tmp/RtmpPDrJVF/k277-prot_dia-4bc74b49a40d/project/prot_dia/scripts/proteomics/study_parameters.txt 
+KIT277DIAG3 F3 save console | SESSION SUMMARY ERROR: session outputs are pending; retry export before dependent actions  
+KIT277DIAG3 F3 save_notes_full = Study parameters saved with warnings 
+KIT277DIAG3 F3_after_save export_pending_is_null =  logi FALSE 
+KIT277DIAG3 F3_after_save export_pending = List of 3  $ status    : chr "outputs_pending"  $ generation: chr "1c1b2fbcd209a5c278260072f687b2f0d7f728ea51a0e7757176444e2623e248"  $ request_id: chr "native-export-4bc75e088173" 
+KIT277DIAG3 F3_after_save head_entity =  chr "1c1b2fbcd209a5c278260072f687b2f0d7f728ea51a0e7757176444e2623e248" 
+KIT277DIAG3 F3_after_save owned_export_generation =  chr "94cad2864f88a02440ba822c6a83b7a4bcc13084653854538a8ca2a995929b2f" 
+KIT277DIAG3 F3_after_save owned_generation_equals_head =  logi FALSE 
+KIT277DIAG3 F3_after_save runner = List of 2  $ session_application_is_null: logi TRUE  $ class                      : chr "NULL" 
+KIT277DIAG3 F3_after_save archive_members = List of 2  $ n         : int 505  $ da_members: chr(0)  
+KIT277DIAG3 F1_before_formula_save export_pending_is_null =  logi TRUE 
+KIT277DIAG3 F1_before_formula_save export_pending =  NULL 
+KIT277DIAG3 F1_before_formula_save head_entity =  chr "d2b5c7e41a1bd1fadb77aabfb3d4c2cb1a35554a97f4e5600b3639f5e96273c9" 
+KIT277DIAG3 F1_before_formula_save owned_export_generation =  chr "b372d4259be6c22bd8600197bff848f10f06ef360430399871b220694a38aee7" 
+KIT277DIAG3 F1_before_formula_save owned_generation_equals_head =  logi FALSE 
+KIT277DIAG3 F1_before_formula_save runner = List of 2  $ session_application_is_null: logi TRUE  $ class                      : chr "NULL" 
+KIT277DIAG3 F1_before_formula_save archive_members = List of 2  $ n         : int 228  $ da_members: chr(0)  
+KIT277DIAG3 F1_after_formula_save export_pending_is_null =  logi TRUE 
+KIT277DIAG3 F1_after_formula_save export_pending =  NULL 
+KIT277DIAG3 F1_after_formula_save head_entity =  chr "542c071fb95985d3f71dc124d430f3217a2515b584890368fc1b9b8024a8fbe4" 
+KIT277DIAG3 F1_after_formula_save owned_export_generation =  chr "b372d4259be6c22bd8600197bff848f10f06ef360430399871b220694a38aee7" 
+KIT277DIAG3 F1_after_formula_save owned_generation_equals_head =  logi FALSE 
+KIT277DIAG3 F1_after_formula_save runner = List of 2  $ session_application_is_null: logi TRUE  $ class                      : chr "NULL" 
+KIT277DIAG3 F1_after_formula_save archive_members = List of 2  $ n         : int 228  $ da_members: chr(0)  
+KIT277DIAG3 F1_before_save export_pending_is_null =  logi TRUE 
+KIT277DIAG3 F1_before_save export_pending =  NULL 
+KIT277DIAG3 F1_before_save head_entity =  chr "542c071fb95985d3f71dc124d430f3217a2515b584890368fc1b9b8024a8fbe4" 
+KIT277DIAG3 F1_before_save owned_export_generation =  chr "b372d4259be6c22bd8600197bff848f10f06ef360430399871b220694a38aee7" 
+KIT277DIAG3 F1_before_save owned_generation_equals_head =  logi FALSE 
+KIT277DIAG3 F1_before_save runner = List of 2  $ session_application_is_null: logi TRUE  $ class                      : chr "NULL" 
+KIT277DIAG3 F1_before_save archive_members = List of 2  $ n         : int 228  $ da_members: chr(0)  
+KIT277DIAG3 F1 refresh called | early return expected = FALSE | owned generation = b372d4259be6c22bd8600197bff848f10f06ef360430399871b220694a38aee7 | head = 542c071fb95985d3f71dc124d430f3217a2515b584890368fc1b9b8024a8fbe4 
+KIT277DIAG3 F1 runDIANativeSessionExport called 
+KIT277DIAG3 F1 runDIANativeSessionExport returned | publication status = complete 
+KIT277DIAG3 F1 refresh returned | export_pending is null after = TRUE 
+KIT277DIAG3 F1 save console | SESSION SUMMARY: Starting workflow args save process 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Starting parameter extraction 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Extracting parameters from S4 @args slot 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Found 27 function groups in S4 @args 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'globalParameters' has 5 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'srlQvalueProteotypicPeptideClean' has 8 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'peptideIntensityFiltering' has 7 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'filterMinNumPeptidesPerSample' has 3 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'removePeptidesWithOnlyOneReplicate' has 2 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'peptideMissingValueImputation' has 4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'filterMinNumPeptidesPerProtein' has 3 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'chooseBestProteinAccession' has 2 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'limpaDpcQuant' has 3 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'limpaProteinNormalisation' has 1 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'ruvCovariates' has 9 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'removeRowsWithMissingValuesPercent' has 4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'removeProteinsWithOnlyOneReplicate' has 2 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'metaboliteIntensityFiltering' has 4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'proteinTechRepCorrelation' has 2 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'pearsonCorForSamplePairs' has 1 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'plotRle' has 1 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'normaliseBetweenSamples' has 1 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'ruvIII_C_Varying' has 2 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'deAnalysisParameters' has 9 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'rollUpPrecursorToPeptide' has 1 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'chooseBestProteinAccessionFn' has 5 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'removeProteinsWithOnlyOneReplicateFn' has 2 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'normaliseBetweenSamplesFn' has 1 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'filterSamplesFn' has 2 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'differentialAbundanceAnalysis' has 10 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Function 'daAnalysisUI' has 4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Fallback config_list has 21 sections 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Checking for RUV optimization results in workflow_data 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Found RUV optimization results in the accepted normalisation product 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Merging S4 parameters with config_list 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'globalParameters' section with 5 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'srlQvalueProteotypicPeptideClean' section with 8 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'peptideIntensityFiltering' section with 7 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'filterMinNumPeptidesPerSample' section with 3 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'removePeptidesWithOnlyOneReplicate' section with 2 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'peptideMissingValueImputation' section with 4 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'filterMinNumPeptidesPerProtein' section with 3 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'chooseBestProteinAccession' section with 2 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'limpaDpcQuant' section with 3 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'limpaProteinNormalisation' section with 1 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'ruvCovariates' section with 9 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'removeRowsWithMissingValuesPercent' section with 4 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'removeProteinsWithOnlyOneReplicate' section with 2 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'proteinTechRepCorrelation' section with 2 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'pearsonCorForSamplePairs' section with 1 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'plotRle' section with 1 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'normaliseBetweenSamples' section with 1 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'ruvIII_C_Varying' section with 2 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'deAnalysisParameters' section with 9 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'rollUpPrecursorToPeptide' section with 1 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'chooseBestProteinAccessionFn' section with 5 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'removeProteinsWithOnlyOneReplicateFn' section with 2 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'normaliseBetweenSamplesFn' section with 1 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'filterSamplesFn' section with 2 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'differentialAbundanceAnalysis' section with 10 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Updated 'daAnalysisUI' section with 4 S4 parameters 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Found local git repo at /home/runner/work/MultiScholaR/MultiScholaR/pkg 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: RUV was skipped - writing skip section 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Adding FASTA processing information 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Adding mixed species analysis information 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Adding accession cleanup results 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Adding protein filtering summary 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: About to format S4 parameters using functional approach 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'globalParameters' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'srlQvalueProteotypicPeptideClean' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'peptideIntensityFiltering' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'filterMinNumPeptidesPerSample' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'removePeptidesWithOnlyOneReplicate' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'peptideMissingValueImputation' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'filterMinNumPeptidesPerProtein' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'chooseBestProteinAccession' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'limpaDpcQuant' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'limpaProteinNormalisation' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'ruvCovariates' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'removeRowsWithMissingValuesPercent' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'removeProteinsWithOnlyOneReplicate' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'proteinTechRepCorrelation' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'pearsonCorForSamplePairs' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'plotRle' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'normaliseBetweenSamples' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'ruvIII_C_Varying' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'deAnalysisParameters' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'rollUpPrecursorToPeptide' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'chooseBestProteinAccessionFn' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'removeProteinsWithOnlyOneReplicateFn' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'normaliseBetweenSamplesFn' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'filterSamplesFn' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'differentialAbundanceAnalysis' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing S4 function group 'daAnalysisUI' 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: S4 parameters formatted successfully 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Checking for UI parameters in workflow_data 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Found DE UI parameters in workflow_data 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Added UI parameters to output 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: About to format remaining config list 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Calling formatConfigList... 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Adding config lines to output 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Processing contrasts information 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Adding contrasts to output 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Contrasts added successfully 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: About to write file 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Target file path: /tmp/RtmpPDrJVF/k277-prot_lfq-4bc74e55dcc2/project/prot_lfq/scripts/proteomics/study_parameters.txt 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Calling writeLines... 
+KIT277DIAG3 F1 save console | WORKFLOW ARGS: Study parameters saved to: /tmp/RtmpPDrJVF/k277-prot_lfq-4bc74e55dcc2/project/prot_lfq/scripts/proteomics/study_parameters.txt 
+KIT277DIAG3 F1 save_notes_full = Saved Integration input || Study parameters saved successfully 
+KIT277DIAG3 F1_after_save export_pending_is_null =  logi TRUE 
+KIT277DIAG3 F1_after_save export_pending =  NULL 
+KIT277DIAG3 F1_after_save head_entity =  chr "542c071fb95985d3f71dc124d430f3217a2515b584890368fc1b9b8024a8fbe4" 
+KIT277DIAG3 F1_after_save owned_export_generation =  chr "542c071fb95985d3f71dc124d430f3217a2515b584890368fc1b9b8024a8fbe4" 
+KIT277DIAG3 F1_after_save owned_generation_equals_head =  logi TRUE 
+KIT277DIAG3 F1_after_save runner = List of 2  $ session_application_is_null: logi TRUE  $ class                      : chr "NULL" 
+KIT277DIAG3 F1_after_save archive_members = List of 2  $ n         : int 266  $ da_members: chr(0)  

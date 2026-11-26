@@ -1,0 +1,211 @@
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `out$asked` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "Homo sapiens".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Retrieving UniProt Annotations</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <p>Please wait while we retrieve protein annotations from UniProt...</p>
+    |         <div id="uniprot_progress_text">Initializing...</div>
+    |         <div class="progress">
+    |           <div id="uniprot_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">0%</div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `paste(out$question, collapse = " ")` to match string "Mus musculus".
+  Actual text:
+  x | <div class="modal fade" data-backdrop="static" data-bs-backdrop="static" data-bs-keyboard="false" data-keyboard="false" id="shiny-modal" tabindex="-1">
+    |   <div class="modal-dialog">
+    |     <div class="modal-content">
+    |       <div class="modal-header">
+    |         <h4 class="modal-title">Retrieving UniProt Annotations</h4>
+    |       </div>
+    |       <div class="modal-body">
+    |         <p>Please wait while we retrieve protein annotations from UniProt...</p>
+    |         <div id="uniprot_progress_text">Initializing...</div>
+    |         <div class="progress">
+    |           <div id="uniprot_progress_bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">0%</div>
+    |         </div>
+    |       </div>
+    |     </div>
+    |   </div>
+    |   <script>if (window.bootstrap && !window.bootstrap.Modal.VERSION.match(/^4\./)) {
+    |          var modal = new bootstrap.Modal(document.getElementById('shiny-modal'));
+    |          modal.show();
+    |       } else {
+    |          $('#shiny-modal').modal().focus();
+    |       }</script>
+    | </div>
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `as.numeric(out$taxon_after)` to equal 10090.
+  Differences:
+    `actual`:  9606.0
+  `expected`: 10090.0
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `out$organism_after` to be identical to "Mus musculus".
+  Differences:
+  `actual`:   "Homo sapiens"
+  `expected`: "Mus musculus"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `any(unlist(out$places_after))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `out$after$status$differential_expression` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `out$status_enrichment` to be identical to "pending".
+  Differences:
+  `actual`:   "complete"
+  `expected`: "pending" 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `any(...)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O1, O3 (S2): an organism-only import asks, Cancel changes nothing, Save applies it and removes the earlier annotation everywhere
+kind: failure
+message:
+  Expected `any(grepl("nothing changed", out$notes, fixed = TRUE))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `out$after$copy` to be identical to "refused".
+  Differences:
+  `actual`:   "allowed"
+  `expected`: "refused"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `out$after$da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `out$enrichment_after` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `out$record_da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `out$export_da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `out$enrichment_before_da` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O4 (S2): after an organism Save the earlier DA and enrichment are not current for any consumer
+kind: failure
+message:
+  Expected `any(grepl("Copy error", out$copy_notes_after, fixed = TRUE))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O2b, O2 (S2): after an organism Save the DA run and the enrichment run use the new organism's annotation
+kind: failure
+message:
+  Expected `out$da_organisms` to be identical to "Synthetic test organism".
+  Differences:
+  `actual`:   "Homo sapiens"           
+  `expected`: "Synthetic test organism"
+
+file: test-kit277-resave-carried-through.R
+test: KIT-277 O2b, O2 (S2): after an organism Save the DA run and the enrichment run use the new organism's annotation
+kind: failure
+message:
+  Expected `out$enrich_organisms` to be identical to "Synthetic test organism".
+  Differences:
+  `actual`:   "Homo sapiens"           
+  `expected`: "Synthetic test organism"
+
