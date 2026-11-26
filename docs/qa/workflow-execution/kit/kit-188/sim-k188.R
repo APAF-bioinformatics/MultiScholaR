@@ -1034,7 +1034,7 @@ ROW_COLUMNS <- c("part", "cell", "job", "scenario", "mask", "rep", "arm", "arm_s
     "seconds", "warnings", "samples_removed", "k", "pct", "n_controls", "complete_controls", "k_estimate", "e1_pass",
     "n_T", "n_tested", "lost", BLIND, "q_method", "miss_share", "miss_after", "tie_rule_match",
     # r1.16 to r1.21 (35.2): the per-assay E12 to E14 columns, the product's and the record's k fields, the DA outcome
-    ASSAY_COLUMNS)
+    ASSAY_COLUMNS, "smoke")
 newRow <- function(...) {
     row <- stats::setNames(as.list(rep(NA, length(ROW_COLUMNS))), ROW_COLUMNS)
     given <- list(...)
@@ -1099,6 +1099,13 @@ addCheck <- function(check, cell, rep, condition, value, threshold, pass, note =
     checks_env$rows[[length(checks_env$rows) + 1L]] <- data.frame(check = check, cell = cell, rep = rep, condition = condition,
         value = as.character(value), threshold = as.character(threshold), pass = isTRUE(pass), note = oneLine(note),
         stringsAsFactors = FALSE)
+    # a unit that is killed still leaves its checks: each is also appended to the unit's progress file (coordinator's ruling, defect 3)
+    progress <- getOption("k188.progress")
+    if (!is.null(progress)) {
+        known <- file.exists(progress)
+        try(utils::write.table(checks_env$rows[[length(checks_env$rows)]], progress, sep = "\t", quote = FALSE, row.names = FALSE,
+            col.names = !known, append = known), silent = TRUE)
+    }
 }
 #' E9 (Part L, today's base): the legacy controls per assay and percentage are the first round(N_v x pct / 100) rows of
 #' the RUV input table among the rows with at least two values, in table order (2.2).
@@ -2099,9 +2106,15 @@ if (child) {
     lifecycle <- identical(Sys.getenv("K188_LIFECYCLE"), "1")
     options(k188.e7_unit = identical(Sys.getenv("K188_E7_UNIT"), "1"))
     fault_now <- identical(Sys.getenv("K188_FAULT_UNIT"), "1")
-    result <- tryCatch(runUnit(args[[2L]], args[[3L]], as.integer(args[[4L]]), args[[5L]], args[[6L]], args[[7L]], lifecycle, fault_now,
-        Sys.getenv("K188_PLANT_UNIT")),
-        error = function(e) list(error = oneLine(paste(class(e)[[1L]], conditionMessage(e))),
+    options(k188.progress = sub("\\.rds$", "-progress.tsv", args[[8L]]))
+    # an error that ends the unit also carries the call stack at the point of the error (deparsed, one line each, truncated), so the
+    # failing line is located (coordinator's ruling, defect 2)
+    stack <- NULL
+    result <- tryCatch(withCallingHandlers(runUnit(args[[2L]], args[[3L]], as.integer(args[[4L]]), args[[5L]], args[[6L]], args[[7L]], lifecycle, fault_now,
+        Sys.getenv("K188_PLANT_UNIT")), error = function(e) {
+        stack <<- vapply(sys.calls(), function(cl) substr(oneLine(paste(deparse(cl, width.cutoff = 200L), collapse = " "), 200L), 1L, 200L), "")
+    }),
+        error = function(e) list(error = oneLine(paste(class(e)[[1L]], conditionMessage(e))), stack = stack,
             checks = if (length(checks_env$rows)) do.call(rbind, checks_env$rows)))
     saveRDS(result, args[[8L]])
     quit(save = "no", status = 0L)
@@ -2117,6 +2130,10 @@ out_dir <- args[[5L]]
 stopifnot(part %in% c("L", "P"), all(cells_wanted %in% names(CELLS)), all(vapply(CELLS[cells_wanted], `[[`, "", "part") == part),
     !is.na(first_rep), !is.na(last_rep), first_rep <= last_rep)
 lifecycle <- identical(Sys.getenv("K188_LIFECYCLE"), "1")
+# the check SMOKE_counted_refusal: K188_SMOKE=1 marks an instrument check; a counted request (not a lifecycle run) that sets it is refused
+# before any unit runs. The flag is in every output: the rows' `smoke` column and the provenance; score-k188.R refuses such rows.
+smoke <- identical(Sys.getenv("K188_SMOKE"), "1")
+if (smoke && !lifecycle) stop("SMOKE_counted_refusal: K188_SMOKE=1 is set on a counted (non-lifecycle) request; refused")
 fault <- identical(Sys.getenv("K188_FAULT"), "1")
 workers <- as.integer(Sys.getenv("K188_WORKERS", "4"))
 jobs <- strsplit(Sys.getenv("K188_JOBS", if (identical(part, "L")) "deciding,reported,munit,ba" else "deciding,reported,ba"), ",",
@@ -2172,6 +2189,29 @@ if (lifecycle) for (cellname in cells_wanted) {
 }
 # SA-P10: E7's R-marked keys are required whenever a unit runs E7 (a lifecycle run of a reported job)
 if (lifecycle && identical(part, "L") && any(units$e7) && !predictionsFileOk()) stop("K188_PREDICTIONS (a path inside the checkout) is required: E7's R-marked keys are compared with it")
+writeProvenance <- function(final) {
+    tables <- if (final) list.files(out_dir, recursive = TRUE, full.names = TRUE, pattern = "\\.(tsv|gz)$")
+    library_table <- utils::installed.packages()[, c("Package", "Version")]
+    key_packages <- c("MultiScholaR", "RUVIIIC", "ruv", "limma", "qvalue", "sva", "duckdb", "dplyr")
+    provenance <- list(job = job_name, part = part, cells = cells_wanted, data_sets = c(first_rep, last_rep), jobs = jobs, lifecycle = lifecycle,
+        fault = fault, workers = workers, units = nrow(units),
+        commit = tryCatch(system2("git", c("rev-parse", "HEAD"), stdout = TRUE), error = function(e) NA),
+        r_version = R.version.string, blas = extSoftVersion()[["BLAS"]], lapack = La_library(), omp_threads = Sys.getenv("OMP_NUM_THREADS"),
+        runner_image = paste(Sys.getenv("ImageOS"), Sys.getenv("ImageVersion")),
+        processor = tryCatch(sub("^model name\\s*:\\s*", "", grep("^model name", readLines("/proc/cpuinfo"), value = TRUE)[[1L]]), error = function(e) NA),
+        cores = parallel::detectCores(),
+        predictions_sha256 = if (nzchar(Sys.getenv("K188_PREDICTIONS")) && file.exists(Sys.getenv("K188_PREDICTIONS"))) sha(Sys.getenv("K188_PREDICTIONS")) else NA,
+        smoke = smoke,
+        prot_design_transform = if (exists("protDesignPlainLog2", mode = "function")) "log2(x); 0 missing" else "log2(x + 1)",
+        seed_rule = "set.seed(188000000 + 100000 c + 10000 s + r, kind = 'Mersenne-Twister', normal.kind = 'Inversion', sample.kind = 'Rejection')",
+        key_packages = as.list(stats::setNames(library_table[match(key_packages, library_table[, "Package"]), "Version"], key_packages)),
+        script_sha256 = sha(script_file), started = format(started_at, "%Y-%m-%dT%H:%M:%S%z"), finished = if (final) format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z") else NA,
+        wall_seconds = round(as.numeric(difftime(Sys.time(), started_at, units = "secs")), 1),
+        units_with_error = if (final) sum(nzchar(timing$error)) else NA, exit_status = if (final) 0L else NA,
+        tables_sha256 = if (final) stats::setNames(as.list(vapply(tables, sha, character(1L))), sub(paste0("^", out_dir, "/?"), "", tables)) else list())
+    jsonlite::write_json(provenance, file.path(out_dir, sprintf("provenance-%s.json", job_name)), auto_unbox = TRUE, pretty = TRUE, digits = NA)
+}
+
 cat(sprintf("KIT-188 %s: %d units, %d workers, lifecycle %s, jobs %s\n", job_name, nrow(units), workers, lifecycle, paste(jobs, collapse = ",")))
 # E12's format-default pattern assertion, once per job (35.2 (2))
 if (identical(part, "L")) checkE12Patterns()
@@ -2183,6 +2223,10 @@ if (lifecycle) {
             paste(names(e3$got), vapply(e3$got, function(x) paste(format(x), collapse = "/"), ""), sep = "=", collapse = "; ")))
     }
 }
+# written before any unit runs, so a job that is killed still leaves its provenance and the parent's checks (defect 3)
+writeProvenance(FALSE)
+if (length(checks_env$rows)) utils::write.table(do.call(rbind, checks_env$rows), file.path(out_dir, sprintf("checks-%s-start.tsv", job_name)),
+    sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
 runChild <- function(i) {
     u <- units[i, ]
     # SA-P01: the planted case's name is part of every file name, so the eight L1c units (one data set, one cell) stay apart
@@ -2201,10 +2245,12 @@ runChild <- function(i) {
     # written as the unit completes, so that a job stopped at its timeout still uploads what it finished (7.1)
     tag <- sprintf("%s-%s-%d-%s-%s%s", u$cell, u$job, u$r, u$scenario, u$mask, suffix)
     rows <- res$rows
+    if (!is.null(res$stack)) writeLines(res$stack, file.path(out_dir, "rows", sprintf("unit-trace-%s.txt", tag)))
     if (is.null(rows) || !nrow(rows)) {
         rows <- as.data.frame(do.call(newRow, list(part = part, cell = u$cell, job = u$job, scenario = u$scenario, mask = u$mask, rep = u$r,
             arm = "unit", status = "crashed", class = res$error %||% "no rows")), stringsAsFactors = FALSE)
     }
+    rows$smoke <- if (smoke) "1" else NA_character_
     numeric_columns <- vapply(rows, is.numeric, logical(1L))
     rows[numeric_columns] <- lapply(rows[numeric_columns], signif, 7L)
     hash <- NA_character_
@@ -2344,26 +2390,7 @@ if (length(plant_rows)) utils::write.table(do.call(rbind, plant_rows), file.path
     quote = FALSE, row.names = FALSE, na = "NA")
 if (!is.null(checks) && nrow(checks)) utils::write.table(checks, file.path(out_dir, sprintf("checks-%s.tsv", job_name)), sep = "\t",
     quote = FALSE, row.names = FALSE, na = "NA")
-tables <- list.files(out_dir, recursive = TRUE, full.names = TRUE, pattern = "\\.(tsv|gz)$")
-library_table <- utils::installed.packages()[, c("Package", "Version")]
-key_packages <- c("MultiScholaR", "RUVIIIC", "ruv", "limma", "qvalue", "sva", "duckdb", "dplyr")
-provenance <- list(job = job_name, part = part, cells = cells_wanted, data_sets = c(first_rep, last_rep), jobs = jobs, lifecycle = lifecycle,
-    fault = fault, workers = workers, units = nrow(units),
-    commit = tryCatch(system2("git", c("rev-parse", "HEAD"), stdout = TRUE), error = function(e) NA),
-    r_version = R.version.string, blas = extSoftVersion()[["BLAS"]], lapack = La_library(), omp_threads = Sys.getenv("OMP_NUM_THREADS"),
-    runner_image = paste(Sys.getenv("ImageOS"), Sys.getenv("ImageVersion")),
-    processor = tryCatch(sub("^model name\\s*:\\s*", "", grep("^model name", readLines("/proc/cpuinfo"), value = TRUE)[[1L]]), error = function(e) NA),
-    cores = parallel::detectCores(),
-    predictions_sha256 = if (nzchar(Sys.getenv("K188_PREDICTIONS")) && file.exists(Sys.getenv("K188_PREDICTIONS"))) sha(Sys.getenv("K188_PREDICTIONS")) else NA,
-    smoke = identical(Sys.getenv("K188_SMOKE"), "1"),
-    prot_design_transform = if (exists("protDesignPlainLog2", mode = "function")) "log2(x); 0 missing" else "log2(x + 1)",
-    seed_rule = "set.seed(188000000 + 100000 c + 10000 s + r, kind = 'Mersenne-Twister', normal.kind = 'Inversion', sample.kind = 'Rejection')",
-    key_packages = as.list(stats::setNames(library_table[match(key_packages, library_table[, "Package"]), "Version"], key_packages)),
-    script_sha256 = sha(script_file), started = format(started_at, "%Y-%m-%dT%H:%M:%S%z"), finished = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
-    wall_seconds = round(as.numeric(difftime(Sys.time(), started_at, units = "secs")), 1),
-    units_with_error = sum(nzchar(timing$error)), exit_status = 0L,
-    tables_sha256 = stats::setNames(as.list(vapply(tables, sha, character(1L))), sub(paste0("^", out_dir, "/?"), "", tables)))
-jsonlite::write_json(provenance, file.path(out_dir, sprintf("provenance-%s.json", job_name)), auto_unbox = TRUE, pretty = TRUE, digits = NA)
+writeProvenance(TRUE)
 cat(sprintf("KIT-188 %s finished: %d units (%d with an error), wall %.1f min\n", job_name, nrow(units), sum(nzchar(timing$error)),
     as.numeric(difftime(Sys.time(), started_at, units = "mins"))))
 # 35.6 (r1.20): a prediction not met (E15, E15R, or the R-marked E7 observations) stops the lifecycle run; everything is written first

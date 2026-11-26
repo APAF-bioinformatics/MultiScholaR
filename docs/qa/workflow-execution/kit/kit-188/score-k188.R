@@ -46,7 +46,11 @@ declaredRange <- function(job, cell) seq_len(if (identical(job, "deciding") && !
 writeLines(sprintf("%s = %s", names(settings), settings), file.path(out_dir, "settings.txt"))
 
 files <- list.files(rows_dir, pattern = "\\.tsv\\.gz$", full.names = TRUE, recursive = TRUE)
-rows <- do.call(rbind, lapply(files, function(f) utils::read.delim(gzfile(f), stringsAsFactors = FALSE, na.strings = "NA")))
+# every column is read as text (a column of the letter T, or of TRUE and FALSE, must not become logical: the smoke check's defect 1);
+# the numeric columns are converted through num() below
+rows <- do.call(rbind, lapply(files, function(f) utils::read.delim(gzfile(f), stringsAsFactors = FALSE, na.strings = "NA", colClasses = "character")))
+# the scorer refuses to produce an outcome from any input that carries the smoke flag (an instrument check, K188_SMOKE=1)
+if ("smoke" %in% names(rows) && any(rows$smoke %in% "1")) stop("KIT-188 scoring refuses: an input carries the smoke flag (K188_SMOKE=1, an instrument check); no outcome is produced from it")
 num <- function(x) suppressWarnings(as.numeric(x))
 # rows written before r1.16 carry none of the per-assay columns
 for (column in c("itsd_ok", "norm_ok", "ruv_status", "da_status", "corr_removed_one_assay", "ruv_k_found", "ruv_k_sweep", "ruv_k_used", "ruv_k_cap",

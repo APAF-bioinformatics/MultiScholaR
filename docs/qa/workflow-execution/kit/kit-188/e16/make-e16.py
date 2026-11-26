@@ -10,7 +10,7 @@ BLIND = re.findall(r'"([^"]+)"', SIM[SIM.index("BLIND <- c("):SIM.index(")\n\nwa
 ASSAY = re.findall(r'"([^"]+)"', SIM[SIM.index("ASSAY_COLUMNS <- c("):SIM.index('ROW_COLUMNS <- c("part"')])
 COLUMNS = ["part", "cell", "job", "scenario", "mask", "rep", "arm", "arm_scale", "scoreset", "assay", "contrast", "status", "class", "step",
            "seconds", "warnings", "samples_removed", "k", "pct", "n_controls", "complete_controls", "k_estimate", "e1_pass", "n_T", "n_tested",
-           "lost"] + BLIND + ["q_method", "miss_share", "miss_after", "tie_rule_match"] + ASSAY
+           "lost"] + BLIND + ["q_method", "miss_share", "miss_after", "tie_rule_match"] + ASSAY + ["smoke"]
 SCEN = ["N0", "N1", "E0", "E1", "N2", "E2"]
 MASKS = ["none", "vd5", "vd20"]
 ARMS = ["LA", "GA", "NO", "OR"]
@@ -167,6 +167,9 @@ mk("E1", "none", "LA", lambda rep, s, m: crashed("L12", "deciding", s, m, rep, "
 # P5b: 21 dropped journeys (a DA table exists; in the gate; a phi event by 38.2 (6) but gate first) + unit = 22
 mk("E1", "vd5", "LA", lambda rep, s, m: row("L12", "deciding", s, m, rep, "LA", status="dropped", ruv_status="dropped", ruv_status_product="dropped",
     ruv_k_found="NA") if 111 <= rep <= 131 else None)
+# P5c: 19 dropped journeys + the unit row = 20 of 400 (5 %, not above it): the stand-alone "dropped" condition just below the gate
+mk("E1", "vd20", "LA", lambda rep, s, m: row("L12", "deciding", s, m, rep, "LA", status="dropped", ruv_status="dropped", ruv_status_product="dropped",
+    ruv_k_found="NA") if 141 <= rep <= 159 else None)
 # P6: the oracle fails S1 in N1 vd20 (0.2), GA returns a table at data set 1 only (not_run elsewhere): the excess path with one pair
 mk("N1", "vd20", "OR", lambda rep, s, m: row("L12", "deciding", s, m, rep, "OR", null_p05=0.2))
 mk("N1", "vd20", "GA", lambda rep, s, m: row("L12", "deciding", s, m, rep, "GA", null_p05=0.2) if rep == 1 else
@@ -199,6 +202,12 @@ for e in ("S1", "S2", "S5"):
     expect("main", "conditions.tsv", k, "class_best", "no result"); expect("main", "conditions.tsv", k, "class_worst", "no result")
     expect("main", "conditions.tsv", k, "sensitive", "FALSE")
 def pk(*a): return "|".join(a)
+for e in ("S3", "S5"):
+    k = cond_key("L12", "deciding", "E1", "vd20", "LA", e)
+    expect("main", "conditions.tsv", k, "n_gate", 20); expect("main", "conditions.tsv", k, "r_out", 1)
+    expect("main", "conditions.tsv", k, "no_result", "FALSE")
+expect("main", "phi.tsv", pk("L12", "deciding", "E1", "vd20", "LA"), "events", 0)
+expect("main", "phi.tsv", pk("L12", "deciding", "E1", "vd20", "LA"), "events_also_gate", 19)
 # phi: P3 gate first; P4 events; P5 refusals; P5b dropped
 expect("main", "phi.tsv", pk("L12", "deciding", "E0", "none", "LA"), "events", 0)
 expect("main", "phi.tsv", pk("L12", "deciding", "E0", "none", "LA"), "events_also_gate", 10)
@@ -264,6 +273,15 @@ expect("k2phi", "phi.tsv", pk("L12", "deciding", "N0", "none", "LA"), "events", 
 expect("k2phi", "phi.tsv", pk("L12", "deciding", "N0", "none", "LA"), "phi_upper", up)
 expect("k1", "phi.tsv", pk("L12", "deciding", "N0", "none", "LA"), "events", 0)
 
+# ---- a column of the letters T and F must stay text (smoke check, defect 1): LA's class is "T", every step "F", scoreset is "T" throughout
+def coerce(r):
+    if r["arm"] == "LA":
+        r["class"] = "T"
+    r["step"] = "F"
+write(os.path.join(out, "cases", "tf", "rows.tsv.gz"), build("L12", R, {}, tweak=coerce))
+expect("tf", "statuses.tsv", pk("L", "L12", "deciding", "LA", "1", "ok", "T"), "n", 18 * R)
+expect("tf", "outcome.txt", "line", "startswith", "lipid_metab: K1 ")
+write(os.path.join(out, "cases", "smokeflag", "rows.tsv.gz"), [row("L12", "deciding", "N0", "none", 1, "LA", smoke="1")])
 # ---- stop cases (tiny) --------------------------------------------------------------------------------------------------------
 write(os.path.join(out, "cases", "itsd", "rows.tsv.gz"), [row("L12", "deciding", "N0", "none", 1, "LA", itsd_ok="FALSE")])
 write(os.path.join(out, "cases", "gap", "rows.tsv.gz"), [row("L12", "deciding", "N0", "none", 1, "LA")])
@@ -272,6 +290,8 @@ with open(os.path.join(out, "cases.tsv"), "w") as f:
     f.write("main\tmain\tL12:deciding,L24:deciding\t400,100\tok\n")
     for case in ("k1", "k2phi", "val248", "k3", "k4"):
         f.write("%s\t%s\tL12:deciding\t400,100\tok\n" % (case, case))
+    f.write("tf\ttf\tL12:deciding\t400,100\tok\n")
+    f.write("smokeflag\tsmokeflag\tL12:deciding\t400,100\tstop:smoke flag\n")
     f.write("itsd\titsd\tL12:deciding\t400,100\tstop:itsd_ok\n")
     f.write("gap\tgap\tL12:deciding\t400,100\tstop:absent without a unit row\n")
     f.write("cellgap\tk1\tL12:deciding,L24:deciding\t400,100\tstop:L24 deciding\n")   # the k1 rows, the declared set naming L24 (SA-P14)

@@ -47,6 +47,14 @@ main	conditions.tsv	L12|deciding|N0|vd5|LA|S2	sensitive	FALSE
 main	conditions.tsv	L12|deciding|N0|vd5|LA|S5	class_best	no result
 main	conditions.tsv	L12|deciding|N0|vd5|LA|S5	class_worst	no result
 main	conditions.tsv	L12|deciding|N0|vd5|LA|S5	sensitive	FALSE
+main	conditions.tsv	L12|deciding|E1|vd20|LA|S3	n_gate	20
+main	conditions.tsv	L12|deciding|E1|vd20|LA|S3	r_out	1
+main	conditions.tsv	L12|deciding|E1|vd20|LA|S3	no_result	FALSE
+main	conditions.tsv	L12|deciding|E1|vd20|LA|S5	n_gate	20
+main	conditions.tsv	L12|deciding|E1|vd20|LA|S5	r_out	1
+main	conditions.tsv	L12|deciding|E1|vd20|LA|S5	no_result	FALSE
+main	phi.tsv	L12|deciding|E1|vd20|LA	events	0
+main	phi.tsv	L12|deciding|E1|vd20|LA	events_also_gate	19
 main	phi.tsv	L12|deciding|E0|none|LA	events	0
 main	phi.tsv	L12|deciding|E0|none|LA	events_also_gate	10
 main	phi.tsv	L12|deciding|E0|none|LA	r_reached	399
@@ -118,3 +126,5 @@ k4	verdicts.tsv	lipid_metab|NO	verdict	unsafe
 k2phi	phi.tsv	L12|deciding|N0|none|LA	events	30
 k2phi	phi.tsv	L12|deciding|N0|none|LA	phi_upper	0.10533763861384532
 k1	phi.tsv	L12|deciding|N0|none|LA	events	0
+tf	statuses.tsv	L|L12|deciding|LA|1|ok|T	n	7200
+tf	outcome.txt	line	startswith	lipid_metab: K1 
