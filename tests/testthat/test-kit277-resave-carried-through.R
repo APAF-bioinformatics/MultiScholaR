@@ -301,13 +301,76 @@ kit277Box <- function(api, lane) {
     api$input(kit277BoxId(lane))
 }
 
+#' Diagnostic 3 (MULTISCHOLAR_KIT277_DIAG): the export bookkeeping of the owner at a point (no expectation reads it).
+kit277ExportState <- function(label, api, probe, file) {
+    emit <- function(name, value) cat("KIT277DIAG3", label, name, "=", paste(utils::capture.output(utils::str(value, give.attr = FALSE, vec.len = 40, nchar.max = 2000)), collapse = " "), "\n", file = file, append = TRUE)
+    manager <- probe$manager()
+    context <- manager$.context
+    pending <- context$export_pending
+    owned <- context$owned_export
+    emit("export_pending_is_null", is.null(pending))
+    emit("export_pending", kit277Try(if (!is.null(pending)) list(status = pending$status, generation = pending$generation, request_id = pending$request_id)))
+    emit("head_entity", kit277Try(context$head$entity_id))
+    emit("owned_export_generation", kit277Try(owned$generation %||% "<no owned export>"))
+    emit("owned_generation_equals_head", kit277Try(identical(owned$generation, context$head$entity_id)))
+    emit("runner", kit277Try(list(session_application_is_null = is.null(workflowSessionApplication(api$session)),
+        class = class(workflowSessionApplication(api$session)))))
+    emit("archive_members", kit277Try({
+        path <- owned$archive_path
+        if (is.null(path) || !file.exists(path)) "<no archive file>" else {
+            members <- utils::untar(path, list = TRUE)
+            list(n = length(members), da_members = grep("(^|/)da/|da_proteins|Volcano|NumSig|Heatmap", members, value = TRUE))
+        }
+    }))
+    invisible(NULL)
+}
+
 #' The Summary's Save Workflow Arguments then Copy, through the tab's own inputs; returns the notifications Copy raised.
-kit277CopyClick <- function(api, probe) {
+#' `diag` (`list(label, file)`, diagnostic 3 only) logs the export bookkeeping around the Save press, the Save press's own
+#' notifications in full, and traces the archive refresh and the export it may start.
+kit277CopyClick <- function(api, probe, diag = NULL) {
     lane <- probe$lane
     prefix <- if (identical(lane$omic_type, "proteomics")) "session_summary" else "summary"
     api$set(stats::setNames(list(prefix), api$tabs))
     api$set(stats::setNames(list(lane$lane_id, "KIT-277 copy check"), paste0(prefix, c("-experiment_label", "-description"))))
-    kit277Click(api, paste0(prefix, "-save_workflow_args"))
+    press_save <- function() kit277Click(api, paste0(prefix, "-save_workflow_args"))
+    if (is.null(diag)) {
+        press_save()
+    } else {
+        log <- function(...) cat("KIT277DIAG3", diag$label, ..., "\n", file = diag$file, append = TRUE)
+        probe$clear_notes()
+        kit277ExportState(paste0(diag$label, "_before_save"), api, probe, diag$file)
+        refresh_original <- get("refreshDIANativeSummaryArchive", asNamespace("MultiScholaR"))
+        export_original <- get("runDIANativeSessionExport", asNamespace("MultiScholaR"))
+        traced_refresh <- function(workflow, source_dir, ...) {
+            manager <- workflow$state_manager
+            owned <- manager$.context$owned_export
+            log("refresh called | early return expected =", kit277Try(identical(owned$generation, manager$.context$head$entity_id)),
+                "| owned generation =", kit277Try(owned$generation %||% "<none>"), "| head =", kit277Try(manager$.context$head$entity_id))
+            result <- tryCatch(refresh_original(workflow, source_dir, ...), error = function(e) {
+                log("refresh ERROR class =", paste(class(e), collapse = "/"), "| call =", paste(deparse(conditionCall(e)), collapse = " "),
+                    "| message =", conditionMessage(e))
+                stop(e)
+            })
+            log("refresh returned | export_pending is null after =", kit277Try(is.null(manager$.context$export_pending)))
+            result
+        }
+        traced_export <- function(...) {
+            log("runDIANativeSessionExport called")
+            result <- tryCatch(export_original(...), error = function(e) {
+                log("export ERROR class =", paste(class(e), collapse = "/"), "| call =", paste(deparse(conditionCall(e)), collapse = " "),
+                    "| message =", conditionMessage(e))
+                stop(e)
+            })
+            log("runDIANativeSessionExport returned | publication status =", kit277Try(result$publication$status))
+            result
+        }
+        console <- utils::capture.output(testthat::with_mocked_bindings(press_save(),
+            refreshDIANativeSummaryArchive = traced_refresh, runDIANativeSessionExport = traced_export, .package = "MultiScholaR"))
+        for (line in console) log("save console |", line)
+        log("save_notes_full =", paste(probe$notes(), collapse = " || "))
+        kit277ExportState(paste0(diag$label, "_after_save"), api, probe, diag$file)
+    }
     probe$clear_notes()
     kit277Click(api, paste0(prefix, "-copy_to_publication"))
     probe$notes()
@@ -634,13 +697,14 @@ kit277OrganismScenario <- function() {
         out$record_da <- kit277RecordHasDa(probe)
         out$export_da <- kit277ExportHasDa(probe)
         out$status_enrichment <- probe$status()$enrichment_analysis
-        out$copy_notes_after <- kit277CopyClick(api, probe)
+        out$copy_notes_after <- kit277CopyClick(api, probe, if (nzchar(Sys.getenv("MULTISCHOLAR_KIT277_DIAG"))) list(label = "B3", file = diag_file))
         kit277Diag("B_after_first_save_and_copy", api, probe)
         # The enrichment Run is refused until the DA runs again.
         kit277Enrich(api, probe, "10090")
         out$enrichment_before_da <- !is.null(probe$manager()$.context$snapshot$enrichment_results)
         kit277Diag("C_after_refused_enrichment", api, probe)
         # The DA run fetches the new organism's annotation.
+        if (nzchar(Sys.getenv("MULTISCHOLAR_KIT277_DIAG"))) kit277ExportState("D3_pre_da_press", api, probe, diag_file)
         dalog <- function(...) cat("KIT277DIAG D_press", ..., "\n", file = diag_file, append = TRUE)
         original_da <- get("runDIAReferenceDaAnalysis", asNamespace("MultiScholaR"))
         traced_da <- function(...) {
@@ -679,7 +743,7 @@ kit277OrganismScenario <- function() {
         kit277Diag("E_after_enrichment", api, probe)
         out$enrich_organisms <- kit277Organisms(probe$bus("uniprot_dat_cln"))
         out$copy_after <- kit277Gate(api, probe, TRUE)
-        out$copy_notes_rerun <- kit277CopyClick(api, probe)
+        out$copy_notes_rerun <- kit277CopyClick(api, probe, if (nzchar(Sys.getenv("MULTISCHOLAR_KIT277_DIAG"))) list(label = "F3", file = diag_file))
         kit277Diag("F_after_second_save_and_copy", api, probe)
         out
     }))
@@ -1079,4 +1143,21 @@ test_that("KIT-277 G3 (guard): a first import into a project with no table proce
     expect_true(is.data.frame(workflow_data$aa_seq_tbl_final))
     expect_gt(nrow(workflow_data$aa_seq_tbl_final), 0L)
     expect_true(file.exists(file.path(source_dir, "aa_seq_tbl_final.RDS")))
+})
+
+test_that("KIT-277 diagnostic 3 (not a row): the export bookkeeping after a prot_lfq formula Save and its Save Workflow Arguments", {
+    testthat::skip_if(!nzchar(Sys.getenv("MULTISCHOLAR_KIT277_DIAG")), "diagnostic only")
+    file <- tempfile("k277diag3-")
+    kit277Lane("prot_lfq", "da", function(api, probe) {
+        lane <- probe$lane
+        kit277ExportState("F1_before_formula_save", api, probe, file)
+        kit277Resave(api, lane, "formula")
+        kit277Confirm(api, lane)
+        probe$flush()
+        kit277ExportState("F1_after_formula_save", api, probe, file)
+        kit277CopyClick(api, probe, list(label = "F1", file = file))
+        NULL
+    })
+    cat(readLines(file), sep = "\n")
+    succeed()
 })
