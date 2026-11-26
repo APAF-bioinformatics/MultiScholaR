@@ -702,32 +702,55 @@ test_that("KIT-247 G3 (VAL-277): after the cut, Quality Control re-applied and a
 })
 
 # ---------------------------------------------------------------------------------------------------------------------
-# VAL-331 (the owner, 2026-11-26): VAL-288 is WITHDRAWN from KIT-247. A formula-only Save and, on the proteomics import,
-# an organism, taxon or FASTA-only Save answer "nothing changed": no question, nothing reset, no status moves.
+# VAL-331 (the owner, 2026-11-26) withdrew VAL-288 from KIT-247 and made it KIT-277 (VAL-345, VAL-353): a formula-only Save
+# and, on the proteomics import, an organism-only Save ask first and are carried through; these two rows, which pinned the
+# withdrawn answer ("nothing changed"), are edited by KIT-277 to the restored behaviour (the rows of
+# test-kit277-resave-carried-through.R assert it in detail).
 # ---------------------------------------------------------------------------------------------------------------------
 
 for (lane_id in c("prot_lfq", "lipid_canonical")) {
-    test_that(paste("KIT-247 W288a (VAL-331):", lane_id, "a formula-only re-save asks nothing, resets nothing and says nothing changed"), {
+    test_that(paste("KIT-247 W288a (VAL-331, edited by KIT-277):", lane_id, "a formula-only re-save asks, sets the differential analysis back and the next run fits the new formula"), {
         key <- if (identical(lane_id, "prot_lfq")) "differential_expression" else "differential_analysis"
         out <- kit247Lane(lane_id, "da", function(api, probe) {
             before <- list(history = probe$history(), head = probe$head(), entity = probe$entity(), status = probe$status(),
                 modals = probe$modals())
             probe$clear_notes()
             kit247Resave(api, probe$lane, "formula")
-            list(before = before, modals = probe$modals(), history = probe$history(), head = probe$head(),
-                entity = probe$entity(), status = probe$status(), notes = probe$notes())
+            asked <- probe$modals() > before$modals
+            if (asked) kit247Confirm(api, probe$lane)
+            probe$flush()
+            after <- list(status = probe$status(), notes = probe$notes(),
+                da_reference = !is.null(probe$manager()$.context$snapshot$da_results))
+            if (identical(probe$lane$omic_type, "proteomics")) {
+                api$set(stats::setNames(list("da"), api$tabs))
+                api$set(list(`differential_expression-da_q_val_thresh` = 0.05, `differential_expression-treat_lfc_cutoff` = 0))
+                modals <- probe$modals()
+                kit247Click(api, "differential_expression-run_da_analysis")
+                if (probe$modals() > modals) kit247Click(api, "differential_expression-acknowledge_qvalue_warning")
+            } else {
+                api$set(stats::setNames(list("de"), api$tabs))
+                api$set(list(`de-da_q_val_thresh` = 0.05, `de-treat_lfc_cutoff` = 0))
+                kit247Click(api, "de-run_da_analysis")
+            }
+            probe$flush()
+            ran <- withWorkflowStateScope(probe$manager(), function() {
+                reference <- probe$manager()$.context$snapshot$da_results
+                if (isSavedWorkflowReference(reference)) {
+                    resolveWorkflowStateValue(probe$manager()$.context, reference)$parameters$formula
+                } else "<no DA>"
+            })
+            list(before = before, asked = asked, after = after, ran_formula = ran)
         })
         expect_identical(out$before$status[[key]], "complete")
-        expect_identical(out$modals, out$before$modals)
-        expect_true(any(grepl("Design saved; nothing changed.", out$notes, fixed = TRUE)))
-        expect_identical(out$history, out$before$history)
-        expect_identical(out$head, out$before$head)
-        expect_identical(out$entity, out$before$entity)
-        expect_identical(out$status, out$before$status)
+        expect_true(out$asked)
+        expect_identical(out$after$status[[key]], "pending")
+        expect_false(out$after$da_reference)
+        expect_true(any(grepl("Formula saved.", out$after$notes, fixed = TRUE)))
+        expect_identical(out$ran_formula, "~ 0 + group + replicates")
     })
 }
 
-test_that("KIT-247 W288b (VAL-331): a proteomics Import Existing Design with only the organism changed asks nothing, applies nothing and says nothing changed", {
+test_that("KIT-247 W288b (VAL-331, edited by KIT-277): a proteomics Import Existing Design with only the organism changed asks, and Save applies the new organism and removes the earlier annotation", {
     out <- kit247Lane("prot_lfq", "correlation", function(api, probe) {
         folder <- kit247ExportedDesign(probe, identity)
         before <- list(history = probe$history(), head = probe$head(), entity = probe$entity(), modals = probe$modals(),
@@ -737,19 +760,21 @@ test_that("KIT-247 W288b (VAL-331): a proteomics Import Existing Design with onl
         api$set(list(`design_matrix-import_dir_text` = folder, `design_matrix-import_taxon_id` = 10090L,
             `design_matrix-import_organism_name` = "Mus musculus"))
         kit247Click(api, "design_matrix-confirm_import")
+        asked <- probe$modals() > before$modals
+        if (asked) kit247Click(api, "design_matrix-confirm_design_resave")
         probe$flush()
-        list(before = before, modals = probe$modals(), history = probe$history(), head = probe$head(),
-            entity = probe$entity(), status = probe$status(), taxon = probe$bus("taxon_id"),
-            organism = probe$bus("organism_name"), notes = probe$notes())
+        list(before = before, asked = asked, history = probe$history(), head = probe$head(),
+            taxon = probe$bus("taxon_id"), organism = probe$bus("organism_name"),
+            annotation = probe$bus("uniprot_dat_cln"), notes = probe$notes())
     })
-    expect_identical(out$modals, out$before$modals)
-    expect_true(any(grepl("Design saved; nothing changed.", out$notes, fixed = TRUE)))
+    expect_true(out$asked)
+    expect_true(any(grepl("Organism saved.", out$notes, fixed = TRUE)))
+    expect_false(any(grepl("nothing changed", out$notes, fixed = TRUE)))
     expect_identical(out$history, out$before$history)
     expect_identical(out$head, out$before$head)
-    expect_identical(out$entity, out$before$entity)
-    expect_identical(out$status, out$before$status)
-    expect_identical(out$taxon, out$before$taxon)
-    expect_identical(out$organism, out$before$organism)
+    expect_equal(as.numeric(out$taxon), 10090)
+    expect_identical(out$organism, "Mus musculus")
+    expect_null(out$annotation)
 })
 
 test_that("KIT-247 C05 (AUDIT closure check): a confirmed proteomics import refused at the checkpoint puts back the FASTA and UniProt tables and records no input", {
