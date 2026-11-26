@@ -504,7 +504,7 @@ implemented, the evidence runs, the precedents, the classification and what is n
 
 No stored value is edited beyond the two VAL-303 pins and the three VAL-352 edits. Failing until the end-of-project
 re-record (VAL-303, VAL-352 (2) to (4)):
-- `tests/testthat/test-omic-norm-module.R` (frozen captures at `:571`-`:1510`, compared at `:1549`, call sites
+- `tests/testthat/test-omic-norm-module.R` (frozen captures `:553`-`:1539`, compared at `:1549`, call sites
   `:1560`-`:1585`): 56 expectations. The 12 internal-standard provenance digests are VAL-303's; the other 44 (logs,
   states, outputs, final PCA of the manual and automatic sessions, and the skip sessions' provenance) VAL-352 (4).
   Part B also moves, inside those 56: log (manual run, automatic run), provenance (manual run, skip_correlation, reset;
