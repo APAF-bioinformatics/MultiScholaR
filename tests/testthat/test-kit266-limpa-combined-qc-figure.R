@@ -375,9 +375,9 @@ test_that("KIT-266 E10: Copy to Results Summary after the covariates step delive
         subfeature_qc_dir = file.path(root, "peptide_qc"))
     for (path in setdiff(unlist(paths), fixture$paths$protein_qc_dir)) dir.create(path, recursive = TRUE, showWarnings = FALSE)
     testthat::local_mocked_bindings(getProjectPaths = function(...) paths, .package = "MultiScholaR")
-    printed <- k266Quiet(utils::capture.output(copyToResultsSummary(omic_type = "proteomics", experiment_label = "kit266",
+    printed <- tryCatch(k266Quiet(utils::capture.output(copyToResultsSummary(omic_type = "proteomics", experiment_label = "kit266",
         contrasts_tbl = data.frame(contrasts = "groupB-groupA"), design_matrix = data.frame(Run = "S1", group = "A"),
-        force = TRUE)))
+        force = TRUE))), error = function(e) conditionMessage(e))
     figures <- file.path(paths$results_summary_dir, "QC_figures")
     expect_true(file.exists(file.path(figures, "proteomics_composite_QC_figure.png")))
     expect_true(file.exists(file.path(figures, "proteomics_composite_QC_figure.pdf")))
@@ -389,20 +389,24 @@ test_that("KIT-266 E11: a session exported after the covariates step and importe
     fixture <- protNormW1LimpaOwner()
     k266Drive(fixture, k266LaneSteps("covariates"))
     manager <- fixture$manager
-    workflow <- fixture$workflow
-    workflow$ruv_optimization_result <- workflow$ruv_optimization_result %||% list(ruv_skipped = TRUE)
-    workflow$data_format <- workflow$data_format %||% "diann"
-    workflow$data_type <- workflow$data_type %||% "peptide"
+    manager$.context$session_format <- "native_v1"
     restored <- tryCatch({
+        # The native export as KIT-271's test runs it (`collectDIANativeSessionMetadata`, `collectDIANativeGuiFiles`,
+        # `runDIANativeSessionExport`), then the import and the restore of the GUI files.
         norm <- new.env(parent = emptyenv())
-        final <- withDIAStateScope(manager, function() manager$getState())
-        norm$correlation_filtered_obj <- saveDIAOwnedValue(final, "correlation_filtered_obj", manager)
-        norm$correlation_threshold <- 0.5
-        result <- k266Quiet(testthat::with_mocked_bindings(withDIAStateScope(manager, function()
-            runProtNormExportSessionWorkflow(workflow, norm, list(norm_method = "none", ruv_mode = "covariates"),
-                fixture$paths$source_dir, withProgressFn = function(message, value, expr) force(expr),
-                incProgressFn = function(...) NULL)), getDIAActiveManager = function() manager))
-        archive <- result$exportArtifacts$sessionFilepath
+        archive <- NULL
+        k266Quiet(withDIAStateScope(manager, function() {
+            norm$correlation_filtered_obj <- getDIAStateReference(manager)
+            collected <- collectDIANativeSessionMetadata(fixture$workflow, norm, list(norm_method = "none", ruv_mode = "covariates"))
+            files <- collectDIANativeGuiFiles(manager, collected$metadata)
+            source_dir <- fixture$paths$source_dir
+            result <- runDIANativeSessionExport(manager, collected$metadata, source_dir, extra_references = collected$references,
+                dependencies = files, prepare_outputs = function(metadata, request) {
+                    saveProtNormExportMetadataFiles(metadata, source_dir, messageFn = function(...) NULL, strict = TRUE)
+                    writeLines("kit266", file.path(source_dir, "filtered_session_summary.txt"))
+                })
+            archive <<- result$publication$archive_path
+        }))
         fresh <- file.path(withr::local_tempdir(), "fresh")
         paths <- list(source_dir = file.path(fresh, "scripts", "proteomics"),
             protein_qc_dir = file.path(fresh, "results", "proteomics", "protein_qc"),

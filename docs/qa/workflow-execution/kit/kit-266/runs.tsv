@@ -1,2 +1,3 @@
 run	commit	purpose	job_minutes	core_hours	result
 45713081362	8fa24087 (kit-266-g0, staging 894b9cc8)	G0 (valid; first send 45711141374 was an instrument defect, 11.1 min)	26.9	1.79	P1 to P7 as predicted; memory 0.914 / 0.539 GiB (spent before this branch)
+45737408677	3b79ebd4	R1 tests only (new file, kit259b, kit227)	27.8	1.85	101 failed 44 passed 0 errors 6 skipped in the new file; kit259b 5 failed; kit227 1 failed: as predicted; every E row failed by assertion, G1-G6 passed; E11 failed on its export mechanics (tar), an instrument defect: re-send 1 of 3

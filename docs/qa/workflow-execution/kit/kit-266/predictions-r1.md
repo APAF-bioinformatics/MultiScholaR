@@ -36,3 +36,14 @@ expectations: limpa's stage words and the `ruv_covariates_cancor` panel m). Ever
 (base side). Predictions for them: base-only failures on exactly those assertions (`test-prot-norm-core.R` 2: the W3 limpa
 operations lists and the `composite_files` set-aside count the head makes, the A111-01 length and operations list;
 `test-prot-norm-worker-figures.R` 3); a base-only failure elsewhere is a stop.
+
+## R1 result and the instrument re-send (VAL-54, re-send 1 of at most 3 across R1 and M1)
+
+Run 45737408677 (27.8 job-minutes): new file 44 passed / 101 failed / 0 errors / 6 skipped; kit259b 5 failed; kit227 1 failed, as
+predicted above. Every E row failed at the stated value by assertion; G1 to G6 and the classic expectations passed. The six
+skips are the five rows that skip after a failed assertion (E2, E3, E13, E12 (b), E19) and E11. One defect of the mechanics: E11's
+export failed in the test's own helper ("This does not look like a tar archive", the tab's export function on a limpa
+project), so it did not fail for its stated reason (nothing to carry). Fix (no expected value, threshold or comparison
+changes): E11 uses the native export as KIT-271's test runs it. Re-send: the new file only, to observe E11 (and all rows once
+more) on the same code; prediction: as above, E11 failing at `file.exists(restored)` or at the byte comparison, not at the
+export. Ceiling 45 job-minutes, expected 15.
