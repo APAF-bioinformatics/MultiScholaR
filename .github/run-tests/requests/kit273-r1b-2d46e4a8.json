@@ -1,0 +1,20 @@
+{
+  "requested_by": "KIT-273 R1 instrument run 1 of 3: test mechanics repaired (T9 listing, T10 fixture), tests-only commit, ceiling 45 job-minutes",
+  "label": "KIT-273 R1b tests-only 2d46e4a8",
+  "package_commit": "2d46e4a8cb849a81b39de1010a321bb258d789e9",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [
+    "test-kit273-limpa-ruv-delivery.R"
+  ],
+  "shards": 1,
+  "file_timeout_minutes": 35,
+  "file_timeouts": {},
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": [],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
