@@ -481,8 +481,10 @@ formatConfigList <- function(config_list, indent = 0) {
                 value_display <- tryCatch(
                     {
                         if (length(value) > 1) {
-                            # KIT-269: every vector value comma-joined and in full (REC-072, REC-001).
-                            paste(as.character(value), collapse = ", ")
+                            # KIT-269: every vector value in full; a named vector as name=value, the record path's form (REC-072, REC-001).
+                            text <- as.character(value)
+                            if (!is.null(names(value))) text <- paste0(names(value), "=", text)
+                            paste(text, collapse = ", ")
                         } else {
                             result <- as.character(value)
                             if (length(result) == 0) "[Empty/NULL]" else result

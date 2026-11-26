@@ -75,8 +75,10 @@ both sides: `test-omic-summary-module.R` 1675/28 (the predicted 28), `test-gui-e
 83/2, `test-kit224-ruv-feature-levels.R` 65/1. Named predictions: `test-kit235-lipid-metab-report-parser.R` 54/0 same;
 `test-general-filemgmt-config-direct-shared.R` 33/0 same; `test-general-filemgmt-config-roundtrip-contracts.R` 24/0
 same; no stored digest moved. R CMD check: base and head each 0 ERRORs, 3 WARNINGs, 3 NOTEs, identical findings
-(6 on both, none only on either side). Prediction check: the new file's head count was predicted 31 passed (my
-count of expectations), observed 33 (the by-hand count missed two expectations); every verdict prediction held.
+(6 on both, none only on either side). Prediction check: the committed head count was 20 (90a1f289), then 24
+(56872624); counted per call it is 31; observed 33 because `expect_match` evaluates its object twice, so T6's parent
+case runs `line()` (two expectations) twice. The base was predicted 15/5/4; observed 17/6/4 (8f5c30e8's count row adds
+one failure; the double evaluation adds two passes). Every verdict prediction held.
 
 ## Acceptance criteria
 
@@ -109,7 +111,6 @@ and ceiling 99.0. No correction pass, no further instrument run.
 ## Not checked
 
 - No R on the laptop; everything above is from the runner.
-- The long failure line when a `purrr` error is the reason (the message carries the call's source; see `wording.md`).
 - Whether the lipidomics and metabolomics report templates read the newly printed block (only `test-kit235` cases M and L2, same).
 - Windows. Real data.
 - Merge with the partner branches by `git merge-tree` only: kit-269 against `origin/merge-train-20261126k` merges
@@ -122,7 +123,7 @@ What was wrong and who was affected. The "Additional Configuration Parameters" b
 with no message, whenever the file was written without an analysis record, because a setting with several numbers could
 not be listed: the shipped `[plotRle] yaxis_limit = -3,3` in proteomics, the RUV control vector `ctrl` in lipidomics
 and metabolomics. The exported `createStudyParametersFile()` stopped on the shipped configuration ("Result must be
-length 1, not 2"). On `main` and every earlier release, every proteomics project that uses the shipped configuration
+length 1, not 2"). In `main` (the lipidomics and metabolomics files after RUV too, by reading: `main:R/mod_lipid_summary.R:232`, `main:R/mod_metab_summary.R:232`, `ctrl` stored at `main:R/func_lipid_s4_objects.R:2552`) and the published release 0.3.6.3 (`v0.3.6.3:R/func_general_filemgmt.R:1155`, `:4047`; tags before it were not read), every proteomics project that uses the shipped configuration
 wrote the file with an empty block (main: `main:R/func_general_filemgmt.R:1755` and `main:R/func_general_helpers.R:1072`
 for `formatConfigList`, the call at `:5388` inside a `tryCatch` whose handler (`:5399`) loses its assignment; the
 conversion of `yaxis_limit` at `main:R/func_general_filemgmt.R:1250-1252`). In 0.9 the application takes the record path
@@ -131,7 +132,7 @@ were cut after five with "..." and are now printed in full.
 
 Code references. Base 4d588ba3: `R/func_general_filemgmt_config_io_helpers.R:483-488` (five-value cut, character vectors
 only; plain `as.character` for others), `R/func_general_filemgmt_study_parameter_writer.R:973-976` (handler assigned with
-`<-`). Fix 220b1e2e: the plain-value branch joins every value of length above one with ", " in full; the handler
+`<-`). Fix 220b1e2e (`R/func_general_filemgmt_config_io_helpers.R:483-485`, `R/func_general_filemgmt_study_parameter_writer.R:973-979`): the plain-value branch joins every value of length above one with ", " in full; the handler
 assigns with `<<-` and writes "The configuration settings could not be listed here: <message>" (draft wording).
 
 Results: unchanged (display only). Evidence: runs 45707147607 (R1) and 45709024838 (R2) above; base block observed
@@ -159,3 +160,13 @@ must equal `c("Ctrl:", "  Assay Pos: Feat_A=TRUE, Feat_B=FALSE, Feat_C=TRUE")`.
   `test-general-filemgmt-config-roundtrip-contracts.R` (24/0, `same`). Ceiling 45 job-minutes (expected about 30).
   `test-kit213-study-parameters-labels.R` is not on this branch and is left to the train.
 - Decision: a missed prediction is a result: recorded, no repair, stop and hand back.
+
+Change report, correction pass: the fix commit (below) adds, in the same vector branch, `name=value` for a named vector
+(`R/func_general_filemgmt_config_io_helpers.R:483-487`), so the RUV control vector in proteomics, lipidomics and
+metabolomics prints each feature id with its flag, as the record path does. Display only.
+
+### Run 1 (45726785537, tests-only commit edf5d314, no base): prediction held
+
+33 passed, 1 failed, 0 errors, 0 skipped (`r-corr1-tests.tsv`): the new T2 row failed by value, actual `Assay Pos: TRUE,
+FALSE, TRUE`, expected `Assay Pos: Feat_A=TRUE, Feat_B=FALSE, Feat_C=TRUE`. 7.5 job-minutes (plan 0.28, tests 6.72,
+results 0.53) = 0.50 core-hours.
