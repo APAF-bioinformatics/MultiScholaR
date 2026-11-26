@@ -441,6 +441,11 @@ generateLipidDAHeatmap <- function(
         return(NULL)
     }
 
+    # KIT-255 (VAL-283): a sample with no finite value in the combined matrix (set missing by the sample-correlation filter) is left
+    # out; scaled, it would be drawn and clustered as a column of row means.
+    drawn <- colSums(is.finite(expr_matrix)) > 0
+    if (any(drawn)) expr_matrix <- expr_matrix[, drawn, drop = FALSE]
+
     logger::log_info(sprintf("   Expression matrix: %d x %d", nrow(expr_matrix), ncol(expr_matrix)))
 
     # Apply scaling

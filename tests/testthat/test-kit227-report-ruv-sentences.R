@@ -278,8 +278,12 @@ test_that("KIT-227 E7: the limpa route's Results caption claims covariates only 
         "after RUV-III correction (the corrected matrix entered the differential abundance model)"))
     skipped <- k227Case("DIANN_limpa", character(), list(dpc))
     expect_false(k227Has(skipped$results, "carried the RUV-III factors as covariates"))
-    expect_true(k227Has(skipped$results, paste("Figure 1 shows four quality-control views at each stage of processing drawn",
-        "for this analysis. RUV-III correction was not applied to this dataset.")))
+    # KIT-266 (VAL-316 (4), declared edit): a limpa project with no covariates step has the two-column Figure 1, so its Results
+    # paragraph names the two stages and their panel letters.
+    expect_true(k227Has(skipped$results, paste0("Figure 1 shows four quality-control views at two stages of processing: ",
+        "DPC-Quant's protein estimates (a complete log2 matrix; model-based where peptides were not detected) ",
+        "(left column: panels a, c, e, g) and after the peptide count filter, with no between-sample normalisation applied, ",
+        "before the sample-correlation filter (right column: b, d, f, h). RUV-III correction was not applied to this dataset.")))
     # The covariates mode keeps its caption.
     covariates <- k227Case("DIANN_limpa", character(), list(dpc, k227Step("protein_ruv_covariates",
         outcomes = list(k = 2, ruv_mode = "covariates", percentage_as_neg_ctrl = 10, control_count = 100,
@@ -360,6 +364,32 @@ test_that("KIT-227 E8: a manual transcriptomics RUVs is not described as a grid 
 
 # --- G1: the default text is byte-identical to the base templates' -------------------------------------------------------
 
+# KIT-272 (declared edit of G1, by substitution on the base side; the frozen base copies are untouched): the RUV-applied
+# Results bullets and the Methods phrase about Figure 1's panels d to f changed by design (the owner's decisions VAL-316
+# (7) and VAL-332). File-local copies of the constants of test-kit272-prot-box-panel-text.R, never sourced.
+k272OldBullet <- "\u2022 Density plots (panels d-f): the distribution of protein intensities per sample."
+k272NewBullet <- paste0("\u2022 Principal component scores by group (panels d-f): for each experimental group, a box plot of the ",
+    "samples' scores on principal component 1 (upper plot) and principal component 2 (lower plot), the same scores that ",
+    "panels a-c plot as points. The line in each box is the median, the box spans the first to the third quartile, the ",
+    "whiskers reach the most extreme scores within 1.5 times the interquartile range of the box, and scores beyond them ",
+    "are drawn as points. The notch spans the median plus and minus 1.58 times the interquartile range divided by the ",
+    "square root of the number of samples in the group: as a rough guide, two groups whose notches do not overlap have ",
+    "medians that differ at about the 5% level (McGill, Tukey and Larsen, 1978). With fewer than about ten samples in a ",
+    "group the notch extends beyond the box and should not be read. Each stage is a separate analysis, so the scores of ",
+    "different panels are not on a common scale and their signs are arbitrary.")
+k272OldPca <- "\u2022 Principal component analysis (panels a-c): samples plotted on the first two principal components,\n  coloured by experimental group."
+k272NewPca <- paste0("\u2022 Principal component analysis (panels a-c): samples plotted on the first two principal components of the ",
+    "log2 protein values (centred, not scaled), computed at each stage from the tenth of the proteins with the largest ",
+    "ratio of standard deviation to mean of their log2 values; coloured by experimental group.")
+k272OldMethod <- "density boxplots"
+k272NewMethod <- "box plots of the principal component scores"
+
+#' `text` with the one `old` replaced by `new`, after asserting that `old` is there exactly once
+k272Substitute <- function(text, old, new) {
+    expect_identical(lengths(regmatches(text, gregexpr(old, text, fixed = TRUE))), 1L, info = old)
+    sub(old, new, text, fixed = TRUE)
+}
+
 test_that("KIT-227 G1: Automatic on the group column prints the base text byte for byte, without and with a record", {
     proteomics_cases <- list(
         file_only = list(lines = c(k227ProtAuto, k227ProtCounts), record = NULL),
@@ -376,8 +406,11 @@ test_that("KIT-227 G1: Automatic on the group column prints the base text byte f
             # the "Technical replicate averaging" paragraph; every other byte of the method text is the base's.
             base_method <- if (identical(name, "DIANN_limpa")) sub(paste0("(?s)\\*\\*Technical replicate averaging\\*\\*\n\n",
                 ".*?\\(Oberg et al\\., 2008\\)\\.\n\n"), "", base$method, perl = TRUE) else base$method
+            base_method <- k272Substitute(base_method, k272OldMethod, k272NewMethod)
             expect_identical(head$method, base_method, info = info)
-            expect_identical(head$results, base$results, info = info)
+            base_results <- k272Substitute(base$results, k272OldBullet, k272NewBullet)
+            base_results <- k272Substitute(base_results, k272OldPca, k272NewPca)
+            expect_identical(head$results, base_results, info = info)
         }
     }
     for (name in k227Omics) {

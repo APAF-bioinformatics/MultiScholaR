@@ -675,6 +675,67 @@ convertDIANativeLegacyCheckpoints <- function(manager) {
     invisible(TRUE)
 }
 
+#' KIT-216 (VAL-175, item 6): an archive written before KIT-216 whose current state is a result (the proteomics
+#' enrichment, written by the Summary's refresh) is converted in the new owner before its view is built: the head becomes
+#' the table the DA manifest names as its source (exact), else KIT-212's table of a result head (`workflowDaTableState`,
+#' the last assay-class state of the active history); the history is cut to that table; the enrichment record stays in
+#' the states map as the product of that table when the DA's source is that table and it is one of the proteomics DA's
+#' four states, else it is not attached. One head publication; the archive file is not modified.
+#' @param manager The imported owner (reference states).
+#' @return NULL when nothing was converted; otherwise the notice for the user (T1, VAL-41 draft).
+#' @noRd
+convertDIANativeEnrichmentHead <- function(manager) {
+    if (!usesDIAReferenceStates(manager)) return(NULL)
+    context <- manager$.context
+    snapshot <- context$snapshot
+    result_state <- snapshot$current_state
+    head <- snapshot$states[[result_state]]
+    record <- if (!is.null(head)) tryCatch(readComponentMetadata(manager, head), error = function(e) NULL)
+    if (!isTRUE(record$data$class %in% workflowDeclaredClassNames("result"))) return(NULL)
+    history <- as.character(unlist(snapshot$state_history))
+    da <- if (isSavedWorkflowReference(snapshot$da_results)) resolveDIAStateValue(context, snapshot$da_results)
+    table <- NULL
+    for (state in history) if (identical(snapshot$states[[state]]$entity_id, da$source$entity_id)) table <- state
+    from_da <- !is.null(table)
+    if (!from_da) {
+        reference <- withWorkflowStateScope(manager, function() workflowDaTableState(manager)$reference)
+        for (state in history) if (identical(snapshot$states[[state]]$entity_id, reference$entity_id)) table <- state
+    }
+    if (is.null(table)) cli::cli_abort("the session file holds no table state", class = "saved_entity_corrupt")
+    attached <- from_da && table %in% c("ruv_covariates", "normalized", "ruv_corrected", "correlation_filtered")
+    snapshot$state_history <- snapshot$state_history[seq_len(match(table, history))]
+    snapshot$current_state <- table
+    snapshot$enrichment_results <- if (attached) list(state = result_state, source = snapshot$states[[table]],
+        da_results = snapshot$da_results)
+    snapshot <- truncateDIAStepProvenance(snapshot)
+    publishDIAStateHead(context, snapshot)
+    texts <- protSessionAfterEnrichmentTexts()
+    if (attached) texts$converted else paste(texts$converted_head, texts$not_attached)
+}
+
+#' KIT-216's user texts (VAL-41 drafts; the owner sets the final wording; `docs/qa/workflow-execution/kit/kit-216/
+#' wording.md`). Recorded divergence: plain words over conventions/R.md's "state the offending value" (as KIT-206).
+#' @noRd
+protSessionAfterEnrichmentTexts <- function() list(
+    converted = paste("This session file was saved by an earlier version after the enrichment analysis. It opens at the",
+        "table the enrichment was run on; the differential analysis and the enrichment results are kept."),
+    converted_head = paste("This session file was saved by an earlier version after the enrichment analysis. It opens at",
+        "the table the enrichment was run on."),
+    not_attached = paste("The enrichment results could not be attached to that table and are not shown; run the",
+        "enrichment again if you need them."),
+    export_missing = paste("The session file was not updated: no session has been exported from the Normalisation tab",
+        "since this project was opened or the application started (a peptide checkpoint does not count). The study",
+        "parameters, the analysis record and the integration input were saved. To save a session file you can reopen",
+        "later, press 'Export Filtered Data Session' in the Normalisation tab, then save again."),
+    export_stale = paste("The session file was not updated: the current table is not the one the last session export",
+        "saved. The study parameters, the analysis record and the integration input were saved. Press 'Export Filtered",
+        "Data Session' in the Normalisation tab, then save again."),
+    not_a_table = paste("the current step '%s' is not a protein table, so it cannot be saved as a session file. Go back",
+        "to the normalisation tab's result (Revert), then export."),
+    enrichment_da_stale = paste("The differential analysis these comparisons come from was run on an earlier step of the",
+        "table: the table was changed or reverted, or the differential analysis was run again. Run the differential",
+        "analysis on the current table, then run the enrichment."))
+
 #' Open a validated native archive in a new private project directory.
 #' @param path User-selected native archive; never an owned-generation shortcut.
 #' @param project_root Existing destination project directory.
@@ -753,7 +814,8 @@ openDIANativeSession <- function(path, project_root) {
     }
     if (manifest$schema %in% c("multischolar.dia_native_session.v2", "multischolar.dia_native_session.v3")) {
         for (state in setdiff(names(manager$.context$snapshot$states), "initial")) {
-            record <- readDIAStateMetadata(manager, getDIAStateReference(manager, state))
+            # KIT-216 (VAL-175): every declared class, so an enrichment record (a result class) is checked as a state.
+            record <- readComponentMetadata(manager, getDIAStateReference(manager, state))
             children <- expandWorkflowTableReferences(store, collectDIANativeReferences(list(record$data$components, record$data$support, record$data$products, record$data$dependencies)))
             for (child in children) if (!identical(child,
                 get0(child$entity_id, envir = store$records, inherits = FALSE))) {
@@ -1273,6 +1335,7 @@ adoptDIANativeSession <- function(imported, workflow_data, session, source_dir, 
         removeDIAReplacedSessionFolder(extracted, NULL, list(source_dir = source_dir))
     }, add = TRUE)
     convertDIANativeLegacyCheckpoints(manager)
+    conversion <- convertDIANativeEnrichmentHead(manager)
     for (field in names(imported$extra_references)) {
         reference <- imported$extra_references[[field]]
         if (!identical(reference$payload$codec, "qs2")) next
@@ -1288,6 +1351,7 @@ adoptDIANativeSession <- function(imported, workflow_data, session, source_dir, 
     view <- resolveDIANativeSessionView(manager, manager$.context$native_metadata_reference,
         imported$extra_references)
     validateProtDaFilteredSession(view, source_dir, manager)
+    view$enrichment_conversion <- conversion
     # KIT-222 (owner's OD-3): a design whose sample names hold runs of two marking actions is named on open.
     head <- readWorkflowHeadDesignForKeyCheck(manager)
     if (!is.null(head)) noteOmicsDesignReplicateKeyCollisionOnOpen(head$design, head$group_id, head$technical_replicate_id, head$run)
@@ -1674,15 +1738,23 @@ collectDIANativeGuiFiles <- function(manager, metadata) {
     }
     # KIT-206 (SD-3): the results file the run wrote (`results_file`); metadata saved before it (a later Summary
     # refresh of an earlier export) names the file by its RUV setting, as before.
-    if (is.character(metadata$results_file) && length(metadata$results_file) == 1L) {
-        add("protein_qc", metadata$results_file)
+    results_file <- if (is.character(metadata$results_file) && length(metadata$results_file) == 1L) {
+        metadata$results_file
     } else {
         final_stub <- paste0(if (!identical(metadata$ruv_mode, "skip")) "ruv_" else "",
             "normalised_results_cln_with_replicates")
-        add("protein_qc", paste0(final_stub, ".tsv"))
+        paste0(final_stub, ".tsv")
     }
+    # KIT-271 (VAL-317): on DIA with limpa the table is `normalised_` (before any RUV step); a project written by an
+    # earlier build holds the `ruv_` file only, which is then the file the export lists (the new name first).
+    if (identical(manager$workflow_type, "DIA_LIMPA")) {
+        held <- paste0(c("", "ruv_"), "normalised_results_cln_with_replicates.tsv")
+        held <- held[file.exists(file.path(roots$protein_qc, held))]
+        if (length(held)) results_file <- held[[1L]]
+    }
+    add("protein_qc", results_file)
     protein_names <- c("normalized_protein_matrix_pre_ruv.tsv", "remove_proteins_with_only_one_rep.tsv",
-        paste0("proteomics_composite_QC_figure.", c("png", "pdf", "rds")),
+        paste0("proteomics_composite_QC_figure.", c("png", "pdf", "rds", "placeholders")),
         paste0(rep(c("pre_norm", "post_norm", "ruv_corrected"), each = 4L), "_",
             rep(c("pca", "density", "rle", "correlation"), 3L), ".png"), "ruv_corrected_cancor.png")
     for (name in protein_names[file.exists(file.path(roots$protein_qc, protein_names))]) add("protein_qc", name)
@@ -1732,11 +1804,21 @@ refreshDIANativeSummaryArchive <- function(workflow, source_dir) {
     context <- manager$.context
     assertDIAExportReady(manager)
     owned <- context$owned_export
-    if (is.null(owned$metadata_reference)) cli::cli_abort("export the native session before Summary")
+    if (is.null(owned$metadata_reference)) {
+        # KIT-216 (SD-2, VAL-179): a class, so the Summary's Save can write the rest and say so (T2).
+        cli::cli_abort(protSessionAfterEnrichmentTexts()$export_missing, class = "workflow_export_missing")
+    }
     if (identical(owned$generation, context$head$entity_id)) return(invisible(owned))
     # KIT-206 (SD-1): the archive is not re-written from a head that is not the normalisation tab's last result.
     assertProtNormExportHeadCurrent(manager, owned$extra_references$correlation_filtered)
     metadata <- resolveDIAStateValue(context, owned$metadata_reference)
+    # KIT-216 (I05, I04): the RUV statement and the normalisation method of the run, as the export states them.
+    run <- resolveDIARuvRunDescription(manager)
+    if (!is.null(run$ruv_mode)) {
+        metadata$ruv_mode <- run$ruv_mode
+        metadata$ruv_applied <- !run$ruv_mode %in% c("skip", "none")
+    }
+    metadata$normalization_method <- resolveDIANormalisationMethod(manager, run, metadata$normalization_method)
     metadata$r6_current_state_name <- manager$current_state
     metadata$r6_state_history <- manager$state_history
     metadata$da_ui_params <- workflow$da_ui_params
@@ -1894,8 +1976,8 @@ collectDIANativeSessionMetadata <- function(workflow_data, norm_data, input) {
     state <- context$snapshot$current_state
     summary <- context$snapshot$state_metadata[[state]]
     if (is.null(summary)) {
-        cli::cli_abort("native export needs component metadata; explicitly convert the legacy session first",
-            class = "saved_entity_unsupported")
+        # KIT-216 (VAL-175, T4): the head is not a protein table (a peptide or result state); the text says so truly.
+        cli::cli_abort(sprintf(protSessionAfterEnrichmentTexts()$not_a_table, state), class = "saved_entity_unsupported")
     }
     config <- workflow_data$config_list
     global <- config$globalParameters
@@ -1914,12 +1996,15 @@ collectDIANativeSessionMetadata <- function(workflow_data, norm_data, input) {
     }
     # KIT-206 (SD-3): the results file and the RUV statement follow the run, not the tab's RUV setting: the file the
     # correlation's writer names (`publishDIAReferenceCorrelation`), the mode the tab's RUV summary reads.
-    results_file <- resolveProtNormCorrelationResultFilenames(norm_data$ruv_optimization_result,
+    results_file <- resolveProtNormCorrelationTableNames(manager, norm_data$ruv_optimization_result,
         workflow_data$ruv_optimization_result, messageFn = function(...) invisible(NULL))$tsvFilename
-    ruv_mode <- resolveDIARuvRunDescription(manager)$ruv_mode %||% input$ruv_mode
+    run <- resolveDIARuvRunDescription(manager)
+    ruv_mode <- run$ruv_mode %||% input$ruv_mode
     metadata <- list(r6_current_state_name = state, r6_state_history = context$snapshot$state_history,
         contrasts_tbl = workflow_data$contrasts_tbl, design_matrix = workflow_data$design_matrix,
-        config_list = config, export_timestamp = Sys.time(), normalization_method = input$norm_method,
+        config_list = config, export_timestamp = Sys.time(),
+        # KIT-216 (I04, E-5): the method that was run, not the tab's selector (`resolveDIANormalisationMethod`).
+        normalization_method = resolveDIANormalisationMethod(manager, run, input$norm_method),
         ruv_mode = ruv_mode, ruv_applied = !ruv_mode %in% c("skip", "none"), results_file = results_file,
         ruv_k = norm_data$best_k,
         correlation_threshold = norm_data$correlation_threshold,

@@ -1,0 +1,16 @@
+seq	file	test	lane	step	n_assays	n_keys	failed_contrasts	contrasts	friendly_names
+1	test-omic-da-module.R	(b) in process: lipid_main	NA	NA	0	0		groupKO-groupWT|groupRES-groupWT	KO_vs_WT|RES_vs_WT
+2	test-omic-da-module.R	(b) in process: lipid_no_friendly	NA	NA	0	0		groupKO-groupWT|groupRES-groupWT	KO_vs_WT|RES_vs_WT
+3	test-omic-da-module.R	(b) in process: metab_main	NA	NA	0	0		groupKO-groupWT|groupRES-groupWT	KO_vs_WT|RES_vs_WT
+4	test-omic-da-module.R	(b) in process: metab_no_friendly	NA	NA	0	0		groupKO-groupWT|groupRES-groupWT	KO_vs_WT|RES_vs_WT
+5	test-omic-da-module.R	(b) in process: trx_main	NA	NA	0	0		groupSera-groupRPMI	Sera_vs_RPMI
+6	test-omic-da-module.R	(b-managed) lipid_managed: the worker's operations in order, the notifications, tab_status and the rows	NA	NA	0	0		groupKO-groupWT|groupRES-groupWT	KO_vs_WT|RES_vs_WT
+7	test-omic-da-module.R	(b-managed) metab_managed: the worker's operations in order, the notifications, tab_status and the rows	NA	NA	0	0		groupKO-groupWT|groupRES-groupWT	KO_vs_WT|RES_vs_WT
+8	test-omic-da-module.R	(b-managed) trx_managed: the worker's operations in order, the notifications, tab_status and the rows	NA	NA	0	0		groupSera-groupRPMI	Sera_vs_RPMI
+9	test-omic-da-module.R	(W3, D3) lipid in process: the volcano is <req> until ticked, then the lipid_volcano_page iframe; the tab holds no state, widget or page	NA	NA	0	0		groupKO-groupWT|groupRES-groupWT	KO_vs_WT|RES_vs_WT
+10	test-omic-da-module.R	(W3, D3) lipid managed: the volcano is <req> until ticked, then the worker's lipid_volcano_page iframe; the tab holds no state, widget or page	NA	NA	0	0		groupKO-groupWT|groupRES-groupWT	KO_vs_WT|RES_vs_WT
+11	test-omic-da-module.R	(W3, D3) trx in process: the volcano is <req> until ticked, then the trx_volcano_page iframe of the contrast's entry; the tab holds no state, widget or page	NA	NA	0	0		groupSera-groupRPMI	Sera_vs_RPMI
+12	test-omic-da-module.R	(W4, D3) metab in process: the volcano is <req> until ticked, then the metab_volcano_page iframe; the tab holds no state, widget or page	NA	NA	0	0		groupKO-groupWT|groupRES-groupWT	KO_vs_WT|RES_vs_WT
+13	test-omic-da-module.R	(W4, D3) metab managed: the volcano is <req> until ticked, then the worker's metab_volcano_page iframe; the tab holds no state, widget or page	NA	NA	0	0		groupKO-groupWT|groupRES-groupWT	KO_vs_WT|RES_vs_WT
+14	test-omic-da-module.R	(KIT-106 correction, F106-06) the volcano page's iframe opens no dialog: sandboxed without allow-modals, managed and in process	NA	NA	0	0		groupSera-groupRPMI	Sera_vs_RPMI
+15	test-omic-da-module.R	(KIT-106 correction, F106-06) the volcano page's iframe opens no dialog: sandboxed without allow-modals, managed and in process	NA	NA	0	0		groupKO-groupWT|groupRES-groupWT	KO_vs_WT|RES_vs_WT

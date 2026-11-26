@@ -530,7 +530,7 @@ test_that("KIT-203 S10: the tab offers both rules before Run, each with its note
         passed <<- parameters
         list(saved = list(saved = TRUE), selected = list(found = FALSE), method = list(method = "clusterprofiler"),
             contrasts = list(), results = NULL, service = character(), reference = NULL)
-    })
+    }, omicEnrichManifestCurrent = function(...) TRUE) # KIT-216 (r1.4, F05): item 13's DA check is E15's subject
     shiny::testServer(function(input, output, session) {
         tab <- shiny::reactiveValues(da_results_data = list(source = "s"), analysis_complete = FALSE)
         ran <- shiny::reactiveVal(NULL)

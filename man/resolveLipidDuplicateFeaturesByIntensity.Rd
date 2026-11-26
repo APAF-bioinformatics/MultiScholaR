@@ -2,7 +2,7 @@
 % Please edit documentation in R/func_lipid_qc_support_helpers.R
 \name{resolveLipidDuplicateFeaturesByIntensity}
 \alias{resolveLipidDuplicateFeaturesByIntensity}
-\title{Resolve Duplicate Features by Keeping Highest Average Intensity}
+\title{Resolve Duplicate Features by Keeping the Most Completely Measured Row}
 \usage{
 resolveLipidDuplicateFeaturesByIntensity(assay_tibble, id_col, sample_cols)
 }
@@ -14,10 +14,13 @@ resolveLipidDuplicateFeaturesByIntensity(assay_tibble, id_col, sample_cols)
 \item{sample_cols}{Character vector. The names of the columns containing quantitative sample data.}
 }
 \value{
-A tibble with duplicate features resolved based on highest average intensity.
+A tibble with one row per feature ID, chosen as described.
 }
 \description{
-Within an assay tibble, identifies features with duplicate IDs and keeps only
-the one with the highest average intensity across sample columns.
+Within an assay tibble, identifies features with duplicate IDs and keeps one row
+per ID: the row measured in the most sample columns; if several rows are measured
+in the same number, the one with the highest average of its measured values; if
+still tied, the row that comes first in the table. A missing value or a zero
+counts as not measured. The kept row keeps its own columns, its annotation included.
 }
 \keyword{internal}

@@ -1,0 +1,49 @@
+file: test-kit247-resave-no-session.R
+test: KIT-247 N1: with no earlier design on the bus there is nothing to compare: 'first' (committed as before)
+kind: failure
+message:
+  Expected `compareOmicsDesignResult(...)` to be identical to "first".
+  Differences:
+  `actual`:   "changed"
+  `expected`: "first"  
+
+file: test-kit247-resave-no-session.R
+test: KIT-247 N1: with no earlier design on the bus there is nothing to compare: 'first' (committed as before)
+kind: failure
+message:
+  Expected `compareOmicsDesignResult(...)` to be identical to "first".
+  Differences:
+  `actual`:   "changed"
+  `expected`: "first"  
+
+file: test-kit247-resave-no-session.R
+test: KIT-247 N2: a real change over later states with no session is refused with a classed condition, nothing committed
+kind: error
+message:
+  Error in `paste0("kit247_design_resave_", session$ns(""))`: attempt to apply non-function
+trace (first lines):
+       ▆
+    1. ├─testthat::expect_error(...) at test-kit247-resave-no-session.R:27:5
+    2. │ └─testthat:::expect_condition_matching_(...)
+    3. │   └─testthat:::quasi_capture(...)
+    4. │     ├─testthat (local) .capture(...)
+    5. │     │ └─base::withCallingHandlers(...)
+    6. │     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
+    7. └─MultiScholaR:::runOmicsDesignResaveGate(...)
+    8.   └─MultiScholaR:::registerOmicsDesignResaveConfirmation(session) at pkg/R/utils_workflow_omics_design.R:526:5
+    9.     └─MultiScholaR:::omicsDesignResaveKey(session) at pkg/R/utils_workflow_omics_design.R:543:5
+   10.       └─base::paste0("kit247_design_resave_", session$ns("")) at pkg/R/utils_workflow_omics_design.R:538:25
+
+file: test-workflow-native-session.R
+test: KIT-026: the head records inputs by role and external resources, and both survive export and open
+kind: error
+message:
+  Error in `paste0("kit247_design_resave_", session$ns(""))`: attempt to apply non-function
+trace (first lines):
+      ▆
+   1. └─MultiScholaR:::runProtDesignImportConfirmationFlow(...) at test-workflow-native-session.R:1174:5
+   2.   └─MultiScholaR:::runOmicsDesignResaveGate(...) at pkg/R/mod_prot_design_import_helpers.R:370:7
+   3.     └─MultiScholaR:::registerOmicsDesignResaveConfirmation(session) at pkg/R/utils_workflow_omics_design.R:526:5
+   4.       └─MultiScholaR:::omicsDesignResaveKey(session) at pkg/R/utils_workflow_omics_design.R:543:5
+   5.         └─base::paste0("kit247_design_resave_", session$ns("")) at pkg/R/utils_workflow_omics_design.R:538:25
+

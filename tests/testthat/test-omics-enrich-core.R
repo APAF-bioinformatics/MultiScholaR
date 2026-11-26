@@ -158,8 +158,9 @@ for (case in names(omicsEnrichCoreCases)) {
             expect_identical(run$result[["raw_contrast"]], "groupB-groupA")
             expect_identical(run$result[["selected"]], "TRUE")
             # The state commits when it did at the start commit (W1 (b): the live kernel cases' commit fails today and is
-            # reported as a warning; F-16 then leaves no provenance pending).
-            expect_identical(run$result[["saved"]], if (identical(frozen$run$history, "<unchanged>")) "FALSE" else "TRUE",
+            # reported as a warning; F-16 then leaves no provenance pending). KIT-216 (VAL-175; edit allowed by VAL-372 (1)):
+            # read from the case's stored committed state, as the run history no longer names the enrichment.
+            expect_identical(run$result[["saved"]], if (identical(omicEnrichW113Frozen[[case]]$state, "<none>")) "FALSE" else "TRUE",
                 info = paste(case, run$result[["saved_warning"]]))
             # F107-01: the run never replaces the manifest the caller holds.
             expect_identical(run$result[["manifest_unchanged"]], "TRUE")
@@ -262,7 +263,8 @@ test_that("(F-16, D6 test 4) the enrichment state records its provenance, and a 
         out
     }
     failed <- (function() {
-        testthat::local_mocked_bindings(saveDIAOwnerState = function(manager, ...) stop("disk full"))
+        # KIT-216 (VAL-175): a reference-state owner commits the enrichment as a product of its table.
+        testthat::local_mocked_bindings(commitWorkflowEnrichmentProduct = function(manager, ...) stop("disk full"))
         save()
     })()
     expect_identical(failed, list(attempted = TRUE, saved = FALSE, warning = "disk full"))
@@ -273,7 +275,9 @@ test_that("(F-16, D6 test 4) the enrichment state records its provenance, and a 
     saved <- save()
     expect_identical(saved, list(attempted = TRUE, saved = TRUE, warning = NULL))
     expect_null(manager$.context$pending_provenance)
-    expect_identical(manager$current_state, "enrichment_completed")
+    # KIT-216 (VAL-175): the head and the history stay the table; the record is in the states map.
+    expect_identical(manager$current_state, "next_state")
+    expect_false("enrichment_completed" %in% diaStateHistory(manager))
     entry <- manager$.context$snapshot$step_provenance$enrichment_completed
     expect_identical(entry$operation, "enrichment")
     expect_identical(entry$variant, "whole")

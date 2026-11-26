@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-omic-da-module.R	1288	81	0	0	0	575.4	failed

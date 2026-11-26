@@ -1,0 +1,120 @@
+== test-workflow-omics-binding-steps.R | message-changed | KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit
+-- base:
+  Expected `stripped[[part]]` to be identical to `expected[[part]]`.
+  Differences:
+  actual$lipidomics$inputs[[1]]$sha256 vs expected$lipidomics$inputs[[1]]$sha256
+  - "0277c42d0417078581a8e6f4be316ab7c2d0afe1d4f742ac05da9a776404d8d2"
+  + "dc765573cc92f0806f7e05f47dc93054526e221dc62306773f3a2a9ef0c275f8"
+  
+  actual$lipidomics$inputs[[2]]$sha256 vs expected$lipidomics$inputs[[2]]$sha256
+  - "f64513345927a35a63a86f95f3ec977f575f65e91b446409fbbdc5b1b3976dd8"
+  + "7362bf37081143e370278a1b538fdfb6848e60bd4f1bf26382a87b62fd7e59fc"
+  
+  `actual$lipidomics$steps[[3]]$parameters` is length 3
+  `expected$lipidomics$steps[[3]]$parameters` is length 2
+  
+  `actual$lipidomics$steps[[3]]$parameters[[3]]` is a list
+  `expected$lipidomics$steps[[3]]$parameters[[3]]` is absent
+  
+  `actual$lipidomics$steps[[4]]$parameters` is length 1
+  `expected$lipidomics$steps[[4]]$parameters` is length 0
+  
+  `actual$lipidomics$steps[[4]]$parameters[[1]]` is a list
+  `expected$lipidomics$steps[[4]]$parameters[[1]]` is absent
+  
+  `actual$lipidomics$steps[[9]]$parameters` is length 10
+  `expected$lipidomics$steps[[9]]$parameters` is length 9
+  
+  `actual$lipidomics$steps[[9]]$parameters[[10]]` is a list
+  `expected$lipidomics$steps[[9]]$parameters[[10]]` is absent
+  
+  actual$metabolomics$inputs[[1]]$sha256 vs expected$metabolomics$inputs[[1]]$sha256
+  - "ff2586bf11cb9e60c7bb9251fcb76cedf9671d0b2bf45cf891112fb64e06f26e"
+  + "383c7dc1cb4dc559629fc4fe2ed490e8252070519e03b1690cd540509c6b2edf"
+  
+  actual$metabolomics$inputs[[2]]$sha256 vs expected$metabolomics$inputs[[2]]$sha256
+  - "e72e8d4f10cf4f58b16df6a50e9f64d4432dc33082db3a26a6795815ac4854ac"
+  + "6391cf5eefef8c1ed00217190b2a4886e38f2a5ccabf7e8b9a4eb58b529d1d04"
+  
+  `actual$metabolomics$steps[[3]]$parameters` is length 3
+  `expected$metabolomics$steps[[3]]$parameters` is length 2
+  
+  `actual$metabolomics$steps[[3]]$parameters[[3]]` is a list
+  `expected$metabolomics$steps[[3]]$parameters[[3]]` is absent
+  
+  `actual$metabolomics$steps[[4]]$parameters` is length 1
+  `expected$metabolomics$steps[[4]]$parameters` is length 0
+  
+  `actual$metabolomics$steps[[4]]$parameters[[1]]` is a list
+  `expected$metabolomics$steps[[4]]$parameters[[1]]` is absent
+  
+  `actual$metabolomics$steps[[9]]$parameters` is length 10
+  `expected$metabolomics$steps[[9]]$parameters` is length 9
+  
+  `actual$metabolomics$steps[[9]]$parameters[[10]]` is a list
+  `expected$metabolomics$steps[[9]]$parameters[[10]]` is absent
+  
+  records
+-- head:
+  Expected `stripped[[part]]` to be identical to `expected[[part]]`.
+  Differences:
+  actual$lipidomics$inputs[[1]]$sha256 vs expected$lipidomics$inputs[[1]]$sha256
+  - "0277c42d0417078581a8e6f4be316ab7c2d0afe1d4f742ac05da9a776404d8d2"
+  + "dc765573cc92f0806f7e05f47dc93054526e221dc62306773f3a2a9ef0c275f8"
+  
+  actual$lipidomics$inputs[[2]]$sha256 vs expected$lipidomics$inputs[[2]]$sha256
+  - "f64513345927a35a63a86f95f3ec977f575f65e91b446409fbbdc5b1b3976dd8"
+  + "7362bf37081143e370278a1b538fdfb6848e60bd4f1bf26382a87b62fd7e59fc"
+  
+  `actual$lipidomics$steps[[3]]$parameters` is length 3
+  `expected$lipidomics$steps[[3]]$parameters` is length 2
+  
+  `actual$lipidomics$steps[[3]]$parameters[[3]]` is a list
+  `expected$lipidomics$steps[[3]]$parameters[[3]]` is absent
+  
+  `actual$lipidomics$steps[[4]]$parameters` is length 2
+  `expected$lipidomics$steps[[4]]$parameters` is length 0
+  
+  `actual$lipidomics$steps[[4]]$parameters[[1]]` is a list
+  `expected$lipidomics$steps[[4]]$parameters[[1]]` is absent
+  
+  `actual$lipidomics$steps[[4]]$parameters[[2]]` is a list
+  `expected$lipidomics$steps[[4]]$parameters[[2]]` is absent
+  
+  `actual$lipidomics$steps[[9]]$parameters` is length 10
+  `expected$lipidomics$steps[[9]]$parameters` is length 9
+  
+  `actual$lipidomics$steps[[9]]$parameters[[10]]` is a list
+  `expected$lipidomics$steps[[9]]$parameters[[10]]` is absent
+  
+  actual$metabolomics$inputs[[1]]$sha256 vs expected$metabolomics$inputs[[1]]$sha256
+  - "ff2586bf11cb9e60c7bb9251fcb76cedf9671d0b2bf45cf891112fb64e06f26e"
+  + "383c7dc1cb4dc559629fc4fe2ed490e8252070519e03b1690cd540509c6b2edf"
+  
+  actual$metabolomics$inputs[[2]]$sha256 vs expected$metabolomics$inputs[[2]]$sha256
+  - "e72e8d4f10cf4f58b16df6a50e9f64d4432dc33082db3a26a6795815ac4854ac"
+  + "6391cf5eefef8c1ed00217190b2a4886e38f2a5ccabf7e8b9a4eb58b529d1d04"
+  
+  `actual$metabolomics$steps[[3]]$parameters` is length 3
+  `expected$metabolomics$steps[[3]]$parameters` is length 2
+  
+  `actual$metabolomics$steps[[3]]$parameters[[3]]` is a list
+  `expected$metabolomics$steps[[3]]$parameters[[3]]` is absent
+  
+  `actual$metabolomics$steps[[4]]$parameters` is length 2
+  `expected$metabolomics$steps[[4]]$parameters` is length 0
+  
+  `actual$metabolomics$steps[[4]]$parameters[[1]]` is a list
+  `expected$metabolomics$steps[[4]]$parameters[[1]]` is absent
+  
+  `actual$metabolomics$steps[[4]]$parameters[[2]]` is a list
+  `expected$metabolomics$steps[[4]]$parameters[[2]]` is absent
+  
+  `actual$metabolomics$steps[[9]]$parameters` is length 10
+  `expected$metabolomics$steps[[9]]$parameters` is length 9
+  
+  `actual$metabolomics$steps[[9]]$parameters[[10]]` is a list
+  `expected$metabolomics$steps[[9]]$parameters[[10]]` is absent
+  
+  records
+

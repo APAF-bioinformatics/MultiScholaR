@@ -244,8 +244,9 @@ test_that("KIT-259 B-E1: the post-normalisation generator replaces a figure it c
         messageFn = function(...) invisible(NULL), gcFn = function() invisible(NULL),
         buildCorrelationFn = function(...) stop("injected drawing failure")))
     expect_false(inherits(got$value, "error"))
+    # KIT-259 second correction (VAL-287 (ii), declared edit): the placeholder leaves its marker beside it.
     expect_setequal(list.files(dir), c("post_norm_pca.png", "post_norm_rle.png", "post_norm_density.png",
-        "post_norm_correlation.png"))
+        "post_norm_correlation.png", "post_norm_correlation.png.placeholder"))
     unavailable <- Filter(function(w) inherits(w, "prot_norm_figure_unavailable"), got$warnings)
     expect_length(unavailable, 1L)
     if (length(unavailable) == 1L && file.exists(file.path(dir, "post_norm_correlation.png"))) {

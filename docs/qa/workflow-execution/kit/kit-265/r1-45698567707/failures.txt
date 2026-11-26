@@ -1,0 +1,895 @@
+file: test-kit265-organism-routes.R
+test: E1: route (i) names the form's organism in a persistent notice and the import continues
+kind: failure
+message:
+  Expected `note$message` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "Could not extract organism information from FASTA headers. Using default organism settings."
+  + "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. This analysis will use the organism entered in the form: Mus musculus (taxon 10090). To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+trace (first lines):
+      ▆
+   1. └─k265ExpectNotice(...) at test-kit265-organism-routes.R:127:3
+   2.   └─testthat::expect_identical(note$message, text) at test-kit265-organism-routes.R:111:3
+
+file: test-kit265-organism-routes.R
+test: E1: route (i) names the form's organism in a persistent notice and the import continues
+kind: failure
+message:
+  Expected `note$duration` to be NULL.
+  Differences:
+  `actual` is a double vector (5)
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─k265ExpectNotice(...) at test-kit265-organism-routes.R:127:3
+   2.   └─testthat::expect_null(note$duration) at test-kit265-organism-routes.R:113:3
+
+file: test-kit265-organism-routes.R
+test: E1: route (i) names the form's organism in a persistent notice and the import continues
+kind: failure
+message:
+  Expected `note$id` to be identical to "prot_import_organism_cancelled".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('prot_import_organism_cancelled')
+trace (first lines):
+      ▆
+   1. └─k265ExpectNotice(...) at test-kit265-organism-routes.R:127:3
+   2.   └─testthat::expect_identical(note$id, "prot_import_organism_cancelled") at test-kit265-organism-routes.R:114:3
+
+file: test-kit265-organism-routes.R
+test: E1b: route (i) with no form values passed says the form has no organism
+kind: failure
+message:
+  Expected `note$message` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "Could not extract organism information from FASTA headers. Using default organism settings."
+  + "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. The form has no organism (its name or Taxonomy ID is empty), so UniProt annotation and enrichment will have no organism to use. To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+trace (first lines):
+      ▆
+   1. └─k265ExpectNotice(run, paste0(k265Head, k265Blank, k265Tail)) at test-kit265-organism-routes.R:132:3
+   2.   └─testthat::expect_identical(note$message, text) at test-kit265-organism-routes.R:111:3
+
+file: test-kit265-organism-routes.R
+test: E1b: route (i) with no form values passed says the form has no organism
+kind: failure
+message:
+  Expected `note$duration` to be NULL.
+  Differences:
+  `actual` is a double vector (5)
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─k265ExpectNotice(run, paste0(k265Head, k265Blank, k265Tail)) at test-kit265-organism-routes.R:132:3
+   2.   └─testthat::expect_null(note$duration) at test-kit265-organism-routes.R:113:3
+
+file: test-kit265-organism-routes.R
+test: E1b: route (i) with no form values passed says the form has no organism
+kind: failure
+message:
+  Expected `note$id` to be identical to "prot_import_organism_cancelled".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('prot_import_organism_cancelled')
+trace (first lines):
+      ▆
+   1. └─k265ExpectNotice(run, paste0(k265Head, k265Blank, k265Tail)) at test-kit265-organism-routes.R:132:3
+   2.   └─testthat::expect_identical(note$id, "prot_import_organism_cancelled") at test-kit265-organism-routes.R:114:3
+
+file: test-kit265-organism-routes.R
+test: E1c: route (i) with a cleared form says the form has no organism and never prints 'taxon NA'
+kind: failure
+message:
+  Expected `note$message` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "Could not extract organism information from FASTA headers. Using default organism settings."
+  + "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. The form has no organism (its name or Taxonomy ID is empty), so UniProt annotation and enrichment will have no organism to use. To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+trace (first lines):
+      ▆
+   1. └─k265ExpectNotice(run, paste0(k265Head, k265Blank, k265Tail)) at test-kit265-organism-routes.R:137:3
+   2.   └─testthat::expect_identical(note$message, text) at test-kit265-organism-routes.R:111:3
+
+file: test-kit265-organism-routes.R
+test: E1c: route (i) with a cleared form says the form has no organism and never prints 'taxon NA'
+kind: failure
+message:
+  Expected `note$duration` to be NULL.
+  Differences:
+  `actual` is a double vector (5)
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─k265ExpectNotice(run, paste0(k265Head, k265Blank, k265Tail)) at test-kit265-organism-routes.R:137:3
+   2.   └─testthat::expect_null(note$duration) at test-kit265-organism-routes.R:113:3
+
+file: test-kit265-organism-routes.R
+test: E1c: route (i) with a cleared form says the form has no organism and never prints 'taxon NA'
+kind: failure
+message:
+  Expected `note$id` to be identical to "prot_import_organism_cancelled".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('prot_import_organism_cancelled')
+trace (first lines):
+      ▆
+   1. └─k265ExpectNotice(run, paste0(k265Head, k265Blank, k265Tail)) at test-kit265-organism-routes.R:137:3
+   2.   └─testthat::expect_identical(note$id, "prot_import_organism_cancelled") at test-kit265-organism-routes.R:114:3
+
+file: test-kit265-organism-routes.R
+test: E2: route (ii), an error counting organisms, refuses the import with the cause
+kind: failure
+message:
+  Expected `k265IsRefusal(run$err)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+      ▆
+   1. └─k265ExpectRefusal(run, k265Counting("boom")) at test-kit265-organism-routes.R:143:3
+   2.   └─testthat::expect_true(k265IsRefusal(run$err)) at test-kit265-organism-routes.R:119:3
+
+file: test-kit265-organism-routes.R
+test: E2: route (ii), an error counting organisms, refuses the import with the cause
+kind: failure
+message:
+  Expected `k265Message(run$err)` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - ""
+  + "The import was stopped: the organisms in the FASTA file could not be counted (boom). The organism is chosen from that count, so nothing was imported. Check the FASTA file, or untick 'Mixed species FASTA', enter the organism yourself and press 'Process Imported Data' again."
+trace (first lines):
+      ▆
+   1. └─k265ExpectRefusal(run, k265Counting("boom")) at test-kit265-organism-routes.R:143:3
+   2.   └─testthat::expect_identical(k265Message(run$err), text) at test-kit265-organism-routes.R:120:3
+
+file: test-kit265-organism-routes.R
+test: E2: route (ii), an error counting organisms, refuses the import with the cause
+kind: failure
+message:
+  Expected `run$notes` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─k265ExpectRefusal(run, k265Counting("boom")) at test-kit265-organism-routes.R:143:3
+   2.   └─testthat::expect_length(run$notes, 0L) at test-kit265-organism-routes.R:121:3
+
+file: test-kit265-organism-routes.R
+test: E2c: the FASTA names organisms and none of the data's proteins is in it: the import is refused
+kind: failure
+message:
+  Expected `k265IsRefusal(run$err)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+      ▆
+   1. └─k265ExpectRefusal(run, k265NoneFound) at test-kit265-organism-routes.R:156:3
+   2.   └─testthat::expect_true(k265IsRefusal(run$err)) at test-kit265-organism-routes.R:119:3
+
+file: test-kit265-organism-routes.R
+test: E2c: the FASTA names organisms and none of the data's proteins is in it: the import is refused
+kind: failure
+message:
+  Expected `k265Message(run$err)` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - ""
+  + "The import was stopped: none of the proteins in the search results could be found in the FASTA file, so their organisms cannot be counted. Nothing was imported. Check that this is the FASTA file the search used, or untick 'Mixed species FASTA', enter the organism yourself and press 'Process Imported Data' again."
+trace (first lines):
+      ▆
+   1. └─k265ExpectRefusal(run, k265NoneFound) at test-kit265-organism-routes.R:156:3
+   2.   └─testthat::expect_identical(k265Message(run$err), text) at test-kit265-organism-routes.R:120:3
+
+file: test-kit265-organism-routes.R
+test: E2c: the FASTA names organisms and none of the data's proteins is in it: the import is refused
+kind: failure
+message:
+  Expected `run$notes` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─k265ExpectRefusal(run, k265NoneFound) at test-kit265-organism-routes.R:156:3
+   2.   └─testthat::expect_length(run$notes, 0L) at test-kit265-organism-routes.R:121:3
+
+file: test-kit265-organism-routes.R
+test: E2d: proteins found under headers without organism fields are cause (a): the import continues
+kind: failure
+message:
+  Expected `note$message` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "Could not extract organism information from FASTA headers. Using default organism settings."
+  + "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. This analysis will use the organism entered in the form: Mus musculus (taxon 10090). To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+trace (first lines):
+      ▆
+   1. └─k265ExpectNotice(...) at test-kit265-organism-routes.R:171:3
+   2.   └─testthat::expect_identical(note$message, text) at test-kit265-organism-routes.R:111:3
+
+file: test-kit265-organism-routes.R
+test: E2d: proteins found under headers without organism fields are cause (a): the import continues
+kind: failure
+message:
+  Expected `note$duration` to be NULL.
+  Differences:
+  `actual` is a double vector (5)
+  `expected` is NULL
+trace (first lines):
+      ▆
+   1. └─k265ExpectNotice(...) at test-kit265-organism-routes.R:171:3
+   2.   └─testthat::expect_null(note$duration) at test-kit265-organism-routes.R:113:3
+
+file: test-kit265-organism-routes.R
+test: E2d: proteins found under headers without organism fields are cause (a): the import continues
+kind: failure
+message:
+  Expected `note$id` to be identical to "prot_import_organism_cancelled".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('prot_import_organism_cancelled')
+trace (first lines):
+      ▆
+   1. └─k265ExpectNotice(...) at test-kit265-organism-routes.R:171:3
+   2.   └─testthat::expect_identical(note$id, "prot_import_organism_cancelled") at test-kit265-organism-routes.R:114:3
+
+file: test-kit265-organism-routes.R
+test: E3: route (iii), the column named in the mapping is absent from the table (non-owner shape)
+kind: failure
+message:
+  Expected `k265IsRefusal(run$err)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+      ▆
+   1. └─k265ExpectRefusal(run, k265NoColumn("'PG.ProteinGroups' column")) at test-kit265-organism-routes.R:178:3
+   2.   └─testthat::expect_true(k265IsRefusal(run$err)) at test-kit265-organism-routes.R:119:3
+
+file: test-kit265-organism-routes.R
+test: E3: route (iii), the column named in the mapping is absent from the table (non-owner shape)
+kind: failure
+message:
+  Expected `k265Message(run$err)` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - ""
+  + "The import was stopped: the search results have no 'PG.ProteinGroups' column, so their proteins cannot be matched to the organisms in the FASTA file. Nothing was imported. Export the search results with that column and import them again."
+trace (first lines):
+      ▆
+   1. └─k265ExpectRefusal(run, k265NoColumn("'PG.ProteinGroups' column")) at test-kit265-organism-routes.R:178:3
+   2.   └─testthat::expect_identical(k265Message(run$err), text) at test-kit265-organism-routes.R:120:3
+
+file: test-kit265-organism-routes.R
+test: E3a: route (iii) with no protein column in the mapping says 'no protein column'
+kind: failure
+message:
+  Expected `k265IsRefusal(run$err)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+      ▆
+   1. └─k265ExpectRefusal(run, k265NoColumn("protein column")) at test-kit265-organism-routes.R:184:3
+   2.   └─testthat::expect_true(k265IsRefusal(run$err)) at test-kit265-organism-routes.R:119:3
+
+file: test-kit265-organism-routes.R
+test: E3a: route (iii) with no protein column in the mapping says 'no protein column'
+kind: failure
+message:
+  Expected `k265Message(run$err)` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - ""
+  + "The import was stopped: the search results have no protein column, so their proteins cannot be matched to the organisms in the FASTA file. Nothing was imported. Export the search results with that column and import them again."
+trace (first lines):
+      ▆
+   1. └─k265ExpectRefusal(run, k265NoColumn("protein column")) at test-kit265-organism-routes.R:184:3
+   2.   └─testthat::expect_identical(k265Message(run$err), text) at test-kit265-organism-routes.R:120:3
+
+file: test-kit265-organism-routes.R
+test: E3b: route (iii), the owner shape: protein ids absent, the real distribution and window builder
+kind: failure
+message:
+  Expected `k265IsRefusal(run$err)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+      ▆
+   1. └─k265ExpectRefusal(run, k265NoColumn("'PG.ProteinGroups' column")) at test-kit265-organism-routes.R:194:3
+   2.   └─testthat::expect_true(k265IsRefusal(run$err)) at test-kit265-organism-routes.R:119:3
+
+file: test-kit265-organism-routes.R
+test: E3b: route (iii), the owner shape: protein ids absent, the real distribution and window builder
+kind: failure
+message:
+  Expected `k265Message(run$err)` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - ""
+  + "The import was stopped: the search results have no 'PG.ProteinGroups' column, so their proteins cannot be matched to the organisms in the FASTA file. Nothing was imported. Export the search results with that column and import them again."
+trace (first lines):
+      ▆
+   1. └─k265ExpectRefusal(run, k265NoColumn("'PG.ProteinGroups' column")) at test-kit265-organism-routes.R:194:3
+   2.   └─testthat::expect_identical(k265Message(run$err), text) at test-kit265-organism-routes.R:120:3
+
+file: test-kit265-organism-routes.R
+test: E3b: route (iii), the owner shape: protein ids absent, the real distribution and window builder
+kind: failure
+message:
+  Expected `run$notes` to have length 0.
+  Actual length: 1.
+trace (first lines):
+      ▆
+   1. └─k265ExpectRefusal(run, k265NoColumn("'PG.ProteinGroups' column")) at test-kit265-organism-routes.R:194:3
+   2.   └─testthat::expect_length(run$notes, 0L) at test-kit265-organism-routes.R:121:3
+
+file: test-kit265-organism-routes.R
+test: E4: route (iv), ticked with no FASTA table, refuses the import and does not call the analysis
+kind: failure
+message:
+  Expected `k265IsRefusal(err)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit265-organism-routes.R
+test: E4: route (iv), ticked with no FASTA table, refuses the import and does not call the analysis
+kind: failure
+message:
+  Expected `k265Message(err)` to be identical to `k265FastaFailed`.
+  Differences:
+  actual vs expected
+  - ""
+  + "The import was stopped: the FASTA file could not be read or processed, so the organisms in it cannot be counted. Nothing was imported. Check that the file is a FASTA file of protein sequences, or untick 'Mixed species FASTA', enter the organism yourself and press 'Process Imported Data' again."
+
+file: test-kit265-organism-routes.R
+test: E7: the organism window says that only the selected organism is looked up and tested
+kind: failure
+message:
+  Expected `sentence` > 0L.
+  Actual comparison: -1 <= 0
+  Difference: -1 <= 0
+
+file: test-kit265-organism-routes.R
+test: E7: the organism window says that only the selected organism is looked up and tested
+kind: failure
+message:
+  Expected `radio > 0L && filter > 0L && sentence > radio && sentence < filter` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit265-organism-routes.R
+test: E5: the observer, ticked, FASTA processing failed: the import is refused; unticking and pressing again completes it
+kind: failure
+message:
+  Expected `ev$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  + "The import was stopped: the FASTA file could not be read or processed, so the organisms in it cannot be counted. Nothing was imported. Check that the file is a FASTA file of protein sequences, or untick 'Mixed species FASTA', enter the organism yourself and press 'Process Imported Data' again."
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:354:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: E5: the observer, ticked, FASTA processing failed: the import is refused; unticking and pressing again completes it
+kind: failure
+message:
+  Expected `paste0("note:error:Error: ", text) %in% ev$log` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:354:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: E5: the observer, ticked, FASTA processing failed: the import is refused; unticking and pressing again completes it
+kind: failure
+message:
+  Expected `"removeModal:error" %in% ev$log` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:354:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: E5: the observer, ticked, FASTA processing failed: the import is refused; unticking and pressing again completes it
+kind: failure
+message:
+  Expected `any(grepl("^note:message:Data import successful", ev$log))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:354:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: E5: the observer, ticked, FASTA processing failed: the import is refused; unticking and pressing again completes it
+kind: failure
+message:
+  Expected `workflow$data_tbl` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:354:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: E5: the observer, ticked, FASTA processing failed: the import is refused; unticking and pressing again completes it
+kind: failure
+message:
+  Expected `workflow$tab_status$setup_import` to be identical to "incomplete".
+  Differences:
+  `actual`:   "complete"  
+  `expected`: "incomplete"
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:354:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: E5: the observer, ticked, FASTA processing failed: the import is refused; unticking and pressing again completes it
+kind: failure
+message:
+  Expected `workflow$tab_status$design_matrix` to be identical to "disabled".
+  Differences:
+  `actual`:   "pending" 
+  `expected`: "disabled"
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:354:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: E6: the observer, ticked, an error counting organisms: the same clearing, the error names the cause
+kind: failure
+message:
+  Expected `ev$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  + "The import was stopped: the organisms in the FASTA file could not be counted (boom). The organism is chosen from that count, so nothing was imported. Check the FASTA file, or untick 'Mixed species FASTA', enter the organism yourself and press 'Process Imported Data' again."
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:375:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: E6: the observer, ticked, an error counting organisms: the same clearing, the error names the cause
+kind: failure
+message:
+  Expected `paste0("note:error:Error: ", text) %in% ev$log` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:375:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: E6: the observer, ticked, an error counting organisms: the same clearing, the error names the cause
+kind: failure
+message:
+  Expected `"removeModal:error" %in% ev$log` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:375:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: E6: the observer, ticked, an error counting organisms: the same clearing, the error names the cause
+kind: failure
+message:
+  Expected `any(grepl("^note:message:Data import successful", ev$log))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:375:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: E6: the observer, ticked, an error counting organisms: the same clearing, the error names the cause
+kind: failure
+message:
+  Expected `workflow$data_tbl` to be NULL.
+  Differences:
+  `actual` is a list
+  `expected` is NULL
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:375:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: E6: the observer, ticked, an error counting organisms: the same clearing, the error names the cause
+kind: failure
+message:
+  Expected `workflow$tab_status$setup_import` to be identical to "incomplete".
+  Differences:
+  `actual`:   "complete"  
+  `expected`: "incomplete"
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:375:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: E6: the observer, ticked, an error counting organisms: the same clearing, the error names the cause
+kind: failure
+message:
+  Expected `workflow$tab_status$design_matrix` to be identical to "disabled".
+  Differences:
+  `actual`:   "pending" 
+  `expected`: "disabled"
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:375:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: E1d: the observer passes the form's organism and taxon to the route (i) notice
+kind: failure
+message:
+  Expected `notices` to have length 1.
+  Actual length: 0.
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:389:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: E1d: the observer passes the form's organism and taxon to the route (i) notice
+kind: failure
+message:
+  Expected `if (length(notices)) notices[[1L]]$message else NA_character_` to be identical to `paste0(k265Head, k265Named("Mus musculus", "10090"), k265Tail)`.
+  Differences:
+  actual vs expected
+  - NA
+  + "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. This analysis will use the organism entered in the form: Mus musculus (taxon 10090). To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:389:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: G6: E5 on the non-owner path (no DIA owner, a Spectronaut peptide import): the same refusal and clearing
+kind: failure
+message:
+  Expected `ev$errors` to be identical to `text`.
+  Differences:
+  actual vs expected
+  + "The import was stopped: the FASTA file could not be read or processed, so the organisms in it cannot be counted. Nothing was imported. Check that the file is a FASTA file of protein sequences, or untick 'Mixed species FASTA', enter the organism yourself and press 'Process Imported Data' again."
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:418:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: G6: E5 on the non-owner path (no DIA owner, a Spectronaut peptide import): the same refusal and clearing
+kind: failure
+message:
+  Expected `paste0("note:error:Error: ", text) %in% ev$log` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:418:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: G6: E5 on the non-owner path (no DIA owner, a Spectronaut peptide import): the same refusal and clearing
+kind: failure
+message:
+  Expected `"removeModal:error" %in% ev$log` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:418:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: G6: E5 on the non-owner path (no DIA owner, a Spectronaut peptide import): the same refusal and clearing
+kind: failure
+message:
+  Expected `any(grepl("^note:message:Data import successful", ev$log))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:418:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: G6: E5 on the non-owner path (no DIA owner, a Spectronaut peptide import): the same refusal and clearing
+kind: failure
+message:
+  Expected `workflow$data_tbl` to be NULL.
+  Differences:
+  `actual` is an S3 object of class <data.frame>, a list
+  `expected` is NULL
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:418:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: G6: E5 on the non-owner path (no DIA owner, a Spectronaut peptide import): the same refusal and clearing
+kind: failure
+message:
+  Expected `workflow$tab_status$setup_import` to be identical to "incomplete".
+  Differences:
+  `actual`:   "complete"  
+  `expected`: "incomplete"
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:418:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit265-organism-routes.R
+test: G6: E5 on the non-owner path (no DIA owner, a Spectronaut peptide import): the same refusal and clearing
+kind: failure
+message:
+  Expected `workflow$tab_status$design_matrix` to be identical to "disabled".
+  Differences:
+  `actual`:   "pending" 
+  `expected`: "disabled"
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-kit265-organism-routes.R:418:3
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-kit250-organism-dialog.R
+test: G3: FASTA headers without organisms: no dialog, the import completes with the form's values
+kind: failure
+message:
+  Expected `notes` to be identical to `paste0(...)`.
+  Differences:
+  actual vs expected
+  - "Could not extract organism information from FASTA headers. Using default organism settings."
+  + "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. The form has no organism (its name or Taxonomy ID is empty), so UniProt annotation and enrichment will have no organism to use. To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+
+file: test-prot-01c-import-module-contracts.R
+test: analyzeProtImportMixedSpeciesData warns when no valid organism choices can be built
+kind: failure
+message:
+  Expected `notifications[[1]]$message` to be identical to `paste0(...)`.
+  Differences:
+  actual vs expected
+  - "Could not extract organism information from FASTA headers. Using default organism settings."
+  + "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. The form has no organism (its name or Taxonomy ID is empty), so UniProt annotation and enrichment will have no organism to use. To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+
+file: test-prot-01c-import-module-contracts.R
+test: runProtImportMixedSpeciesAnalysisIfNeeded only runs when analysis is eligible
+kind: failure
+message:
+  Expected `runProtImportMixedSpeciesAnalysisIfNeeded(...)` to throw a error with class <prot_import_organism_unavailable>.
+

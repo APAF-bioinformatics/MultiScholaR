@@ -1,0 +1,50 @@
+== test-kit265-organism-routes.R | fixed | E1b: route (i) with no form values passed says the form has no Taxonomy ID
+-- base:
+  Expected `note$message` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. The form has no organism (its name or Taxonomy ID is empty), so UniProt annotation and enrichment will have no organism to use. To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+  + "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. The form has no Taxonomy ID, so UniProt annotation will have no organism to use. To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+-- head:
+  <passes>
+
+== test-kit265-organism-routes.R | fixed | E1c: route (i) with a cleared form says the form has no Taxonomy ID and never prints 'taxon NA'
+-- base:
+  Expected `note$message` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. The form has no organism (its name or Taxonomy ID is empty), so UniProt annotation and enrichment will have no organism to use. To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+  + "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. The form has no Taxonomy ID, so UniProt annotation will have no organism to use. To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+-- head:
+  <passes>
+
+== test-kit265-organism-routes.R | fixed | E1e: route (i) with an empty organism name and a Taxonomy ID names the Taxonomy ID that will be used
+-- base:
+  Expected `note$message` to be identical to `text`.
+  Differences:
+  actual vs expected
+  - "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. The form has no organism (its name or Taxonomy ID is empty), so UniProt annotation and enrichment will have no organism to use. To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+  + "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. This analysis will use the Taxonomy ID entered in the form: 9606 (the form gives no organism name). To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+-- head:
+  <passes>
+
+== test-kit250-organism-dialog.R | fixed | G3: FASTA headers without organisms: no dialog, the import completes with the form's values
+-- base:
+  Expected `notes` to be identical to `paste0(...)`.
+  Differences:
+  actual vs expected
+  - "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. The form has no organism (its name or Taxonomy ID is empty), so UniProt annotation and enrichment will have no organism to use. To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+  + "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. The form has no Taxonomy ID, so UniProt annotation will have no organism to use. To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+-- head:
+  <passes>
+
+== test-prot-01c-import-module-contracts.R | fixed | analyzeProtImportMixedSpeciesData warns when no valid organism choices can be built
+-- base:
+  Expected `notifications[[1]]$message` to be identical to `paste0(...)`.
+  Differences:
+  actual vs expected
+  - "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. The form has no organism (its name or Taxonomy ID is empty), so UniProt annotation and enrichment will have no organism to use. To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+  + "No organism with a taxonomy ID could be matched to the proteins in the search results (the FASTA headers name no organism or taxonomy ID for them, or the proteins are not in the FASTA file), so no organism window is shown. The form has no Taxonomy ID, so UniProt annotation will have no organism to use. To use another organism, untick 'Mixed species FASTA', enter it and press 'Process Imported Data' again."
+-- head:
+  <passes>
+

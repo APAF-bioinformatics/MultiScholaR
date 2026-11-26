@@ -291,7 +291,7 @@ resolveDuplicateFeaturesForLipidObject <- function(theObject, itsd_pattern_colum
                 processed_non_itsd_rows <- non_itsd_rows
             } else {
                 message(sprintf(
-                    "Resolving duplicates in non-ITSD ID column '%s' by keeping highest average intensity feature...",
+                    "Resolving duplicates in non-ITSD ID column '%s': keeping the most completely measured row, then the highest average of its measured values...",
                     id_col
                 ))
                 processed_non_itsd_rows <- non_itsd_rows %>%
@@ -299,17 +299,23 @@ resolveDuplicateFeaturesForLipidObject <- function(theObject, itsd_pattern_colum
                     dplyr::mutate(
                         avg_intensity = mean(dplyr::c_across(dplyr::any_of(sample_cols)), na.rm = TRUE)
                     ) %>%
+                    # KIT-258 (VAL-284): the count and the mean of the measured values, neither missing nor zero
+                    dplyr::mutate(
+                        n_measured = length(duplicateResolutionMeasured(dplyr::c_across(dplyr::any_of(sample_cols)))),
+                        avg_measured = duplicateResolutionMeasuredMean(dplyr::c_across(dplyr::any_of(sample_cols)))
+                    ) %>%
                     dplyr::ungroup() %>%
                     dplyr::mutate(avg_intensity = ifelse(is.nan(.data$avg_intensity), -Inf, .data$avg_intensity)) %>%
                     dplyr::group_by(!!rlang::sym(id_col)) %>%
-                    dplyr::slice_max(order_by = .data$avg_intensity, n = 1, with_ties = FALSE) %>%
+                    # KIT-258: the most measured row, then the highest mean, then the first
+                    keepDuplicateResolutionRow() %>%
                     dplyr::ungroup() %>%
-                    dplyr::select(-avg_intensity)
+                    dplyr::select(-avg_intensity, -"n_measured", -"avg_measured")
 
                 rows_removed_non_itsd <- nrow(non_itsd_rows) - nrow(processed_non_itsd_rows)
                 if (rows_removed_non_itsd > 0) {
                     message(sprintf(
-                        "Removed %d lower-intensity duplicate non-ITSD feature row(s).",
+                        "Removed %d duplicate non-ITSD feature row(s).",
                         rows_removed_non_itsd
                     ))
                 }

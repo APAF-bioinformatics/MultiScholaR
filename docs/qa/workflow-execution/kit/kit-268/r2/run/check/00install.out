@@ -1,0 +1,22 @@
+* installing *source* package ‘MultiScholaR’ ...
+** this is package ‘MultiScholaR’ version ‘0.9.0’
+** using staged installation
+** libs
+using C compiler: ‘gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0’
+gcc -I"/opt/R/4.6.1/lib/R/include" -DNDEBUG   -I/usr/local/include   -fno-fast-math -fpic  -g -O2  -c init.c -o init.o
+gcc -I"/opt/R/4.6.1/lib/R/include" -DNDEBUG   -I/usr/local/include   -fno-fast-math -fpic  -g -O2  -c workflow_memory.c -o workflow_memory.o
+gcc -I"/opt/R/4.6.1/lib/R/include" -DNDEBUG   -I/usr/local/include   -std=c11 -O2 -fPIC -fno-fast-math -Wall -Wextra -Werror -c workflow_dia_exact_sum.c -o workflow_dia_exact_sum.o
+gcc -I"/opt/R/4.6.1/lib/R/include" -DNDEBUG   -I/usr/local/include   -std=c11 -O2 -fPIC -fno-fast-math -Wall -Wextra -Werror -c workflow_dia_ordered_reduce.c -o workflow_dia_ordered_reduce.o
+gcc -shared -L/opt/R/4.6.1/lib/R/lib -L/usr/local/lib -o MultiScholaR.so init.o workflow_memory.o workflow_dia_exact_sum.o workflow_dia_ordered_reduce.o -ldl -L/opt/R/4.6.1/lib/R/lib -lR
+installing to /home/runner/work/_temp/check-work/MultiScholaR.Rcheck/00LOCK-MultiScholaR/00new/MultiScholaR/libs
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+** checking absolute paths in shared objects and dynamic libraries
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (MultiScholaR)

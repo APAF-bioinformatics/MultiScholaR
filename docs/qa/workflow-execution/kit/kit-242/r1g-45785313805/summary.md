@@ -1,0 +1,15 @@
+### Tests (head): 9 files; passed 3531, failed 307, errors 0, skipped 32; ok 8, failed 1, timeout 0, crashed 0
+
+| file | passed | failed | errors | skipped | warnings | seconds | status |
+|---|---:|---:|---:|---:|---:|---:|---|
+| test-prot-norm-core.R | 1547 | 307 | 0 | 0 | 28 | 1513.2 | failed |
+| test-kit242-normalisation-fallback.R | 571 | 0 | 0 | 0 | 0 | 795.4 | ok |
+| test-workflow-omics-worker.R | 265 | 0 | 0 | 0 | 0 | 498.8 | ok |
+| test-prot-05b-norm-module-contracts.R | 440 | 0 | 0 | 22 | 0 | 9.6 | ok |
+| test-prot-05d-norm-module-characterization.R | 82 | 0 | 0 | 10 | 0 | 15.3 | ok |
+| test-prot-norm-input-current.R | 321 | 0 | 0 | 0 | 10 | 1241.7 | ok |
+| test-kit257-norm-own-files.R | 133 | 0 | 0 | 0 | 8 | 395.1 | ok |
+| test-kit206-prot-norm-export-guard.R | 116 | 0 | 0 | 0 | 6 | 394 | ok |
+| test-kit225-prot-norm-reset-source.R | 56 | 0 | 0 | 0 | 0 | 125.4 | ok |
+
+**Run outcome: success** (every head file ran to completion; failing expectations, if any, are in the tables)

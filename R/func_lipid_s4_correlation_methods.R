@@ -286,7 +286,9 @@ setMethod(
                         ggplot(aes(pearson_correlation)) +
                         geom_histogram(breaks = hist_breaks, na.rm = TRUE) +
                         # Set x-axis limits and breaks
-                        scale_x_continuous(limits = c(lower, 1), breaks = seq(lower, 1, 0.1), expand = c(0, 0)) +
+                        # KIT-259 second correction (VAL-287; AUDIT-KIT-259-impl I02): rounded below 0, so that the tick at 0
+                        # is 0 (seq() gives 5.6e-17 from -0.3, -0.6 or -0.7, and every label then printed in scientific form).
+                        scale_x_continuous(limits = c(lower, 1), breaks = if (lower < 0) round(seq(lower, 1, 0.1), 1) else seq(lower, 1, 0.1), expand = c(0, 0)) +
                         # # Set fixed y-axis scale, similar to protein version
                         # scale_y_continuous(breaks = seq(0, 4, 1), limits = c(0, 4), expand = c(0, 0)) +
                         xlab("Pearson Correlation") +
@@ -328,12 +330,13 @@ setMethod(
 #' @description Removes samples from a LipidomicsAssayData object based on
 #'   Pearson correlation thresholds. Samples that do not have at least one
 #'   replicate pair with correlation above the threshold are removed.
+#'   With several assays, a sample below the threshold in one assay has its values set to missing in that assay only and is kept in the others; it leaves the design when no assay keeps a value for it.
 #' @param theObject A LipidomicsAssayData object
 #' @param pearson_correlation_per_pair A list of data frames (one per assay)
 #'   containing pair-wise correlation results from \code{pearsonCorForSamplePairs}.
 #' @param min_pearson_correlation_threshold A numeric value (0-1). Samples with
 #'   correlation below this threshold in their replicate group are removed.
-#' @return An updated LipidomicsAssayData object with poorly correlated samples removed.
+#' @return An updated LipidomicsAssayData object with poorly correlated samples removed (with several assays: set to missing in the assay where they fail, removed when no assay keeps a value; the samples set missing are recorded in `@args$correlation_exclusions`).
 #' @importFrom dplyr filter select distinct pull
 #' @importFrom tidyr pivot_longer
 #' @importFrom rlang sym
@@ -361,6 +364,12 @@ setMethod(
         if (length(assay_list) == 0) {
             warning("No assays found in LipidomicsAssayData object.")
             return(theObject)
+        }
+
+        # KIT-255 (VAL-283): each sample is judged within each assay; a replay of a record made before keeps the body below.
+        marker <- workflowReplayRuleMarkers$correlation_exclusion
+        if (!identical(getOption(marker$option), marker$earlier)) {
+            return(omicsCorrelationFilterWithinAssay(theObject, "lipid_data", pearson_correlation_per_pair, min_pearson_correlation_threshold))
         }
 
         samples_to_remove_total <- character()

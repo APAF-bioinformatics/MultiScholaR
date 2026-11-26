@@ -1,0 +1,5 @@
+pid 19560, hex 4c68, session folder Rtmp9WGFMn
+Error in identical(self$running[[self$current_file]]$context, context) : 
+  attempt to use zero-length variable name
+Calls: main ... eval -> test_that -> test_code -> <Anonymous> -> identical
+Execution halted

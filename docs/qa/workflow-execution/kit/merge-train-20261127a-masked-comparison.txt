@@ -1,0 +1,8 @@
+records 659 659
+keys equal True
+identical after path masking 656 differing 3
+Counter({('test-gui-entry-proteomics.R', 'prot_dia_limpa', 'summary_copy'): 1, ('test-gui-entry-proteomics.R', 'prot_dia_limpa', 'summary_report'): 1, ('test-gui-entry-proteomics.R', 'prot_dia_limpa', 'summary_export'): 1})
+equal after masking: ('test-gui-entry-proteomics.R', 'prot_dia_limpa', 'summary_copy')
+equal after masking: ('test-gui-entry-proteomics.R', 'prot_dia_limpa', 'summary_report')
+equal after masking: ('test-gui-entry-proteomics.R', 'prot_dia_limpa', 'summary_export')
+steps equal after masking 3 residue/unexpected 0

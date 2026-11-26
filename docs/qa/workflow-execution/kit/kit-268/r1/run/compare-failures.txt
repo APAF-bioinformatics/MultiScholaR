@@ -1,0 +1,54 @@
+== test-kit236-report-sentences.R | new-failure | KIT-268 T4: the FDR sentence of each report adds the scale sentence after the named Benjamini-Hochberg comparisons
+-- base:
+  <no such test on base>
+-- head:
+  Expected `k236Has(planted$de, paste(k268Existing, k268Added))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN
+  Expected `k236Has(planted$de, paste(k268Existing, k268Added))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  DIANN_limpa
+  Expected `k236Has(planted$de, paste(k268Existing, k268Added))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  LFQ
+  Expected `k236Has(planted$de, paste(k268Existing, k268Added))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  TMT
+  Expected `k236Has(planted$norm$de_details, paste(k268Existing, k268Added))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+  Expected `k236Has(planted$norm$de_details, paste(k268Existing, k268Added))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+== test-omic-da-module.R | new-failure | GUI audit A112-03: a managed run whose contrast fell back to BH shows the in-process run's fallback warning
+-- base:
+  <passes>
+-- head:
+  Expected `shown(managed)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  Expected `shown(unmanaged)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+

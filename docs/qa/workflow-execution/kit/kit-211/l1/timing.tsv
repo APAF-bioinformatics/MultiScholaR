@@ -1,0 +1,4 @@
+run	replicate_masks	mean_seconds	max_seconds
+L1 deciding cells A to D and Av (4 workers; per replicate-mask, all arms together)	54	16.3897592592593	18.8588333333333
+L1 cell Ag (4 workers; per replicate-mask, all arms together)	6	15.3521666666667	17.585
+E6 uninterrupted (4 workers, 4 tasks, wall seconds)	NA	71.1637876033783	NA

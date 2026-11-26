@@ -1,0 +1,4 @@
+seq	file	test	lane	step	n_assays	n_keys	failed_contrasts	contrasts	friendly_names
+1	test-gui-entry-metabolomics.R	KIT-101 entry lane metab_lc: LC-MS positive and negative assays (custom format)	metab_lc	NA	0	0		groupKO-groupWT	KO_vs_WT
+2	test-gui-entry-metabolomics.R	KIT-101 entry lane metab_gc: one GC-MS assay (custom format)	metab_gc	NA	0	0		groupKO-groupWT	KO_vs_WT
+3	test-gui-entry-metabolomics.R	KIT-101 entry lane metab_combined: LC-MS and GC-MS assays (custom format)	metab_combined	NA	0	0		groupKO-groupWT	KO_vs_WT

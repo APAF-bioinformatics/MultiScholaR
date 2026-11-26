@@ -1210,6 +1210,8 @@ registerOmicNormRuvCancorOutputs <- function(output, normData) {
 #' @noRd
 omicNormRuvSummary <- function(result) {
     if (is.null(result)) return("Not yet computed")
+    # KIT-242 Part B: an assay kept without RUV says so, with the reason.
+    if (!is.null(result$ruv_not_applied)) return(result$ruv_not_applied)
     if (!isTRUE(result$success)) return(paste0("Failed: ", result$error))
     # KIT-190 I01: where the cap reduced the search's k, the k removed is shown with the k found.
     k_line <- if (!is.null(result$k_removed) && !is.null(result$k_found) && !is.na(result$k_found) &&
@@ -1332,6 +1334,10 @@ omicNormCorrelationSummary <- function(normData, workflowData, readMetadata) {
             summary_lines <- c(summary_lines, sprintf(
                 "\n\n[Sample Filtering]\n  Original: %d samples\n  After filtering: %d samples\n  Removed: %d samples",
                 original_samples, filtered_samples, original_samples - filtered_samples))
+            # KIT-255 (VAL-283): a line only when a sample was set missing in an assay and stays in the design.
+            excluded_line <- omicsCorrelationExclusionSummaryLine(
+                readMetadata(workflowData$state_manager, filtered_obj)$slots$args$correlation_exclusions)
+            if (!is.null(excluded_line)) summary_lines <- c(summary_lines, paste0("\n  ", excluded_line))
         }
         paste(summary_lines, collapse = "")
     })

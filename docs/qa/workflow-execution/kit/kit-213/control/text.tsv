@@ -1,0 +1,13 @@
+file	line	l_line	base	head
+write-01-transcriptomics.txt	28	TRUE	  trx_ruv_grid.logcpm [input] = <HEX>	  trx_ruv_grid.logcpm [input] = the TMM log counts per million computed in step 5 of this analysis
+write-01-transcriptomics.txt	36	TRUE	  logcpm [input] = <HEX>	  logcpm [input] = the TMM log counts per million computed in step 5 of this analysis
+write-01-transcriptomics.txt	37	TRUE	  grid [input] = <HEX>	  grid [input] = the RUV choice made in step 5 of this analysis
+write-02-transcriptomics.txt	28	TRUE	  trx_ruv_grid.logcpm [input] = <HEX>	  trx_ruv_grid.logcpm [input] = the TMM log counts per million computed in step 5 of this analysis
+write-02-transcriptomics.txt	36	TRUE	  logcpm [input] = <HEX>	  logcpm [input] = the TMM log counts per million computed in step 5 of this analysis
+write-02-transcriptomics.txt	37	TRUE	  grid [input] = <HEX>	  grid [input] = the RUV choice made in step 5 of this analysis
+write-03-transcriptomics.txt	28	TRUE	  trx_ruv_grid.logcpm [input] = <HEX>	  trx_ruv_grid.logcpm [input] = the TMM log counts per million computed in step 5 of this analysis
+write-03-transcriptomics.txt	36	TRUE	  logcpm [input] = <HEX>	  logcpm [input] = the TMM log counts per million computed in step 5 of this analysis
+write-03-transcriptomics.txt	37	TRUE	  grid [input] = <HEX>	  grid [input] = the RUV choice made in step 5 of this analysis
+write-04-transcriptomics.txt	28	TRUE	  trx_ruv_grid.logcpm [input] = <HEX>	  trx_ruv_grid.logcpm [input] = the TMM log counts per million computed in step 5 of this analysis
+write-04-transcriptomics.txt	36	TRUE	  logcpm [input] = <HEX>	  logcpm [input] = the TMM log counts per million computed in step 5 of this analysis
+write-04-transcriptomics.txt	37	TRUE	  grid [input] = <HEX>	  grid [input] = the RUV choice made in step 5 of this analysis

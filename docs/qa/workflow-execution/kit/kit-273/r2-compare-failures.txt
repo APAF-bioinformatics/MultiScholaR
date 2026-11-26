@@ -1,0 +1,2132 @@
+== test-gui-entry-proteomics.R | message-changed | KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route
+-- base:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "26949cd4ef4f9834155f1b6ead0e604fb1e7e720b78652a44651997ab3dc9190"
+  + "e1d367dce2c8e55d859be1b6d22dfe025060b158ef1c0bdde602ad89ac70aa1a"
+  
+  names(actual$artifacts)[6:12] vs names(expected$artifacts)[6:11]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[23:28] vs names(expected$artifacts)[22:28]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.pdf"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.png"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_peptides_per_protein.pdf"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'da_load' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "26949cd4ef4f9834155f1b6ead0e604fb1e7e720b78652a44651997ab3dc9190"
+  + "e1d367dce2c8e55d859be1b6d22dfe025060b158ef1c0bdde602ad89ac70aa1a"
+  
+  names(actual$artifacts)[6:12] vs names(expected$artifacts)[6:11]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[23:28] vs names(expected$artifacts)[22:28]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.pdf"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.png"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_peptides_per_protein.pdf"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'ruv_covariates' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "26949cd4ef4f9834155f1b6ead0e604fb1e7e720b78652a44651997ab3dc9190"
+  + "e1d367dce2c8e55d859be1b6d22dfe025060b158ef1c0bdde602ad89ac70aa1a"
+  
+  names(actual$artifacts)[6:12] vs names(expected$artifacts)[6:11]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[23:28] vs names(expected$artifacts)[22:28]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.pdf"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.png"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_peptides_per_protein.pdf"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'session_export' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "ea416fdbc32913df3345275fdd000862638f8c81a1f2a2955710f5158c081b01"
+  + "c022701c1a4dc62ef145cb07c0341258314a3247ef00842919b47c4569e83a04"
+  
+  names(actual$artifacts)[14:20] vs names(expected$artifacts)[14:19]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[31:36] vs names(expected$artifacts)[30:36]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'summary_save' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "ea416fdbc32913df3345275fdd000862638f8c81a1f2a2955710f5158c081b01"
+  + "c022701c1a4dc62ef145cb07c0341258314a3247ef00842919b47c4569e83a04"
+  
+  names(actual$artifacts)[14:20] vs names(expected$artifacts)[14:19]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[31:36] vs names(expected$artifacts)[30:36]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  names(actual$artifacts)[145:153] vs names(expected$artifacts)[145:153]
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.pdf"
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.png"
+    "results_summary/proteomics/Publication_tables/DA_results_proteomics.xlsx"
+    "results_summary/proteomics/Publication_tables/Pathway_enrichment_results_proteomics.xlsx"
+  + "results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv"
+    "results_summary/proteomics/Publication_tables/da_proteomics_num_sig_da_molecules.tab"
+    "results_summary/proteomics/Publication_tables/filtered_session.msdia.tar"
+  - "results_summary/proteomics/Publication_tables/normalised_results.tsv"
+    "results_summary/proteomics/Study_report/contrasts_tbl.tab"
+    "results_summary/proteomics/Study_report/design_matrix.tab"
+    "results_summary/proteomics/Study_report/study_parameters.txt"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is absent
+  `expected$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'summary_copy' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "ea416fdbc32913df3345275fdd000862638f8c81a1f2a2955710f5158c081b01"
+  + "c022701c1a4dc62ef145cb07c0341258314a3247ef00842919b47c4569e83a04"
+  
+  names(actual$artifacts)[14:20] vs names(expected$artifacts)[14:19]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[31:36] vs names(expected$artifacts)[30:36]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  names(actual$artifacts)[146:154] vs names(expected$artifacts)[146:154]
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.pdf"
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.png"
+    "results_summary/proteomics/Publication_tables/DA_results_proteomics.xlsx"
+    "results_summary/proteomics/Publication_tables/Pathway_enrichment_results_proteomics.xlsx"
+  + "results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv"
+    "results_summary/proteomics/Publication_tables/da_proteomics_num_sig_da_molecules.tab"
+    "results_summary/proteomics/Publication_tables/filtered_session.msdia.tar"
+  - "results_summary/proteomics/Publication_tables/normalised_results.tsv"
+    "results_summary/proteomics/Study_report/analysis_record.docx"
+    "results_summary/proteomics/Study_report/analysis_record.json"
+    "results_summary/proteomics/Study_report/analysis_record.xlsx"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is absent
+  `expected$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'summary_export' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "ea416fdbc32913df3345275fdd000862638f8c81a1f2a2955710f5158c081b01"
+  + "c022701c1a4dc62ef145cb07c0341258314a3247ef00842919b47c4569e83a04"
+  
+  names(actual$artifacts)[14:20] vs names(expected$artifacts)[14:19]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[31:36] vs names(expected$artifacts)[30:36]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  names(actual$artifacts)[146:154] vs names(expected$artifacts)[146:154]
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.pdf"
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.png"
+    "results_summary/proteomics/Publication_tables/DA_results_proteomics.xlsx"
+    "results_summary/proteomics/Publication_tables/Pathway_enrichment_results_proteomics.xlsx"
+  + "results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv"
+    "results_summary/proteomics/Publication_tables/da_proteomics_num_sig_da_molecules.tab"
+    "results_summary/proteomics/Publication_tables/filtered_session.msdia.tar"
+  - "results_summary/proteomics/Publication_tables/normalised_results.tsv"
+    "results_summary/proteomics/Study_report/analysis_record.docx"
+    "results_summary/proteomics/Study_report/analysis_record.json"
+    "results_summary/proteomics/Study_report/analysis_record.xlsx"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is absent
+  `expected$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'summary_report' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "ea416fdbc32913df3345275fdd000862638f8c81a1f2a2955710f5158c081b01"
+  + "c022701c1a4dc62ef145cb07c0341258314a3247ef00842919b47c4569e83a04"
+  
+  names(actual$artifacts)[8:14] vs names(expected$artifacts)[8:13]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[25:30] vs names(expected$artifacts)[24:30]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'da' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "ea416fdbc32913df3345275fdd000862638f8c81a1f2a2955710f5158c081b01"
+  + "c022701c1a4dc62ef145cb07c0341258314a3247ef00842919b47c4569e83a04"
+  
+  names(actual$artifacts)[8:14] vs names(expected$artifacts)[8:13]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[25:30] vs names(expected$artifacts)[24:30]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'summary_refusal' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  names(actual$artifacts)[6:16] vs names(expected$artifacts)[6:16]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+  + "results/proteomics/protein_qc/post_norm_correlation.png"
+  - "results/proteomics/protein_qc/post_norm_correlation.png"
+  + "results/proteomics/protein_qc/post_norm_density.png"
+  - "results/proteomics/protein_qc/post_norm_density.png"
+  + "results/proteomics/protein_qc/post_norm_pca.png"
+  - "results/proteomics/protein_qc/post_norm_pca.png"
+  + "results/proteomics/protein_qc/post_norm_rle.png"
+  - "results/proteomics/protein_qc/post_norm_rle.png"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.pdf"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.png"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_peptides_per_protein.pdf"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'correlation' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  prot_dia_limpa at step 'da_refusal' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  prot_dia_limpa at step 'norm_refusal' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  prot_dia_limpa at step 'norm' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  prot_dia_limpa at step 'qc_protein_peptide_count' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  prot_dia_limpa at step 'qc_protein_normalisation' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  prot_dia_limpa at step 'qc_protein_dpc_quant' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  prot_dia_limpa at step 'qc_peptide_accession_cleanup' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  prot_dia_limpa at step 'qc_peptide_log2_matrix' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  prot_dia_limpa at step 'qc_peptide_rollup' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  prot_dia_limpa at step 'qc_peptide_qvalue_filter' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  prot_dia_limpa at step 'design' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+-- head:
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "26949cd4ef4f9834155f1b6ead0e604fb1e7e720b78652a44651997ab3dc9190"
+  + "e1d367dce2c8e55d859be1b6d22dfe025060b158ef1c0bdde602ad89ac70aa1a"
+  
+  names(actual$artifacts)[6:12] vs names(expected$artifacts)[6:11]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[23:28] vs names(expected$artifacts)[22:28]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.pdf"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.png"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_peptides_per_protein.pdf"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'da_load' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "26949cd4ef4f9834155f1b6ead0e604fb1e7e720b78652a44651997ab3dc9190"
+  + "e1d367dce2c8e55d859be1b6d22dfe025060b158ef1c0bdde602ad89ac70aa1a"
+  
+  names(actual$artifacts)[6:12] vs names(expected$artifacts)[6:11]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[23:28] vs names(expected$artifacts)[22:28]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.pdf"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.png"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_peptides_per_protein.pdf"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'ruv_covariates' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "26949cd4ef4f9834155f1b6ead0e604fb1e7e720b78652a44651997ab3dc9190"
+  + "e1d367dce2c8e55d859be1b6d22dfe025060b158ef1c0bdde602ad89ac70aa1a"
+  
+  names(actual$artifacts)[6:12] vs names(expected$artifacts)[6:11]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[23:28] vs names(expected$artifacts)[22:28]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.pdf"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.png"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_peptides_per_protein.pdf"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'session_export' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "ea416fdbc32913df3345275fdd000862638f8c81a1f2a2955710f5158c081b01"
+  + "c022701c1a4dc62ef145cb07c0341258314a3247ef00842919b47c4569e83a04"
+  
+  `actual$artifacts` is length 173
+  `expected$artifacts` is length 172
+  
+  names(actual$artifacts)[14:20] vs names(expected$artifacts)[14:19]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[31:36] vs names(expected$artifacts)[30:36]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  names(actual$artifacts)[145:156] vs names(expected$artifacts)[145:155]
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.pdf"
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.png"
+    "results_summary/proteomics/Publication_tables/DA_results_proteomics.xlsx"
+    "results_summary/proteomics/Publication_tables/Pathway_enrichment_results_proteomics.xlsx"
+  + "results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv"
+    "results_summary/proteomics/Publication_tables/da_proteomics_num_sig_da_molecules.tab"
+    "results_summary/proteomics/Publication_tables/filtered_session.msdia.tar"
+  - "results_summary/proteomics/Publication_tables/normalised_results.tsv"
+    "results_summary/proteomics/Study_report/contrasts_tbl.tab"
+    "results_summary/proteomics/Study_report/design_matrix.tab"
+  - "results_summary/proteomics/Study_report/design_matrix_with_ruv_factors.tab"
+    "results_summary/proteomics/Study_report/study_parameters.txt"
+    "scripts/proteomics/aa_seq_tbl_final.RDS"
+    "scripts/proteomics/accession_cleanup_results.RDS"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is absent
+  
+  `actual$artifacts$results_summary/proteomics/Study_report/design_matrix_with_ruv_factors.tab` is a character vector ('31bee7fa8d6bf07efd85dac297b1a9148868c8cdf07fdad4fdf759bd4593aeb0')
+  `expected$artifacts$results_summary/proteomics/Study_report/design_matrix_with_ruv_factors.tab` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is absent
+  `expected$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'summary_copy' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "ea416fdbc32913df3345275fdd000862638f8c81a1f2a2955710f5158c081b01"
+  + "c022701c1a4dc62ef145cb07c0341258314a3247ef00842919b47c4569e83a04"
+  
+  `actual$artifacts` is length 178
+  `expected$artifacts` is length 177
+  
+  names(actual$artifacts)[14:20] vs names(expected$artifacts)[14:19]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[31:36] vs names(expected$artifacts)[30:36]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  names(actual$artifacts)[146:160] vs names(expected$artifacts)[146:159]
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.pdf"
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.png"
+    "results_summary/proteomics/Publication_tables/DA_results_proteomics.xlsx"
+    "results_summary/proteomics/Publication_tables/Pathway_enrichment_results_proteomics.xlsx"
+  + "results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv"
+    "results_summary/proteomics/Publication_tables/da_proteomics_num_sig_da_molecules.tab"
+    "results_summary/proteomics/Publication_tables/filtered_session.msdia.tar"
+  - "results_summary/proteomics/Publication_tables/normalised_results.tsv"
+    "results_summary/proteomics/Study_report/analysis_record.docx"
+    "results_summary/proteomics/Study_report/analysis_record.json"
+    "results_summary/proteomics/Study_report/analysis_record.xlsx"
+    "results_summary/proteomics/Study_report/contrasts_tbl.tab"
+    "results_summary/proteomics/Study_report/design_matrix.tab"
+  - "results_summary/proteomics/Study_report/design_matrix_with_ruv_factors.tab"
+    "results_summary/proteomics/Study_report/study_parameters.txt"
+    "scripts/proteomics/DIANN_limpa_report.rmd"
+    "scripts/proteomics/aa_seq_tbl_final.RDS"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is absent
+  
+  `actual$artifacts$results_summary/proteomics/Study_report/design_matrix_with_ruv_factors.tab` is a character vector ('31bee7fa8d6bf07efd85dac297b1a9148868c8cdf07fdad4fdf759bd4593aeb0')
+  `expected$artifacts$results_summary/proteomics/Study_report/design_matrix_with_ruv_factors.tab` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is absent
+  `expected$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'summary_report' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "ea416fdbc32913df3345275fdd000862638f8c81a1f2a2955710f5158c081b01"
+  + "c022701c1a4dc62ef145cb07c0341258314a3247ef00842919b47c4569e83a04"
+  
+  `actual$artifacts` is length 179
+  `expected$artifacts` is length 178
+  
+  names(actual$artifacts)[14:20] vs names(expected$artifacts)[14:19]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[31:36] vs names(expected$artifacts)[30:36]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  names(actual$artifacts)[146:160] vs names(expected$artifacts)[146:159]
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.pdf"
+    "results_summary/proteomics/Publication_figures/Volcano_Plots/groupKO-groupWT.png"
+    "results_summary/proteomics/Publication_tables/DA_results_proteomics.xlsx"
+    "results_summary/proteomics/Publication_tables/Pathway_enrichment_results_proteomics.xlsx"
+  + "results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv"
+    "results_summary/proteomics/Publication_tables/da_proteomics_num_sig_da_molecules.tab"
+    "results_summary/proteomics/Publication_tables/filtered_session.msdia.tar"
+  - "results_summary/proteomics/Publication_tables/normalised_results.tsv"
+    "results_summary/proteomics/Study_report/analysis_record.docx"
+    "results_summary/proteomics/Study_report/analysis_record.json"
+    "results_summary/proteomics/Study_report/analysis_record.xlsx"
+    "results_summary/proteomics/Study_report/contrasts_tbl.tab"
+    "results_summary/proteomics/Study_report/design_matrix.tab"
+  - "results_summary/proteomics/Study_report/design_matrix_with_ruv_factors.tab"
+    "results_summary/proteomics/Study_report/study_parameters.txt"
+    "scripts/proteomics/DIANN_limpa_report.rmd"
+    "scripts/proteomics/aa_seq_tbl_final.RDS"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results_summary/proteomics/Publication_tables/normalised_results.tsv` is absent
+  
+  `actual$artifacts$results_summary/proteomics/Study_report/design_matrix_with_ruv_factors.tab` is a character vector ('31bee7fa8d6bf07efd85dac297b1a9148868c8cdf07fdad4fdf759bd4593aeb0')
+  `expected$artifacts$results_summary/proteomics/Study_report/design_matrix_with_ruv_factors.tab` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  `actual$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is absent
+  `expected$artifacts$results_summary/proteomics/Publication_tables/RUV_normalised_results.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'summary_export' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "ea416fdbc32913df3345275fdd000862638f8c81a1f2a2955710f5158c081b01"
+  + "c022701c1a4dc62ef145cb07c0341258314a3247ef00842919b47c4569e83a04"
+  
+  names(actual$artifacts)[14:20] vs names(expected$artifacts)[14:19]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[31:36] vs names(expected$artifacts)[30:36]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'summary_save' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "ea416fdbc32913df3345275fdd000862638f8c81a1f2a2955710f5158c081b01"
+  + "c022701c1a4dc62ef145cb07c0341258314a3247ef00842919b47c4569e83a04"
+  
+  names(actual$artifacts)[8:14] vs names(expected$artifacts)[8:13]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[25:30] vs names(expected$artifacts)[24:30]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'da' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  actual$states$ruv_covariates vs expected$states$ruv_covariates
+  - "ea416fdbc32913df3345275fdd000862638f8c81a1f2a2955710f5158c081b01"
+  + "c022701c1a4dc62ef145cb07c0341258314a3247ef00842919b47c4569e83a04"
+  
+  names(actual$artifacts)[8:14] vs names(expected$artifacts)[8:13]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/protein_qc/post_norm_correlation.png"
+    "results/proteomics/protein_qc/post_norm_density.png"
+    "results/proteomics/protein_qc/post_norm_pca.png"
+  
+  names(actual$artifacts)[25:30] vs names(expected$artifacts)[24:30]
+    "results/proteomics/protein_qc/ruv_corrected_rle.png"
+    "results/proteomics/protein_qc/ruv_covariates_cancor.png"
+    "results/proteomics/protein_qc/ruv_covariates_design.tsv"
+    "results/proteomics/protein_qc/ruv_covariates_optimization.tsv"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/Interactive_Volcano_Plots/KO_vs_WT.html"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.pdf"
+    "results/proteomics/publication_graphs/NumSigDaMolecules/da_proteins_num_sig_da_molecules.png"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'summary_refusal' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  actual$states$correlation_filtered vs expected$states$correlation_filtered
+  - "538ad8a61299399a3e7579819f4d384fb16030753ebdb2f92e0ba905754a103d"
+  + "3626feb5f9f7463df5a616530701a51dafab83d74c7dd928901695a37576d8fe"
+  
+  names(actual$artifacts)[6:16] vs names(expected$artifacts)[6:16]
+    "results/proteomics/protein_qc/limpa_intensity_distribution.png"
+    "results/proteomics/protein_qc/limpa_missing_comparison.png"
+    "results/proteomics/protein_qc/limpa_summary.png"
+  - "results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv"
+  + "results/proteomics/protein_qc/post_norm_correlation.png"
+  - "results/proteomics/protein_qc/post_norm_correlation.png"
+  + "results/proteomics/protein_qc/post_norm_density.png"
+  - "results/proteomics/protein_qc/post_norm_density.png"
+  + "results/proteomics/protein_qc/post_norm_pca.png"
+  - "results/proteomics/protein_qc/post_norm_pca.png"
+  + "results/proteomics/protein_qc/post_norm_rle.png"
+  - "results/proteomics/protein_qc/post_norm_rle.png"
+  + "results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.pdf"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_combined_plots.png"
+    "results/proteomics/publication_graphs/filtering_qc/<TIME>/10_protein_normalised_peptides_per_protein.pdf"
+  
+  `actual$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  `expected$artifacts$results/proteomics/protein_qc/normalised_results_cln_with_replicates.tsv` is absent
+  
+  `actual$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is absent
+  `expected$artifacts$results/proteomics/protein_qc/ruv_normalised_results_cln_with_replicates.tsv` is a character vector ('1a61f3bde9dd6a86b8c2f7c6cf587051053ce7d9aa33c75000c99bb311a36ff1')
+  
+  prot_dia_limpa at step 'correlation' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  prot_dia_limpa at step 'da_refusal' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  prot_dia_limpa at step 'norm_refusal' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  prot_dia_limpa at step 'norm' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  actual$states$peptide_count_filtered vs expected$states$peptide_count_filtered
+  - "39b1a6fc6f4073d246e473d74cfee828532de6b72c2ff440c02741cce4e96f80"
+  + "6f00a535eb36697e3b677c2c3958f1e0ea87036debd0a74b347163c19829886c"
+  
+  prot_dia_limpa at step 'qc_protein_peptide_count' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  actual$states$protein_normalised vs expected$states$protein_normalised
+  - "20a6bc22690a8bc7dde02cfe118e658e3e92431862a6eb74ca31b33c9aab1b7b"
+  + "9b2ebf42c4f24939df0d31643db2add1aab317f661f0650715f6bdd760393d8e"
+  
+  prot_dia_limpa at step 'qc_protein_normalisation' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  actual$states$protein_dpc_quant vs expected$states$protein_dpc_quant
+  - "a62fdb05aaad41149800c911b7df6a0187f6b3635ead633ad167049546abca85"
+  + "d30fce42f5d8e7be3ebc088e5211ff53a11b5ce65a891c0bb95d1cd8f3bea599"
+  
+  prot_dia_limpa at step 'qc_protein_dpc_quant' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  actual$states$peptide_accession_cleaned vs expected$states$peptide_accession_cleaned
+  - "8ea3c372a4849701f80f19b9aa7454ad2221b1a4735db2dbc013eaab5151c0ba"
+  + "3cbca33120fd8ac1d184aae05c32f4031991e42ed9f29a37fee08ecd1a4435b2"
+  
+  prot_dia_limpa at step 'qc_peptide_accession_cleanup' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  actual$states$log2_matrix vs expected$states$log2_matrix
+  - "114f88832934a66a62f6b4496a19b369c76319f3612dcfe904563573d66f080c"
+  + "4040392edf98703513003ca70ac8f3f61686565893ec11ae1c5323201ec16378"
+  
+  prot_dia_limpa at step 'qc_peptide_log2_matrix' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  actual$states$precursor_rollup vs expected$states$precursor_rollup
+  - "603e9a1404a3fa19b9f444dfcc2807674f83c767482965ecf01fe77e71ed20da"
+  + "50266f0497c4df51a4628957dfd27bfa03524bf61c892c61970c66eb66d459c3"
+  
+  prot_dia_limpa at step 'qc_peptide_rollup' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  actual$states$qvalue_filtered vs expected$states$qvalue_filtered
+  - "2a385c6fc04529392e8c11e3db40b9ae0e8f12b3947bfd6a62d7e23c0b8f9b4c"
+  + "6de437698e99502ead34a8c6db01f65c869040ec6e5eee8cc7c3cbaa5284c187"
+  
+  prot_dia_limpa at step 'qc_peptide_qvalue_filter' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+  Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`.
+  Differences:
+  actual$states$raw_data_s4 vs expected$states$raw_data_s4
+  - "95e3016f251d5723f068f2c314fb738497cd7cd8821a1ed9a35858cf220cbe9f"
+  + "3a0c80b20fdd6a75732b27e3010f09517a0b74bdf112fa0f9ceadd66eb071b3c"
+  
+  prot_dia_limpa at step 'design' (oracle d7928ac9d32c0917b302a2123728df64c267ff8c)
+
+== test-kit273-limpa-ruv-delivery.R | fixed | KIT-273 T1, T2b, T3, T7, T8, T9, T13: covariates mode: the design with the factors is delivered, from the current DA's record
+-- base:
+  Expected `file.exists(delivered)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T1 in process covariates
+  Expected `file.exists(delivered)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T1 worker covariates
+  Expected `file.exists(k273Delivered(again, k273Design))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T7 in process covariates
+  Expected `file.exists(k273Delivered(again, k273Design))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T7 worker covariates
+-- head:
+  <passes>
+
+== test-kit273-limpa-ruv-delivery.R | fixed | KIT-273 T2, T3, T7, T8, T13: correction mode: the corrected matrix is delivered, from the current DA's record
+-- base:
+  Expected `file.exists(delivered)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T2 in process correction
+  Expected `file.exists(delivered)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T2 worker correction
+  Expected `file.exists(k273Delivered(again, k273Matrix))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T7 in process correction
+  Expected `file.exists(k273Delivered(again, k273Matrix))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T7 worker correction
+-- head:
+  <passes>
+
+== test-kit273-limpa-ruv-delivery.R | fixed | KIT-273 T6: a correction run, then a covariates run, then the DA: the design is delivered, the matrix is not
+-- base:
+  Expected `file.exists(k273Delivered(copy, k273Design))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+
+== test-kit273-limpa-ruv-delivery.R | fixed | KIT-273 T11: the writer fails: Copy records a ruv_delivery failure, still delivers the others, and no error escapes (the writer is mocked to throw)
+-- base:
+  Expected `"ruv_delivery" %in% copy$types` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+
+== test-kit273-limpa-ruv-delivery.R | fixed | KIT-273 T12: the correction matrix has no column for a sample the correlation filter dropped
+-- base:
+  Expected `file.exists(delivered)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+

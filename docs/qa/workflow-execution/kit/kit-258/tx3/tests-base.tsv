@@ -1,0 +1,6 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit258b-duplicate-texts.R	34	0	0	0	0	6.4	ok
+test-workflow-omics-binding-steps.R	57	2	0	0	0	51.8	failed
+test-kit258-duplicate-completeness.R	162	0	0	0	0	75.2	ok
+test-workflow-lipid-declarations.R	259	0	0	0	0	51.8	ok
+test-workflow-metab-declarations.R	259	0	0	0	0	52.5	ok

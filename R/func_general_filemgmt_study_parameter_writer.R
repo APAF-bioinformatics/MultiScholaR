@@ -310,6 +310,10 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                 if (!is.null(itsd$timestamp) && !is.na(itsd$timestamp)) {
                     itsd_lines <- c(itsd_lines, paste("* Timestamp:", itsd$timestamp))
                 }
+                # KIT-260 (VAL-241, OD-3 (a)): the analysis record's note, where the stored pattern matched names through the
+                # alternatives the corrected MS-DIAL default removed (no line otherwise: the block is as before).
+                itsd_note <- omicsItsdRecordNote(analysis_record)
+                if (!is.null(itsd_note)) itsd_lines <- c(itsd_lines, paste("* Note:", itsd_note))
 
                 # Add per-assay ITSD feature names
                 if (!is.null(itsd$features_per_assay) && is.list(itsd$features_per_assay) && length(itsd$features_per_assay) > 0) {
@@ -367,6 +371,9 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             output_lines <- c(output_lines, norm_lines)
             cat("WORKFLOW ARGS: Added Normalization Method section\n")
         }
+
+        # KIT-255 (VAL-283): the samples the correlation filter set missing in one assay (nothing is written without any).
+        output_lines <- c(output_lines, omicsCorrelationExclusionStudyLines(metab_params$correlation_exclusions))
 
         # Add Metadata section
         if (!is.null(metab_params$metadata) && length(metab_params$metadata) > 0) {
@@ -507,6 +514,10 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
                 if (!is.null(itsd$timestamp) && !is.na(itsd$timestamp)) {
                     itsd_lines <- c(itsd_lines, paste("* Timestamp:", itsd$timestamp))
                 }
+                # KIT-260 (VAL-241, OD-3 (a)): the analysis record's note, where the stored pattern matched names through the
+                # alternatives the corrected MS-DIAL default removed (no line otherwise: the block is as before).
+                itsd_note <- omicsItsdRecordNote(analysis_record)
+                if (!is.null(itsd_note)) itsd_lines <- c(itsd_lines, paste("* Note:", itsd_note))
 
                 # Add per-assay ITSD feature names
                 if (!is.null(itsd$features_per_assay) && is.list(itsd$features_per_assay) && length(itsd$features_per_assay) > 0) {
@@ -564,6 +575,9 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             output_lines <- c(output_lines, norm_lines)
             cat("WORKFLOW ARGS: Added Normalization Method section\n")
         }
+
+        # KIT-255 (VAL-283): the samples the correlation filter set missing in one assay (nothing is written without any).
+        output_lines <- c(output_lines, omicsCorrelationExclusionStudyLines(lipid_params$correlation_exclusions))
 
         # Add Metadata section
         if (!is.null(lipid_params$metadata) && length(lipid_params$metadata) > 0) {
@@ -988,7 +1002,10 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             },
             error = function(e) {
                 cat(sprintf("WORKFLOW ARGS: formatConfigList failed: %s\n", e$message))
-                config_lines <- c(config_lines, paste("Error formatting config:", e$message))
+                # KIT-269: `<<-` so the line reaches the writer's own config_lines (a plain `<-` was discarded).
+                # DRAFT wording (owner's pass). For an rlang condition the message already holds its parents' causes.
+                reason <- trimws(gsub("[[:space:]]+", " ", cli::ansi_strip(conditionMessage(e))))
+                config_lines <<- c(config_lines, paste("The configuration settings could not be listed here:", reason))
             }
         )
     } else {
@@ -1006,16 +1023,18 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             record_lines <- c(record_lines, sprintf("[%s. %s: %s]", step$order, step$state, step$operation))
             for (previous in step$preceded_by %||% list()) for (parameter in previous$parameters)
                 record_lines <- c(record_lines, sprintf("  %s.%s [%s] = %s", previous$operation, parameter$name,
-                    parameter$provenance, workflowRecordValueText(parameter$value)))
+                    parameter$provenance, studyParameterRecordValueText(parameter, step$order)))
             for (parameter in step$parameters) record_lines <- c(record_lines, sprintf("  %s [%s] = %s", parameter$name,
-                parameter$provenance, workflowRecordValueText(parameter$value)))
+                parameter$provenance, studyParameterRecordValueText(parameter, step$order)))
             record_lines <- c(record_lines, "")
         }
         for (name in names(analysis_record$analyses)) {
             analysis <- analysis_record$analyses[[name]]
+            # KIT-213: the step that produced the analysis's inputs is the record step of its source state.
+            source_order <- Find(function(step) identical(step$state, analysis$source_state), analysis_record$steps)$order
             record_lines <- c(record_lines, sprintf("[%s: %s]", name, analysis$operation))
             for (parameter in analysis$parameters) record_lines <- c(record_lines, sprintf("  %s [%s] = %s", parameter$name,
-                parameter$provenance, workflowRecordValueText(parameter$value)))
+                parameter$provenance, studyParameterRecordValueText(parameter, source_order %||% NA_integer_)))
             record_lines <- c(record_lines, "")
         }
         output_lines <- c(output_lines, record_lines)
@@ -1062,4 +1081,33 @@ createWorkflowArgsFromConfig <- function(workflow_name, description = "",
             stop("Failed to write study parameters file: ", e$message)
         }
     )
+}
+
+#' The value text of one analysis-record parameter in study_parameters.txt (KIT-213, VAL-169 (1)). A parameter that
+#' holds an earlier result's identifier in the session's store (`pairs`, `logcpm`, `grid` and `results`, of provenance
+#' `input`) is printed as a label naming the step that produced it: the identifier differs between sessions and
+#' projects and is not a checksum of the result. The label is made from the record alone; every other value, and a
+#' NULL, empty or `NA` value of the four, is printed by the record's formatter as before.
+#' @param parameter One parameter of the record (`name`, `provenance`, `value` as encoded).
+#' @param step_order The record `order` of the step whose block prints the line (for an analysis, the step of its
+#'   source state), or `NA`.
+#' @return The text after `= ` on the line.
+#' @noRd
+studyParameterRecordValueText <- function(parameter, step_order) {
+    text <- workflowRecordValueText(parameter$value)
+    labels <- c(pairs = "the sample-pair correlations computed %s", logcpm = "the TMM log counts per million computed %s",
+        grid = "the RUV choice made %s")
+    if (!identical(parameter$provenance, "input") || !isTRUE(parameter$name %in% c(names(labels), "results"))) return(text)
+    value <- decodeWorkflowRecordValue(parameter$value)
+    if (!is.atomic(value) || !length(value) || all(is.na(value))) return(text)
+    if (identical(parameter$name, "results")) {
+        contrast <- names(value)
+        label <- if (is.null(contrast)) rep("the differential abundance results in this analysis", length(value)) else
+            sprintf("the differential abundance results of contrast %s in this analysis", contrast)
+        label[is.na(value)] <- "NA"
+        return(paste(if (is.null(contrast)) label else paste0(contrast, "=", label), collapse = ", "))
+    }
+    where <- if (length(step_order) == 1L && !is.na(step_order)) sprintf("in step %s of this analysis", step_order) else
+        "in this analysis"
+    sprintf(labels[[parameter$name]], where)
 }

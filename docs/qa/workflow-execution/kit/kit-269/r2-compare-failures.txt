@@ -1,0 +1,81 @@
+== test-kit269-config-vector-values.R | fixed | (KIT-269 T1) a numeric pair is listed comma-joined
+-- base:
+  <purrr_error_indexed/rlang_error/error/condition>
+  Error in `purrr::map_chr(names_to_process, function(name) {     value <- config_list[[name]]     if (name == "core_utilisation" || name == "seqinr_obj" || any(class(value) %in% c("process", "R6", "multidplyr_cluster", "cluster", "SOCKcluster", "tbl_df", "tbl", "data.frame"))) {         return("")     }     name_formatted <- gsub("\\.", " ", name)     name_formatted <- gsub("_", " ", name_formatted)     name_formatted <- tools::toTitleCase(name_formatted)     if (is.list(value)) {         if (length(value) > 0 && !is.null(names(value))) {             output_lines <- paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ":")             recursive_result <- formatConfigList(value, indent + 2)             return(paste(c(output_lines, recursive_result), collapse = "\n"))         }         else if (length(value) > 0) {             header <- paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ":")             element_lines <- if (requireNamespace("purrr", quietly = TRUE)) {                 purrr::imap_chr(value, function(item_val, item_idx) {                   if (is.atomic(item_val) && length(item_val) == 1) {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- ", as.character(item_val))                   }                   else {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- [Complex List Element]")                   }                 })             }             else {                 sapply(seq_along(value), function(item_idx) {                   item_val <- value[[item_idx]]                   if (is.atomic(item_val) && length(item_val) == 1) {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- ", as.character(item_val))                   }                   else {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- [Complex List Element]")                   }                 })             }             return(paste(c(header, element_lines), collapse = "\n"))         }         else {             return(paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ": [Empty List]"))         }     }     else {         value_display <- tryCatch({             if (is.character(value) && length(value) > 5) {                 paste(c(utils::head(value, 5), "..."), collapse = ", ")             }             else if (is.character(value) && length(value) > 1) {                 paste(value, collapse = ", ")             }             else {                 result <- as.character(value)                 if (length(result) == 0)                    "[Empty/NULL]"                 else result             }         }, error = function(e) {             message(sprintf("   DEBUG66: Error converting '%s': %s", name, e$message))             "[CONVERSION ERROR]"         })         return(paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ": ", value_display))     } })`: i In index: 1.
+  Caused by error in `purrr::map_chr()`:
+  i In index: 1.
+  Caused by error:
+  ! Result must be length 1, not 2.
+-- head:
+  <passes>
+
+== test-kit269-config-vector-values.R | fixed | (KIT-269 T2) integer, logical and double vectors, and the RUV control shape, are listed in full
+-- base:
+  <purrr_error_indexed/rlang_error/error/condition>
+  Error in `purrr::map_chr(names_to_process, function(name) {     value <- config_list[[name]]     if (name == "core_utilisation" || name == "seqinr_obj" || any(class(value) %in% c("process", "R6", "multidplyr_cluster", "cluster", "SOCKcluster", "tbl_df", "tbl", "data.frame"))) {         return("")     }     name_formatted <- gsub("\\.", " ", name)     name_formatted <- gsub("_", " ", name_formatted)     name_formatted <- tools::toTitleCase(name_formatted)     if (is.list(value)) {         if (length(value) > 0 && !is.null(names(value))) {             output_lines <- paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ":")             recursive_result <- formatConfigList(value, indent + 2)             return(paste(c(output_lines, recursive_result), collapse = "\n"))         }         else if (length(value) > 0) {             header <- paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ":")             element_lines <- if (requireNamespace("purrr", quietly = TRUE)) {                 purrr::imap_chr(value, function(item_val, item_idx) {                   if (is.atomic(item_val) && length(item_val) == 1) {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- ", as.character(item_val))                   }                   else {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- [Complex List Element]")                   }                 })             }             else {                 sapply(seq_along(value), function(item_idx) {                   item_val <- value[[item_idx]]                   if (is.atomic(item_val) && length(item_val) == 1) {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- ", as.character(item_val))                   }                   else {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- [Complex List Element]")                   }                 })             }             return(paste(c(header, element_lines), collapse = "\n"))         }         else {             return(paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ": [Empty List]"))         }     }     else {         value_display <- tryCatch({             if (is.character(value) && length(value) > 5) {                 paste(c(utils::head(value, 5), "..."), collapse = ", ")             }             else if (is.character(value) && length(value) > 1) {                 paste(value, collapse = ", ")             }             else {                 result <- as.character(value)                 if (length(result) == 0)                    "[Empty/NULL]"                 else result             }         }, error = function(e) {             message(sprintf("   DEBUG66: Error converting '%s': %s", name, e$message))             "[CONVERSION ERROR]"         })         return(paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ": ", value_display))     } })`: i In index: 1.
+  Caused by error:
+  ! Result must be length 1, not 3.
+-- head:
+  <passes>
+
+== test-kit269-config-vector-values.R | fixed | (KIT-269 T3) scalars, pairs, empty lists and skipped names are unchanged; text vectors print in full
+-- base:
+  Expected `formatConfigList(list(alpha = seven))` to be identical to `paste0("Alpha: ", paste(seven, collapse = ", "))`.
+  Differences:
+  `actual`:   "Alpha: v1, v2, v3, v4, v5, ..."   
+  `expected`: "Alpha: v1, v2, v3, v4, v5, v6, v7"
+-- head:
+  <passes>
+
+== test-kit269-config-vector-values.R | fixed | (KIT-269 T4) the shipped configuration is listed, the vector and the nine column ids in full
+-- base:
+  <purrr_error_indexed/rlang_error/error/condition>
+  Error in `purrr::map_chr(names_to_process, function(name) {     value <- config_list[[name]]     if (name == "core_utilisation" || name == "seqinr_obj" || any(class(value) %in% c("process", "R6", "multidplyr_cluster", "cluster", "SOCKcluster", "tbl_df", "tbl", "data.frame"))) {         return("")     }     name_formatted <- gsub("\\.", " ", name)     name_formatted <- gsub("_", " ", name_formatted)     name_formatted <- tools::toTitleCase(name_formatted)     if (is.list(value)) {         if (length(value) > 0 && !is.null(names(value))) {             output_lines <- paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ":")             recursive_result <- formatConfigList(value, indent + 2)             return(paste(c(output_lines, recursive_result), collapse = "\n"))         }         else if (length(value) > 0) {             header <- paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ":")             element_lines <- if (requireNamespace("purrr", quietly = TRUE)) {                 purrr::imap_chr(value, function(item_val, item_idx) {                   if (is.atomic(item_val) && length(item_val) == 1) {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- ", as.character(item_val))                   }                   else {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- [Complex List Element]")                   }                 })             }             else {                 sapply(seq_along(value), function(item_idx) {                   item_val <- value[[item_idx]]                   if (is.atomic(item_val) && length(item_val) == 1) {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- ", as.character(item_val))                   }                   else {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- [Complex List Element]")                   }                 })             }             return(paste(c(header, element_lines), collapse = "\n"))         }         else {             return(paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ": [Empty List]"))         }     }     else {         value_display <- tryCatch({             if (is.character(value) && length(value) > 5) {                 paste(c(utils::head(value, 5), "..."), collapse = ", ")             }             else if (is.character(value) && length(value) > 1) {                 paste(value, collapse = ", ")             }             else {                 result <- as.character(value)                 if (length(result) == 0)                    "[Empty/NULL]"                 else result             }         }, error = function(e) {             message(sprintf("   DEBUG66: Error converting '%s': %s", name, e$message))             "[CONVERSION ERROR]"         })         return(paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ": ", value_display))     } })`: i In index: 17.
+  Caused by error in `purrr::map_chr()`:
+  i In index: 1.
+  Caused by error:
+  ! Result must be length 1, not 2.
+-- head:
+  <passes>
+
+== test-kit269-config-vector-values.R | fixed | (KIT-269 T5) the writer without an analysis record lists the settings under the Additional header
+-- base:
+  Expected `"  Yaxis Limit: -3, 3" %in% after` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+-- head:
+  <passes>
+
+== test-kit269-config-vector-values.R | fixed | (KIT-269 T6) a listing that fails says so in the file, with the condition's message on one line
+-- base:
+  Expected `line(boom$lines)` to be identical to "The configuration settings could not be listed here: boom".
+  Differences:
+  `actual`:   NA                                                         
+  `expected`: "The configuration settings could not be listed here: boom"
+  Expected `line(multi$lines)` to be identical to "The configuration settings could not be listed here: line one line two".
+  Differences:
+  actual vs expected
+  - NA
+  + "The configuration settings could not be listed here: line one line two"
+  Expected `line(parent$lines)` to match regexp "^The configuration settings could not be listed here: .*inner cause".
+  Actual text:
+  x | <NA>
+  Expected `sum(...)` to be identical to 1L.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+-- head:
+  <passes>
+
+== test-kit269-config-vector-values.R | fixed | (KIT-269 T7) createStudyParametersFile writes the file with the shipped configuration
+-- base:
+  <purrr_error_indexed/rlang_error/error/condition>
+  Error in `purrr::map_chr(names_to_process, function(name) {     value <- config_list[[name]]     if (name == "core_utilisation" || name == "seqinr_obj" || any(class(value) %in% c("process", "R6", "multidplyr_cluster", "cluster", "SOCKcluster", "tbl_df", "tbl", "data.frame"))) {         return("")     }     name_formatted <- gsub("\\.", " ", name)     name_formatted <- gsub("_", " ", name_formatted)     name_formatted <- tools::toTitleCase(name_formatted)     if (is.list(value)) {         if (length(value) > 0 && !is.null(names(value))) {             output_lines <- paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ":")             recursive_result <- formatConfigList(value, indent + 2)             return(paste(c(output_lines, recursive_result), collapse = "\n"))         }         else if (length(value) > 0) {             header <- paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ":")             element_lines <- if (requireNamespace("purrr", quietly = TRUE)) {                 purrr::imap_chr(value, function(item_val, item_idx) {                   if (is.atomic(item_val) && length(item_val) == 1) {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- ", as.character(item_val))                   }                   else {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- [Complex List Element]")                   }                 })             }             else {                 sapply(seq_along(value), function(item_idx) {                   item_val <- value[[item_idx]]                   if (is.atomic(item_val) && length(item_val) == 1) {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- ", as.character(item_val))                   }                   else {                     paste0(paste(rep(" ", indent + 2), collapse = ""), "- [Complex List Element]")                   }                 })             }             return(paste(c(header, element_lines), collapse = "\n"))         }         else {             return(paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ": [Empty List]"))         }     }     else {         value_display <- tryCatch({             if (is.character(value) && length(value) > 5) {                 paste(c(utils::head(value, 5), "..."), collapse = ", ")             }             else if (is.character(value) && length(value) > 1) {                 paste(value, collapse = ", ")             }             else {                 result <- as.character(value)                 if (length(result) == 0)                    "[Empty/NULL]"                 else result             }         }, error = function(e) {             message(sprintf("   DEBUG66: Error converting '%s': %s", name, e$message))             "[CONVERSION ERROR]"         })         return(paste0(paste(rep(" ", indent), collapse = ""), name_formatted, ": ", value_display))     } })`: i In index: 17.
+  Caused by error in `purrr::map_chr()`:
+  i In index: 1.
+  Caused by error:
+  ! Result must be length 1, not 2.
+-- head:
+  <passes>
+

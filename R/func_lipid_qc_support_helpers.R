@@ -1,16 +1,19 @@
 # ----------------------------------------------------------------------------
 # resolveLipidDuplicateFeaturesByIntensity
 # ----------------------------------------------------------------------------
-#' Resolve Duplicate Features by Keeping Highest Average Intensity
+#' Resolve Duplicate Features by Keeping the Most Completely Measured Row
 #'
-#' Within an assay tibble, identifies features with duplicate IDs and keeps only
-#' the one with the highest average intensity across sample columns.
+#' Within an assay tibble, identifies features with duplicate IDs and keeps one row
+#' per ID: the row measured in the most sample columns; if several rows are measured
+#' in the same number, the one with the highest average of its measured values; if
+#' still tied, the row that comes first in the table. A missing value or a zero
+#' counts as not measured. The kept row keeps its own columns, its annotation included.
 #'
 #' @param assay_tibble A data frame or tibble representing one assay.
 #' @param id_col Character string. The name of the column containing the feature IDs.
 #' @param sample_cols Character vector. The names of the columns containing quantitative sample data.
 #'
-#' @return A tibble with duplicate features resolved based on highest average intensity.
+#' @return A tibble with one row per feature ID, chosen as described.
 #' @keywords internal
 #' @importFrom dplyr group_by summarise ungroup filter slice_max select rowwise mutate c_across any_of
 #' @importFrom rlang sym !!
@@ -37,7 +40,7 @@ resolveLipidDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sampl
         return(assay_tibble)
     }
 
-    message(sprintf("Resolving duplicates in ID column '%s' by keeping highest average intensity feature...", id_col))
+    message(sprintf("Resolving duplicates in ID column '%s': keeping the most completely measured row, then the highest average of its measured values...", id_col))
 
     # Ensure sample columns are numeric for mean calculation
     assay_tibble_numeric <- assay_tibble %>%
@@ -50,21 +53,25 @@ resolveLipidDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sampl
         dplyr::mutate(
             avg_intensity = mean(dplyr::c_across(dplyr::any_of(sample_cols)), na.rm = TRUE)
         ) %>%
+        # KIT-258 (VAL-284): the count and the mean of the measured values, neither missing nor zero
+        dplyr::mutate(
+            n_measured = length(duplicateResolutionMeasured(dplyr::c_across(dplyr::any_of(sample_cols)))),
+            avg_measured = duplicateResolutionMeasuredMean(dplyr::c_across(dplyr::any_of(sample_cols)))
+        ) %>%
         dplyr::ungroup() %>%
         # Handle cases where avg_intensity might be NaN (if all samples are NA)
         dplyr::mutate(avg_intensity = ifelse(is.nan(avg_intensity), -Inf, avg_intensity)) %>%
-        # Group by the ID and keep the one with the highest average intensity
+        # Group by the ID and keep one row per ID: the most measured, then the highest mean, then the first (KIT-258)
         dplyr::group_by(!!rlang::sym(id_col)) %>%
-        # slice_max keeps ties by default; with_ties = FALSE ensures only one row per ID
-        dplyr::slice_max(order_by = avg_intensity, n = 1, with_ties = FALSE) %>%
+        keepDuplicateResolutionRow() %>%
         dplyr::ungroup() %>%
-        # Remove the temporary average intensity column
-        dplyr::select(-avg_intensity)
+        # Remove the temporary columns
+        dplyr::select(-avg_intensity, -"n_measured", -"avg_measured")
 
     # Report how many rows were removed
     rows_removed <- nrow(assay_tibble) - nrow(resolved_tibble)
     if (rows_removed > 0) {
-        message(sprintf("Removed %d lower-intensity duplicate feature row(s).", rows_removed))
+        message(sprintf("Removed %d duplicate feature row(s).", rows_removed))
     }
 
     return(resolved_tibble)

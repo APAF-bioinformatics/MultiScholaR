@@ -1,0 +1,3 @@
+run_id	commit	purpose	job_minutes	result
+45707283924	ad6314dc (base fc3657f9)	R1: file on head and base; three script entries	33.5	tests: 181/0 both sides (same); scripts: all 3 exit 1 after 6 s (instrument defect: ListReporter had no file name; no result produced)
+45709348632	98971967 (scripts only; revisions fc3657f9, ad6314dc)	instrument re-send 1 of 3: guards-check.R with start_file	57.7	scripts ok: S1, M1, F1, F2 as predicted (outcome.md)

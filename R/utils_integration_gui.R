@@ -37,11 +37,12 @@ integrationGuiEnabled <- function() {
 #' @return A character string.
 #' @noRd
 integrationScalingEvidenceText <- function() {
-    paste("In simulations with 20 samples in which about a fifth of the values were missing, mostly low ones, this",
-        "recovered closely (a correlation of at least 0.9 with the true pattern) a pattern carried by a tenth of the",
-        "features of the two smallest data sets, each changed by about as much as its measurement noise, in 26 rather",
-        "than 12 of 30 simulated data sets. Without missing values the difference could not be told from none (29",
-        "rather than 26 of 30); with 60 samples the pattern was recovered closely in 30 of 30 either way.")
+    paste("In simulations made for this software with 20 samples (two groups of 10), in which about a fifth of the",
+        "values were missing, mostly low ones, this scaling recovered closely (a correlation of at least 0.9 with the",
+        "true pattern) a pattern carried by a tenth of the features of the two smallest of four data sets, each changed",
+        "by about as much as its measurement noise, in 26 rather than 12 of 30 simulated data sets. Without missing",
+        "values the difference could not be told from none (29 rather than 26 of 30); with 60 samples the pattern was",
+        "recovered closely in 30 of 30 either way.")
 }
 
 #' Every user-facing string of the integration GUI (KIT-138, KIT-139): one table, drafts the user sets the final
@@ -240,8 +241,10 @@ integrationGuiTexts <- function() {
         # KIT-240 (VAL-221 (4)): every default is a recorded decision; the mark below is for a default that still waits.
         settings_provisional = paste("Each default below is a decision recorded in the methods ledger, named in the analysis",
             "record. A value you change is recorded as set by you."),
-        # KIT-240 (R1-04, R1-07): shown beside each Enrichment setting whose default is not yet confirmed.
+        # KIT-240 (R1-04, R1-07): shown beside a setting whose default awaits the owner's decision (none today; KIT-267).
         mark_provisional = "default not yet confirmed",
+        # KIT-267 (VAL-310): shown beside the three Enrichment organism settings, whose default is human.
+        mark_organism = "human; change for other species",
         mark_decided = "decided",
         # %s: the label, then the value in words.
         setting_fixed = "%s: %s",
@@ -1412,6 +1415,10 @@ integrationAlignmentPreview <- function(object, views, match = NULL, manager = N
         as.character(entry$biological_sample_column), character(1)), stringsAsFactors = FALSE, row.names = NULL)
     out <- list(parameters = parameters, aligned = aligned, few_samples = few, keys = keys, views = parameters$views,
         replicates = replicates, all_samples = length(all_samples))
+    # KIT-260 (VAL-241): the marked rows named per data set (OD-4 (a)), and those the stored pattern matched through the
+    # alternatives the corrected MS-DIAL default removed (OD-3 (a)).
+    out$standard_names <- integrationInternalStandardNames(object, parameters$views)
+    out$standard_legacy <- integrationInternalStandardLegacy(object, parameters$views)
     if (!is.null(checked)) out$match <- checked
     out
 }
@@ -1478,10 +1485,16 @@ integrationAlignmentFacts <- function(preview, texts = integrationGuiTexts()) {
                 row$biological_samples, row$repeated))
         if (row$standards > 0L) {
             facts <- c(facts, sprintf(text("fact_standards_", parameters$internal_standards), row$view, row$standards))
+            # KIT-260 (OD-4 (a)): which rows, "display name (identifier)".
+            named <- preview$standard_names[[row$view]]
+            if (length(named)) facts <- c(facts, sprintf(omicGuiItsdTexts()[["integration_names"]], row$view, paste(named, collapse = "; ")))
         }
         sparse <- summary$sparse_dropped[summary$view == row$view]
         if (length(sparse) && sparse > 0L) facts <- c(facts, sprintf(texts[["fact_sparse"]], row$view, sparse, min_observed, kept))
     }
+    # KIT-260 (OD-3 (a)): the note, only where marked rows were matched through the removed alternatives.
+    note <- omicsItsdLegacyNote(preview$standard_legacy, unit = "data set")
+    if (!is.null(note)) facts <- c(facts, note)
     unname(facts)
 }
 
@@ -1612,8 +1625,8 @@ integrationSaveDesign <- function(samples, dir) {
 #' @noRd
 INTEGRATION_GUI_MATCHING_PARAMETERS <- c("technical_replicates", "internal_standards", "missing_samples")
 
-#' Whether a parameter's default still awaits the owner's decision: its `settled_by` says so (KIT-240, VAL-221 (4): no
-#' model or Results default today; the marks of the others name their decision and ledger row).
+#' Whether a parameter's default still awaits the owner's decision: its `settled_by` says so (KIT-240, VAL-221 (4); no
+#' model, Results or Enrichment default today, KIT-267: the others name their decision and ledger row).
 #' @param entry One entry of `integrationMofaParameterSpec()` or `integrationResultsParameterSpec()`.
 #' @noRd
 integrationParameterProvisional <- function(entry) {

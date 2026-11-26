@@ -223,7 +223,7 @@ protNormS4DownloadHandler <- function(workflowData, normData, experimentPaths, o
           shiny::showNotification(paste("Error exporting session:", conditionMessage(e)), type = "error", duration = 10)
           stop(e)
         })
-      names <- resolveProtNormCorrelationResultFilenames(normData$ruv_optimization_result,
+      names <- resolveProtNormCorrelationTableNames(workflowData$state_manager, normData$ruv_optimization_result,
         workflowData$ruv_optimization_result)
       canonical <- file.path(experimentPaths$protein_qc_dir, names$rdsFilename)
       exportDIAS4Compatibility(workflowData$state_manager, canonical)
@@ -268,8 +268,10 @@ restoreProtNormTabState <- function(session, workflowData, normData) {
     normData$correlation_threshold <- metadata$correlation_threshold
     normData$pre_norm_qc_generated <- FALSE
     normData$plot_refresh_trigger <- normData$plot_refresh_trigger + 1L
-    if (!is.null(metadata$normalization_method)) shiny::updateSelectInput(session, "norm_method",
-      selected = metadata$normalization_method)
+    # KIT-216 (I04): the selector is preset only with one of its own choices (a DIA-with-limpa archive states the
+    # protein QC step's method, which the classic selector may not offer).
+    if (isTRUE(metadata$normalization_method %in% omicGuiProteomicsNorm()$panels$between_sample$methods))
+      shiny::updateSelectInput(session, "norm_method", selected = metadata$normalization_method)
     invisible(NULL)
   })
 }

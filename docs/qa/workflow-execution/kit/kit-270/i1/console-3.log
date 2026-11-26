@@ -1,0 +1,37 @@
+pid 20032, hex 4e40, session folder Rtmp8IvkSe
+== seeded fc3657f9 (kit270-out/seeded-fc3657f9.tsv)
+                                 revision   mode guard pattern outcome
+ fc3657f96ffde6a9a359c03b3df50ee3b24e07e1 seeded     1     259    fail
+ fc3657f96ffde6a9a359c03b3df50ee3b24e07e1 seeded     2     259    fail
+ fc3657f96ffde6a9a359c03b3df50ee3b24e07e1 seeded     3     259    fail
+ hint_in_message folder_holds_259 other_broken other_errors expectations_passed
+           FALSE             TRUE            0            0                  20
+           FALSE             TRUE            0            0                  20
+           FALSE             TRUE            0            0                  20
+== mutant fc3657f9 (kit270-out/mutant-fc3657f9.tsv)
+                                 revision   mode guard pattern outcome
+ fc3657f96ffde6a9a359c03b3df50ee3b24e07e1 mutant     1     259    fail
+ fc3657f96ffde6a9a359c03b3df50ee3b24e07e1 mutant     2     259    fail
+ fc3657f96ffde6a9a359c03b3df50ee3b24e07e1 mutant     3     259    fail
+ hint_in_message folder_holds_259 other_broken other_errors expectations_passed
+            TRUE            FALSE            0            0                  20
+            TRUE            FALSE            0            0                  20
+            TRUE            FALSE            0            0                  20
+== seeded ad6314dc (kit270-out/seeded-ad6314dc.tsv)
+                                 revision   mode guard        pattern outcome
+ ad6314dc15ca068e9cba4cdbbe3dfc739178bbf1 seeded     1 259 characters    pass
+ ad6314dc15ca068e9cba4cdbbe3dfc739178bbf1 seeded     2 259 characters    pass
+ ad6314dc15ca068e9cba4cdbbe3dfc739178bbf1 seeded     3 259 characters    pass
+ hint_in_message folder_holds_259 other_broken other_errors expectations_passed
+           FALSE             TRUE            0            0                  23
+           FALSE             TRUE            0            0                  23
+           FALSE             TRUE            0            0                  23
+== mutant ad6314dc (kit270-out/mutant-ad6314dc.tsv)
+                                 revision   mode guard        pattern outcome
+ ad6314dc15ca068e9cba4cdbbe3dfc739178bbf1 mutant     1 259 characters    fail
+ ad6314dc15ca068e9cba4cdbbe3dfc739178bbf1 mutant     2 259 characters    fail
+ ad6314dc15ca068e9cba4cdbbe3dfc739178bbf1 mutant     3 259 characters    fail
+ hint_in_message folder_holds_259 other_broken other_errors expectations_passed
+            TRUE            FALSE            0            0                  20
+            TRUE            FALSE            0            0                  20
+            TRUE            FALSE            0            0                  20

@@ -1,0 +1,21 @@
+Run 45737029722, failures-base.txt (base) against failures.txt (head); script: Python -I, kept outside the downloaded folder
+records base 99 head 99
+identical records 36 differing {'test-gui-entry-metabolomics.R': 45, 'test-gui-entry-lipidomics.R': 15, 'test-omic-qc-module.R': 2, 'test-workflow-omics-binding-steps.R': 1}
+test-gui-entry-metabolomics.R explained: 45 of 45 residue 0
+test-gui-entry-lipidomics.R explained: 15 of 15 residue 0
+test-omic-qc-module.R explained: 1 of 2 residue 1
+  RES (('test-omic-qc-module.R', "(b) each omic's QC UI, sub-tab UIs and namespaced ids are today's (lipid, metab, trx, prot by route)"), 1, None)
+test-workflow-omics-binding-steps.R KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit differing lines:
+      actual$lipidomics$steps[[4]]$description vs expected$lipidomics$steps[[4]]$description
+      - "Resolved duplicate lipid features: kept the row measured in the most design samples, then the highest average of its measured values"
+      + "Resolved duplicate lipid features by keeping highest intensity"
+      actual$metabolomics$steps[[4]]$description vs expected$metabolomics$steps[[4]]$description
+      - "Resolved duplicate metabolite features: kept the row measured in the most design samples, then the highest average of its measured values"
+      + "Resolved duplicate metabolite features by keeping highest intensity"
+test-workflow-omics-binding-steps.R explained: 0 of 1 residue 0
+
+test-omic-qc-module.R by hand (4 records on each side: tabs, subtabs, ids, id_counts): ids and id_counts identical on both sides;
+tabs: the two digests that differ are lipid_qc and metab_qc, expected values identical to base's; subtabs: base differs at lipid_intensity and
+metab_intensity (KIT-217), head at those two plus lipid_duplicates and metab_duplicates (the Duplicates help is in the digest); expected
+values of the first two unchanged. The script line "explained 1 of 2" counts only the tabs record because the subtabs chunk's range and
+extra lines move (actual[1:8] -> actual[1:9]).
