@@ -1,0 +1,48 @@
+{
+  "requested_by": "KIT-275 G1 (exactness fixtures PC2/NC2, E6, E10, then --g1 judgement; not blind; run once; declaration declarations/g1-declaration.md on branch kit-275)",
+  "label": "KIT-275 G1 6075959d",
+  "package_commit": "6075959d23595725cd1fe001ceaa53f2d36fbdfc",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/fixture-k275.R",
+      "args": [
+        "D3,D4,D6",
+        "1",
+        "20",
+        "k275-g1"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k275-g1",
+      "out_pattern": "\\.(tsv|txt|json)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/score-k275.R",
+      "args": [
+        "--g1",
+        "k275-g1/g1.tsv",
+        "k275-g1"
+      ],
+      "env": {},
+      "out": "k275-g1",
+      "out_pattern": "\\.(tsv|txt|json)$",
+      "timeout_minutes": 5
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
