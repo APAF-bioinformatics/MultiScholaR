@@ -1,0 +1,19 @@
+KIT-275 revision 2.1, G0 re-read at the single bound commit (ticket 8.4; audit P-2). Reading only (git); no R; recorded BEFORE the pilot declaration.
+
+Bound commit: bfbcb34dfc888637d879e89029a9ee86505b476a (origin/v0.9-staging, merged once into kit-275 as ddbdaaff134aa56f6c251f68255975ed9fc96a00; no conflicts).
+Package tree check: `git diff --stat bfbcb34dfc88 <kit-275 head> -- . ':!docs/qa/workflow-execution/kit/kit-275'` is EMPTY at ddbdaaff (the merge) and must stay empty at the pilot declaration commit (the request's package_commit).
+
+$ git diff --stat 75acd421 bfbcb34dfc88 -- <the ticket's G0 list>   (10 files, 1099 insertions, 34 deletions)
+  func_lipid_da_plotting.R 5, func_lipid_norm_ruv_optimization_helpers.R 67, func_lipid_s4_correlation_methods.R 13, func_lipid_s4_ruv_methods.R 10,
+  func_metab_da_heatmap.R 5, func_metab_norm.R 265, func_metab_s4_qc_methods.R 19, func_metab_s4_ruv_methods.R 10, func_omics_ruv_factors.R 24,
+  utils_workflow_omics_declarations.R 715.
+Against r1's counted tree (577a6f7b, equal to f3c1358b over the package paths): 62 files under R/ and inst/ differ (git diff --stat 577a6f7b bfbcb34dfc88 -- R/ src/ DESCRIPTION NAMESPACE inst/ packaging/ .github/actions/).
+
+Reading:
+- UNCHANGED against r1's counted tree (577a6f7b), byte for byte: R/func_lipid_s4_correlation_methods.R (the pairs kernel pearsonCorForSamplePairs and the filter), R/func_lipid_da_model.R (the DA kernels), src/, DESCRIPTION's package fields over the G0 list's files. The pilot's reading (pairs on the `_normalized` state) rests on these.
+- KIT-255 with its I01 repair is in the bound commit (omicsCorrelationFilterWithinAssay, R/utils_workflow_omics_declarations.R:1440; marker correlation_exclusion = "within_assay", R/utils_workflow_analysis_record.R:767).
+- KIT-242 (origin/kit-242) IS an ancestor of the bound commit; KIT-210 (origin/kit-210-ruviiic-remedy) is NOT (git merge-base --is-ancestor). Tier V therefore binds this commit (ticket 13, K2-04).
+- KIT-242's edits (read as hunks): under `omicsRuvFallbackCurrent()` only, a sample with no value in an assay is left out of the RUV factors, W and the DA; an assay the control selection skipped fails with its reason (status skipped_no_controls_selected); a correction that fails stops with its class (func_lipid_s4_ruv_methods.R, func_omics_ruv_factors.R, func_lipid_s4_ruv_control_methods.R, func_lipid_norm_ruv_optimization_helpers.R, omicsRuvOperation). These are KIT-242's declared edits; no change to RUV-III-C's computation, rule (d), the cap or the DA moderation was found in the hunks read. The pilot runs no RUV journey.
+- Between-sample normalisation (func_lipid_s4_normalization_methods.R, func_omics_norm_shared.R): malformed-assay and ITSD failures stop under the current rule instead of skipping, and samples with no value are left out of the method; the call for complete data is the same `limma::normalizeCyclicLoess(assay_matrix)` (line 839; now inside a nested block). That equality for complete data is READ, not run: the pilot's own checks (norm_acted_y, the route-default assertion, the E5 filter identity) observe it.
+- The test helpers the scripts source (tests/testthat/helper-workflow-omics-owner.R, helper-workflow-lipid-declarations.R, helper-workflow-metab-declarations.R, helper-kit172.R) are byte-equal to 577a6f7b.
+- Nothing else on the list changed in a way that touches the derivations of 2.3 and 2.4 or the pairs and selection kernels: the gate does not stop the ticket for the pilot. Not read and not needed by the pilot: the 62 files' other hunks (GUI, proteomics, TRX, report text); G0 for the counted tiers still has to be re-read in full before the counted declaration if the bound commit moves.
