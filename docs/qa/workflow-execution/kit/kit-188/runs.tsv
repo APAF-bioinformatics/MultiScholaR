@@ -71,3 +71,25 @@ running_total_after_batch_1	counted batch 1	-	lifecycle spend 64.43 + batch 1 ac
 45907280389	k188-s-deciding-l64-02	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 146)	90.6	6.71 (indicative)	exit 0; ok
 45907311118	k188-s-deciding-l64-13	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 146)	93.1	6.88 (indicative)	exit 0; ok
 45917634324	k188-s-deciding-l64-16	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 496.05	-	15.33 ceiling	in progress
+45907305903	k188-s-deciding-l64-11	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 146)	142.6	10.17 (indicative)	exit 0; ok
+45907303135	k188-s-deciding-l64-10	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 146)	142.6	10.17 (indicative)	exit 0; ok
+45907300538	k188-s-deciding-l64-09	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 146)	109.8	7.99 (indicative)	exit 0; ok
+45907294901	k188-s-deciding-l64-07	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 146)	153.0	10.87 (indicative)	exit 0; ok
+45907291648	k188-s-deciding-l64-06	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 146)	145.5	10.37 (indicative)	exit 0; ok
+45907288803	k188-s-deciding-l64-05	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 146)	145.5	10.37 (indicative)	exit 0; ok
+45907286160	k188-s-deciding-l64-04	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 146)	113.5	8.23 (indicative)	exit 0; ok
+45907283359	k188-s-deciding-l64-03	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 146)	145.9	10.39 (indicative)	exit 0; ok
+45907277499	k188-s-d	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 70)	96.2	7.08 (indicative)	exit 0; ok
+45923869219	k188-s-deciding-l64-17	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 511.38	-	15.33 ceiling	in progress
+45923872486	k188-s-deciding-l64-18	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 526.71	-	15.33 ceiling	in progress
+45923875632	k188-s-deciding-l64-19	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 542.04	-	15.33 ceiling	in progress
+45923879070	k188-s-deciding-l64-20	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 557.37	-	15.33 ceiling	in progress
+45923882146	k188-s-deciding-l64-21	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 572.70	-	15.33 ceiling	in progress
+45923884779	k188-s-deciding-l64-22	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 588.03	-	15.33 ceiling	in progress
+45923887629	k188-s-deciding-l64-23	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 603.36	-	15.33 ceiling	in progress
+45923890611	k188-s-deciding-l64-24	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 618.69	-	15.33 ceiling	in progress
+45923893482	k188-s-deciding-l64-25	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 634.02	-	15.33 ceiling	in progress
+45923896267	k188-s-deciding-l64-26	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 649.35	-	15.33 ceiling	in progress
+45923899082	k188-s-deciding-l64-27	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 664.68	-	15.33 ceiling	in progress
+45923901202	k188-s-deciding-l64-28	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 680.01	-	15.33 ceiling	in progress
+45923903724	k188-s-deciding-l64-29	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 695.34	-	15.33 ceiling	in progress
