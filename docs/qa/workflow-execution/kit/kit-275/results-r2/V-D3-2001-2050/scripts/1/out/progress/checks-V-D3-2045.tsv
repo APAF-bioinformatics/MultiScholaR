@@ -1,0 +1,3 @@
+check	cell	rep	condition	value	threshold	pass	note
+E1	D3	2045	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D3	2045	V mask: VD is V0's masked values without a	NA	exact	TRUE	
