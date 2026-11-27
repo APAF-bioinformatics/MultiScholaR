@@ -10,7 +10,7 @@ source(file.path(here, "sim-k275.R"), local = FALSE)
 # take the pilot's `PILOT_S` and `pilotPlant` from its file, unchanged (the pilot script itself is not sourced: it would run a job)
 exprs <- parse(file = file.path(here, "pilot", "pilot-k275.R"))
 for (e in exprs) {
-    if (is.call(e) && identical(e[[1L]], as.name("<-")) && as.character(e[[2L]]) %in% c("PILOT_S", "pilotPlant")) eval(e, envir = globalenv())
+    if (is.call(e) && identical(e[[1L]], as.name("<-")) && is.symbol(e[[2L]]) && as.character(e[[2L]]) %in% c("PILOT_S", "pilotPlant")) eval(e, envir = globalenv())
 }
 stopifnot(exists("pilotPlant"), exists("PILOT_S"), identical(unname(PILOT_S[["V1a"]]), 4))
 r <- 9601L
