@@ -1,0 +1,2 @@
+file	passed	failed	errors	skipped	warnings	seconds	status
+test-kit269-config-vector-values.R	33	1	0	0	0	5.4	failed

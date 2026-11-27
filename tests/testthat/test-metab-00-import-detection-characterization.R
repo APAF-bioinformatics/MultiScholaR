@@ -62,7 +62,7 @@ test_that("metabolomics import detection helpers preserve format scoring and col
   expect_identical(findMetabMatchingColumn(headers, defaults$metabolite_id), "Peak ID")
   expect_identical(findMetabMatchingColumn(headers, defaults$annotation), "Name")
   expect_identical(findMetabMatchingColumn(headers, defaults$rt), "RT (min)")
-  expect_identical(defaults$is_pattern, "^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:")
+  expect_identical(defaults$is_pattern, "^IS_|_d[0-9]+$|ISTD|^IS-|\\(d[0-9]+\\)")
 
   custom_defaults <- getMetabolomicsColumnDefaults("custom")
   expect_null(custom_defaults$metabolite_id)

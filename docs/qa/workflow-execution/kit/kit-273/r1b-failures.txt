@@ -1,0 +1,115 @@
+file: test-kit273-limpa-ruv-delivery.R
+test: KIT-273 T1, T2b, T3, T7, T8, T9, T13: covariates mode: the design with the factors is delivered, from the current DA's record
+kind: failure
+message:
+  Expected `file.exists(delivered)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T1 in process covariates
+
+file: test-kit273-limpa-ruv-delivery.R
+test: KIT-273 T1, T2b, T3, T7, T8, T9, T13: covariates mode: the design with the factors is delivered, from the current DA's record
+kind: failure
+message:
+  Expected `file.exists(k273Delivered(again, k273Design))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T7 in process covariates
+
+file: test-kit273-limpa-ruv-delivery.R
+test: KIT-273 T1, T2b, T3, T7, T8, T9, T13: covariates mode: the design with the factors is delivered, from the current DA's record
+kind: failure
+message:
+  Expected `file.exists(delivered)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T1 worker covariates
+
+file: test-kit273-limpa-ruv-delivery.R
+test: KIT-273 T1, T2b, T3, T7, T8, T9, T13: covariates mode: the design with the factors is delivered, from the current DA's record
+kind: failure
+message:
+  Expected `file.exists(k273Delivered(again, k273Design))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T7 worker covariates
+
+file: test-kit273-limpa-ruv-delivery.R
+test: KIT-273 T2, T3, T7, T8, T13: correction mode: the corrected matrix is delivered, from the current DA's record
+kind: failure
+message:
+  Expected `file.exists(delivered)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T2 in process correction
+
+file: test-kit273-limpa-ruv-delivery.R
+test: KIT-273 T2, T3, T7, T8, T13: correction mode: the corrected matrix is delivered, from the current DA's record
+kind: failure
+message:
+  Expected `file.exists(k273Delivered(again, k273Matrix))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T7 in process correction
+
+file: test-kit273-limpa-ruv-delivery.R
+test: KIT-273 T2, T3, T7, T8, T13: correction mode: the corrected matrix is delivered, from the current DA's record
+kind: failure
+message:
+  Expected `file.exists(delivered)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T2 worker correction
+
+file: test-kit273-limpa-ruv-delivery.R
+test: KIT-273 T2, T3, T7, T8, T13: correction mode: the corrected matrix is delivered, from the current DA's record
+kind: failure
+message:
+  Expected `file.exists(k273Delivered(again, k273Matrix))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  T7 worker correction
+
+file: test-kit273-limpa-ruv-delivery.R
+test: KIT-273 T6: a correction run, then a covariates run, then the DA: the design is delivered, the matrix is not
+kind: failure
+message:
+  Expected `file.exists(k273Delivered(copy, k273Design))` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit273-limpa-ruv-delivery.R
+test: KIT-273 T11: the writer fails: Copy records a ruv_delivery failure, still delivers the others, and no error escapes (the writer is mocked to throw)
+kind: failure
+message:
+  Expected `"ruv_delivery" %in% copy$types` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+
+file: test-kit273-limpa-ruv-delivery.R
+test: KIT-273 T12: the correction matrix has no column for a sample the correlation filter dropped
+kind: failure
+message:
+  Expected `file.exists(delivered)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+

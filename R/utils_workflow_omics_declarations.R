@@ -578,22 +578,194 @@ omicsAssertManualItsdPresent <- function(binding, object, feature_ids) {
     invisible(TRUE)
 }
 
+#' Which internal-standard names a stored pattern matched through the alternatives the 0.9.0 MS-DIAL default carried
+#' and its correction removed (KIT-260, VAL-241, OD-3 (a)): a name containing `w/o MS2:` (MS-DIAL 4 and 5.0 to 5.1 mark
+#' so a feature annotated without an accepted MS/MS match), or a name matched only through an unanchored `IS-`
+#' alternative (a name holding "IS-" after its start, which no other alternative of the pattern matches).
+#' @param names The annotation values of the rows the pattern matched.
+#' @param regex The pattern; its top-level alternatives are split at `|`.
+#' @return Logical, one per name; FALSE for a missing name.
+#' @noRd
+omicsItsdLegacyPatternMatches <- function(names, regex) {
+    names <- as.character(names)
+    flagged <- grepl("w/o MS2:", names, fixed = TRUE)
+    alternatives <- if (is.character(regex) && length(regex) == 1L && !is.na(regex)) strsplit(regex, "|", fixed = TRUE)[[1L]]
+    if ("IS-" %in% alternatives) {
+        rest <- paste(alternatives[alternatives != "IS-"], collapse = "|")
+        other <- if (nzchar(rest)) stringr::str_detect(names, rest) %in% TRUE else rep(FALSE, length(names))
+        flagged <- flagged | (grepl("IS-", names, fixed = TRUE) & !startsWith(names, "IS-") & !other)
+    }
+    flagged & !is.na(names)
+}
+
+#' The rows an internal-standard run used, per assay (KIT-260, VAL-241, OD-2 (b); engineering E-1: carried in the
+#' step's result value): each row's identifier and annotation, read from the object before the step by the identifiers
+#' the method stored (`args$ITSDNormalization$itsd_features_per_assay`); in pattern mode also the names matched through
+#' the alternatives OD-1 removed (`omicsItsdLegacyPatternMatches`, OD-3 (a)).
+#' @param binding The omic's binding.
+#' @param before The object the step read.
+#' @param after The object the method returned.
+#' @param feature_ids The hand-picked identifiers per assay, NULL in pattern mode.
+#' @return `list(itsd_used, itsd_id_column)`, with `itsd_legacy_rows` when any name was so matched; an empty list when
+#'   no assay used a standard.
+#' @noRd
+omicsItsdRowsUsed <- function(binding, before, after, feature_ids) {
+    ids <- after@args$ITSDNormalization$itsd_features_per_assay
+    if (!length(ids)) return(list())
+    id_column <- methods::slot(before, binding$id_slot)
+    annotation <- before@annotation_id_column
+    assays <- methods::slot(before, binding$data_slot)
+    pattern_mode <- !(is.list(feature_ids) && length(feature_ids) > 0L)
+    used <- list()
+    legacy <- list()
+    for (assay in names(ids)) {
+        table <- assays[[assay]]
+        identifier <- as.character(ids[[assay]])
+        row <- match(identifier, as.character(table[[id_column]]))
+        names_used <- if (length(annotation) == 1L && !is.na(annotation) && annotation %in% names(table))
+            as.character(table[[annotation]])[row] else rep(NA_character_, length(row))
+        used[[assay]] <- list(identifier = identifier, annotation = names_used)
+        if (pattern_mode) {
+            flagged <- omicsItsdLegacyPatternMatches(names_used, before@internal_standard_regex)
+            if (any(flagged)) legacy[[assay]] <- names_used[flagged]
+        }
+    }
+    out <- list(itsd_used = used, itsd_id_column = id_column)
+    if (length(legacy)) out$itsd_legacy_rows <- legacy
+    out
+}
+
+#' The rows a pattern-mode ITSD step used, read from the stored states when its product names none (a product saved by a
+#' build before KIT-260; AUDIT-KIT-260-impl I02 (a), the coordinator's ruling of 2026-11-26): the identifiers the S4
+#' method stored in the ITSD state's `args$ITSDNormalization$itsd_features_per_assay`, their annotations read from the
+#' state the step read (its `previous_state`), two columns and only those rows, a page at a time (no assay is
+#' hydrated), and the note's rule (`omicsItsdLegacyPatternMatches`) with that state's stored pattern. Pattern mode only:
+#' the method records `itsd_pattern_columns` only then. No state's values or arguments are read or written beyond these.
+#' @param binding The omic's binding.
+#' @param context The owner's context.
+#' @param record The ITSD state's record.
+#' @return `omicsItsdRowsUsed()`'s form, or an empty list when the rows cannot be read.
+#' @noRd
+omicsItsdRowsFromStates <- function(binding, context, record) {
+    slots <- record$data$slots
+    itsd <- slots$args$ITSDNormalization
+    ids <- itsd$itsd_features_per_assay
+    if (!length(ids) || is.null(itsd$itsd_pattern_columns)) return(list())
+    previous <- record$previous_state
+    reference <- if (is.character(previous) && length(previous) == 1L && !is.na(previous)) context$snapshot$states[[previous]]
+    id_column <- slots[[binding$id_slot]]
+    annotation <- slots$annotation_id_column
+    regex <- slots$internal_standard_regex
+    if (is.null(reference) || !is.character(id_column) || length(id_column) != 1L) return(list())
+    readable <- is.character(annotation) && length(annotation) == 1L && !is.na(annotation)
+    rows <- tryCatch(omicsVisitAssays(binding, list(.context = context), reference, function(assay, scope) {
+        if (!readable || !all(c(id_column, annotation) %in% scope$metadata$columns)) return(NULL)
+        wanted <- as.character(ids[[assay]])
+        omicsReadRows(scope, c(id_column, annotation), function(page) as.character(page[[id_column]]) %in% wanted)
+    }, assays = names(ids)), error = function(error) NULL)
+    used <- list()
+    legacy <- list()
+    for (assay in names(ids)) {
+        identifier <- as.character(ids[[assay]])
+        table <- rows[[assay]]
+        names_used <- if (is.null(table)) rep(NA_character_, length(identifier)) else
+            as.character(table[[annotation]])[match(identifier, as.character(table[[id_column]]))]
+        used[[assay]] <- list(identifier = identifier, annotation = names_used)
+        flagged <- omicsItsdLegacyPatternMatches(names_used, regex)
+        if (any(flagged)) legacy[[assay]] <- names_used[flagged]
+    }
+    out <- list(itsd_used = used, itsd_id_column = id_column)
+    if (length(legacy)) out$itsd_legacy_rows <- legacy
+    out
+}
+
+#' One assay's rows used, in words: "annotation (identifier column identifier)" each (KIT-260, OD-2 (b)).
+#' @noRd
+omicsItsdRowWords <- function(rows, id_column, texts = omicGuiItsdTexts()) {
+    annotation <- as.character(rows$annotation)
+    identifier <- as.character(rows$identifier)
+    ifelse(is.na(annotation) | !nzchar(annotation), sprintf(texts[["row_no_annotation"]], id_column, identifier),
+        sprintf(texts[["row"]], annotation, id_column, identifier))
+}
+
+#' The OD-3 (a) note (KIT-260, VAL-241) for the rows a stored pattern matched through the removed alternatives, per
+#' assay or data set; NULL when there are none.
+#' @param legacy Named list: per assay or data set, the names so matched.
+#' @param unit "assay" or "data set".
+#' @noRd
+omicsItsdLegacyNote <- function(legacy, unit = "assay", texts = omicGuiItsdTexts()) {
+    legacy <- Filter(length, legacy %||% list())
+    if (!length(legacy)) return(NULL)
+    where <- paste(vapply(names(legacy), function(name) sprintf("%s %s, %d rows", unit, name, length(legacy[[name]])), ""),
+        collapse = "; ")
+    sprintf(texts[["legacy_note"]], where)
+}
+
+#' The OD-3 (a) note an analysis record carries for its last internal-standard step (KIT-260), or NULL.
+#' @param record An analysis record (`buildWorkflowAnalysisRecord`), or NULL.
+#' @noRd
+omicsItsdRecordNote <- function(record) {
+    steps <- if (is.list(record)) record$steps
+    for (step in rev(steps %||% list())) {
+        if (grepl("_itsd_normalisation$", step$operation %||% "")) {
+            note <- step$outcomes$itsd_note
+            return(if (is.character(note) && length(note) == 1L && !is.na(note)) note)
+        }
+    }
+    NULL
+}
+
+#' The notification KIT-260 adds after an internal-standard run (VAL-241, OD-2 (b)), in process and on the worker: the
+#' rows used per assay in words; the rows themselves are named in the tab's log by `omicsItsdReportResult` (KIT-242's
+#' reporter, which reads the same `itsd` element of the result value).
+#' @param value The ITSD operation's result value.
+#' @return The text, or NULL when the value names no rows (no assay used a standard, an earlier record's replay, or a
+#'   product saved before KIT-260).
+#' @noRd
+omicsItsdRowsNotice <- function(value) {
+    used <- value$itsd$rows_used
+    if (!length(used)) return(NULL)
+    sprintf(omicGuiItsdTexts()[["used_notification"]], omicsLog2CountWords(lapply(used, function(rows) length(rows$identifier))))
+}
+
 #' Internal-standard normalisation (complete sample after the mean-factor pre-pass: one aggregate standard signal per
 #' sample, the mean over all samples, each sample scaled by mean / own aggregate; the standards removed afterwards).
+#' KIT-260 (OD-2 (b), E-1): the result value also names the rows used (`omicsItsdRowsUsed`).
 #' @noRd
 omicsItsdNormalisationOperation <- function(binding) {
     newOmicsOperation(binding, paste0(binding$prefix, "_itsd_normalisation"), "complete_sample",
         parameters = c("itsd_aggregation", "itsd_feature_ids"), product_type = paste0(binding$prefix, ".itsd_normalisation_result"),
         global_statistics = c(mean_standard_factor =
             "the mean over all samples of each assay's per-sample aggregate standard signal, computed once before any sample is scaled"),
-        fixed = list(method = "ITSD"),
+        # KIT-242 (OD-4 (c)) and KIT-260 (VAL-276): records made before replay with the earlier ITSD record and product
+        # (`workflowReplayRuleMarkers$itsd_outcome`, one marker for both tickets).
+        fixed = list(method = "ITSD", itsd_outcome = "per_assay"),
         kernel = function(object, parameters, store) {
             omicsAssertManualItsdPresent(binding, object, parameters$itsd_feature_ids)
             normaliseUntransformedDataFn <- normaliseUntransformedData
-            normalised <- normaliseUntransformedDataFn(theObject = object, method = "ITSD",
-                itsd_aggregation = parameters$itsd_aggregation, itsd_feature_ids = parameters$itsd_feature_ids)
+            # KIT-242 (VAL-242 OD-2 (b), OD-3 (d)): the per-assay outcome travels in the result value (the tab's notice reads
+            # it; a warning does not cross the worker), so the two notices' warnings are muffled here.
+            normalised <- withCallingHandlers(normaliseUntransformedDataFn(theObject = object, method = "ITSD",
+                itsd_aggregation = parameters$itsd_aggregation, itsd_feature_ids = parameters$itsd_feature_ids),
+                omics_itsd_not_applied = function(w) invokeRestart("muffleWarning"),
+                omics_itsd_sample_without_standard = function(w) invokeRestart("muffleWarning"))
+            itsd <- normalised@args$ITSDNormalization
+            # Under the earlier record (an older record's replay) the value is as it was, so the replay is exact; KIT-260's
+            # rows used (VAL-241 OD-2 (b), E-1; VAL-276) travel in the same `itsd` element, under the same condition.
+            used <- if (!is.null(itsd$applied_per_assay)) omicsItsdRowsUsed(binding, object, normalised, parameters$itsd_feature_ids)
             object <- NULL
-            list(final = store$checkpoint(normalised, paste0(binding$prefix, "-itsd-normalised")))
+            value <- list(final = store$checkpoint(normalised, paste0(binding$prefix, "-itsd-normalised")))
+            if (!is.null(itsd$applied_per_assay)) {
+                value$itsd <- list(applied_per_assay = itsd$applied_per_assay, not_applied_reason_per_assay = itsd$not_applied_reason_per_assay,
+                    counts_per_assay = itsd$itsd_counts_per_assay, samples_without_standard_per_assay = itsd$samples_without_standard_per_assay,
+                    pattern = normalised@internal_standard_regex, columns = itsd$itsd_pattern_columns)
+                if (length(used$itsd_used)) {
+                    value$itsd$rows_used <- used$itsd_used
+                    value$itsd$id_column <- used$itsd_id_column
+                    if (length(used$itsd_legacy_rows)) value$itsd$legacy_rows <- used$itsd_legacy_rows
+                }
+            }
+            value
         })
 }
 
@@ -669,13 +841,33 @@ omicsLog2Operation <- function(binding) {
 omicsBetweenSampleNormalisationOperation <- function(binding) {
     newOmicsOperation(binding, paste0(binding$prefix, "_between_sample_normalisation"), "whole_matrix",
         parameters = "normalisation_method", product_type = paste0(binding$prefix, ".between_sample_normalisation_result"),
+        # KIT-242 (VAL-242 OD-4 (c)): records made before replay with the earlier rule (`workflowReplayRuleMarkers`).
+        fixed = list(normalisation_fallback = "exclude"),
         kernel = function(object, parameters, store) {
             normaliseBetweenSamplesFn <- normaliseBetweenSamples
-            normalised <- if (identical(parameters$normalisation_method, "none")) object else
-                normaliseBetweenSamplesFn(theObject = object, normalisation_method = parameters$normalisation_method)
+            assays <- names(methods::slot(object, binding$data_slot))
+            excluded <- list()
+            removed <- character()
+            # KIT-242: the samples left out of an assay, and those removed from the design, travel in the result value
+            # (the per-assay notice and the record read them; a warning does not cross the worker, 2.4).
+            normalised <- if (identical(parameters$normalisation_method, "none")) object else withCallingHandlers(
+                normaliseBetweenSamplesFn(theObject = object, normalisation_method = parameters$normalisation_method),
+                omics_normalisation_sample_excluded = function(w) {
+                    excluded[[w$assay]] <<- unique(c(excluded[[w$assay]], w$sample))
+                    invokeRestart("muffleWarning")
+                },
+                omics_normalisation_sample_removed = function(w) {
+                    removed <<- unique(c(removed, w$sample))
+                    invokeRestart("muffleWarning")
+                })
             object <- NULL
-            list(final = store$checkpoint(normalised, paste0(binding$prefix, "-normalised")),
+            value <- list(final = store$checkpoint(normalised, paste0(binding$prefix, "-normalised")),
                 applied = !identical(parameters$normalisation_method, "none"))
+            if (omicsNormalisationCurrentRule()) {
+                value$per_assay <- list(applied = stats::setNames(as.list(rep(value$applied, length(assays))), assays),
+                    samples_excluded = excluded, samples_removed = removed)
+            }
+            value
         })
 }
 
@@ -695,16 +887,36 @@ omicsRuvOperation <- function(binding, ruv_design = c("legacy", "declared"), sup
         product_type = paste0(binding$prefix, ".ruv_result"),
         kernel = function(object, parameters, store) {
             ruvIII_C_VaryingFn <- ruvIII_C_Varying
-            ruv_results <- binding$optimise_ruv(object, parameters$ruv_mode, parameters[setdiff(omicsRuvParameterNames, "ruv_mode")])
+            # KIT-242 Part B (VAL-242 OD-1 (c), Q6.1, Q6.2 (c); VAL-290): under the current rule the search and the k cap
+            # read each assay without its samples and features with no value (`omicsRuvWithoutEmpty`), and the search's
+            # outcome per assay decides by cause (`omicsRuvSearchOutcomes`): corrected, kept without RUV with a notice, or
+            # a stop. Records made before replay with the earlier rule (`workflowReplayRuleMarkers$ruv_fallback`).
+            by_cause <- omicsRuvFallbackCurrent()
+            empty <- if (by_cause) omicsRuvWithoutEmpty(object)
+            search_object <- if (by_cause) empty$object else object
+            ruv_results <- binding$optimise_ruv(search_object, parameters$ruv_mode, parameters[setdiff(omicsRuvParameterNames, "ruv_mode")])
             best_k <- binding$extract_best_k(ruv_results)
             controls <- binding$extract_controls(ruv_results)
             # KIT-190 (VAL-182, VAL-235): the sweep is untouched; its k is bounded by the sample-size cap of proteomics
             # (`calculateAdaptiveMaxK`, through `boundOmicsRuvSweepK`) in Automatic mode; a Manual k is kept, with a
             # warning when above the cap. Records made before the bound replay unbounded (`workflowReplayRuleMarkers`).
-            k_limits <- omicsRuvKBound(object, ruv_results, parameters$ruv_mode, best_k)
+            k_limits <- omicsRuvKBound(search_object, ruv_results, parameters$ruv_mode, best_k)
             best_k <- k_limits$best_k
-            corrected <- ruvIII_C_VaryingFn(theObject = object, ruv_grouping_variable = parameters$ruv_grouping_variable,
-                ruv_number_k = best_k, ctrl = controls)
+            search_object <- NULL
+            outcome <- NULL
+            corrected <- if (by_cause) {
+                outcome <- omicsRuvSearchOutcomes(ruv_results, parameters$ruv_mode, empty$object)
+                empty$object <- NULL
+                # The notices travel in the step's value (below), not as warnings.
+                withCallingHandlers(
+                    omicsRuvCorrectSearched(binding, object, outcome, parameters$ruv_grouping_variable, best_k, controls, ruvIII_C_VaryingFn),
+                    omics_ruv_not_applied = function(w) invokeRestart("muffleWarning"),
+                    omics_ruv_sample_excluded = function(w) invokeRestart("muffleWarning"),
+                    omics_ruv_feature_excluded = function(w) invokeRestart("muffleWarning"))
+            } else {
+                ruvIII_C_VaryingFn(theObject = object, ruv_grouping_variable = parameters$ruv_grouping_variable,
+                    ruv_number_k = best_k, ctrl = controls)
+            }
             ruv_status <- omicsRuvAssayStatus(binding, object, corrected)
             object <- NULL
             final <- store$checkpoint(corrected, paste0(binding$prefix, "-ruv-corrected"))
@@ -715,16 +927,126 @@ omicsRuvOperation <- function(binding, ruv_design = c("legacy", "declared"), sup
                 }
                 result
             })
-            list(final = final, optimisation = store$product(saved_results, "optimisation", paste0(binding$prefix, "-ruv-optimisation")),
+            value <- list(final = final, optimisation = store$product(saved_results, "optimisation", paste0(binding$prefix, "-ruv-optimisation")),
                 best_k = best_k,
                 control_count = lapply(controls, function(x) if (is.null(x)) NA_integer_ else if (is.logical(x)) sum(x, na.rm = TRUE) else length(x)),
                 percentage = lapply(ruv_results, function(x) x$best_percentage %||% NA_real_),
                 k_sweep = k_limits$k_sweep, k_cap = k_limits$k_cap, k_samples = k_limits$k_samples, k_notice = k_limits$k_notice,
                 ruv_status = ruv_status)
+            # KIT-242: per assay, whether RUV was applied, why not, and what was left out (current rule only; a product made
+            # under the earlier rule names none of these).
+            if (by_cause) {
+                value$ruv_applied <- lapply(ruv_status, identical, "corrected")
+                value$ruv_not_applied_reason <- lapply(outcome, function(o) if (identical(o$action, "keep")) o$reason else NA_character_)
+                value$ruv_not_applied_text <- lapply(outcome, function(o) if (identical(o$action, "keep")) o$text else "")
+                value$ruv_samples_excluded <- empty$samples
+                value$ruv_features_excluded <- empty$features
+                # VAL-373 Q-A: the groups named where a group was left with too few samples (only when any).
+                groups <- Filter(length, lapply(outcome, function(o) o$groups %||% character()))
+                if (length(groups)) value$ruv_not_applied_groups <- groups
+            }
+            value
         },
         # KIT-224: the rule marker of the feature levels after the correction (`workflowReplayRuleMarkers`).
-        # KIT-190: the rule markers of the control selection and of the bound on k.
-        fixed = list(ruv_feature_levels = "restored", ruv_control_grouping = "kept", ruv_k_bound = "sample_size"))
+        # KIT-190: the rule markers of the control selection and of the bound on k. KIT-242: the marker of the rule by cause.
+        fixed = list(ruv_feature_levels = "restored", ruv_control_grouping = "kept", ruv_k_bound = "sample_size",
+            ruv_fallback = "by_cause"))
+}
+
+#' The legacy RUV search's outcome per assay by cause (KIT-242 Part B; VAL-242 Q6.2 (c), VAL-290): an assay the search
+#' succeeded on is corrected; with no valid percentage, an `error_*` or `error_scoring` status (or a failed Manual
+#' search) is a failed computation and stops; otherwise the assay keeps its values without RUV: reason
+#' `no_factor_supported` when a percentage found no elbow (`invalid_cancor_plot`), else `no_usable_controls` (every
+#' percentage had too few controls, or too few observed in every sample), the notice naming any sample with one value.
+#' @param ruv_results The search's per-assay results.
+#' @param ruv_mode `"automatic"` or `"manual"`.
+#' @param search_object The object the search read (for the samples with one value).
+#' @return Per assay `list(action = "correct" | "keep" | "stop", reason, text)`.
+#' @noRd
+omicsRuvSearchOutcomes <- function(ruv_results, ruv_mode, search_object) {
+    slots <- omicsRuvAssaySlots(search_object)
+    assays <- methods::slot(search_object, slots$data)
+    design_samples <- as.character(search_object@design_matrix[[search_object@sample_id]])
+    stats::setNames(lapply(names(ruv_results), function(assay_name) {
+        result <- ruv_results[[assay_name]]
+        # A search that reports success but holds no control set of its own for the assay (the control selection could
+        # not read it, and the Manual search then hands the whole list; R/func_lipid_norm_ruv_optimization_helpers.R
+        # and R/func_metab_norm.R, Manual mode) is a failed search: it stops, naming duplicated feature ids when present.
+        controls <- result$control_genes_index
+        unread <- function() {
+            assay <- assays[[assay_name]]
+            ids <- if (is.data.frame(assay)) as.character(assay[[methods::slot(search_object, slots$id)]]) else character()
+            duplicated_ids <- unique(ids[duplicated(ids)])
+            list(action = "stop", reason = "search_error", text = paste0(sprintf(paste("RUV-III was not run: the",
+                "control-feature search found no control features for assay %s, because it could not read the assay."), assay_name),
+                if (length(duplicated_ids)) sprintf(paste(" The assay has %d duplicated feature identifiers (%s). Run 'Resolve",
+                    "Duplicates' in the Quality Control tab, then run the normalisation again."), length(duplicated_ids),
+                    paste(utils::head(duplicated_ids, 3L), collapse = ", ")) else ""))
+        }
+        # KIT-242 (VAL-373 Q-A, option (b)): the control selection skipped the assay. A group left with fewer than two
+        # samples holding values keeps the assay without RUV ("no usable controls"), naming the groups; any other skip
+        # (an assay it could not read, duplicated ids included) stops, as before.
+        skip <- result$skip_reason
+        if (!isTRUE(result$success) && is.list(skip)) {
+            if (!identical(skip$reason, "group_counts")) return(unread())
+            groups <- as.character(skip$groups)
+            return(list(action = "keep", reason = "no_usable_controls", groups = groups, text = sprintf(paste("RUV-III was",
+                "not applied to assay %s: the groups %s have fewer than two samples with values in this assay, so control",
+                "features cannot be chosen. The assay keeps its values without RUV."), assay_name, paste(groups, collapse = ", "))))
+        }
+        if (isTRUE(result$success) && !is.null(controls) && !(is.atomic(controls) && is.null(dim(controls)))) return(unread())
+        if (isTRUE(result$success)) return(list(action = "correct", reason = NA_character_, text = ""))
+        status <- as.character(result$optimization_results$status %||% character())
+        if (!identical(ruv_mode, "automatic") || !length(status) || any(startsWith(status, "error_"))) {
+            reason <- if (identical(ruv_mode, "automatic") && length(status) && any(startsWith(status, "error_"))) status[startsWith(status, "error_")][[1L]] else "search_error"
+            return(list(action = "stop", reason = reason, text = sprintf("RUV-III was not run: the search for assay %s failed: %s",
+                assay_name, result$error %||% "no result")))
+        }
+        if (any(status == "invalid_cancor_plot")) {
+            return(list(action = "keep", reason = "no_factor_supported", text = sprintf(paste("RUV-III was not applied to assay %s:",
+                "no number of unwanted factors was supported by the data (the automatic search found no elbow in the canonical",
+                "correlations at any control percentage). The assay keeps its values without RUV."), assay_name)))
+        }
+        assay <- assays[[assay_name]]
+        cols <- intersect(colnames(assay), design_samples)
+        one <- cols[vapply(assay[cols], function(x) sum(is.finite(suppressWarnings(as.numeric(x)))) == 1L, logical(1L))]
+        list(action = "keep", reason = "no_usable_controls", text = paste0(sprintf(paste("RUV-III was not applied to assay %s:",
+            "the automatic search found too few control features observed in every sample: %s. The assay keeps its values",
+            "without RUV."), assay_name, result$error %||% "no valid percentage"),
+            if (length(one)) sprintf(" Samples %s have one value each in this assay, so no control is observed in every sample.",
+                paste(one, collapse = ", ")) else ""))
+    }), names(ruv_results))
+}
+
+#' The legacy RUV correction by the search's outcome (KIT-242 Part B): a stop raises `omics_ruv_failed` naming the
+#' assays; an assay kept without RUV gets a classed warning (`omics_ruv_not_applied`) and its values unchanged; the
+#' others are corrected by `ruvIII_C_Varying` (by cause), on the whole object when every assay is corrected.
+#' @return The corrected object, every assay present.
+#' @noRd
+omicsRuvCorrectSearched <- function(binding, object, outcome, grouping, best_k, controls, ruvFn) {
+    stops <- Filter(function(o) identical(o$action, "stop"), outcome)
+    if (length(stops)) {
+        abortOmicsRuvFailed(names(stops), vapply(stops, `[[`, "", "reason"), paste(vapply(stops, `[[`, "", "text"), collapse = " "))
+    }
+    for (assay_name in names(outcome)) {
+        o <- outcome[[assay_name]]
+        if (identical(o$action, "keep")) rlang::warn(o$text, class = "omics_ruv_not_applied", assay = assay_name, reason = o$reason)
+    }
+    assays <- methods::slot(object, binding$data_slot)
+    to_correct <- intersect(names(assays), names(Filter(function(o) identical(o$action, "correct"), outcome)))
+    if (identical(to_correct, names(assays))) {
+        return(ruvFn(theObject = object, ruv_grouping_variable = grouping, ruv_number_k = best_k, ctrl = controls))
+    }
+    if (!length(to_correct)) return(object)
+    sub <- object
+    methods::slot(sub, binding$data_slot) <- assays[to_correct]
+    corrected <- ruvFn(theObject = sub, ruv_grouping_variable = grouping, ruv_number_k = best_k[to_correct], ctrl = controls[to_correct])
+    out <- methods::slot(corrected, binding$data_slot)
+    methods::slot(corrected, binding$data_slot) <- stats::setNames(lapply(names(assays), function(assay_name) {
+        if (assay_name %in% to_correct) out[[assay_name]] else assays[[assay_name]]
+    }), names(assays))
+    corrected@design_matrix <- object@design_matrix
+    corrected
 }
 
 #' The bound on a legacy lipidomics or metabolomics RUV k (KIT-190, VAL-182, VAL-235): in Automatic mode the sweep's k
@@ -772,6 +1094,11 @@ omicsRuvKBound <- function(object, ruv_results, ruv_mode, best_k) {
 #' @noRd
 omicsRuvAnnotateResults <- function(results, value) {
     if (!is.list(results)) return(results)
+    # KIT-242 Part B: an assay kept without RUV carries the notice, which its summary shows.
+    for (assay in intersect(names(results), names(value$ruv_not_applied_text))) {
+        text <- value$ruv_not_applied_text[[assay]]
+        if (is.list(results[[assay]]) && is.character(text) && length(text) == 1L && nzchar(text)) results[[assay]]$ruv_not_applied <- text
+    }
     for (assay in names(results)) {
         removed <- value$best_k[[assay]]
         found <- value$k_sweep[[assay]]
@@ -797,7 +1124,38 @@ omicsRuvReportNotices <- function(value, addLog, warn) {
         addLog(paste("Warning:", text))
         warn(text)
     }
+    # KIT-242 Part B: an assay kept without RUV, and the samples left out of an assay's RUV (legacy steps under the
+    # current rule; a value without these fields reports nothing more).
+    for (text in unlist(value$ruv_not_applied_text)) {
+        if (!is.character(text) || !nzchar(text)) next
+        addLog(paste("Warning:", text))
+        warn(text)
+    }
+    for (assay in names(value$ruv_samples_excluded)) {
+        samples <- value$ruv_samples_excluded[[assay]]
+        if (!length(samples)) next
+        text <- sprintf("RUV-III for assay %s was computed without samples %s, which have no value there; they stay empty in that assay.",
+            assay, paste(samples, collapse = ", "))
+        addLog(paste("Warning:", text))
+        warn(text)
+    }
+    for (assay in names(value$ruv_features_excluded)) {
+        features <- value$ruv_features_excluded[[assay]]
+        if (length(features)) addLog(sprintf("Assay %s: %d features with no value were left out of RUV-III and stay empty.", assay, length(features)))
+    }
     invisible(TRUE)
+}
+
+#' The tab's closing RUV log line (KIT-242 Part B): "RUV-III correction applied" as before, unless a legacy step under
+#' the current rule kept an assay without RUV: then the assays corrected and not, or that no assay was corrected.
+#' @param value The RUV step's value.
+#' @noRd
+omicsRuvAppliedText <- function(value) {
+    applied <- unlist(value$ruv_applied)
+    if (!is.null(value$ruv_design) || !length(applied) || all(applied)) return("RUV-III correction applied")
+    if (!any(applied)) return("RUV-III not applied: no assay could be corrected (see the warnings above); the data continue without RUV")
+    sprintf("RUV-III correction applied to %s; not applied to %s (see the warnings above)",
+        paste(names(applied)[applied], collapse = ", "), paste(names(applied)[!applied], collapse = ", "))
 }
 
 #' One assay's line in the session-export summary (KIT-190 I01): the k removed, with the k found and the cap where the
@@ -912,8 +1270,10 @@ omicsRuvDesignOperation <- function(binding, supplied = FALSE) {
     newOmicsOperation(binding, paste0(binding$prefix, "_ruv"), "whole_matrix", parameters = declared_names,
         product_type = paste0(binding$prefix, ".ruv_result"),
         # KIT-129 fourth pass item 1: the replicate sets by design (`omicsRuvDesignReplicateSets`), not the groups alone.
+        # KIT-242 Part B: the marker of the rule by cause (a sample with no value in an assay left out of its factors).
         fixed = list(replicate_sets = paste("the groups (RUV-III); under the design technical_replicates the declared",
-            "technical replicates, the biological units (RUV-III)"), test = "the uncorrected values with W1..Wk in the limma model"),
+            "technical replicates, the biological units (RUV-III)"), test = "the uncorrected values with W1..Wk in the limma model",
+            ruv_fallback = "by_cause"),
         kernel = function(object, parameters, store) {
             invalid <- function(message) cli::cli_abort(message, class = "workflow_execution_invalid", call = NULL)
             design <- parameters$ruv_design
@@ -1778,6 +2138,18 @@ omicsRouteRecordOutcomes <- function(binding, context, operation, record, outcom
         if (!is.null(saved$k_cap)) outcomes$k_cap_per_assay <- as.list(saved$k_cap)
         if (!is.null(saved$k_notice)) outcomes$ruv_k_notice_per_assay <- lapply(saved$k_notice, function(x) x %||% "")
         if (!is.null(saved$ruv_status)) outcomes$ruv_status_per_assay <- as.list(saved$ruv_status)
+        # KIT-242 Part B: whether legacy RUV was applied per assay, why not, and the samples and features left out (a
+        # product made before KIT-242, or replayed under its earlier rule, names none of these and reads as before).
+        if (!is.null(saved$ruv_applied) && is.null(saved$ruv_design)) {
+            outcomes$ruv_applied <- any(unlist(saved$ruv_applied))
+            outcomes$ruv_applied_per_assay <- as.list(saved$ruv_applied)
+            outcomes$ruv_not_applied_reason_per_assay <- as.list(saved$ruv_not_applied_reason)
+            excluded <- Filter(length, saved$ruv_samples_excluded)
+            if (length(excluded)) outcomes$ruv_samples_excluded_per_assay <- excluded
+            features <- Filter(length, saved$ruv_features_excluded)
+            if (length(features)) outcomes$ruv_features_excluded_per_assay <- features
+            if (!is.null(saved$ruv_not_applied_groups)) outcomes$ruv_not_applied_groups_per_assay <- as.list(saved$ruv_not_applied_groups)
+        }
         # KIT-129 integration item 3: a new design's product records its design and its k per assay: whether RUV was
         # applied, the rule, the estimate and the seed (today's product names none, and its outcomes are as before).
         if (!is.null(saved$ruv_design)) {
@@ -1811,7 +2183,50 @@ omicsRouteRecordOutcomes <- function(binding, context, operation, record, outcom
             outcomes$ruv_k_permutations_per_assay <- lapply(saved$k_estimate, function(estimate) estimate$permutations %||% NA_integer_)
         }
     }
-    if (identical(operation, paste0(binding$prefix, "_itsd_normalisation"))) outcomes$itsd_applied <- TRUE
+    if (identical(operation, paste0(binding$prefix, "_itsd_normalisation"))) {
+        # KIT-242 (VAL-242 OD-2 (b), OD-3 (d)): applied only when at least one assay was normalised to its standards, per
+        # assay with the reason and the count of standards used (0 where none matched), and the samples without standard
+        # signal per assay. A state made before KIT-242 carries no per-assay fields; its record reads as it did.
+        itsd <- record$data$slots$args$ITSDNormalization
+        outcomes$itsd_applied <- if (is.null(itsd$applied_per_assay)) TRUE else isTRUE(itsd$applied)
+        if (!is.null(itsd$applied_per_assay)) {
+            outcomes$itsd_applied_per_assay <- as.list(itsd$applied_per_assay)
+            outcomes$itsd_not_applied_reason_per_assay <- as.list(itsd$not_applied_reason_per_assay %||% list())
+            outcomes$itsd_counts_per_assay <- as.list(itsd$itsd_counts_per_assay %||% list())
+            outcomes$itsd_samples_without_standard_per_assay <- as.list(itsd$samples_without_standard_per_assay %||% list())
+        }
+        # KIT-260 (VAL-241; E-2): the rows used per assay, annotation and identifier (OD-2 (b)), and the note where the
+        # stored pattern matched names through the alternatives the corrected default removed (OD-3 (a)); read from the
+        # step's saved product (its `itsd` element), as the RUV outcomes are. A product saved before KIT-260 names none: the
+        # rows are then read from the stored states (AUDIT-KIT-260-impl I02 (a): "read from the state before the ITSD step").
+        product <- record$data$products[[paste0(operation, "_science")]]
+        saved <- if (isSavedWorkflowReference(product)) tryCatch({
+            hydrated <- hydrateSavedWorkflowEntity(context$store, product)
+            if (is.list(hydrated$value)) hydrated$value else hydrated
+        }, error = function(error) NULL) else NULL
+        used <- if (length(saved$itsd$rows_used)) list(itsd_used = saved$itsd$rows_used, itsd_id_column = saved$itsd$id_column,
+            itsd_legacy_rows = saved$itsd$legacy_rows) else omicsItsdRowsFromStates(binding, context, record)
+        if (length(used$itsd_used)) {
+            outcomes$itsd_features_per_assay <- lapply(used$itsd_used, omicsItsdRowWords, id_column = used$itsd_id_column)
+        }
+        note <- omicsItsdLegacyNote(used$itsd_legacy_rows)
+        if (!is.null(note)) outcomes$itsd_note <- note
+    }
+    if (identical(operation, paste0(binding$prefix, "_between_sample_normalisation"))) {
+        # KIT-242 (VAL-242 OD-1 (c)): per assay whether it was normalised and which samples were left out of it (kept empty
+        # there), and the samples removed from the design (no value in any assay); a step made under the earlier rule
+        # records none of these.
+        product <- record$data$products[[paste0(operation, "_science")]]
+        saved <- if (isSavedWorkflowReference(product)) tryCatch({
+            hydrated <- hydrateSavedWorkflowEntity(context$store, product)
+            if (is.list(hydrated$value)) hydrated$value else hydrated
+        }, error = function(error) NULL) else NULL
+        if (!is.null(saved$per_assay)) {
+            outcomes$normalisation_applied_per_assay <- as.list(saved$per_assay$applied)
+            outcomes$normalisation_samples_excluded_per_assay <- as.list(saved$per_assay$samples_excluded)
+            outcomes$normalisation_samples_removed <- as.character(saved$per_assay$samples_removed)
+        }
+    }
     outcomes
 }
 
@@ -2113,7 +2528,7 @@ omicsIntensityFilterStep <- function(binding, percentile, proportion, descriptio
 omicsDuplicateResolutionStep <- function(binding, description = NULL, state_name = NULL) {
     list(operation = paste0(binding$prefix, "_duplicate_resolution"), parameters = list(),
         state_name = state_name %||% paste0(binding$prefix, "_duplicates_resolved"),
-        description = description %||% sprintf("Resolved duplicate %s features by keeping highest intensity", binding$feature_noun))
+        description = description %||% sprintf("Resolved duplicate %s features: kept the row measured in the most design samples, then the highest average of its measured values", binding$feature_noun))
 }
 
 #' @noRd

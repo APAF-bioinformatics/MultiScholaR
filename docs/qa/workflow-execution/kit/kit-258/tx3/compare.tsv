@@ -1,0 +1,6 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-kit258b-duplicate-texts.R	34	0	0	0	ok	46	0	0	0	ok	count-changed	counts: KIT-258b (1) lipidomics: the Duplicates help states the rule as merged (passed 4 -> 6, skipped 0 -> 0); counts: KIT-258b (1) metabolomics: the Duplicates help states the rule as merged (passed 4 -> 6, skipped 0 -> 0); counts: KIT-258b (2) lipid: the step's result text states the rule as merged (passed 3 -> 4, skipped 0 -> 0); counts: KIT-258b (2) metab: the step's result text states the rule as merged (passed 3 -> 4, skipped 0 -> 0); counts: KIT-258b (5) lipidomics: the declared step's description states the rule as merged (passed NA -> 3, skipped NA -> 0); counts: KIT-258b (5) metabolomics: the declared step's description states the rule as merged (passed NA -> 3, skipped NA -> 0)	
+test-workflow-omics-binding-steps.R	57	2	0	0	failed	57	2	0	0	failed	message-changed	message-changed: KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit	
+test-kit258-duplicate-completeness.R	162	0	0	0	ok	162	0	0	0	ok	same		
+test-workflow-lipid-declarations.R	259	0	0	0	ok	259	0	0	0	ok	same		
+test-workflow-metab-declarations.R	259	0	0	0	ok	259	0	0	0	ok	same		

@@ -1,0 +1,35 @@
+file	base_passed	base_failed	base_errors	base_skipped	base_status	head_passed	head_failed	head_errors	head_skipped	head_status	verdict	tests	note
+test-omics-norm-state-guards.R	651	0	0	0	ok	651	0	0	0	ok	same		
+test-workflow-omics-worker.R	289	0	0	0	ok	289	0	0	0	ok	same		
+test-workflow-partitions.R	440	0	0	2	ok	440	0	0	2	ok	same		
+test-workflow-omics-residency.R	97	0	0	0	ok	97	0	0	0	ok	same		
+test-gui-entry-metabolomics.R	57	48	0	0	failed	57	48	0	0	failed	message-changed	message-changed: KIT-101 entry lane metab_lc: LC-MS positive and negative assays (custom format); message-changed: KIT-101 entry lane metab_gc: one GC-MS assay (custom format); message-changed: KIT-101 entry lane metab_combined: LC-MS and GC-MS assays (custom format)	
+test-kit258-duplicate-completeness.R	162	0	0	0	ok	162	0	0	0	ok	same		
+test-gui-entry-lipidomics.R	19	16	0	0	failed	19	16	0	0	failed	message-changed	message-changed: KIT-101 entry lane lipid_canonical: two LipidSearch assays	
+test-kit214-sample-columns.R	176	0	0	0	ok	176	0	0	0	ok	same		
+test-kit258b-duplicate-texts.R	0	0	0	0	absent	34	0	0	0	ok	only-on-head		
+test-lipid-01-qc-filtering-helpers.R	58	0	0	2	ok	58	0	0	2	ok	same		
+test-lipid-01g-qc-duplicates-module-characterization.R	9	0	0	5	ok	9	0	0	5	ok	same		
+test-lipid-01h-qc-s4-module-characterization.R	3	0	0	0	ok	3	0	0	0	ok	same		
+test-lipid-01j-qc-orchestrator-shared.R	3	0	0	3	ok	3	0	0	3	ok	same		
+test-lipid-03-s4-duplicate-helpers.R	26	0	0	0	ok	26	0	0	0	ok	same		
+test-metab-01b-qc-filtering-helpers-characterization.R	9	0	0	0	ok	9	0	0	0	ok	same		
+test-metab-01m-s4-resolve-duplicate-intensity-characterization.R	19	0	0	0	ok	19	0	0	0	ok	same		
+test-metab-01t-qc-s4-module-characterization.R	2	0	0	7	ok	2	0	0	7	ok	same		
+test-metab-01u-qc-duplicates-module-characterization.R	9	0	0	3	ok	9	0	0	3	ok	same		
+test-metab-01w-qc-orchestrator-shared.R	3	0	0	3	ok	3	0	0	3	ok	same		
+test-metab-02u-resolve-duplicate-features-characterization.R	17	0	0	0	ok	17	0	0	0	ok	same		
+test-metab-s4-qc-shared.R	32	0	0	0	ok	32	0	0	0	ok	same		
+test-module-ci-lipid-qc.R	68	0	0	0	ok	68	0	0	0	ok	same		
+test-module-ci-metab-qc.R	63	0	0	1	ok	63	0	0	1	ok	same		
+test-module-ui-wrapper-direct-shared.R	45	0	0	0	ok	45	0	0	0	ok	same		
+test-omic-gui-config.R	1911	0	0	0	ok	1911	0	0	0	ok	same		
+test-omic-qc-module.R	156	4	0	0	failed	156	4	0	0	failed	message-changed	message-changed: (b) each omic's QC UI, sub-tab UIs and namespaced ids are today's (lipid, metab, trx, prot by route)	
+test-omics-audit-carry-overs.R	20	0	0	0	ok	20	0	0	0	ok	same		
+test-omics-module-globals.R	13	1	0	0	failed	13	1	0	0	failed	same		
+test-omics-qc-core.R	115	0	0	0	ok	115	0	0	0	ok	same		
+test-workflow-kit-harness.R	734	1	0	0	failed	734	1	0	0	failed	same		
+test-workflow-lipid-declarations.R	259	0	0	0	ok	259	0	0	0	ok	same		
+test-workflow-metab-declarations.R	259	0	0	0	ok	259	0	0	0	ok	same		
+test-workflow-omics-declarations.R	43	25	0	0	failed	43	25	0	0	failed	same		
+test-workflow-operation-registry.R	1107	2	0	0	failed	1107	2	0	0	failed	same		

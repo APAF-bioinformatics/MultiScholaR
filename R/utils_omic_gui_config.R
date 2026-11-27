@@ -1260,8 +1260,10 @@ omicGuiFeatureQcTexts <- function(noun, class) {
         intensity_total = sprintf("Total: %%d -> %%d %s (removed %%d)", plural),
         intensity_success = sprintf("Intensity filter applied: %%d %s retained", plural),
         intensity_error = sprintf("Error applying %s intensity filter:", noun),
-        duplicates_help = sprintf(paste("Identify and resolve duplicate %s IDs within each assay. Duplicates",
-            "are resolved by keeping the feature with the highest average intensity across samples."), noun),
+        duplicates_help = sprintf(paste("Identify and resolve duplicate %s IDs within each assay. When an ID appears more than",
+            "once, one row is kept: the row measured in the most of the design's samples; among rows measured in equally many,",
+            "the one with the highest average of its measured values; if still tied, the first in the table as imported. A",
+            "missing value or an intensity of 0 counts as not measured. The kept row keeps its own name and annotation."), noun),
         duplicates_none = sprintf("All %s IDs are unique. No resolution needed.", noun),
         itsd_pattern_help = sprintf(paste("Regular expression to identify internal standards in %s IDs.",
             "Leave empty to use pattern from S4 object."), noun),
@@ -1367,6 +1369,31 @@ omicGuiLog2Texts <- function() {
             "your table (for example \u00b5M against nM). In this data, %s values reaching the log2 step are below 1, so",
             "their log2 values are negative, and taking absolute values treats a log2 value of \u22122 like +2. Cyclic Loess",
             "and Quantile do not depend on the unit."))
+}
+
+#' The internal-standard texts of the lipidomics and metabolomics tabs and records (KIT-260, VAL-241: OD-2 (b), OD-3 (a),
+#' OD-4 (a); proposed wording, implemented as proposed, the owner edits it before release, VAL-41).
+#' @noRd
+omicGuiItsdTexts <- function() {
+    c(import_help = paste("Regular expression, case-sensitive. The normalisation matches it in the annotation column chosen",
+            "above (the integration also in the identifier column). With 'Apply ITSD normalization' ticked and no standard",
+            "selected in the ITSD Selection tab, every matching row is used as an internal standard to normalise each sample",
+            "and is then removed from the data. Leave it empty for none."),
+        # %s: the assay; %d: the rows; %s: the rows, each as `row`.
+        used_log = "ITSD, assay %s: %d rows used as internal standards, then removed: %s",
+        # %s: the annotation; %s: the identifier column; %s: the identifier.
+        row = "%s (%s %s)",
+        # %s: the identifier column; %s: the identifier (a row without an annotation).
+        row_no_annotation = "%s %s",
+        # %s: the counts per assay in words.
+        used_notification = paste("Internal-standard normalisation used %s rows as internal standards and removed them;",
+            "the log names them."),
+        # %s: where, e.g. "assay LCMS_Pos, 9 rows".
+        legacy_note = paste("This project was imported with an internal-standard pattern that also matches features MS-DIAL",
+            "annotated without MS/MS, or names containing 'IS-' in capitals; such features were used as internal standards",
+            "and removed (%s)."),
+        # %s: the data set; %s: the rows, each as `row`.
+        integration_names = "%s: internal standards marked: %s.")
 }
 
 #' The proteomics label-free and TMT log2 texts (KIT-177; proposed wording, implemented as proposed, the owner edits

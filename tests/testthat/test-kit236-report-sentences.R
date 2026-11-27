@@ -491,6 +491,25 @@ test_that("KIT-236 T19, T19g: the count sentence reads the table Copy writes (da
 
 # --- G1 and the waiting sentences (W) ---------------------------------------------------------------------------------
 
+# KIT-272 (declared edit, by substitution on the base side; the frozen base copies are untouched): the Methods bullet
+# "Density boxplots to assess distribution consistency" describes the figure's box plots of principal component scores,
+# which here come from a separate PCA of every feature with at least two values (the owner's decision VAL-332).
+# File-local copy of the constants of test-kit272-prot-box-panel-text.R, never sourced.
+k272OldBullet <- "\u2022 Density boxplots to assess distribution consistency"
+k272NewBullet <- c(
+    lipid = paste0("\u2022 Box plots of the samples' scores on the first two principal components of every lipid with ",
+        "at least two values, a separate analysis from the PCA panels, which use the tenth of the lipids with the ",
+        "largest ratio of standard deviation to mean"),
+    metab = paste0("\u2022 Box plots of the samples' scores on the first two principal components of every metabolite ",
+        "with at least two values, a separate analysis from the PCA panels, which use the tenth of the metabolites with ",
+        "the largest ratio of standard deviation to mean"))
+
+#' `text` with the one `old` replaced by `new`, after asserting that `old` is there exactly once
+k272Substitute <- function(text, old, new) {
+    expect_identical(lengths(regmatches(text, gregexpr(old, text, fixed = TRUE))), 1L, info = old)
+    sub(old, new, text, fixed = TRUE)
+}
+
 test_that("KIT-236 G1: the Methods paragraphs outside section 1 print the base text, with and without a record", {
     for (name in k236Omics) {
         for (record in list(NULL, k236Record(k236Spec[[name]]$prefix))) {
@@ -498,7 +517,10 @@ test_that("KIT-236 G1: the Methods paragraphs outside section 1 print the base t
             head <- k236Case(name, record = record)$raw$method_details
             base <- k236Case(name, record = record, side = "base")$raw$method_details
             for (heading in c("Batch Effect Correction", "Quality Control", "ITSD Normalization")) {
-                expect_identical(k236Paragraph(head, heading), k236Paragraph(base, heading), info = paste(info, heading))
+                base_paragraph <- k236Paragraph(base, heading)
+                if (identical(heading, "Quality Control")) base_paragraph <- k272Substitute(base_paragraph, k272OldBullet,
+                    k272NewBullet[[name]])
+                expect_identical(k236Paragraph(head, heading), base_paragraph, info = paste(info, heading))
             }
             expect_identical(k236ParagraphFrom(head, "Between-sample normalization was performed"),
                 k236ParagraphFrom(base, "Between-sample normalization was performed"), info = info)
@@ -723,5 +745,35 @@ test_that("KIT-255 (I01, I02): the comment counts each sample set missing once a
             "1 sample was set missing in some assays only (A_1 in LCMS_Neg, GCMS).")), info = name)
         expect_true(k236Has(got$norm$comments, paste("Comparisons with group B in LCMS_Neg were not tested",
             "(no sample of the group has a value there).")), info = name)
+    }
+})
+
+# KIT-268 (VAL-312, wording VAL-314): where a comparison fell back to Benjamini-Hochberg, the sentence that names it is
+# followed by the one added sentence; the rule sentence and the no-fallback sentence are unchanged.
+k268Existing <- "where q-values could not be computed and Benjamini-Hochberg adjusted p-values were used instead."
+k268Added <- paste("For these comparisons the q-value column holds Benjamini-Hochberg adjusted p-values, which equal",
+    "Storey's q-values with the proportion of unchanged features (pi0) set to 1; because pi0 could not be estimated for these",
+    "comparisons, the values are larger than Storey's q-values would be by a factor of 1/pi0 of unknown size (1 or more),",
+    "so they are more conservative than, and not on the same scale as, the q-values of the other comparisons.")
+
+test_that("KIT-268 T4: the FDR sentence of each report adds the scale sentence after the named Benjamini-Hochberg comparisons", {
+    for (name in k236Omics) {
+        prefix <- k236Spec[[name]]$prefix
+        planted <- k236Case(name, record = k236Record(prefix, fdr = c(LCMS_Pos = "qvalue", LCMS_Neg = "BH")))
+        expect_true(k236Has(planted$norm$de_details, k268Existing), info = name)
+        expect_true(k236Has(planted$norm$de_details, paste(k268Existing, k268Added)), info = name)
+        rule <- k236Case(name, record = k236Record(prefix))
+        expect_false(k236Has(rule$norm$de_details, "not on the same scale"), info = name)
+        clean <- k236Case(name, record = k236Record(prefix, fdr = c(LCMS_Pos = "qvalue", LCMS_Neg = "qvalue")))
+        expect_false(k236Has(clean$norm$de_details, "not on the same scale"), info = name)
+    }
+    for (name in k236ProtNames) {
+        planted <- k236Prot(name, record = k236Record(NULL, contrasts = k236ProtContrasts, fdr = "BH"))
+        expect_true(k236Has(planted$de, k268Existing), info = name)
+        expect_true(k236Has(planted$de, paste(k268Existing, k268Added)), info = name)
+        rule <- k236Prot(name, record = k236Record(NULL, contrasts = k236ProtContrasts))
+        expect_false(k236Has(rule$de, "not on the same scale"), info = name)
+        clean <- k236Prot(name, record = k236Record(NULL, contrasts = k236ProtContrasts, fdr = "qvalue"))
+        expect_false(k236Has(clean$de, "not on the same scale"), info = name)
     }
 })

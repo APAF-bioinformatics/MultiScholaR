@@ -414,6 +414,9 @@ ExtractStudyParametersNew <- function(study_params) {
     itsd_aggregation = itsd_info$"Aggregation" %||% NA,
     itsd_removed = parse_yes_no(itsd_info$"ITSD Removed After Normalization", FALSE),
     itsd_features_per_assay = itsd_info$"ITSD Features Per Assay" %||% NA,
+    # KIT-260 (OD-3 (a)): the note the study-parameters file carries when the stored pattern matched names through
+    # the alternatives the corrected MS-DIAL default removed.
+    itsd_note = itsd_info$"Note" %||% NA,
 
     # Log Transformation
     log_transform_applied = parse_yes_no(log_transform_info$"Applied", TRUE),
@@ -526,10 +529,16 @@ FormatMethodDetails <- function(numbers) {
       )
     }
 
+    itsd_note_text <- if (!is.null(numbers$itsd_note) && !is.na(numbers$itsd_note) && nzchar(numbers$itsd_note)) {
+      paste0(" ", numbers$itsd_note)
+    } else {
+      ""
+    }
+
     glue::glue(
       "Internal standard (ITSD) normalization was applied using the ",
       "{itsd_method} method with {itsd_agg} aggregation across ITSD features. ",
-      "{removal_text}{itsd_feature_details}"
+      "{removal_text}{itsd_feature_details}{itsd_note_text}"
     )
   } else {
     "Internal standard normalization was not applied."
@@ -746,7 +755,7 @@ Batch Effect Correction
 Quality Control
 At each stage of data normalization, samples were checked for batch effects using:
 • Principal component analysis (PCA) to visualize sample clustering
-• Density boxplots to assess distribution consistency
+• Box plots of the samples' scores on the first two principal components of every metabolite with at least two values, a separate analysis from the PCA panels, which use the tenth of the metabolites with the largest ratio of standard deviation to mean
 • Relative log-expression (RLE) plots to detect systematic biases
 • Pearson correlation matrices to evaluate replicate consistency
 
@@ -796,7 +805,7 @@ Quality Control Analysis
 Figure 1 shows four quality-control views at each stage of processing drawn for this analysis. Whether RUV-III
 correction was applied is not recorded for this analysis.
 • Principal component analysis (PCA) to visualize sample clustering
-• Density boxplots to assess distribution consistency
+• Box plots of the samples' scores on the first two principal components of every metabolite with at least two values, a separate analysis from the PCA panels, which use the tenth of the metabolites with the largest ratio of standard deviation to mean
 • Relative log-expression (RLE) plots to detect systematic biases
 • Pearson correlation matrices to evaluate replicate consistency ",
       .trim = FALSE
@@ -1231,7 +1240,12 @@ ReportFdrSentence <- function(numbers) {
     if (is.na(rows$assay[[1L]])) comparisons else paste0(comparisons, " in ", rows$assay[[1L]])
   }, "")
   paste0("False discovery rates were estimated as q-values (Storey, 2002), except for ", paste(parts, collapse = "; "),
-    ", where q-values could not be computed and Benjamini-Hochberg adjusted p-values were used instead.")
+    ", where q-values could not be computed and Benjamini-Hochberg adjusted p-values were used instead. ",
+    # KIT-268 (VAL-312, wording VAL-314): the scale of those values, once, after the named comparisons.
+    "For these comparisons the q-value column holds Benjamini-Hochberg adjusted p-values, which equal Storey's q-values ",
+    "with the proportion of unchanged features (pi0) set to 1; because pi0 could not be estimated for these comparisons, ",
+    "the values are larger than Storey's q-values would be by a factor of 1/pi0 of unknown size (1 or more), so they are ",
+    "more conservative than, and not on the same scale as, the q-values of the other comparisons.")
 }
 
 #' The comparisons named after "the contrast table" (D10): " (1 comparison: A_vs_B)", or nothing when unknown
@@ -1578,11 +1592,16 @@ cat("*Figure 3: Volcano plots of differentially abundant metabolites in alphabet
 
 `r results_data$content$opinions`
 
-# Pathway Enrichment Analysis
+```{r enrichment_presence, echo=FALSE, results='asis'}
+# KIT-219 (VAL-187; the proteomics reports' rule, KIT-055): this application has no enrichment analysis for this omic, so
+# the section is printed only when the publication folder holds an enrichment file.
+enrichment_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots")
+enrichment_ran <- dir.exists(enrichment_plots_dir) && length(list.files(enrichment_plots_dir, recursive = TRUE)) > 0
+cat("# Pathway Enrichment Analysis\n\n")
+if (enrichment_ran) cat(results_data$content$pathway_enrichment, "\n\n") else cat("No enrichment analysis was run for this project.\n\n")
+```
 
-`r results_data$content$pathway_enrichment`
-
-```{r Enrichment Plots, echo=FALSE, out.width="49%", out.height="49%", fig.align='center', fig.ncol=2, fig.show='hold'}
+```{r Enrichment Plots, echo=FALSE, eval=enrichment_ran, out.width="49%", out.height="49%", fig.align='center', fig.ncol=2, fig.show='hold'}
 enrichment_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots")
 if(dir.exists(enrichment_plots_dir)) {
   all_enrichment_files <- list.files(enrichment_plots_dir, full.names = TRUE, recursive = FALSE)
@@ -1590,13 +1609,13 @@ if(dir.exists(enrichment_plots_dir)) {
   if(length(enrichment_plot_files) > 0) {
     knitr::include_graphics(enrichment_plot_files)
   } else {
-     cat(glue::glue("Warning: No Enrichment Plot images found in {enrichment_plots_dir}\n"))
+     message(glue::glue("Warning: No Enrichment Plot images found in {enrichment_plots_dir}\n"))
   }
 } else {
-  cat(glue::glue("Warning: Enrichment Plots directory not found at {enrichment_plots_dir}\n"))
+  message(glue::glue("Warning: Enrichment Plots directory not found at {enrichment_plots_dir}\n"))
 }
 ```
 
-```{r Enrichment Caption, echo=FALSE, results='asis'}
+```{r Enrichment Caption, echo=FALSE, eval=enrichment_ran, results='asis'}
 cat("*Figure 4: Pathway enrichment analysis showing pathways enriched in differentially abundant metabolites. Plots are ordered alphabetically by comparison and direction.*\n\n")
 ```

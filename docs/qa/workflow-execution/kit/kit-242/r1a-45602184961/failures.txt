@@ -1,0 +1,460 @@
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E2: lipid quantile on a sample holding one value stops with omics_normalisation_failed
+kind: failure
+message:
+  Expected `suppressWarnings(...)` to throw a error with class <omics_normalisation_failed>.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E2: lipid quantile on a sample holding one value stops with omics_normalisation_failed
+kind: failure
+message:
+  Expected `err$assay` to be identical to "A2".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('A2')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E2: lipid quantile on a sample holding one value stops with omics_normalisation_failed
+kind: failure
+message:
+  Expected `err$method` to be identical to "quantile".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('quantile')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E2: lipid quantile on a sample holding one value stops with omics_normalisation_failed
+kind: failure
+message:
+  Expected `err$reason` to be identical to "normaliser_error".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('normaliser_error')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E2: lipid quantile on a sample holding one value stops with omics_normalisation_failed
+kind: failure
+message:
+  Expected `err$parent` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E2: lipid quantile on a sample holding one value stops with omics_normalisation_failed
+kind: error
+message:
+  Error in `UseMethod("conditionMessage")`: no applicable method for 'conditionMessage' applied to an object of class "NULL"
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_match(conditionMessage(err$parent), "two non-NA values") at test-kit242-normalisation-fallback.R:113:5
+   2. │ └─testthat::quasi_label(enquo(object), label)
+   3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+   4. └─base::conditionMessage(err$parent)
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E3: lipid an assay with no sample columns stops with omics_normalisation_failed (malformed_assay)
+kind: failure
+message:
+  Expected `suppressWarnings(...)` to throw a error with class <omics_normalisation_failed>.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E3: lipid an assay with no sample columns stops with omics_normalisation_failed (malformed_assay)
+kind: failure
+message:
+  Expected `err$assay` to be identical to "A2".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('A2')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E3: lipid an assay with no sample columns stops with omics_normalisation_failed (malformed_assay)
+kind: failure
+message:
+  Expected `err$reason` to be identical to "malformed_assay".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('malformed_assay')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E16: lipid legacy RUV-III-C with k = -1 for A2 stops with omics_ruv_failed (invalid_k)
+kind: failure
+message:
+  Expected `suppressWarnings(...)` to throw a error with class <omics_ruv_failed>.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E16: lipid legacy RUV-III-C with k = -1 for A2 stops with omics_ruv_failed (invalid_k)
+kind: failure
+message:
+  Expected `err$assay` to be identical to "A2".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('A2')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E16: lipid legacy RUV-III-C with k = -1 for A2 stops with omics_ruv_failed (invalid_k)
+kind: failure
+message:
+  Expected `err$reason` to be identical to "invalid_k".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('invalid_k')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E10: lipid the record's DA entries carry fdr_method, BH with its reason after the q-value fallback
+kind: failure
+message:
+  Expected `entry$fdr_method` to be identical to `if (fell_back) "BH" else "qvalue"`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('BH')
+  
+  groupB-groupA A1
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E10: lipid the record's DA entries carry fdr_method, BH with its reason after the q-value fallback
+kind: failure
+message:
+  Expected `is.character(entry$fdr_fallback_reason) && nzchar(entry$fdr_fallback_reason)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A1
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E10: lipid the record's DA entries carry fdr_method, BH with its reason after the q-value fallback
+kind: failure
+message:
+  Expected `entry$fdr_method` to be identical to `if (fell_back) "BH" else "qvalue"`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('BH')
+  
+  groupB-groupA A2
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E10: lipid the record's DA entries carry fdr_method, BH with its reason after the q-value fallback
+kind: failure
+message:
+  Expected `is.character(entry$fdr_fallback_reason) && nzchar(entry$fdr_fallback_reason)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A2
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E10: lipid the record's DA entries carry fdr_method, BH with its reason after the q-value fallback
+kind: failure
+message:
+  Expected `a2[[1L]]$fdr_method` to be identical to "BH".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('BH')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA1: lipid the record states between-sample normalisation per assay, FALSE where the assay is unchanged
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A1 per-assay outcome present
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA1: lipid the record states between-sample normalisation per assay, FALSE where the assay is unchanged
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A2 per-assay outcome present
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA2: lipid the record states ITSD per assay, FALSE where no standard was matched
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A1 per-assay outcome present
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA2: lipid the record states ITSD per assay, FALSE where no standard was matched
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A2 per-assay outcome present
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA3: lipid every assay the legacy RUV record names is in the RUV state, FALSE where uncorrected
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A1 per-assay outcome present
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA3: lipid every assay the legacy RUV record names is in the RUV state, FALSE where uncorrected
+kind: failure
+message:
+  Expected `is.null(kit242Matrix(after, binding, assay))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  A2 named by the record, present in the RUV state
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA3: lipid every assay the legacy RUV record names is in the RUV state, FALSE where uncorrected
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A2 per-assay outcome present
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E2: metab quantile on a sample holding one value stops with omics_normalisation_failed
+kind: failure
+message:
+  Expected `suppressWarnings(...)` to throw a error with class <omics_normalisation_failed>.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E2: metab quantile on a sample holding one value stops with omics_normalisation_failed
+kind: failure
+message:
+  Expected `err$assay` to be identical to "A2".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('A2')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E2: metab quantile on a sample holding one value stops with omics_normalisation_failed
+kind: failure
+message:
+  Expected `err$method` to be identical to "quantile".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('quantile')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E2: metab quantile on a sample holding one value stops with omics_normalisation_failed
+kind: failure
+message:
+  Expected `err$reason` to be identical to "normaliser_error".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('normaliser_error')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E2: metab quantile on a sample holding one value stops with omics_normalisation_failed
+kind: failure
+message:
+  Expected `err$parent` to be an S3 object.
+  Actual OO type: none.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E2: metab quantile on a sample holding one value stops with omics_normalisation_failed
+kind: error
+message:
+  Error in `UseMethod("conditionMessage")`: no applicable method for 'conditionMessage' applied to an object of class "NULL"
+trace (first lines):
+      ▆
+   1. ├─testthat::expect_match(conditionMessage(err$parent), "two non-NA values") at test-kit242-normalisation-fallback.R:113:5
+   2. │ └─testthat::quasi_label(enquo(object), label)
+   3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+   4. └─base::conditionMessage(err$parent)
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E3: metab an assay with no sample columns stops with omics_normalisation_failed (malformed_assay)
+kind: failure
+message:
+  Expected `suppressWarnings(...)` to throw a error with class <omics_normalisation_failed>.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E3: metab an assay with no sample columns stops with omics_normalisation_failed (malformed_assay)
+kind: failure
+message:
+  Expected `err$assay` to be identical to "A2".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('A2')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E3: metab an assay with no sample columns stops with omics_normalisation_failed (malformed_assay)
+kind: failure
+message:
+  Expected `err$reason` to be identical to "malformed_assay".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('malformed_assay')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E16: metab legacy RUV-III-C with k = -1 for A2 stops with omics_ruv_failed (invalid_k)
+kind: failure
+message:
+  Expected `suppressWarnings(...)` to throw a error with class <omics_ruv_failed>.
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E16: metab legacy RUV-III-C with k = -1 for A2 stops with omics_ruv_failed (invalid_k)
+kind: failure
+message:
+  Expected `err$assay` to be identical to "A2".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('A2')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E16: metab legacy RUV-III-C with k = -1 for A2 stops with omics_ruv_failed (invalid_k)
+kind: failure
+message:
+  Expected `err$reason` to be identical to "invalid_k".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('invalid_k')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E10: metab the record's DA entries carry fdr_method, BH with its reason after the q-value fallback
+kind: failure
+message:
+  Expected `entry$fdr_method` to be identical to `if (fell_back) "BH" else "qvalue"`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('BH')
+  
+  groupB-groupA A1
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E10: metab the record's DA entries carry fdr_method, BH with its reason after the q-value fallback
+kind: failure
+message:
+  Expected `is.character(entry$fdr_fallback_reason) && nzchar(entry$fdr_fallback_reason)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A1
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E10: metab the record's DA entries carry fdr_method, BH with its reason after the q-value fallback
+kind: failure
+message:
+  Expected `entry$fdr_method` to be identical to `if (fell_back) "BH" else "qvalue"`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('BH')
+  
+  groupB-groupA A2
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E10: metab the record's DA entries carry fdr_method, BH with its reason after the q-value fallback
+kind: failure
+message:
+  Expected `is.character(entry$fdr_fallback_reason) && nzchar(entry$fdr_fallback_reason)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A2
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 E10: metab the record's DA entries carry fdr_method, BH with its reason after the q-value fallback
+kind: failure
+message:
+  Expected `a2[[1L]]$fdr_method` to be identical to "BH".
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('BH')
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA1: metab the record states between-sample normalisation per assay, FALSE where the assay is unchanged
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A1 per-assay outcome present
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA1: metab the record states between-sample normalisation per assay, FALSE where the assay is unchanged
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A2 per-assay outcome present
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA2: metab the record states ITSD per assay, FALSE where no standard was matched
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A1 per-assay outcome present
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA2: metab the record states ITSD per assay, FALSE where no standard was matched
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A2 per-assay outcome present
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA3: metab every assay the legacy RUV record names is in the RUV state, FALSE where uncorrected
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A1 per-assay outcome present
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA3: metab every assay the legacy RUV record names is in the RUV state, FALSE where uncorrected
+kind: failure
+message:
+  Expected `is.null(kit242Matrix(after, binding, assay))` to be FALSE.
+  Differences:
+  `actual`:   TRUE 
+  `expected`: FALSE
+  
+  A2 named by the record, present in the RUV state
+
+file: test-kit242-normalisation-fallback.R
+test: KIT-242 NA3: metab every assay the legacy RUV record names is in the RUV state, FALSE where uncorrected
+kind: failure
+message:
+  Expected `is.logical(applied) && length(applied) == 1L` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  A2 per-assay outcome present
+

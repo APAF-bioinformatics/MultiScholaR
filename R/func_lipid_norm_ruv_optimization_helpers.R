@@ -187,6 +187,28 @@ runLipidPerAssayRuvOptimization <- function(
                     ))
                 }
 
+                # KIT-242 (VAL-373 Q-A): under the current rule an assay the control selection skipped has no control set
+                # of its own (the earlier rule took the whole list, on which sum() below fails); the reason travels on.
+                if (omicsRuvFallbackCurrent() && is.list(pct_res$ctrl_list) && !is.null(names(pct_res$ctrl_list)) &&
+                    !assay_name %in% names(pct_res$ctrl_list)) {
+                    skip <- attr(pct_res$ctrl_list, "skipped")[[assay_name]] %||% list(reason = "not_selected")
+                    return(list(
+                        percentage_requested    = pct
+                        , candidate_feature_count = candidate_feature_count
+                        , realized_num_controls   = 0L
+                        , realized_percentage     = 0
+                        , sample_size             = sample_size
+                        , best_k                  = NA_integer_
+                        , separation_score        = NA_real_
+                        , composite_score         = NA_real_
+                        , status                  = "skipped_no_controls_selected"
+                        , error_reason            = skip$reason
+                        , ctrl_indices            = NULL
+                        , cancor_plot             = NULL
+                        , skip_reason             = skip
+                    ))
+                }
+
                 # Extract per-assay slices from whole-object results
                 ctrl_indices <- if (is.list(pct_res$ctrl_list) && assay_name %in% names(pct_res$ctrl_list)) {
                     pct_res$ctrl_list[[assay_name]]
@@ -219,6 +241,25 @@ runLipidPerAssayRuvOptimization <- function(
                         , composite_score         = NA_real_
                         , status                  = "skipped_insufficient_controls"
                         , error_reason            = ""
+                        , ctrl_indices            = ctrl_indices
+                        , cancor_plot             = NULL
+                    ))
+                }
+
+                # KIT-242 (VAL-242 Q6.2 (c)): under the current rule an assay the canonical-correlation step returned no
+                # plot for (it could not be computed) is a failed computation, not a curve without an elbow.
+                if (omicsRuvFallbackCurrent() && is.list(pct_res$cancor_list) && !assay_name %in% names(pct_res$cancor_list)) {
+                    return(list(
+                        percentage_requested    = pct
+                        , candidate_feature_count = candidate_feature_count
+                        , realized_num_controls   = realized_num_controls
+                        , realized_percentage     = realized_percentage
+                        , sample_size             = sample_size
+                        , best_k                  = NA_integer_
+                        , separation_score        = NA_real_
+                        , composite_score         = NA_real_
+                        , status                  = "error_cancor"
+                        , error_reason            = "error_cancor: the canonical correlations could not be computed for this assay"
                         , ctrl_indices            = ctrl_indices
                         , cancor_plot             = NULL
                     ))
@@ -345,7 +386,7 @@ runLipidPerAssayRuvOptimization <- function(
                         if (identical(row$status, "skipped_k_exceeds_complete_controls")) omicsRuvCompleteControlCount(complete_rows, row$ctrl_indices) else NA_integer_
                     }, integer(1L))
                     , "lipids")
-                return(list(
+                failed <- list(
                     success                      = FALSE
                     , best_k                     = NA_integer_
                     , best_percentage            = NA_real_
@@ -357,7 +398,11 @@ runLipidPerAssayRuvOptimization <- function(
                     , composite_score            = NA_real_
                     , optimization_results       = optimization_results
                     , error                      = refusal %||% "No valid percentage found"
-                ))
+                )
+                # KIT-242 (VAL-373 Q-A): why the control selection skipped the assay, when it did (else no field).
+                skip <- Find(Negate(is.null), lapply(assay_pct_rows, `[[`, "skip_reason"))
+                if (!is.null(skip)) failed$skip_reason <- skip
+                return(failed)
             }
 
             best_pct <- valid_df$percentage_requested[[1L]]
@@ -398,6 +443,24 @@ runLipidPerAssayRuvOptimization <- function(
                 , ruv_grouping_variable = ruv_grouping_variable
                 , percentage_as_neg_ctrl = manual_percentage
             )
+
+            # KIT-242 (VAL-373 Q-A): under the current rule an assay the control selection skipped fails the Manual
+            # search with its reason (the earlier rule took the whole list as that assay's controls).
+            if (omicsRuvFallbackCurrent() && is.list(ctrl_result) && !is.null(names(ctrl_result)) &&
+                !assay_name %in% names(ctrl_result)) {
+                skip <- attr(ctrl_result, "skipped")[[assay_name]] %||% list(reason = "not_selected")
+                return(list(
+                    success               = FALSE
+                    , best_k              = NA_integer_
+                    , best_percentage     = NA_real_
+                    , control_genes_index = NULL
+                    , cancor_plot         = NULL
+                    , separation_score    = NA_real_
+                    , optimization_results = NULL
+                    , error               = paste("the control selection skipped the assay:", skip$reason)
+                    , skip_reason         = skip
+                ))
+            }
 
             ctrl_indices <- if (is.list(ctrl_result) && assay_name %in% names(ctrl_result)) {
                 ctrl_result[[assay_name]]

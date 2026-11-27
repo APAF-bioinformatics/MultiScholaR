@@ -231,7 +231,8 @@ getLipidomicsColumnDefaults <- function(format) {
             area = c("Area", "area"),
             formula = c("Formula", "formula"),
             ontology = c("Ontology", "ontology"),
-            is_pattern = "^IS_|_d[0-9]+$|ISTD|IS-|w/o MS2:"
+            # KIT-260 (VAL-241, OD-1 (c)): labelled standards only (see getMetabolomicsColumnDefaults).
+            is_pattern = "^IS_|_d[0-9]+$|ISTD|^IS-|\\(d[0-9]+\\)"
         ),
         "progenesis" = list(
             lipid_id = c("Compound", "compound"),

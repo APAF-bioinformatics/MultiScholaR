@@ -624,7 +624,7 @@ missing values. The data matrix was log (base 2) transformed and {norm_text}
 {numbers$ruv_design_methods %||% ruv_text}{ruv_count_text}
 
 At each stage of the data normalisation, the samples were checked for batch effects 
-using principal component analysis (PCA) plots, density boxplots, relative 
+using principal component analysis (PCA) plots, box plots of the principal component scores, relative 
 log-expression (RLE) plots, and the distribution of Pearson correlation between 
 replicate samples within groups. These quality control visualisations allow 
 assessment of technical variation removal while ensuring biological signal is 
@@ -650,9 +650,8 @@ Quality Control
 Figure 1 shows four quality-control views at three stages of processing: after log2 transformation
 (left column: panels a, d, g, j), after between-sample normalisation (centre column: b, e, h, k) and
 after RUVIII-C correction (right column: c, f, i, l).  
-• Principal component analysis (panels a-c): samples plotted on the first two principal components,
-  coloured by experimental group.  
-• Density plots (panels d-f): the distribution of protein intensities per sample.  
+• Principal component analysis (panels a-c): samples plotted on the first two principal components of the log2 protein values (centred, not scaled), computed at each stage from the tenth of the proteins with the largest ratio of standard deviation to mean of their log2 values; coloured by experimental group.  
+• Principal component scores by group (panels d-f): for each experimental group, a box plot of the samples' scores on principal component 1 (upper plot) and principal component 2 (lower plot), the same scores that panels a-c plot as points. The line in each box is the median, the box spans the first to the third quartile, the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box, and scores beyond them are drawn as points. The notch spans the median plus and minus 1.58 times the interquartile range divided by the square root of the number of samples in the group: as a rough guide, two groups whose notches do not overlap have medians that differ at about the 5% level (McGill, Tukey and Larsen, 1978). With fewer than about ten samples in a group the notch extends beyond the box and should not be read. Each stage is a separate analysis, so the scores of different panels are not on a common scale and their signs are arbitrary.  
 • Relative log expression (panels g-i): per-sample deviations from the protein-wise median.  
 • Pearson correlation (panels j-l): the distribution of between-sample correlations within groups.  
 
@@ -665,9 +664,8 @@ by the analyst; this report draws no automated conclusion from them. ",
 Quality Control  
 
 Figure 1 shows four quality-control views at each stage of processing drawn for this analysis. Whether RUV-III correction was applied is not recorded for this analysis.  
-• Principal component analysis: samples plotted on the first two principal components,
-  coloured by experimental group.  
-• Density plots: the distribution of protein intensities per sample.  
+• Principal component analysis: samples plotted on the first two principal components of the log2 protein values (centred, not scaled), computed at each stage from the tenth of the proteins with the largest ratio of standard deviation to mean of their log2 values; coloured by experimental group.  
+• Principal component scores by group: for each experimental group, a box plot of the samples' scores on principal component 1 (upper plot) and principal component 2 (lower plot), the same scores that the principal component analysis panels plot as points. The line in each box is the median, the box spans the first to the third quartile, the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box, and scores beyond them are drawn as points. The notch spans the median plus and minus 1.58 times the interquartile range divided by the square root of the number of samples in the group: as a rough guide, two groups whose notches do not overlap have medians that differ at about the 5% level (McGill, Tukey and Larsen, 1978). With fewer than about ten samples in a group the notch extends beyond the box and should not be read. Each stage is a separate analysis, so the scores of different panels are not on a common scale and their signs are arbitrary.  
 • Relative log expression: per-sample deviations from the protein-wise median.  
 • Pearson correlation: the distribution of between-sample correlations within groups.  
 
@@ -681,9 +679,8 @@ Quality Control
 Figure 1 shows four quality-control views at two stages of processing: after log2 transformation
 (left column: panels a, c, e, g) and after between-sample normalisation (right column: b, d, f, h).
 RUV-III correction was not applied to this dataset.  
-• Principal component analysis (panels a-b): samples plotted on the first two principal components,
-  coloured by experimental group.  
-• Density plots (panels c-d): the distribution of protein intensities per sample.  
+• Principal component analysis (panels a-b): samples plotted on the first two principal components of the log2 protein values (centred, not scaled), computed at each stage from the tenth of the proteins with the largest ratio of standard deviation to mean of their log2 values; coloured by experimental group.  
+• Principal component scores by group (panels c-d): for each experimental group, a box plot of the samples' scores on principal component 1 (upper plot) and principal component 2 (lower plot), the same scores that panels a-b plot as points. The line in each box is the median, the box spans the first to the third quartile, the whiskers reach the most extreme scores within 1.5 times the interquartile range of the box, and scores beyond them are drawn as points. The notch spans the median plus and minus 1.58 times the interquartile range divided by the square root of the number of samples in the group: as a rough guide, two groups whose notches do not overlap have medians that differ at about the 5% level (McGill, Tukey and Larsen, 1978). With fewer than about ten samples in a group the notch extends beyond the box and should not be read. Each stage is a separate analysis, so the scores of different panels are not on a common scale and their signs are arbitrary.  
 • Relative log expression (panels e-f): per-sample deviations from the protein-wise median.  
 • Pearson correlation (panels g-h): the distribution of between-sample correlations within groups.  
 
@@ -1203,7 +1200,12 @@ ReportFdrSentence <- function(numbers) {
     if (is.na(rows$assay[[1L]])) comparisons else paste0(comparisons, " in ", rows$assay[[1L]])
   }, "")
   paste0("False discovery rates were estimated as q-values (Storey, 2002), except for ", paste(parts, collapse = "; "),
-    ", where q-values could not be computed and Benjamini-Hochberg adjusted p-values were used instead.")
+    ", where q-values could not be computed and Benjamini-Hochberg adjusted p-values were used instead. ",
+    # KIT-268 (VAL-312, wording VAL-314): the scale of those values, once, after the named comparisons.
+    "For these comparisons the q-value column holds Benjamini-Hochberg adjusted p-values, which equal Storey's q-values ",
+    "with the proportion of unchanged features (pi0) set to 1; because pi0 could not be estimated for these comparisons, ",
+    "the values are larger than Storey's q-values would be by a factor of 1/pi0 of unknown size (1 or more), so they are ",
+    "more conservative than, and not on the same scale as, the q-values of the other comparisons.")
 }
 
 #' The comparisons named after "the contrast table" (D10): " (1 comparison: A_vs_B)", or nothing when unknown
@@ -1512,7 +1514,7 @@ FormatPlaceholderPanels <- function(qc_figures_dir, omic_type) {
   if (!length(rows)) return("")
   stages <- c(pre_norm = "after log2 transformation", post_norm = "after between-sample normalisation",
     ruv_corrected = "after RUVIII-C correction")
-  kinds <- c(pca = "principal component analysis", density = "density plot", rle = "relative log expression",
+  kinds <- c(pca = "principal component analysis", density = "principal component scores by group", rle = "relative log expression",
     correlation = "Pearson correlation")
   describe <- function(figure) {
     if (identical(figure, "ruv_corrected_cancor")) return("RUV-III canonical correlation")
@@ -1588,10 +1590,10 @@ cat("*Figure 3: Volcano plots of differentially expressed proteins one per compa
 
 ```{r enrichment_presence, echo=FALSE, results='asis'}
 # KIT-055: the enrichment section renders only when an enrichment analysis produced outputs for this project.
+# KIT-219: the flag reads the publication folder only: Copy puts there the files of the current enrichment, and the
+# Report refuses a folder that holds others.
 enrichment_plots_dir <- file.path(report_publication_figures_dir, "Enrichment_Plots")
-pathway_dir <- tryCatch(current_project_paths$pathway_dir, error = function(e) NULL)
-enrichment_ran <- length(list.files(enrichment_plots_dir, pattern = "[.](png|jpg|jpeg)$", ignore.case = TRUE)) > 0 ||
-  (!is.null(pathway_dir) && dir.exists(pathway_dir) && length(list.files(pathway_dir, recursive = TRUE)) > 0)
+enrichment_ran <- dir.exists(enrichment_plots_dir) && length(list.files(enrichment_plots_dir, recursive = TRUE)) > 0
 cat("# GO Enrichment Analysis
 
 ")

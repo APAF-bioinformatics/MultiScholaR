@@ -68,6 +68,23 @@ setMethod(
 
     frozen_protein_matrix[!is.finite(frozen_protein_matrix)] <- NA
 
+    # KIT-242 Part C (VAL-242 OD-1 (c) by parity; the rule of item 1a): a sample with no value is empty in the only
+    # table, so it leaves the table, the DPC EList and the design (cleanDesignMatrix below) before the method runs, with a
+    # notice; a failure of the method stops. A record made before replays with the earlier rule
+    # (`workflowReplayRuleMarkers$protein_normalisation_fallback`).
+    fallback <- workflowReplayRuleMarkers$protein_normalisation_fallback
+    current_rule <- !identical(getOption(fallback$option), fallback$earlier)
+    removed_samples <- character()
+    if (current_rule) {
+      removed_samples <- colnames(frozen_protein_matrix)[colSums(!is.na(frozen_protein_matrix)) == 0]
+      if (length(removed_samples)) {
+        frozen_protein_matrix <- frozen_protein_matrix[, setdiff(colnames(frozen_protein_matrix), removed_samples), drop = FALSE]
+        rlang::warn(sprintf(paste("Samples %s have no value in the protein table and were removed from the table, the design",
+          "and the quantified EList before between-sample normalisation."), paste(removed_samples, collapse = ", ")),
+          class = "omics_normalisation_sample_removed", sample = removed_samples)
+      }
+    }
+
     normalised_frozen_protein_matrix <- frozen_protein_matrix
 
     print(paste0("normalisation_method = ", normalisation_method))
@@ -80,7 +97,12 @@ setMethod(
       scale = "normalizeMedianAbsValues"
     )
     if (!is.null(normaliser)) {
-      normalised_frozen_protein_matrix <- resolveProtLimmaNormalizer(normaliser)(frozen_protein_matrix)
+      normalised_frozen_protein_matrix <- if (!current_rule) resolveProtLimmaNormalizer(normaliser)(frozen_protein_matrix) else
+        tryCatch(resolveProtLimmaNormalizer(normaliser)(frozen_protein_matrix), error = function(e) {
+          abortOmicsNormalisation("protein_quant_table", "normaliser_error", normalisation_method, sprintf(paste("Between-sample",
+            "normalisation (%s) failed on the protein table: %s. The step was not completed."), normalisation_method,
+            conditionMessage(e)), parent = e)
+        })
     }
 
     normalised_frozen_protein_matrix[!is.finite(normalised_frozen_protein_matrix)] <- NA
@@ -98,6 +120,17 @@ setMethod(
     # observation counts are kept as quantified (as the RUV-III correction mode keeps them). `none` leaves the
     # results untouched.
     limpa_results <- theObject@args$limpa_dpc_quant_results
+    # KIT-242 Part C: the samples removed from the table leave the EList too (limma's EList subsetting keeps its matrices
+    # aligned), whatever the method.
+    if (length(removed_samples) && is.list(limpa_results) && !is.null(limpa_results$quantified_elist)) {
+      elist <- limpa_results$quantified_elist
+      kept_samples <- setdiff(colnames(elist$E), removed_samples)
+      limpa_results$quantified_elist <- if (inherits(elist, "EList")) elist[, kept_samples] else {
+        elist$E <- elist$E[, kept_samples, drop = FALSE]
+        elist
+      }
+      theObject@args$limpa_dpc_quant_results <- limpa_results
+    }
     if (!identical(normalisation_method, "none") && is.list(limpa_results) &&
         !is.null(limpa_results$quantified_elist)) {
       if (!is.null(normaliser)) {

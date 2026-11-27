@@ -1,0 +1,73 @@
+pattern_id	alternative	observed_n	observed	na_on_missing	predicted_n	agrees
+lipid_msdial	whole	13	Caffeine_d9 | Caffeine-ISTD | CIS-ACONITIC ACID | HIS-LEU | IS_Caffeine | IS-Leucine | w/o MS2: Alanine | w/o MS2: Citric acid | w/o MS2: Lactic acid | w/o MS2: Serine | w/o MS2: Valine | w/o MS2:Glucose | w/o MS2:IS_Caffeine	TRUE	13	TRUE
+lipid_msdial	^IS_	1	IS_Caffeine	TRUE	1	TRUE
+lipid_msdial	_d[0-9]+$	1	Caffeine_d9	TRUE	1	TRUE
+lipid_msdial	ISTD	1	Caffeine-ISTD	TRUE	1	TRUE
+lipid_msdial	IS-	3	CIS-ACONITIC ACID | HIS-LEU | IS-Leucine	TRUE	3	TRUE
+lipid_msdial	w/o MS2:	7	w/o MS2: Alanine | w/o MS2: Citric acid | w/o MS2: Lactic acid | w/o MS2: Serine | w/o MS2: Valine | w/o MS2:Glucose | w/o MS2:IS_Caffeine	TRUE	7	TRUE
+lipid_progenesis	whole	2	Caffeine-ISTD | IS_Caffeine	TRUE	2	TRUE
+lipid_progenesis	^IS_	1	IS_Caffeine	TRUE	NA	NA
+lipid_progenesis	ISTD	1	Caffeine-ISTD	TRUE	NA	NA
+lipid_xcms	whole	2	Caffeine-ISTD | IS_Caffeine	TRUE	2	TRUE
+lipid_xcms	^IS_	1	IS_Caffeine	TRUE	NA	NA
+lipid_xcms	ISTD	1	Caffeine-ISTD	TRUE	NA	NA
+lipid_compound_discoverer	whole	2	Caffeine-ISTD | IS_Caffeine	TRUE	2	TRUE
+lipid_compound_discoverer	^IS_	1	IS_Caffeine	TRUE	NA	NA
+lipid_compound_discoverer	ISTD	1	Caffeine-ISTD	TRUE	NA	NA
+lipid_compound_discoverer	Internal	0		TRUE	NA	NA
+lipid_lipidsearch	whole	2	Caffeine-ISTD | IS_Caffeine	TRUE	2	TRUE
+lipid_lipidsearch	^IS_	1	IS_Caffeine	TRUE	NA	NA
+lipid_lipidsearch	ISTD	1	Caffeine-ISTD	TRUE	NA	NA
+lipid_lipidsearch	Internal	0		TRUE	NA	NA
+lipid_lipidsearch	_IS	0		TRUE	NA	NA
+lipid_custom	whole	0		TRUE	0	TRUE
+metab_msdial	whole	13	Caffeine_d9 | Caffeine-ISTD | CIS-ACONITIC ACID | HIS-LEU | IS_Caffeine | IS-Leucine | w/o MS2: Alanine | w/o MS2: Citric acid | w/o MS2: Lactic acid | w/o MS2: Serine | w/o MS2: Valine | w/o MS2:Glucose | w/o MS2:IS_Caffeine	TRUE	13	TRUE
+metab_msdial	^IS_	1	IS_Caffeine	TRUE	1	TRUE
+metab_msdial	_d[0-9]+$	1	Caffeine_d9	TRUE	1	TRUE
+metab_msdial	ISTD	1	Caffeine-ISTD	TRUE	1	TRUE
+metab_msdial	IS-	3	CIS-ACONITIC ACID | HIS-LEU | IS-Leucine	TRUE	3	TRUE
+metab_msdial	w/o MS2:	7	w/o MS2: Alanine | w/o MS2: Citric acid | w/o MS2: Lactic acid | w/o MS2: Serine | w/o MS2: Valine | w/o MS2:Glucose | w/o MS2:IS_Caffeine	TRUE	7	TRUE
+metab_progenesis	whole	2	Caffeine-ISTD | IS_Caffeine	TRUE	2	TRUE
+metab_progenesis	^IS_	1	IS_Caffeine	TRUE	NA	NA
+metab_progenesis	ISTD	1	Caffeine-ISTD	TRUE	NA	NA
+metab_xcms	whole	2	Caffeine-ISTD | IS_Caffeine	TRUE	2	TRUE
+metab_xcms	^IS_	1	IS_Caffeine	TRUE	NA	NA
+metab_xcms	ISTD	1	Caffeine-ISTD	TRUE	NA	NA
+metab_compound_discoverer	whole	2	Caffeine-ISTD | IS_Caffeine	TRUE	2	TRUE
+metab_compound_discoverer	^IS_	1	IS_Caffeine	TRUE	NA	NA
+metab_compound_discoverer	ISTD	1	Caffeine-ISTD	TRUE	NA	NA
+metab_compound_discoverer	Internal	0		TRUE	NA	NA
+metab_custom	whole	0		TRUE	0	TRUE
+option_base	whole	13	Caffeine_d9 | Caffeine-ISTD | CIS-ACONITIC ACID | HIS-LEU | IS_Caffeine | IS-Leucine | w/o MS2: Alanine | w/o MS2: Citric acid | w/o MS2: Lactic acid | w/o MS2: Serine | w/o MS2: Valine | w/o MS2:Glucose | w/o MS2:IS_Caffeine	TRUE	13	TRUE
+option_base	^IS_	1	IS_Caffeine	TRUE	1	TRUE
+option_base	_d[0-9]+$	1	Caffeine_d9	TRUE	1	TRUE
+option_base	ISTD	1	Caffeine-ISTD	TRUE	1	TRUE
+option_base	IS-	3	CIS-ACONITIC ACID | HIS-LEU | IS-Leucine	TRUE	3	TRUE
+option_base	w/o MS2:	7	w/o MS2: Alanine | w/o MS2: Citric acid | w/o MS2: Lactic acid | w/o MS2: Serine | w/o MS2: Valine | w/o MS2:Glucose | w/o MS2:IS_Caffeine	TRUE	7	TRUE
+option_a	whole	6	Caffeine_d9 | Caffeine-ISTD | CIS-ACONITIC ACID | HIS-LEU | IS_Caffeine | IS-Leucine	TRUE	6	TRUE
+option_a	^IS_	1	IS_Caffeine	TRUE	NA	NA
+option_a	_d[0-9]+$	1	Caffeine_d9	TRUE	NA	NA
+option_a	ISTD	1	Caffeine-ISTD	TRUE	NA	NA
+option_a	IS-	3	CIS-ACONITIC ACID | HIS-LEU | IS-Leucine	TRUE	NA	NA
+option_b	whole	4	Caffeine_d9 | Caffeine-ISTD | IS_Caffeine | IS-Leucine	TRUE	4	TRUE
+option_b	^IS_	1	IS_Caffeine	TRUE	NA	NA
+option_b	_d[0-9]+$	1	Caffeine_d9	TRUE	NA	NA
+option_b	ISTD	1	Caffeine-ISTD	TRUE	NA	NA
+option_b	^IS-	1	IS-Leucine	TRUE	NA	NA
+option_c	whole	5	Caffeine_d9 | Caffeine-ISTD | IS_Caffeine | IS-Leucine | PC 15:0_18:1(d7)	TRUE	5	TRUE
+option_c	^IS_	1	IS_Caffeine	TRUE	NA	NA
+option_c	_d[0-9]+$	1	Caffeine_d9	TRUE	NA	NA
+option_c	ISTD	1	Caffeine-ISTD	TRUE	NA	NA
+option_c	^IS-	1	IS-Leucine	TRUE	NA	NA
+option_c	\(d[0-9]+\)	1	PC 15:0_18:1(d7)	TRUE	NA	NA
+option_c_hyphen	whole	6	Caffeine_d9 | Caffeine-d9 | Caffeine-ISTD | IS_Caffeine | IS-Leucine | PC 15:0_18:1(d7)	TRUE	6	TRUE
+option_c_hyphen	^IS_	1	IS_Caffeine	TRUE	NA	NA
+option_c_hyphen	[_-]d[0-9]+$	2	Caffeine_d9 | Caffeine-d9	TRUE	NA	NA
+option_c_hyphen	ISTD	1	Caffeine-ISTD	TRUE	NA	NA
+option_c_hyphen	^IS-	1	IS-Leucine	TRUE	NA	NA
+option_c_hyphen	\(d[0-9]+\)	1	PC 15:0_18:1(d7)	TRUE	NA	NA
+option_e_on_c	whole	6	Caffeine_d9 | Caffeine-ISTD | IS_Caffeine | IS-Leucine | PC 15:0_18:1(d7) | w/o MS2:IS_Caffeine	TRUE	6	TRUE
+option_e_on_c	^((w/o|no) MS2: ?|low score: )?IS[_-]	3	IS_Caffeine | IS-Leucine | w/o MS2:IS_Caffeine	TRUE	NA	NA
+option_e_on_c	_d[0-9]+$	1	Caffeine_d9	TRUE	NA	NA
+option_e_on_c	ISTD	1	Caffeine-ISTD	TRUE	NA	NA
+option_e_on_c	\(d[0-9]+\)	1	PC 15:0_18:1(d7)	TRUE	NA	NA

@@ -680,7 +680,10 @@ test_that("core-only (Q-87, Q-109): the final-QC PCA through each binding is the
 
 test_that("core-only (Q-88, Q-110): a failing in-process run is notified as an error and leaves RUV incomplete (metab)", {
     error <- normCoreRun("metab", "error", core = TRUE)
-    expect_identical(error$notes[[1L]], "[error] Error: kit105 w2: the RUV optimisation is refused")
+    # KIT-260 (VAL-241, OD-2 (b); stored expectation approved by file): the ITSD step's notification comes first.
+    expect_identical(error$notes[[1L]], paste("[message] Internal-standard normalisation used 2 (LCMS_Pos) and 2 (GCMS) rows",
+        "as internal standards and removed them; the log names them."))
+    expect_identical(error$notes[[2L]], "[error] Error: kit105 w2: the RUV optimisation is refused")
     expect_false(error$flags[["ruv_complete"]])
 })
 

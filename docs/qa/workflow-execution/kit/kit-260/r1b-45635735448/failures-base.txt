@@ -1,0 +1,115 @@
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 I02 (record): an older project's record carries the note, read from its stored states (metab)
+kind: failure
+message:
+  Expected `step$outcomes$itsd_note` to be identical to `KIT260_NOTE`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('This project was imported with an internal-standard pattern that also matches features MS-DIAL annotated without MS/MS, or names containing \'IS-\' in capitals; such features were used as internal standards and removed (assay A1, 9 rows; assay A2, 9 rows).')
+  
+  metab
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 I02 (record): an older project's record carries the note, read from its stored states (metab)
+kind: failure
+message:
+  Expected `unlist(step$outcomes$itsd_features_per_assay$A1)` to have length 13.
+  Actual length: 0.
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 I02 (study parameters): an older project's study-parameters file carries the note (metab)
+kind: failure
+message:
+  Expected `sum(trimws(lines) == paste("* Note:", KIT260_NOTE))` to be identical to `if (identical(case, "legacy")) 1L else 0L`.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  metab legacy
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 I02 (report): an older project's report carries the note (metab)
+kind: failure
+message:
+  Expected `report$note` to be identical to `KIT260_NOTE`.
+  Differences:
+  `actual` is a logical vector (NA)
+  `expected` is a character vector ('This project was imported with an internal-standard pattern that also matches features MS-DIAL annotated without MS/MS, or names containing \'IS-\' in capitals; such features were used as internal standards and removed (assay A1, 9 rows; assay A2, 9 rows).')
+  
+  metab
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 I02 (report): an older project's report carries the note (metab)
+kind: failure
+message:
+  Expected `grepl(KIT260_NOTE, report$method, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  metab
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 I02 (record): an older project's record carries the note, read from its stored states (lipid)
+kind: failure
+message:
+  Expected `step$outcomes$itsd_note` to be identical to `KIT260_NOTE`.
+  Differences:
+  `actual` is NULL
+  `expected` is a character vector ('This project was imported with an internal-standard pattern that also matches features MS-DIAL annotated without MS/MS, or names containing \'IS-\' in capitals; such features were used as internal standards and removed (assay A1, 9 rows; assay A2, 9 rows).')
+  
+  lipid
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 I02 (record): an older project's record carries the note, read from its stored states (lipid)
+kind: failure
+message:
+  Expected `unlist(step$outcomes$itsd_features_per_assay$A1)` to have length 13.
+  Actual length: 0.
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 I02 (study parameters): an older project's study-parameters file carries the note (lipid)
+kind: failure
+message:
+  Expected `sum(trimws(lines) == paste("* Note:", KIT260_NOTE))` to be identical to `if (identical(case, "legacy")) 1L else 0L`.
+  Differences:
+    `actual`: 0
+  `expected`: 1
+  
+  lipid legacy
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 I02 (report): an older project's report carries the note (lipid)
+kind: failure
+message:
+  Expected `report$note` to be identical to `KIT260_NOTE`.
+  Differences:
+  `actual` is a logical vector (NA)
+  `expected` is a character vector ('This project was imported with an internal-standard pattern that also matches features MS-DIAL annotated without MS/MS, or names containing \'IS-\' in capitals; such features were used as internal standards and removed (assay A1, 9 rows; assay A2, 9 rows).')
+  
+  lipid
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 I02 (report): an older project's report carries the note (lipid)
+kind: failure
+message:
+  Expected `grepl(KIT260_NOTE, report$method, fixed = TRUE)` to be TRUE.
+  Differences:
+  `actual`:   FALSE
+  `expected`: TRUE 
+  
+  lipid
+
+file: test-kit260-itsd-default-pattern.R
+test: KIT-260 I05: a record from a build before KIT-260 whose ITSD used standards replays with identical values
+kind: error
+message:
+  Error in `testthat::local_mocked_bindings(omicsItsdRowsFromStates = function(...) list(), .package = "MultiScholaR")`: Can't find binding for `omicsItsdRowsFromStates`
+trace (first lines):
+      ▆
+   1. └─base::eval(...)
+   2.   └─base::eval(...)
+   3.     └─testthat::local_mocked_bindings(omicsItsdRowsFromStates = function(...) list(), .package = "MultiScholaR") at test-kit260-itsd-default-pattern.R:622:5
+   4.       └─cli::cli_abort("Can't find binding for {.arg {missing}}")
+   5.         └─rlang::abort(...)
+

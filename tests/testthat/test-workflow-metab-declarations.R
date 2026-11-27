@@ -44,7 +44,8 @@ test_that("KIT-032: the metabolomics declarations are registered with the units,
     # The pre-pass statistics the step map records: the per-assay quantile and the mean standard factor.
     expect_named(declarations$metab_intensity_filter$global_statistics, "min_metabolite_intensity_threshold")
     expect_named(declarations$metab_itsd_normalisation$global_statistics, "mean_standard_factor")
-    expect_identical(declarations$metab_itsd_normalisation$fixed, list(method = "ITSD"))
+    # KIT-242 (VAL-303 (2)): the internal-standard marker joins the ITSD declaration's fixed constants.
+    expect_identical(declarations$metab_itsd_normalisation$fixed, list(method = "ITSD", itsd_outcome = "per_assay"))
     for (name in c("metab_da_output", "metab_da_contrast")) {
         expect_identical(declarations[[name]]$fixed, list(eBayes_trend = TRUE, eBayes_robust = TRUE))
         expect_null(declarations[[name]]$output_class)
@@ -135,7 +136,7 @@ test_that("KIT-032: the metabolomics journey on the owner commits every state wi
     expect_identical(decodeWorkflowRecordValue(ruv$manual_k$value), 1L)
     expect_identical(by_state$metab_ruv_corrected$outcomes$k, 2L)
     expect_identical(length(by_state$metab_ruv_corrected$outcomes$k_per_assay), 2L)
-    expect_true(by_state$metab_itsd_norm$outcomes$itsd_applied)
+    expect_false(by_state$metab_itsd_norm$outcomes$itsd_applied)  # KIT-242 (owner 2026-11-27, VAL-373 (Q-B)): no standard matched
     expect_identical(by_state$metab_itsd_norm$step_label, "5_ITSD_Normalised")
     da <- record$analyses$differential_abundance
     expect_identical(da$operation, "metab_da_contrast")
@@ -185,7 +186,7 @@ test_that("KIT-032: the metabolomics journey on the owner commits every state wi
         num_neg_ctrl = 0L, s4_de_q_val_thresh = 0.1, intensity_cutoff_percentile = 5, log_transform_offset = 2,
         ruv_applied = FALSE, itsd_applied = FALSE, qvalue_threshold = 0.01, ruv_grouping_variable = "x"), list())
     expect_identical(overlay$itsd_aggregation, "median")
-    expect_true(overlay$itsd_applied)
+    expect_false(overlay$itsd_applied)  # KIT-242 (VAL-373 (Q-B)): no standard matched, so the overlay says not applied
     expect_identical(overlay$normalisation_method, "cyclicloess")
     expect_identical(overlay$best_k, 2L)
     expect_true(overlay$ruv_applied)

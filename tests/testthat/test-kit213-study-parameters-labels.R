@@ -331,7 +331,8 @@ k213ProtJourney <- function() {
                 up_cutoff = 0, down_cutoff = 0, q_cutoff = 0.05, correction_method = "gSCS", enable_organism_filter = FALSE),
             paths))))
     })
-    expect_identical(manager$current_state, "enrichment_completed", info = "enrichment precondition")
+    # KIT-216 (VAL-175; edit allowed by VAL-372 (1)): the enrichment is a product of the table; the head stays the table.
+    expect_false(is.null(diaEnrichmentProduct(manager)), info = "enrichment precondition")
     dirs <- k207Dirs(file.path(root, "project"), "proteomics")
     rec <- k207Save(workflow, "proteomics", dirs)
     k213Result(dirs, "proteomics", manager, root, rec)

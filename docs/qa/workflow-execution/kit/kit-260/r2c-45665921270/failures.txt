@@ -1,0 +1,3049 @@
+# test-prot-norm-core.R blocks left out (identical on both sides); blocks cut at 3,000 characters
+file: test-omic-summary-module.R
+test: (b) lipid_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData f572474d1e99a9b6>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  + "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData 5093d18fc8ce6eca>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+    "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+  
+  lipid_main save calls
+
+file: test-omic-summary-module.R
+test: (b) lipid_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/lipidomics/features_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/features_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/integration_input.json"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/samples.parquet"
+    "integration/lipidomics_kit108_final_s4.RDS"
+    "source/analysis_record.json"
+  
+      actual      | expected       
+  [1] "<present>" | "<present>" [1]
+  [2] "<present>" | "<present>" [2]
+  [3] "<present>" -                
+  [4] "<present>" -                
+  [5] "<present>" -                
+  [6] "<present>" -                
+  [7] "<present>" -                
+  [8] "<present>" -                
+  
+  lipid_main save files
+
+file: test-omic-summary-module.R
+test: (b) lipid_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)`:   "lipidomics" "lipidomics_kit108_final_s4.RDS"
+  `names(expected)`:              "lipidomics_kit108_final_s4.RDS"
+  
+  actual vs expected
+  - lipidomics"<present>"
+  - lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData f572474d1e99a9b6"
+  + lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData 5093d18fc8ce6eca"
+  
+  lipid_main save integration
+
+file: test-omic-summary-module.R
+test: (b) lipid_variants: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData f572474d1e99a9b6>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  + "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData 5093d18fc8ce6eca>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+    "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+  
+  lipid_variants save_record_fails calls
+
+file: test-omic-summary-module.R
+test: (b) lipid_variants: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/lipidomics/features_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/features_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/integration_input.json"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/samples.parquet"
+    "integration/lipidomics_kit108_final_s4.RDS"
+  
+      actual      | expected       
+  [1] "<present>" | "<present>" [1]
+  [2] "<present>" -                
+  [3] "<present>" -                
+  [4] "<present>" -                
+  [5] "<present>" -                
+  [6] "<present>" -                
+  [7] "<present>" -                
+  
+  lipid_variants save_record_fails files
+
+file: test-omic-summary-module.R
+test: (b) lipid_variants: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)`:   "lipidomics" "lipidomics_kit108_final_s4.RDS"
+  `names(expected)`:              "lipidomics_kit108_final_s4.RDS"
+  
+  actual vs expected
+  - lipidomics"<present>"
+  - lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData f572474d1e99a9b6"
+  + lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData 5093d18fc8ce6eca"
+  
+  lipid_variants save_record_fails integration
+
+file: test-omic-summary-module.R
+test: (b) lipid_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData 4befd000c00c9e37>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  + "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData 0c6c2c4042cdbee7>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+    "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+    "omicsManagedProduct(operation=lipid_integration_export, parameters=path:<ROOT>/integration/lipidomics_kit108_final_s4.RDS;state_name:lipid_correlation_filtered)"
+  
+  lipid_managed save calls
+
+file: test-omic-summary-module.R
+test: (b) lipid_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/lipidomics/features_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/features_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/integration_input.json"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/samples.parquet"
+    "integration/lipidomics_kit108_final_s4.RDS"
+    "source/analysis_record.json"
+  
+      actual      | expected       
+  [1] "<present>" | "<present>" [1]
+  [2] "<present>" | "<present>" [2]
+  [3] "<present>" -                
+  [4] "<present>" -                
+  [5] "<present>" -                
+  [6] "<present>" -                
+  [7] "<present>" -                
+  [8] "<present>" -                
+  
+  lipid_managed save files
+
+file: test-omic-summary-module.R
+test: (b) lipid_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)`:   "lipidomics" "lipidomics_kit108_final_s4.RDS"
+  `names(expected)`:              "lipidomics_kit108_final_s4.RDS"
+  
+  actual vs expected
+  - lipidomics"<present>"
+  - lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData f572474d1e99a9b6"
+  + lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData 5093d18fc8ce6eca"
+  
+  lipid_managed save integration
+
+file: test-omic-summary-module.R
+test: (b) metab_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full metabolomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<MetaboliteAssayData 1002f2aa54ef0fb8>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  + "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full metabolomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<MetaboliteAssayData 075de31ac869b80e>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+    "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+  
+  metab_main save calls
+
+file: test-omic-summary-module.R
+test: (b) metab_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/metabolomics/features_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/features_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_kit108_final_s4.RDS"
+    "source/analysis_record.json"
+  
+      actual      | expected       
+  [1] "<present>" | "<present>" [1]
+  [2] "<present>" | "<present>" [2]
+  [3] "<present>" -                
+  [4] "<present>" -                
+  [5] "<present>" -                
+  [6] "<present>" -                
+  [7] "<present>" -                
+  [8] "<present>" -                
+  
+  metab_main save files
+
+file: test-omic-summary-module.R
+test: (b) metab_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)`:   "metabolomics" "metabolomics_kit108_final_s4.RDS"
+  `names(expected)`:                "metabolomics_kit108_final_s4.RDS"
+  
+  actual vs expected
+  - metabolomics"<present>"
+  - metabolomics_kit108_final_s4.RDS"<RDS> MetaboliteAssayData 1002f2aa54ef0fb8"
+  + metabolomics_kit108_final_s4.RDS"<RDS> MetaboliteAssayData 075de31ac869b80e"
+  
+  metab_main save integration
+
+file: test-omic-summary-module.R
+test: (b) metab_variants: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full metabolomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<MetaboliteAssayData 1002f2aa54ef0fb8>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  + "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full metabolomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<MetaboliteAssayData 075de31ac869b80e>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+    "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+  
+  metab_variants save_record_fails calls
+
+file: test-omic-summary-module.R
+test: (b) metab_variants: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/metabolomics/features_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/features_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_kit108_final_s4.RDS"
+  
+      actual      | expected       
+  [1] "<present>" | "<present>" [1]
+  [2] "<present>" -                
+  [3] "<present>" -                
+  [4] "<present>" -                
+  [5] "<present>" -                
+  [6] "<present>" -                
+  [7] "<present>" -                
+  
+  metab_variants save_record_fails files
+
+file: test-omic-summary-module.R
+test: (b) metab_variants: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)`:   "metabolomics" "metabolomics_kit108_final_s4.RDS"
+  `names(expected)`:                "metabolomics_kit108_final_s4.RDS"
+  
+  actual vs expected
+  - metabolomics"<present>"
+  - metabolomics_kit108_final_s4.RDS"<RDS> MetaboliteAssayData 1002f2aa54ef0fb8"
+  + metabolomics_kit108_final_s4.RDS"<RDS> MetaboliteAssayData 075de31ac869b80e"
+  
+  metab_variants save_record_fails integration
+
+file: test-omic-summary-module.R
+test: (b) metab_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual vs expected
+  - "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full metabolomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<MetaboliteAssayData 38191ee69d65fa87>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  + "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full metabolomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<MetaboliteAssayData 9ed530ceceb0a1e7>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+    "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+    "omicsManagedProduct(operation=metab_integration_export, parameters=path:<ROOT>/integration/metabolomics_kit108_final_s4.RDS;state_name:metab_correlation_filtered)"
+  
+  metab_managed save calls
+
+file: test-omic-summary-module.R
+test: (b) metab_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/metabolomics/features_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/features_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_kit108_final_s4.RDS"
+    "source/analysis_record.json"
+  
+      actual      | expected       
+  [1] "<present>" | "<present>" [1]
+  [2] "<present>" | "<present>" [2]
+  [3] "<present>" -                
+  [4] "<present>" -                
+  [5] "<present>" -                
+  [6] "<present>" -                
+  [7] "<present>" -                
+  [8] "<present>" -                
+  
+  metab_managed save files
+
+file: test-omic-summary-module.R
+test: (b) metab_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)`:   "metabolomics" "metabolomics_kit108_final_s4.RDS"
+  `names(expected)`:                "metabolomics_kit108_final_s4.RDS"
+  
+  actual vs expected
+  - metabolomics"<present>"
+  - metabolomics_kit108_final_s4.RDS"<RDS> MetaboliteAssayData 1002f2aa54ef0fb8"
+  + metabolomics_kit108_final_s4.RDS"<RDS> MetaboliteAssayData 075de31ac869b80e"
+  
+  metab_managed save integration
+
+file: test-omic-summary-module.R
+test: (b) trx_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual[5:11] vs expected[5:11]
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>"1"
+    results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results/transcriptomics/da_genes/ruv_optimization_summary.txt"<present>"
+  - results/transcriptomics/da_genes/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results/transcriptomics/da_genes/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf"<present>"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png"<present>"
+    results/transcriptomics/publication_graphs/Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf"<present>"
+  
+  trx_main da files
+
+file: test-omic-summary-module.R
+test: (b) trx_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/removed_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+  
+  actual vs expected
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/removed_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+  - integration/transcriptomics_normalized_data.tsv"e0e8d896c713261d93c210456cc3fdd074e055df349b25d2502fbaa9ea0fc4b7"
+  + integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+  
+  trx_main save files
+
+file: test-omic-summary-module.R
+test: (b) trx_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>"        "e0e8d896c713261d"
+  `expected`: "7b9d35dbf33331d1"                   
+  
+  trx_main save integration
+
+file: test-omic-summary-module.R
+test: (b) trx_main: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual[9:15] vs expected[9:15]
+    results_summary/transcriptomics/Publication_tables/canonical_correlation_optimization_summary.xlsx"<present>"
+    results_summary/transcriptomics/Publication_tables/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results_summary/transcriptomics/Publication_tables/ruv_normalised_log_values.tsv"83de1dbdd1018161c5ec6c1dac4dc179b0c1d0340fd2fe826d4b3c9b4ae93387"
+  - results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.pdf"<present>"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.png"<present>"
+    results_summary/transcriptomics/QC_figures/ruviii_before_and_after.pdf"<present>"
+  
+  trx_main copy files
+
+file: test-omic-summary-module.R
+test: (b) trx_technical: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual[5:11] vs expected[5:11]
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>"1"
+    results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results/transcriptomics/da_genes/ruv_optimization_summary.txt"<present>"
+  - results/transcriptomics/da_genes/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results/transcriptomics/da_genes/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf"<present>"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png"<present>"
+    results/transcriptomics/publication_graphs/Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf"<present>"
+  
+  trx_technical da files
+
+file: test-omic-summary-module.R
+test: (b) trx_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  actual[5:11] vs expected[5:11]
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>"1"
+    results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results/transcriptomics/da_genes/ruv_optimization_summary.txt"<present>"
+  - results/transcriptomics/da_genes/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results/transcriptomics/da_genes/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf"<present>"
+    results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png"<present>"
+    results/transcriptomics/publication_graphs/Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf"<present>"
+  
+  trx_managed da files
+
+file: test-omic-summary-module.R
+test: (b) trx_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+    "<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>"
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/removed_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+    "scripts/transcriptomics/analysis_record.json"
+    "scripts/transcriptomics/study_parameters.txt"
+  
+  actual vs expected
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>"54"
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/removed_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+  - integration/transcriptomics_normalized_data.tsv"e0e8d896c713261d93c210456cc3fdd074e055df349b25d2502fbaa9ea0fc4b7"
+  + integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+    scripts/transcriptomics/analysis_record.json"<present>"
+    scripts/transcriptomics/study_parameters.txt"<present>"
+  
+  trx_managed save files
+
+file: test-omic-summary-module.R
+test: (b) trx_managed: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>"        "e0e8d896c713261d"
+  `expected`: "7b9d35dbf33331d1"                   
+  
+  trx_managed save integration
+
+file: test-omic-summary-module.R
+test: (b) prot_owner: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "source/analysis_record.json"
+  
+  actual vs expected
+  - integration/proteomics/features_proteomics.parquet"<present>"
+  + integration/proteomics/features_proteomics.tsv"75883219d0f8250f36ff395f55a6146908caccfe715822f0bc2b085398d60c36"
+    integration/proteomics/integration_input.json"<present>"
+  - integration/proteomics/matrix_proteomics.parquet"<present>"
+  + integration/proteomics/matrix_proteomics.tsv"23ab83b3baceaaedefb9a2ba793321cc2e9b638b17f9d0d8a6c8f0d6663c5bc8"
+  - integration/proteomics/samples.parquet"<present>"
+  + integration/proteomics/samples.tsv"8812863972c9c16304791cc9cf303a962eaef1b1cb0a8fd193b98acfd414303d"
+    source/analysis_record.json"<present>"
+  
+  prot_owner save files
+
+file: test-omic-summary-module.R
+test: (b) prot_owner_variants: the outputs, notifications, progress, reactive values, calls, global and files of each step are today's
+kind: failure
+message:
+  Expected `actual[[step]][[field]]` to be identical to `expected[[step]][[field]]`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+  
+  actual vs expected
+  - integration/proteomics/features_proteomics.parquet"<present>"
+  + integration/proteomics/features_proteomics.tsv"75883219d0f8250f36ff395f55a6146908caccfe715822f0bc2b085398d60c36"
+    integration/proteomics/integration_input.json"<present>"
+  - integration/proteomics/matrix_proteomics.parquet"<present>"
+  + integration/proteomics/matrix_proteomics.tsv"23ab83b3baceaaedefb9a2ba793321cc2e9b638b17f9d0d8a6c8f0d6663c5bc8"
+  - integration/proteomics/samples.parquet"<present>"
+  + integration/proteomics/samples.tsv"8812863972c9c16304791cc9cf303a962eaef1b1cb0a8fd193b98acfd414303d"
+  
+  prot_owner_variants save_record_fails files
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "5fb69439ca6f755c340b20d38d5ffec9c5a2061349a7f8c5f198afe98924079f"
+  `expected`: "1ab8a05076a605820dc0d14e237215f9abfaa251d04c7076ca03825877e57dc2"
+  
+  lipid manual run provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "manual") at test-omic-norm-module.R:1582:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1561:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "6c1bc031bc84407f9885c22dd5d36832fbbdda02c0a96bfb9e1ed6e0a4415f0b"
+  `expected`: "0b68624dba919ae6e6852528493ba338d672d75d235b8437c2895e8c6f724bf5"
+  
+  lipid manual skip_correlation provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "manual") at test-omic-norm-module.R:1582:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1561:13
+
+file: test-omic-norm-module.R
+test: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "d675df2b63edd2a834774dd9f4c2261228d6aa35460ae436cda34c966da40c28"
+  `expected`: "6f03ec2fff1c90a3a1728422205f6ebe8d929a0e97a02b42dc0e053b026e5942"
+  
+  lipid manual reset provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "manual") at test-omic-norm-module.R:1582:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1561:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "9424d6af9de6e2ec5323a33ccb1a2f5fd96390ad2597f0734d6d368dbd7aa300"
+  `expected`: "24204497ce33beb525005c4869fd60e6f560a7c1f6eb2293cc928049e1410ba2"
+  
+  metab manual run provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "manual") at test-omic-norm-module.R:1587:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1561:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "a586d6828e1ba97bcd7b3f4fe9161c1480589c1e1b9466d96e843b44950bfc87"
+  `expected`: "667cc9562bd90c598ef04d93d5fe30d6ad1818b89c02f50d86dcfec344a11371"
+  
+  metab manual skip_correlation provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "manual") at test-omic-norm-module.R:1587:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1561:13
+
+file: test-omic-norm-module.R
+test: (b) metab, RUV manual with a manual ITSD selection: run, skip correlation, reset
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "29b24751a67690c1827837ad097d4f5fd5435fa7a9a6e02c57362f505afc2c45"
+  `expected`: "279b01b63aa09b94e9ccaa8e085154e7b281eb0fd48361548782ceead23456e3"
+  
+  metab manual reset provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "manual") at test-omic-norm-module.R:1587:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1561:13
+
+file: test-omic-norm-module.R
+test: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "846c6b2c3242fdcbf84e906b76f7026a87afb5e23dad2c0f4379c586c43445cd"
+  `expected`: "024a3e8b9582da5526ed27f5f48f518ccda26236c0eeb37c4ddd94ad294e955a"
+  
+  lipid automatic run provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "automatic") at test-omic-norm-module.R:1592:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1561:13
+
+file: test-omic-norm-module.R
+test: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "846c6b2c3242fdcbf84e906b76f7026a87afb5e23dad2c0f4379c586c43445cd"
+  `expected`: "024a3e8b9582da5526ed27f5f48f518ccda26236c0eeb37c4ddd94ad294e955a"
+  
+  lipid automatic final_plot provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "automatic") at test-omic-norm-module.R:1592:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1561:13
+
+file: test-omic-norm-module.R
+test: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "846c6b2c3242fdcbf84e906b76f7026a87afb5e23dad2c0f4379c586c43445cd"
+  `expected`: "024a3e8b9582da5526ed27f5f48f518ccda26236c0eeb37c4ddd94ad294e955a"
+  
+  lipid automatic final_plot_failing provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("lipid", "automatic") at test-omic-norm-module.R:1592:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1561:13
+
+file: test-omic-norm-module.R
+test: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "96cbc0f23bdb70283b02662cab7d48cb60b4156c44dde8b167700d06a426e64f"
+  `expected`: "6858408bb39aa5c6a558ccd712b51e5ad5ce9aca6ddf7abd28832b96d50a8848"
+  
+  metab automatic run provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "automatic") at test-omic-norm-module.R:1597:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1561:13
+
+file: test-omic-norm-module.R
+test: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "96cbc0f23bdb70283b02662cab7d48cb60b4156c44dde8b167700d06a426e64f"
+  `expected`: "6858408bb39aa5c6a558ccd712b51e5ad5ce9aca6ddf7abd28832b96d50a8848"
+  
+  metab automatic final_plot provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "automatic") at test-omic-norm-module.R:1597:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1561:13
+
+file: test-omic-norm-module.R
+test: (b, c) metab, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+kind: failure
+message:
+  Expected `actual$captures[[step]][[field]]` to be identical to `frozen$captures[[step]][[field]]`.
+  Differences:
+  `actual`:   "96cbc0f23bdb70283b02662cab7d48cb60b4156c44dde8b167700d06a426e64f"
+  `expected`: "6858408bb39aa5c6a558ccd712b51e5ad5ce9aca6ddf7abd28832b96d50a8848"
+  
+  metab automatic final_plot_failing provenance
+trace (first lines):
+      ▆
+   1. └─expectOmicNormScenario("metab", "automatic") at test-omic-norm-module.R:1597:5
+   2.   └─testthat::expect_identical(...) at test-omic-norm-module.R:1561:13
+
+file: test-workflow-kit-harness.R
+test: KIT-099: the trx corpus takes a declared low-count fraction; the default recipe and corpus are unchanged
+kind: failure
+message:
+  Expected `digest::digest(...)` to be identical to `readRDS(reference)$corpus_manifest_sha256`.
+  Differences:
+  `actual`:   "f2cce109ffad2ffb7c7990284e59b9ed2333d3898365c7ae007b98604ee78f04"
+  `expected`: "775fafb6440ff2ef30cff6722551cfa1a62f5487325e8a3799253dbd331c0e97"
+
+file: test-integration-gui.R
+test: KIT-139: internal standards, features seen once and few samples are stated with their counts
+kind: failure
+message:
+  Expected `facts[[6L]]` to match string "proteomics: 1 features measured in fewer than 3 of the 5 biological samples".
+  Actual text:
+  x | proteomics: 5 runs, one per biological sample; nothing to average.
+trace (first lines):
+       ▆
+    1. ├─shiny::testServer(...) at test-integration-gui.R:441:5
+    2. │ ├─shiny:::withMockContext(...)
+    3. │ │ ├─shiny::isolate(...)
+    4. │ │ │ ├─shiny::..stacktraceoff..(...)
+    5. │ │ │ └─ctx$run(...)
+    6. │ │ │   ├─promises::with_promise_domain(...)
+    7. │ │ │   │ └─domain$wrapSync(expr)
+    8. │ │ │   ├─shiny::withReactiveDomain(...)
+    9. │ │ │   │ └─promises::with_promise_domain(...)
+   10. │ │ │   │   └─domain$wrapSync(expr)
+   11. │ │ │   │     └─base::force(expr)
+
+file: test-omics-summary-core.R
+test: (W3, core side) lipid_main: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual vs expected
+  - "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData f572474d1e99a9b6>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  + "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData 5093d18fc8ce6eca>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+    "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+  
+  lipid_main save calls
+
+file: test-omics-summary-core.R
+test: (W3, core side) lipid_main: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/lipidomics/features_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/features_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/integration_input.json"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/samples.parquet"
+    "integration/lipidomics_kit108_final_s4.RDS"
+    "source/analysis_record.json"
+  
+      actual      | expected       
+  [1] "<present>" | "<present>" [1]
+  [2] "<present>" | "<present>" [2]
+  [3] "<present>" -                
+  [4] "<present>" -                
+  [5] "<present>" -                
+  [6] "<present>" -                
+  [7] "<present>" -                
+  [8] "<present>" -                
+  
+  lipid_main save files
+
+file: test-omics-summary-core.R
+test: (W3, core side) lipid_main: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)`:   "lipidomics" "lipidomics_kit108_final_s4.RDS"
+  `names(expected)`:              "lipidomics_kit108_final_s4.RDS"
+  
+  actual vs expected
+  - lipidomics"<present>"
+  - lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData f572474d1e99a9b6"
+  + lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData 5093d18fc8ce6eca"
+  
+  lipid_main save integration
+
+file: test-omics-summary-core.R
+test: (W3, core side) lipid_variants: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual vs expected
+  - "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData f572474d1e99a9b6>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  + "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData 5093d18fc8ce6eca>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+    "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+  
+  lipid_variants save_record_fails calls
+
+file: test-omics-summary-core.R
+test: (W3, core side) lipid_variants: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/lipidomics/features_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/features_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/integration_input.json"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/samples.parquet"
+    "integration/lipidomics_kit108_final_s4.RDS"
+  
+      actual      | expected       
+  [1] "<present>" | "<present>" [1]
+  [2] "<present>" -                
+  [3] "<present>" -                
+  [4] "<present>" -                
+  [5] "<present>" -                
+  [6] "<present>" -                
+  [7] "<present>" -                
+  
+  lipid_variants save_record_fails files
+
+file: test-omics-summary-core.R
+test: (W3, core side) lipid_variants: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)`:   "lipidomics" "lipidomics_kit108_final_s4.RDS"
+  `names(expected)`:              "lipidomics_kit108_final_s4.RDS"
+  
+  actual vs expected
+  - lipidomics"<present>"
+  - lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData f572474d1e99a9b6"
+  + lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData 5093d18fc8ce6eca"
+  
+  lipid_variants save_record_fails integration
+
+file: test-omics-summary-core.R
+test: (W3, core side) lipid_managed: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual vs expected
+  - "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData 4befd000c00c9e37>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  + "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full lipidomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<LipidomicsAssayData 0c6c2c4042cdbee7>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+    "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+    "omicsManagedProduct(operation=lipid_integration_export, parameters=path:<ROOT>/integration/lipidomics_kit108_final_s4.RDS;state_name:lipid_correlation_filtered)"
+  
+  lipid_managed save calls
+
+file: test-omics-summary-core.R
+test: (W3, core side) lipid_managed: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/lipidomics/features_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/features_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/integration_input.json"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Neg.parquet"
+  - "integration/lipidomics/matrix_lipidomics_LCMS_Pos.parquet"
+  - "integration/lipidomics/samples.parquet"
+    "integration/lipidomics_kit108_final_s4.RDS"
+    "source/analysis_record.json"
+  
+      actual      | expected       
+  [1] "<present>" | "<present>" [1]
+  [2] "<present>" | "<present>" [2]
+  [3] "<present>" -                
+  [4] "<present>" -                
+  [5] "<present>" -                
+  [6] "<present>" -                
+  [7] "<present>" -                
+  [8] "<present>" -                
+  
+  lipid_managed save files
+
+file: test-omics-summary-core.R
+test: (W3, core side) lipid_managed: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)`:   "lipidomics" "lipidomics_kit108_final_s4.RDS"
+  `names(expected)`:              "lipidomics_kit108_final_s4.RDS"
+  
+  actual vs expected
+  - lipidomics"<present>"
+  - lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData f572474d1e99a9b6"
+  + lipidomics_kit108_final_s4.RDS"<RDS> LipidomicsAssayData 5093d18fc8ce6eca"
+  
+  lipid_managed save integration
+
+file: test-omics-summary-core.R
+test: (W3, core side) metab_main: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual vs expected
+  - "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full metabolomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<MetaboliteAssayData 1002f2aa54ef0fb8>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  + "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full metabolomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<MetaboliteAssayData 075de31ac869b80e>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+    "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+  
+  metab_main save calls
+
+file: test-omics-summary-core.R
+test: (W3, core side) metab_main: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/metabolomics/features_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/features_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_kit108_final_s4.RDS"
+    "source/analysis_record.json"
+  
+      actual      | expected       
+  [1] "<present>" | "<present>" [1]
+  [2] "<present>" | "<present>" [2]
+  [3] "<present>" -                
+  [4] "<present>" -                
+  [5] "<present>" -                
+  [6] "<present>" -                
+  [7] "<present>" -                
+  [8] "<present>" -                
+  
+  metab_main save files
+
+file: test-omics-summary-core.R
+test: (W3, core side) metab_main: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)`:   "metabolomics" "metabolomics_kit108_final_s4.RDS"
+  `names(expected)`:                "metabolomics_kit108_final_s4.RDS"
+  
+  actual vs expected
+  - metabolomics"<present>"
+  - metabolomics_kit108_final_s4.RDS"<RDS> MetaboliteAssayData 1002f2aa54ef0fb8"
+  + metabolomics_kit108_final_s4.RDS"<RDS> MetaboliteAssayData 075de31ac869b80e"
+  
+  metab_main save integration
+
+file: test-omics-summary-core.R
+test: (W3, core side) metab_variants: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual vs expected
+  - "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full metabolomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<MetaboliteAssayData 1002f2aa54ef0fb8>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  + "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full metabolomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<MetaboliteAssayData 075de31ac869b80e>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+    "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+  
+  metab_variants save_record_fails calls
+
+file: test-omics-summary-core.R
+test: (W3, core side) metab_variants: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/metabolomics/features_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/features_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_kit108_final_s4.RDS"
+  
+      actual      | expected       
+  [1] "<present>" | "<present>" [1]
+  [2] "<present>" -                
+  [3] "<present>" -                
+  [4] "<present>" -                
+  [5] "<present>" -                
+  [6] "<present>" -                
+  [7] "<present>" -                
+  
+  metab_variants save_record_fails files
+
+file: test-omics-summary-core.R
+test: (W3, core side) metab_variants: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)`:   "metabolomics" "metabolomics_kit108_final_s4.RDS"
+  `names(expected)`:                "metabolomics_kit108_final_s4.RDS"
+  
+  actual vs expected
+  - metabolomics"<present>"
+  - metabolomics_kit108_final_s4.RDS"<RDS> MetaboliteAssayData 1002f2aa54ef0fb8"
+  + metabolomics_kit108_final_s4.RDS"<RDS> MetaboliteAssayData 075de31ac869b80e"
+  
+  metab_variants save_record_fails integration
+
+file: test-omics-summary-core.R
+test: (W3, core side) metab_managed: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual vs expected
+  - "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full metabolomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<MetaboliteAssayData 38191ee69d65fa87>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+  + "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full metabolomics analysis workflow with normalization and DA, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<MetaboliteAssayData 9ed530ceceb0a1e7>, contrasts_tbl=<table 2x3 4323c37e5b4e992a>, workflow_data=<environment>)"
+    "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"
+    "omicsManagedProduct(operation=metab_integration_export, parameters=path:<ROOT>/integration/metabolomics_kit108_final_s4.RDS;state_name:metab_correlation_filtered)"
+  
+  metab_managed save calls
+
+file: test-omics-summary-core.R
+test: (W3, core side) metab_managed: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/metabolomics/features_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/features_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/integration_input.json"
+  - "integration/metabolomics/matrix_metabolomics_GCMS.parquet"
+  - "integration/metabolomics/matrix_metabolomics_LCMS_Pos.parquet"
+  - "integration/metabolomics/samples.parquet"
+    "integration/metabolomics_kit108_final_s4.RDS"
+    "source/analysis_record.json"
+  
+      actual      | expected       
+  [1] "<present>" | "<present>" [1]
+  [2] "<present>" | "<present>" [2]
+  [3] "<present>" -                
+  [4] "<present>" -                
+  [5] "<present>" -                
+  [6] "<present>" -                
+  [7] "<present>" -                
+  [8] "<present>" -                
+  
+  metab_managed save files
+
+file: test-omics-summary-core.R
+test: (W3, core side) metab_managed: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)`:   "metabolomics" "metabolomics_kit108_final_s4.RDS"
+  `names(expected)`:                "metabolomics_kit108_final_s4.RDS"
+  
+  actual vs expected
+  - metabolomics"<present>"
+  - metabolomics_kit108_final_s4.RDS"<RDS> MetaboliteAssayData 1002f2aa54ef0fb8"
+  + metabolomics_kit108_final_s4.RDS"<RDS> MetaboliteAssayData 075de31ac869b80e"
+  
+  metab_managed save integration
+
+file: test-omics-summary-core.R
+test: (W3, core side) trx_main: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/removed_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+  
+  actual vs expected
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/removed_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+  - integration/transcriptomics_normalized_data.tsv"e0e8d896c713261d93c210456cc3fdd074e055df349b25d2502fbaa9ea0fc4b7"
+  + integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+  
+  trx_main save files
+
+file: test-omics-summary-core.R
+test: (W3, core side) trx_main: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>"        "e0e8d896c713261d"
+  `expected`: "7b9d35dbf33331d1"                   
+  
+  trx_main save integration
+
+file: test-omics-summary-core.R
+test: (W3, core side) trx_main: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  actual[9:15] vs expected[9:15]
+    results_summary/transcriptomics/Publication_tables/canonical_correlation_optimization_summary.xlsx"<present>"
+    results_summary/transcriptomics/Publication_tables/de_results_Sera_vs_RPMI.csv"c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b"
+    results_summary/transcriptomics/Publication_tables/ruv_normalised_log_values.tsv"83de1dbdd1018161c5ec6c1dac4dc179b0c1d0340fd2fe826d4b3c9b4ae93387"
+  - results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27"
+  + results_summary/transcriptomics/Publication_tables/top_de_genes.tsv"10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.pdf"<present>"
+    results_summary/transcriptomics/QC_figures/normalization_comparison_grid.png"<present>"
+    results_summary/transcriptomics/QC_figures/ruviii_before_and_after.pdf"<present>"
+  
+  trx_main copy files
+
+file: test-omics-summary-core.R
+test: (W3, core side) trx_managed: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+    "<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>"
+  - "integration/transcriptomics/corrected_transcriptomics.parquet"
+  - "integration/transcriptomics/features_transcriptomics.parquet"
+  - "integration/transcriptomics/integration_input.json"
+  - "integration/transcriptomics/matrix_transcriptomics.parquet"
+  - "integration/transcriptomics/removed_transcriptomics.parquet"
+  - "integration/transcriptomics/samples.parquet"
+    "integration/transcriptomics_normalized_data.tsv"
+    "scripts/transcriptomics/analysis_record.json"
+    "scripts/transcriptomics/study_parameters.txt"
+  
+  actual vs expected
+    <store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>"54"
+  - integration/transcriptomics/corrected_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/features_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/integration_input.json"<present>"
+  - integration/transcriptomics/matrix_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/removed_transcriptomics.parquet"<present>"
+  - integration/transcriptomics/samples.parquet"<present>"
+  - integration/transcriptomics_normalized_data.tsv"e0e8d896c713261d93c210456cc3fdd074e055df349b25d2502fbaa9ea0fc4b7"
+  + integration/transcriptomics_normalized_data.tsv"7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"
+    scripts/transcriptomics/analysis_record.json"<present>"
+    scripts/transcriptomics/study_parameters.txt"<present>"
+  
+  trx_managed save files
+
+file: test-omics-summary-core.R
+test: (W3, core side) trx_managed: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  `names(actual)`:   "transcriptomics" "transcriptomics_normalized_data.tsv"
+  `names(expected)`:                   "transcriptomics_normalized_data.tsv"
+  
+  `actual`:   "<present>"        "e0e8d896c713261d"
+  `expected`: "7b9d35dbf33331d1"                   
+  
+  trx_managed save integration
+
+file: test-omics-summary-core.R
+test: (W4, core side) prot_owner: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+    "source/analysis_record.json"
+  
+  actual vs expected
+  - integration/proteomics/features_proteomics.parquet"<present>"
+  + integration/proteomics/features_proteomics.tsv"75883219d0f8250f36ff395f55a6146908caccfe715822f0bc2b085398d60c36"
+    integration/proteomics/integration_input.json"<present>"
+  - integration/proteomics/matrix_proteomics.parquet"<present>"
+  + integration/proteomics/matrix_proteomics.tsv"23ab83b3baceaaedefb9a2ba793321cc2e9b638b17f9d0d8a6c8f0d6663c5bc8"
+  - integration/proteomics/samples.parquet"<present>"
+  + integration/proteomics/samples.tsv"8812863972c9c16304791cc9cf303a962eaef1b1cb0a8fd193b98acfd414303d"
+    source/analysis_record.json"<present>"
+  
+  prot_owner save files
+
+file: test-omics-summary-core.R
+test: (W4, core side) prot_owner_variants: each entry gives W1 (b)'s notifications, progress, arguments, global and files
+kind: failure
+message:
+  Expected `run$captures[[step]][[field]]` to be identical to `omicsSummaryCoreExpected(case, step, field)`.
+  Differences:
+  names(actual) vs names(expected)
+  - "integration/proteomics/features_proteomics.parquet"
+  + "integration/proteomics/features_proteomics.tsv"
+    "integration/proteomics/integration_input.json"
+  - "integration/proteomics/matrix_proteomics.parquet"
+  + "integration/proteomics/matrix_proteomics.tsv"
+  - "integration/proteomics/samples.parquet"
+  + "integration/proteomics/samples.tsv"
+  
+  actual vs expected
+  - integration/proteomics/features_proteomics.parquet"<present>"
+  + integration/proteomics/features_proteomics.tsv"75883219d0f8250f36ff395f55a6146908caccfe715822f0bc2b085398d60c36"
+    integration/proteomics/integration_input.json"<present>"
+  - integration/proteomics/matrix_proteomics.parquet"<present>"
+  + integration/proteomics/matrix_proteomics.tsv"23ab83b3baceaaedefb9a2ba793321cc2e9b638b17f9d0d8a6c8f0d6663c5bc8"
+  - integration/proteomics/samples.parquet"<present>"
+  + integration/proteomics/samples.tsv"8812863972c9c16304791cc9cf303a962eaef1b1cb0a8fd193b98acfd414303d"
+  
+  prot_owner_variants save_record_fails files
+
+file: test-workflow-operation-registry.R
+test: the registry carries the built-in operations with every fact the execution layer reads
+kind: failure
+message:
+  Expected `names` to be identical to `c(...)`.
+  Differences:
+  actual[1:7] vs expected[1:6]
+    "DA-contrast-output"
+    "da_publication"
+    "enrichment"
+  - "integration_mofa_model"
+    "lipid_between_sample_normalisation"
+    "lipid_composite_figure"
+    "lipid_da_contrast"
+
+file: test-workflow-operation-registry.R
+test: unregistered or malformed operations refuse with the execution layer's class; entries are validated
+kind: failure
+message:
+  Expected `sort(workflowOperationNames())` to be identical to `sort(...)`.
+  Differences:
+  actual[1:7] vs expected[1:6]
+    "DA-contrast-output"
+    "da_publication"
+    "enrichment"
+  - "integration_mofa_model"
+    "lipid_between_sample_normalisation"
+    "lipid_composite_figure"
+    "lipid_da_contrast"
+
+file: test-workflow-omics-binding-steps.R
+test: KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit
+kind: failure
+message:
+  Expected `stripped[[part]]` to be identical to `expected[[part]]`.
+  Differences:
+  actual$lipidomics$inputs[[1]]$sha256 vs expected$lipidomics$inputs[[1]]$sha256
+  - "0277c42d0417078581a8e6f4be316ab7c2d0afe1d4f742ac05da9a776404d8d2"
+  + "dc765573cc92f0806f7e05f47dc93054526e221dc62306773f3a2a9ef0c275f8"
+  
+  actual$lipidomics$inputs[[2]]$sha256 vs expected$lipidomics$inputs[[2]]$sha256
+  - "f64513345927a35a63a86f95f3ec977f575f65e91b446409fbbdc5b1b3976dd8"
+  + "7362bf37081143e370278a1b538fdfb6848e60bd4f1bf26382a87b62fd7e59fc"
+  
+  `actual$lipidomics$steps[[3]]$parameters` is length 3
+  `expected$lipidomics$steps[[3]]$parameters` is length 2
+  
+  `actual$lipidomics$steps[[3]]$parameters[[3]]` is a list
+  `expected$lipidomics$steps[[3]]$parameters[[3]]` is absent
+  
+  `actual$lipidomics$steps[[4]]$parameters` is length 1
+  `expected$lipidomics$steps[[4]]$parameters` is length 0
+  
+  `actual$lipidomics$steps[[4]]$parameters[[1]]` is a list
+  `expected$lipidomics$steps[[4]]$parameters[[1]]` is absent
+  
+  `actual$lipidomics$steps[[6]]$parameters` is length 4
+  `expected$lipidomics$steps[[6]]$parameters` is length 3
+  
+  `actual$lipidomics$steps[[6]]$parameters[[4]]` is a list
+  `expected$lipidomics$steps[[6]]$parameters[[4]]` is absent
+  
+  `actual$lipidomics$steps[[9]]$parameters` is length 10
+  `expected$lipidomics$steps[[9]]$parameters` is length 9
+  
+  `actual$lipidomics$steps[[9]]$parameters[[10]]` is a list
+  `expected$lipidomics$steps[[9]]$parameters[[10]]` is absent
+  
+  actual$metabolomics$inputs[[1]]$sha256 vs expected$metabolomics$inputs[[1]]$sha256
+  - "ff2586bf11cb9e60c7bb9251fcb76cedf9671d0b2bf45cf891112fb64e06f26e"
+  + "383c7dc1cb4dc559629fc4fe2ed490e8252070519e03b1690cd540509c6b2edf"
+  
+  actual$metabolomics$inputs[[2]]$sha256 vs expected$metabolomics$inputs[[2]]$sha256
+  - "e72e8d4f10cf4f58b16df6a50e9f64d4432dc33082db3a26a6795815ac4854ac"
+  + "6391cf5eefef8c1ed00217190b2a4886e38f2a5ccabf7e8b9a4eb58b529d1d04"
+  
+  `actual$metabolomics$steps[[3]]$parameters` is length 3
+  `expected$metabolomics$steps[[3]]$parameters` is length 2
+  
+  `actual$metabolomics$steps[[3]]$parameters[[3]]` is a list
+  `expected$metabolomics$steps[[3]]$parameters[[3]]` is absent
+  
+  `actual$metabolomics$steps[[4]]$parameters` is length 1
+  `expected$metabolomics$steps[[4]]$parameters` is length 0
+  
+  `actual$metabolomics$steps[[4]]$parameters[[1]]` is a list
+  `expected$metabolomics$steps[[4]]$parameters[[1]]` is absent
+  
+  `actual$metabolomics$steps[[6]]$parameters` is length 4
+  `expected$metabolomics$steps[[6]]$parameters` is length 3
+  
+  `actual$metabolomics$steps[[6]]$parameters[[4]]` is a list
+  `expected$metabolomics$steps[[6]]$parameters[[4]]` is absent
+  
+  `actual$metabolomics$steps[[9]]$parameters` is length 10
+  `expected$metabolomics$steps[[9]]$parameters` is length 9
+  
+file: test-workflow-metab-declarations.R
+test: KIT-032: the metabolomics declarations are registered with the units, merges and statistics of the step map
+kind: failure
+message:
+  Expected `declarations$metab_itsd_normalisation$fixed` to be identical to `list(method = "ITSD")`.
+  Differences:
+  `actual` is length 2
+  `expected` is length 1
+  
+  `names(actual)`:   "method" "itsd_outcome"
+  `names(expected)`: "method"               
+  
+  `actual$itsd_outcome` is a character vector ('per_assay')
+  `expected$itsd_outcome` is absent
+
+file: test-workflow-lipid-declarations.R
+test: KIT-031: the lipidomics declarations are registered with the units, merges and statistics of the step map
+kind: failure
+message:
+  Expected `declarations$lipid_itsd_normalisation$fixed` to be identical to `list(method = "ITSD")`.
+  Differences:
+  `actual` is length 2
+  `expected` is length 1
+  
+  `names(actual)`:   "method" "itsd_outcome"
+  `names(expected)`: "method"               
+  
+  `actual$itsd_outcome` is a character vector ('per_assay')
+  `expected$itsd_outcome` is absent
+
+file: test-workflow-omics-owner.R
+test: KIT-070: the metadata reader's class list is every declared assay class
+kind: failure
+message:
+  Expected `workflowDeclaredClassNames("assay")` to have the same values as `c(...)`.
+  Actual: "PeptideQuantitativeData", "ProteinQuantitativeData", "LipidomicsAssayData", "MetaboliteAssayData", "TranscriptomicsAssayData", "IntegrationViewsData"
+  Expected: "PeptideQuantitativeData", "ProteinQuantitativeData", "LipidomicsAssayData", "MetaboliteAssayData", "TranscriptomicsAssayData"
+  Needs: "IntegrationViewsData"
+
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current$registry` to be identical to `frozen$registry`.
+  Differences:
+  `actual$lipidomics$lipid_duplicate_resolution$declaration$fixed` is a list
+  `expected$lipidomics$lipid_duplicate_resolution$declaration$fixed` is NULL
+  
+  actual$lipidomics$lipid_intensity_filter$declaration$global_statistics vs expected$lipidomics$lipid_intensity_filter$declaration$global_statistics
+  - min_lipid_intensity_threshold"the percentile of the design's sample intensities of one assay table, computed once per assay before any row"
+  + min_lipid_intensity_threshold"the percentile of every intensity of one assay table, computed once per assay before any row"
+  
+  `actual$lipidomics$lipid_intensity_filter$declaration$fixed` is a list
+  `expected$lipidomics$lipid_intensity_filter$declaration$fixed` is NULL
+  
+  `actual$lipidomics$lipid_itsd_normalisation$declaration$fixed` is length 2
+  `expected$lipidomics$lipid_itsd_normalisation$declaration$fixed` is length 1
+  
+  names(actual$lipidomics$lipid_itsd_normalisation$declaration$fixed) vs names(expected$lipidomics$lipid_itsd_normalisation$declaration$fixed)
+    "method"
+  - "itsd_outcome"
+  
+  `actual$lipidomics$lipid_itsd_normalisation$declaration$fixed$itsd_outcome` is a character vector ('per_assay')
+  `expected$lipidomics$lipid_itsd_normalisation$declaration$fixed$itsd_outcome` is absent
+  
+  `actual$lipidomics$lipid_ruv$declaration$fixed` is a list
+  `expected$lipidomics$lipid_ruv$declaration$fixed` is NULL
+  
+  `actual$metabolomics$metab_duplicate_resolution$declaration$fixed` is a list
+  `expected$metabolomics$metab_duplicate_resolution$declaration$fixed` is NULL
+  
+  actual$metabolomics$metab_intensity_filter$declaration$global_statistics vs expected$metabolomics$metab_intensity_filter$declaration$global_statistics
+  - min_metabolite_intensity_threshold"the percentile of the design's sample intensities of one assay table, computed once per assay before any row"
+  + min_metabolite_intensity_threshold"the percentile of every intensity of one assay table, computed once per assay before any row"
+  
+  `actual$metabolomics$metab_intensity_filter$declaration$fixed` is a list
+  `expected$metabolomics$metab_intensity_filter$declaration$fixed` is NULL
+  
+  `actual$metabolomics$metab_itsd_normalisation$declaration$fixed` is length 2
+  `expected$metabolomics$metab_itsd_normalisation$declaration$fixed` is length 1
+  
+  names(actual$metabolomics$metab_itsd_normalisation$declaration$fixed) vs names(expected$metabolomics$metab_itsd_normalisation$declaration$fixed)
+    "method"
+  - "itsd_outcome"
+  
+  `actual$metabolomics$metab_itsd_normalisation$declaration$fixed$itsd_outcome` is a character vector ('per_assay')
+  `expected$metabolomics$metab_itsd_normalisation$declaration$fixed$itsd_outcome` is absent
+  
+  `actual$metabolomics$metab_ruv$d
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@lipid_data$LCMS_Pos$WT_1_1[19:31] vs expected@lipid_data$LCMS_Pos$WT_1_1[19:31]
+    10182.0512290273327
+    6501.7292680175588
+    8409.3560169560060
+  - 61398.0101114220161
+  + 61398.0101114220233
+    30134.7811826025682
+    45281.3747453715332
+    83923.6342341161071
+    4552.7223749052537
+    5278.1871134603443
+  - 363226.3843284789473
+  + 363226.3843284790055
+    8652.8430063848518
+    6769.9927216237911
+    12543.2360247010056
+  
+  actual@lipid_data$LCMS_Pos$WT_1_1[37:43] vs expected@lipid_data$LCMS_Pos$WT_1_1[37:43]
+    72136.9081983713404
+    9527.2386386366052
+    8564.3959140433126
+  - 17634.9699232457460
+  + 17634.9699232457497
+    63855.5284086934116
+    65701.3427351516730
+    60784.8180750256724
+  
+  actual@lipid_data$LCMS_Pos$WT_1_2[5:11] vs expected@lipid_data$LCMS_Pos$WT_1_2[5:11]
+    806086.8233035363955
+    50520.2353399886561
+    482006.5455118090613
+  - 11859.7244613313615
+  + 11859.7244613313633
+    837779.3444741391577
+    14811.1004724100858
+    25907.2217134769890
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[4:10] vs expected@lipid_data$LCMS_Pos$WT_2_1[4:10]
+    58593.96732301283919
+    912522.20282290840987
+    63026.75744827718881
+  - 700418.08699729631189
+  + 700418.08699729642831
+    16303.74153498959822
+    661061.39411136705894
+    21103.30785737659971
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[11:17] vs expected@lipid_data$LCMS_Pos$WT_2_1[11:17]
+    36146.95930948390742
+    608609.70695918065030
+    285700.87367668602383
+  - 5677.19358397859833
+  + 5677.19358397859924
+    537763.54685195337515
+    12720.32766561923199
+    8745.72897872580143
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[33:39] vs expected@lipid_data$LCMS_Pos$WT_2_1[33:39]
+    70142.52685954296612
+    242906.08585781769943
+    450306.86297668796033
+  - 483864.84824101085542
+  + 483864.84824101091363
+    78451.91225464065792
+    18435.58638484003313
+    13967.83803468214319
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[43:46] vs expected@lipid_data$LCMS_Pos$WT_2_1[43:46]
+    68309.05007574571937
+    64878.09505413012812
+    28684.78369748856130
+  - 420250.85219837777549
+  + 420250.85219837783370
+  
+      actual@lipid_data$LCMS_Pos$WT_2_2 | expected@lipid_data$LCMS_Pos$WT_2_2    
+  [1] 81953.4848027687549               | 81953.4848027687549                 [1]
+  [2] 1012793.8811339034000             | 1012793.8811339034000               [2]
+  [3] 50066.3646920074461               - 50066.3646920074389                 [3]
+  [4] 44131.9628269151362               | 44131.9628269151362                 [4]
+  [5] 1222620.2267937662546             | 1222620.2267937662546               [5]
+  [6] 73472.2247682622547               - 73472.2247682622401                 [6]
+  [7] 431382.664006
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@lipid_data$LCMS_Pos$WT_1_1[19:31] vs expected@lipid_data$LCMS_Pos$WT_1_1[19:31]
+    10182.0512290273327
+    6501.7292680175588
+    8409.3560169560060
+  - 61398.0101114220161
+  + 61398.0101114220233
+    30134.7811826025682
+    45281.3747453715332
+    83923.6342341161071
+    4552.7223749052537
+    5278.1871134603443
+  - 363226.3843284789473
+  + 363226.3843284790055
+    8652.8430063848518
+    6769.9927216237911
+    12543.2360247010056
+  
+  actual@lipid_data$LCMS_Pos$WT_1_1[37:43] vs expected@lipid_data$LCMS_Pos$WT_1_1[37:43]
+    72136.9081983713404
+    9527.2386386366052
+    8564.3959140433126
+  - 17634.9699232457460
+  + 17634.9699232457497
+    63855.5284086934116
+    65701.3427351516730
+    60784.8180750256724
+  
+  actual@lipid_data$LCMS_Pos$WT_1_2[5:11] vs expected@lipid_data$LCMS_Pos$WT_1_2[5:11]
+    806086.8233035363955
+    50520.2353399886561
+    482006.5455118090613
+  - 11859.7244613313615
+  + 11859.7244613313633
+    837779.3444741391577
+    14811.1004724100858
+    25907.2217134769890
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[4:10] vs expected@lipid_data$LCMS_Pos$WT_2_1[4:10]
+    58593.96732301283919
+    912522.20282290840987
+    63026.75744827718881
+  - 700418.08699729631189
+  + 700418.08699729642831
+    16303.74153498959822
+    661061.39411136705894
+    21103.30785737659971
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[11:17] vs expected@lipid_data$LCMS_Pos$WT_2_1[11:17]
+    36146.95930948390742
+    608609.70695918065030
+    285700.87367668602383
+  - 5677.19358397859833
+  + 5677.19358397859924
+    537763.54685195337515
+    12720.32766561923199
+    8745.72897872580143
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[33:39] vs expected@lipid_data$LCMS_Pos$WT_2_1[33:39]
+    70142.52685954296612
+    242906.08585781769943
+    450306.86297668796033
+  - 483864.84824101085542
+  + 483864.84824101091363
+    78451.91225464065792
+    18435.58638484003313
+    13967.83803468214319
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[43:46] vs expected@lipid_data$LCMS_Pos$WT_2_1[43:46]
+    68309.05007574571937
+    64878.09505413012812
+    28684.78369748856130
+  - 420250.85219837777549
+  + 420250.85219837783370
+  
+      actual@lipid_data$LCMS_Pos$WT_2_2 | expected@lipid_data$LCMS_Pos$WT_2_2    
+  [1] 81953.4848027687549               | 81953.4848027687549                 [1]
+  [2] 1012793.8811339034000             | 1012793.8811339034000               [2]
+  [3] 50066.3646920074461               - 50066.3646920074389                 [3]
+  [4] 44131.9628269151362               | 44131.9628269151362                 [4]
+  [5] 1222620.2267937662546             | 1222620.2267937662546               [5]
+  [6] 73472.2247682622547               - 73472.2247682622401                 [6]
+  [7] 431382.664006
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@lipid_data$LCMS_Pos$WT_1_1[23:35] vs expected@lipid_data$LCMS_Pos$WT_1_1[23:35]
+    10182.0512290273327
+    6501.7292680175588
+    8409.3560169560060
+  - 61398.0101114220161
+  + 61398.0101114220233
+    30134.7811826025682
+    45281.3747453715332
+    83923.6342341161071
+    4552.7223749052537
+    5278.1871134603443
+  - 363226.3843284789473
+  + 363226.3843284790055
+    8652.8430063848518
+    6769.9927216237911
+    12543.2360247010056
+  
+  actual@lipid_data$LCMS_Pos$WT_1_1[41:44] vs expected@lipid_data$LCMS_Pos$WT_1_1[41:44]
+    72136.9081983713404
+    9527.2386386366052
+    8564.3959140433126
+  - 17634.9699232457460
+  + 17634.9699232457497
+  
+  actual@lipid_data$LCMS_Pos$WT_1_2[9:15] vs expected@lipid_data$LCMS_Pos$WT_1_2[9:15]
+    806086.8233035363955
+    50520.2353399886561
+    482006.5455118090613
+  - 11859.7244613313615
+  + 11859.7244613313633
+    837779.3444741391577
+    14811.1004724100858
+    25907.2217134769890
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[8:14] vs expected@lipid_data$LCMS_Pos$WT_2_1[8:14]
+    58593.96732301283919
+    912522.20282290840987
+    63026.75744827718881
+  - 700418.08699729631189
+  + 700418.08699729642831
+    16303.74153498959822
+    661061.39411136705894
+    21103.30785737659971
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[15:21] vs expected@lipid_data$LCMS_Pos$WT_2_1[15:21]
+    36146.95930948390742
+    608609.70695918065030
+    285700.87367668602383
+  - 5677.19358397859833
+  + 5677.19358397859924
+    537763.54685195337515
+    12720.32766561923199
+    8745.72897872580143
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[37:43] vs expected@lipid_data$LCMS_Pos$WT_2_1[37:43]
+    70142.52685954296612
+    242906.08585781769943
+    450306.86297668796033
+  - 483864.84824101085542
+  + 483864.84824101091363
+    78451.91225464065792
+    18435.58638484003313
+    13967.83803468214319
+  
+  actual@lipid_data$LCMS_Pos$WT_2_2[4:13] vs expected@lipid_data$LCMS_Pos$WT_2_2[4:13]
+    66787.5021694526076
+    81953.4848027687549
+    1012793.8811339034000
+  - 50066.3646920074461
+  + 50066.3646920074389
+    44131.9628269151362
+    1222620.2267937662546
+  - 73472.2247682622547
+  + 73472.2247682622401
+    431382.6640065848478
+    11965.0322013129517
+    848013.5799194310093
+  
+  actual@lipid_data$LCMS_Pos$WT_2_2[24:33] vs expected@lipid_data$LCMS_Pos$WT_2_2[24:33]
+    7498.2215821120253
+    11802.4390628840738
+    108244.3742878705671
+  - 46258.8188629813303
+  + 46258.8188629813158
+    71932.8114953947515
+    94612.4319083504961
+  - 8132.3837578511530
+  + 8132.3837578511511
+    14051.3340842430516
+    693842.6162196325604
+    9708.6884349929896
+  
+  actual@lipid_data$LCMS_Pos$WT_2_2[38:44] vs expected@lipid_data$LCMS_Pos$WT_2_2[38:44]
+    206949.8346607827989
+    5493
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@lipid_data$LCMS_Pos$WT_1_1[23:35] vs expected@lipid_data$LCMS_Pos$WT_1_1[23:35]
+    10182.0512290273327
+    6501.7292680175588
+    8409.3560169560060
+  - 61398.0101114220161
+  + 61398.0101114220233
+    30134.7811826025682
+    45281.3747453715332
+    83923.6342341161071
+    4552.7223749052537
+    5278.1871134603443
+  - 363226.3843284789473
+  + 363226.3843284790055
+    8652.8430063848518
+    6769.9927216237911
+    12543.2360247010056
+  
+  actual@lipid_data$LCMS_Pos$WT_1_1[41:44] vs expected@lipid_data$LCMS_Pos$WT_1_1[41:44]
+    72136.9081983713404
+    9527.2386386366052
+    8564.3959140433126
+  - 17634.9699232457460
+  + 17634.9699232457497
+  
+  actual@lipid_data$LCMS_Pos$WT_1_2[9:15] vs expected@lipid_data$LCMS_Pos$WT_1_2[9:15]
+    806086.8233035363955
+    50520.2353399886561
+    482006.5455118090613
+  - 11859.7244613313615
+  + 11859.7244613313633
+    837779.3444741391577
+    14811.1004724100858
+    25907.2217134769890
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[8:14] vs expected@lipid_data$LCMS_Pos$WT_2_1[8:14]
+    58593.96732301283919
+    912522.20282290840987
+    63026.75744827718881
+  - 700418.08699729631189
+  + 700418.08699729642831
+    16303.74153498959822
+    661061.39411136705894
+    21103.30785737659971
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[15:21] vs expected@lipid_data$LCMS_Pos$WT_2_1[15:21]
+    36146.95930948390742
+    608609.70695918065030
+    285700.87367668602383
+  - 5677.19358397859833
+  + 5677.19358397859924
+    537763.54685195337515
+    12720.32766561923199
+    8745.72897872580143
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[37:43] vs expected@lipid_data$LCMS_Pos$WT_2_1[37:43]
+    70142.52685954296612
+    242906.08585781769943
+    450306.86297668796033
+  - 483864.84824101085542
+  + 483864.84824101091363
+    78451.91225464065792
+    18435.58638484003313
+    13967.83803468214319
+  
+  actual@lipid_data$LCMS_Pos$WT_2_2[4:13] vs expected@lipid_data$LCMS_Pos$WT_2_2[4:13]
+    66787.5021694526076
+    81953.4848027687549
+    1012793.8811339034000
+  - 50066.3646920074461
+  + 50066.3646920074389
+    44131.9628269151362
+    1222620.2267937662546
+  - 73472.2247682622547
+  + 73472.2247682622401
+    431382.6640065848478
+    11965.0322013129517
+    848013.5799194310093
+  
+  actual@lipid_data$LCMS_Pos$WT_2_2[24:33] vs expected@lipid_data$LCMS_Pos$WT_2_2[24:33]
+    7498.2215821120253
+    11802.4390628840738
+    108244.3742878705671
+  - 46258.8188629813303
+  + 46258.8188629813158
+    71932.8114953947515
+    94612.4319083504961
+  - 8132.3837578511530
+  + 8132.3837578511511
+    14051.3340842430516
+    693842.6162196325604
+    9708.6884349929896
+  
+  actual@lipid_data$LCMS_Pos$WT_2_2[38:44] vs expected@lipid_data$LCMS_Pos$WT_2_2[38:44]
+    206949.8346607827989
+    5493
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@lipid_data$LCMS_Pos$WT_1_1[23:35] vs expected@lipid_data$LCMS_Pos$WT_1_1[23:35]
+    10182.0512290273327
+    6501.7292680175588
+    8409.3560169560060
+  - 61398.0101114220161
+  + 61398.0101114220233
+    30134.7811826025682
+    45281.3747453715332
+    83923.6342341161071
+    4552.7223749052537
+    5278.1871134603443
+  - 363226.3843284789473
+  + 363226.3843284790055
+    8652.8430063848518
+    6769.9927216237911
+    12543.2360247010056
+  
+  actual@lipid_data$LCMS_Pos$WT_1_1[41:44] vs expected@lipid_data$LCMS_Pos$WT_1_1[41:44]
+    72136.9081983713404
+    9527.2386386366052
+    8564.3959140433126
+  - 17634.9699232457460
+  + 17634.9699232457497
+  
+  actual@lipid_data$LCMS_Pos$WT_1_2[9:15] vs expected@lipid_data$LCMS_Pos$WT_1_2[9:15]
+    806086.8233035363955
+    50520.2353399886561
+    482006.5455118090613
+  - 11859.7244613313615
+  + 11859.7244613313633
+    837779.3444741391577
+    14811.1004724100858
+    25907.2217134769890
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[8:14] vs expected@lipid_data$LCMS_Pos$WT_2_1[8:14]
+    58593.96732301283919
+    912522.20282290840987
+    63026.75744827718881
+  - 700418.08699729631189
+  + 700418.08699729642831
+    16303.74153498959822
+    661061.39411136705894
+    21103.30785737659971
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[15:21] vs expected@lipid_data$LCMS_Pos$WT_2_1[15:21]
+    36146.95930948390742
+    608609.70695918065030
+    285700.87367668602383
+  - 5677.19358397859833
+  + 5677.19358397859924
+    537763.54685195337515
+    12720.32766561923199
+    8745.72897872580143
+  
+  actual@lipid_data$LCMS_Pos$WT_2_1[37:43] vs expected@lipid_data$LCMS_Pos$WT_2_1[37:43]
+    70142.52685954296612
+    242906.08585781769943
+    450306.86297668796033
+  - 483864.84824101085542
+  + 483864.84824101091363
+    78451.91225464065792
+    18435.58638484003313
+    13967.83803468214319
+  
+  actual@lipid_data$LCMS_Pos$WT_2_2[4:13] vs expected@lipid_data$LCMS_Pos$WT_2_2[4:13]
+    66787.5021694526076
+    81953.4848027687549
+    1012793.8811339034000
+  - 50066.3646920074461
+  + 50066.3646920074389
+    44131.9628269151362
+    1222620.2267937662546
+  - 73472.2247682622547
+  + 73472.2247682622401
+    431382.6640065848478
+    11965.0322013129517
+    848013.5799194310093
+  
+  actual@lipid_data$LCMS_Pos$WT_2_2[24:33] vs expected@lipid_data$LCMS_Pos$WT_2_2[24:33]
+    7498.2215821120253
+    11802.4390628840738
+    108244.3742878705671
+  - 46258.8188629813303
+  + 46258.8188629813158
+    71932.8114953947515
+    94612.4319083504961
+  - 8132.3837578511530
+  + 8132.3837578511511
+    14051.3340842430516
+    693842.6162196325604
+    9708.6884349929896
+  
+  actual@lipid_data$LCMS_Pos$WT_2_2[38:44] vs expected@lipid_data$LCMS_Pos$WT_2_2[38:44]
+    206949.8346607827989
+    5493
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@lipid_data$LCMS_Pos$WT_1_2[9:15] vs expected@lipid_data$LCMS_Pos$WT_1_2[9:15]
+    19.6205775034408347
+    15.6246022957352064
+    18.8786962055129237
+  - 13.5339045129451154
+  + 13.5339045129451172
+    19.6762125113479449
+    13.8544886201935160
+    14.6611223748747825
+  
+  actual@lipid_data$LCMS_Pos$WT_2_2[27:33] vs expected@lipid_data$LCMS_Pos$WT_2_2[27:33]
+    15.4974719964532941
+    16.1343824285287312
+    16.5297573915705769
+  - 12.9896399709168193
+  + 12.9896399709168175
+    13.7785221606780546
+    19.4042510082377291
+    13.2452092877728642
+  
+      actual@lipid_data$LCMS_Pos$WT_3_2 | expected@lipid_data$LCMS_Pos$WT_3_2    
+  [3] 16.0047180003618905               | 16.0047180003618905                 [3]
+  [4] 16.0808010212125616               | 16.0808010212125616                 [4]
+  [5] 15.8157368841330932               | 15.8157368841330932                 [5]
+  [6] 19.4598510143832293               - 19.4598510143832257                 [6]
+  [7] 15.1768834376135526               | 15.1768834376135526                 [7]
+  [8] 15.3604864316970193               | 15.3604864316970193                 [8]
+  [9] 18.7391648857654509               | 18.7391648857654509                 [9]
+  
+  actual@lipid_data$LCMS_Pos$WT_3_2[20:26] vs expected@lipid_data$LCMS_Pos$WT_3_2[20:26]
+    12.5376264257668595
+    12.5100678465566233
+    15.5865655388692357
+  - 13.2357490955336008
+  + 13.2357490955336026
+    12.2610237183381212
+    12.9414961651471714
+    16.3737227682179061
+  
+  actual@lipid_data$LCMS_Pos$WT_3_2[34:40] vs expected@lipid_data$LCMS_Pos$WT_3_2[34:40]
+    12.2945179219801179
+    12.7824046046552322
+    16.9527560851235073
+  - 15.7345553242383041
+  + 15.7345553242383058
+    16.8357069395155001
+    17.8404271658524323
+    18.6147698666980830
+  
+  actual@lipid_data$LCMS_Pos$WT_5_1[15:21] vs expected@lipid_data$LCMS_Pos$WT_5_1[15:21]
+    14.8170251588476258
+    18.7429385166803328
+    17.5743498671155969
+  - 12.6997045486945197
+  + 12.6997045486945215
+    18.7651418419120581
+    13.5067395172372180
+    12.5707289754846787
+  
+  actual@lipid_data$LCMS_Pos$WT_5_1[28:34] vs expected@lipid_data$LCMS_Pos$WT_5_1[28:34]
+    16.1522473982868853
+    16.7015536736347414
+    12.1415349797106025
+  - 13.5695253114162622
+  + 13.5695253114162639
+    19.4116805675242148
+    13.5661108438030720
+    12.9274940150286248
+  
+  actual@lipid_data$LCMS_Pos$WT_5_1[38:44] vs expected@lipid_data$LCMS_Pos$WT_5_1[38:44]
+    17.9655279674284429
+    18.8948290274198207
+    18.8364240070831599
+  - 16.4585670577710630
+  + 16.4585670577710665
+    14.0373004770191656
+    14.2018481056525658
+    14.5296298050920960
+  
+  actual@lipid_data$LCMS_Pos$KO_1_1[28:34] vs expected@lipid_dat
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@lipid_data$LCMS_Pos$WT_1_1[9:44] vs expected@lipid_data$LCMS_Pos$WT_1_1[9:44]
+    19.8020346346748504
+    16.3348687602701155
+    18.8577398710127291
+  - 13.5081464192832481
+  + 13.5081464192832463
+    19.6822029095671240
+  - 13.7795598980308309
+  + 13.7795598980308327
+  - 14.9738081499957367
+  + 14.9738081499957385
+  - 19.0158120692670707
+  + 19.0158120692670671
+    17.1065764830671867
+  - 12.3669003925920222
+  + 12.3669003925920258
+    18.7242305123658639
+  - 12.7293571996669357
+  + 12.7293571996669339
+  - 12.7272713721590467
+  + 12.7272713721590485
+    15.7562576126506926
+    13.6503986820626544
+    13.0411320146631144
+    13.4041804532338293
+  - 16.2219058329480141
+  + 16.2219058329480177
+  - 15.2010478564621003
+  + 15.2010478564621021
+  - 15.7704030429248174
+  + 15.7704030429248192
+    16.6729546191293423
+  - 12.5542293085686421
+  + 12.5542293085686438
+  - 12.7246538950703254
+  + 12.7246538950703272
+    18.8387492584485052
+    13.4349971188126602
+  - 13.1126551801910587
+  + 13.1126551801910569
+    13.9639428040030520
+    17.2706555902872232
+  - 16.3679826175561871
+  + 16.3679826175561836
+    17.5960166873505131
+    18.3765142129749997
+    18.4166099163708559
+    16.4506876586662898
+  - 13.5584993754152059
+  + 13.5584993754152077
+    13.4140972023158582
+  - 14.4371222928294340
+  + 14.4371222928294358
+  
+  actual@lipid_data$LCMS_Pos$WT_1_2[5:19] vs expected@lipid_data$LCMS_Pos$WT_1_2[5:19]
+    16.3816097587809857
+    19.5929953628442952
+    15.2777819193576931
+  - 15.1981654323026820
+  + 15.1981654323026838
+    19.7522165287514397
+    15.7952884214023612
+    19.0177400363214240
+  - 13.5886105640881336
+  + 13.5886105640881354
+    19.8090855508947676
+  - 13.9367179111442976
+  + 13.9367179111442994
+    14.7825233294923741
+  - 18.4388348919598783
+  + 18.4388348919598819
+    17.3287437777531217
+    12.3816261585785821
+    19.2316925280040429
+  
+  actual@lipid_data$LCMS_Pos$WT_1_2[21:44] vs expected@lipid_data$LCMS_Pos$WT_1_2[21:44]
+    12.7717824324919675
+    16.1575609160062896
+    13.8651451301778295
+  - 13.1945318169447372
+  + 13.1945318169447390
+    13.1951530946447928
+    16.6148115174609323
+    15.2597590632548528
+    16.0283687844973493
+  - 16.8478133176075602
+  + 16.8478133176075637
+  - 12.6298405744611308
+  + 12.6298405744611326
+    13.1920275638324753
+    18.5918435176173702
+    13.9197649955499827
+    12.4557697578017095
+    13.5255071786107273
+  - 17.3762613575798142
+  + 17.3762613575798106
+  - 15.9348679705188268
+  + 15.9348679705188285
+  - 17.3663261142840888
+  + 17.3663261142840852
+  - 18.5535132032298051
+  + 18.5535132032298087
+    18.8234249426161071
+    16.5934782446998526
+    13.8591975342412344
+    13.5181959656966342
+  - 14.243464078
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@lipid_data$LCMS_Pos vs expected@lipid_data$LCMS_Pos
+                                         WT_1_1   WT_1_2   WT_2_1   WT_2_2   WT_3_1   WT_3_2   WT_4_1   WT_4_2   WT_5_1   WT_5_2   WT_6_1   WT_6_2   KO_1_1   KO_1_2   KO_2_1   KO_2_2   KO_3_1   KO_3_2   KO_4_1   KO_4_2   KO_5_1   KO_5_2   KO_6_1   KO_6_2
+  - actual@lipid_data$LCMS_Pos[1, ]    16.19884 16.03797 15.95093 15.92024 15.99669 16.24180 16.01648 15.60007 15.81005 16.13198 16.19325 16.03033 15.93390 16.04291 15.93143 16.05266 16.02029 15.95149 16.28881 16.14199 15.96812 15.79940 15.94026 15.94436
+  + expected@lipid_data$LCMS_Pos[1, ]  15.03719 14.87632 14.78928 14.75859 14.83505 15.08016 14.85483 14.43842 14.64840 14.97033 15.03160 14.86868 14.77225 14.88127 14.76978 14.89101 14.85864 14.78985 15.12716 14.98035 14.80647 14.63775 14.77861 14.78271
+  - actual@lipid_data$LCMS_Pos[2, ]    16.20550 16.01704 15.78843 15.94484 15.96013 15.94742 15.84895 15.75637 15.88532 16.09909 16.11308 16.10394 15.90029 16.11065 15.86421 16.03611 15.95977 16.05695 16.31080 16.09044 15.85451 15.90261 16.09973 15.91188
+  + expected@lipid_data$LCMS_Pos[2, ]  14.43344 14.24498 14.01637 14.17278 14.18807 14.17536 14.07689 13.98431 14.11326 14.32704 14.34102 14.33189 14.12823 14.33860 14.09215 14.26405 14.18771 14.28489 14.53874 14.31839 14.08246 14.13055 14.32768 14.13982
+  - actual@lipid_data$LCMS_Pos[3, ]    16.09434 16.17939 15.87747 15.97257 15.96394 16.16434 16.02210 15.97514 15.90973 16.16756 16.01867 16.00619 15.99994 16.15371 15.92430 16.04188 15.99063 15.95725 16.19857 16.19138 15.99924 15.63450 15.98072 16.11032
+  + expected@lipid_data$LCMS_Pos[3, ]  14.37149 14.45653 14.15462 14.24971 14.24108 14.44148 14.29925 14.25229 14.18687 14.44470 14.29581 14.28333 14.27708 14.43085 14.20144 14.31902 14.26777 14.23440 14.47572 14.46853 14.27639 13.91165 14.25786 14.38747
+  - actual@lipid_data$LCMS_Pos[4, ]    16.20019 15.93492 15.79385 15.95906 16.06525 16.14832 16.00799 15.80082 15.95428 16.02962 16.07713 16.14888 16.06761 16.05005 15.99777 15.98113 16.01722 15.87138 16.20043 15.83993 15.90437 15.89704 15.99228 15.99507
+  + expected@lipid_data$LCMS_Pos[4, ]  13.55726 13.29199 13.15092 13.31614 13.42233 13.50539 13.36506 13.15790 13.31136 13.38670 13.43420 13.50595 13.42469 13.40712 13.35484 13.33820 13.37430 13.22846 13.55750 13.19701 13.26144 13.25411 13.34936 13.35214
+  - actual@lipid_data$LCMS_Pos[5, ]    16.38051 16.49125 16.31301 16.23315 16.29936 16.37712 16.31116 16.01093 16.63346 15.84345 16.17561 16.69324 16.11072 16.91964 16.00733 16.34847 16.38381 16.43900 16.41434 16.75967 16.55230 16.12073 16.34468 16.48339
+  + expected@lipid_data$LCMS_Pos[5, ]  18.44093 18.55167 18.37343 18.29357 18.35978 18.43754 18.37
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@lipid_data$LCMS_Pos vs expected@lipid_data$LCMS_Pos
+                                         WT_1_1   WT_1_2   WT_2_1   WT_2_2   WT_3_1   WT_3_2   WT_4_1   WT_4_2   WT_5_1   WT_5_2   WT_6_1   WT_6_2   KO_1_1   KO_1_2   KO_2_1   KO_2_2   KO_3_1   KO_3_2   KO_4_1   KO_4_2   KO_5_1   KO_5_2   KO_6_1   KO_6_2
+  - actual@lipid_data$LCMS_Pos[1, ]    16.19884 16.03797 15.95093 15.92024 15.99669 16.24180 16.01648 15.60007 15.81005 16.13198 16.19325 16.03033 15.93390 16.04291 15.93143 16.05266 16.02029 15.95149 16.28881 16.14199 15.96812 15.79940 15.94026 15.94436
+  + expected@lipid_data$LCMS_Pos[1, ]  15.03719 14.87632 14.78928 14.75859 14.83505 15.08016 14.85483 14.43842 14.64840 14.97033 15.03160 14.86868 14.77225 14.88127 14.76978 14.89101 14.85864 14.78985 15.12716 14.98035 14.80647 14.63775 14.77861 14.78271
+  - actual@lipid_data$LCMS_Pos[2, ]    16.20550 16.01704 15.78843 15.94484 15.96013 15.94742 15.84895 15.75637 15.88532 16.09909 16.11308 16.10394 15.90029 16.11065 15.86421 16.03611 15.95977 16.05695 16.31080 16.09044 15.85451 15.90261 16.09973 15.91188
+  + expected@lipid_data$LCMS_Pos[2, ]  14.43344 14.24498 14.01637 14.17278 14.18807 14.17536 14.07689 13.98431 14.11326 14.32704 14.34102 14.33189 14.12823 14.33860 14.09215 14.26405 14.18771 14.28489 14.53874 14.31839 14.08246 14.13055 14.32768 14.13982
+  - actual@lipid_data$LCMS_Pos[3, ]    16.09434 16.17939 15.87747 15.97257 15.96394 16.16434 16.02210 15.97514 15.90973 16.16756 16.01867 16.00619 15.99994 16.15371 15.92430 16.04188 15.99063 15.95725 16.19857 16.19138 15.99924 15.63450 15.98072 16.11032
+  + expected@lipid_data$LCMS_Pos[3, ]  14.37149 14.45653 14.15462 14.24971 14.24108 14.44148 14.29925 14.25229 14.18687 14.44470 14.29581 14.28333 14.27708 14.43085 14.20144 14.31902 14.26777 14.23440 14.47572 14.46853 14.27639 13.91165 14.25786 14.38747
+  - actual@lipid_data$LCMS_Pos[4, ]    16.20019 15.93492 15.79385 15.95906 16.06525 16.14832 16.00799 15.80082 15.95428 16.02962 16.07713 16.14888 16.06761 16.05005 15.99777 15.98113 16.01722 15.87138 16.20043 15.83993 15.90437 15.89704 15.99228 15.99507
+  + expected@lipid_data$LCMS_Pos[4, ]  13.55726 13.29199 13.15092 13.31614 13.42233 13.50539 13.36506 13.15790 13.31136 13.38670 13.43420 13.50595 13.42469 13.40712 13.35484 13.33820 13.37430 13.22846 13.55750 13.19701 13.26144 13.25411 13.34936 13.35214
+  - actual@lipid_data$LCMS_Pos[5, ]    16.38051 16.49125 16.31301 16.23315 16.29936 16.37712 16.31116 16.01093 16.63346 15.84345 16.17561 16.69324 16.11072 16.91964 16.00733 16.34847 16.38381 16.43900 16.41434 16.75967 16.55230 16.12073 16.34468 16.48339
+  + expected@lipid_data$LCMS_Pos[5, ]  18.44093 18.55167 18.37343 18.29357 18.35978 18.43754 18.37
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$correlations` to be identical to `frozen[[omic]]$correlations`.
+  Differences:
+  actual$LCMS_Pos vs expected$LCMS_Pos
+                             pearson_correlation
+  - actual$LCMS_Pos[1, ]               0.9896394
+  + expected$LCMS_Pos[1, ]             0.9940490
+  - actual$LCMS_Pos[2, ]               0.9828113
+  + expected$LCMS_Pos[2, ]             0.9902811
+  - actual$LCMS_Pos[3, ]               0.9828420
+  + expected$LCMS_Pos[3, ]             0.9898231
+  - actual$LCMS_Pos[4, ]               0.9901574
+  + expected$LCMS_Pos[4, ]             0.9943541
+  - actual$LCMS_Pos[5, ]               0.9903166
+  + expected$LCMS_Pos[5, ]             0.9943048
+  - actual$LCMS_Pos[6, ]               0.9857631
+  + expected$LCMS_Pos[6, ]             0.9915199
+  - actual$LCMS_Pos[7, ]               0.9890728
+  + expected$LCMS_Pos[7, ]             0.9943298
+  - actual$LCMS_Pos[8, ]               0.9881651
+  + expected$LCMS_Pos[8, ]             0.9932941
+  - actual$LCMS_Pos[9, ]               0.9905134
+  + expected$LCMS_Pos[9, ]             0.9939092
+  - actual$LCMS_Pos[10, ]              0.9892299
+  + expected$LCMS_Pos[10, ]            0.9938415
+  - actual$LCMS_Pos[11, ]              0.9878970
+  + expected$LCMS_Pos[11, ]            0.9929633
+  - actual$LCMS_Pos[12, ]              0.9921422
+  + expected$LCMS_Pos[12, ]            0.9953084
+  - actual$LCMS_Pos[13, ]              0.9861065
+  + expected$LCMS_Pos[13, ]            0.9916455
+  - actual$LCMS_Pos[14, ]              0.9913420
+  + expected$LCMS_Pos[14, ]            0.9948109
+  - actual$LCMS_Pos[15, ]              0.9902608
+  + expected$LCMS_Pos[15, ]            0.9943748
+  - actual$LCMS_Pos[16, ]              0.9881252
+  + expected$LCMS_Pos[16, ]            0.9932958
+  - actual$LCMS_Pos[17, ]              0.9870242
+  + expected$LCMS_Pos[17, ]            0.9927266
+  - actual$LCMS_Pos[18, ]              0.9772392
+  + expected$LCMS_Pos[18, ]            0.9873326
+  - actual$LCMS_Pos[19, ]              0.9862809
+  + expected$LCMS_Pos[19, ]            0.9923099
+  - actual$LCMS_Pos[20, ]              0.9825283
+  + expected$LCMS_Pos[20, ]            0.9908104
+  - actual$LCMS_Pos[21, ]              0.9850448
+  + expected$LCMS_Pos[21, ]            0.9914948
+  - actual$LCMS_Pos[22, ]              0.9894397
+  + expected$LCMS_Pos[22, ]            0.9939291
+  - actual$LCMS_Pos[23, ]              0.9922353
+  + expected$LCMS_Pos[23, ]            0.9954703
+  - actual$LCMS_Pos[24, ]              0.9837382
+  + expected$LCMS_Pos[24, ]            0.9904842
+  - actual$LCMS_Pos[25, ]              0.9912820
+  + expected$LCMS_Pos[25, ]            0.9949001
+  - actual$LCMS_Pos[26, ]              0.9857551
+  + expected$LCMS_Pos[26, ]            0.9919388
+  - actual$LCMS_Pos[27, ]              0.9894866
+  + expected$LCMS_Pos[27, ]   
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$da$results[products]` to be identical to `frozen[[omic]]$da$results[products]`.
+  Differences:
+  actual$da_lipids_long vs expected$da_lipids_long
+                                  lipid_id         logFC   AveExpr            t    P.Value adj.P.Val         B fdr_qvalue fdr_value_bh raw_pvalue lipid_name intensity.WT_1_1.WT intensity.WT_1_2.WT intensity.WT_2_1.WT intensity.WT_2_2.WT intensity.WT_3_1.WT intensity.WT_3_2.WT intensity.WT_4_1.WT intensity.WT_4_2.WT intensity.WT_5_1.WT intensity.WT_5_2.WT intensity.WT_6_1.WT intensity.WT_6_2.WT intensity.KO_1_1.KO intensity.KO_1_2.KO intensity.KO_2_1.KO intensity.KO_2_2.KO intensity.KO_3_1.KO intensity.KO_3_2.KO intensity.KO_4_1.KO intensity.KO_4_2.KO intensity.KO_5_1.KO intensity.KO_5_2.KO intensity.KO_6_1.KO intensity.KO_6_2.KO
+  - actual$da_lipids_long[1, ]    pos_L09   0.1536620873 19.598547  1.784246468 0.08196263 0.7212712 -4.156595  0.7212712    0.7212712 0.08196263       SM             19.618847           19.750844           18.898998           19.496522           19.809308           19.484070           19.573804           19.377434           19.614394           19.440029           19.691979           19.504358           19.631596           19.467824           19.865100           19.757677           19.604032           19.463181           19.830499           19.566391           19.701350           19.658103           20.000794           19.557984
+  + expected$da_lipids_long[1, ]  pos_L31  -0.1501259825 14.606685 -1.763226428 0.08243783 0.7676015 -4.172213  0.7676015    0.7676015 0.08243783       PC             15.014635           14.571559           14.506054           14.769705           14.442171           14.316371           14.956083           14.714760           14.576652           14.501265           15.082109           14.729609           14.701649           14.803682           14.697835           14.164393           14.370023           14.529707           14.566826           14.425009           14.386363           14.964786           14.306255           14.462931
+  - actual$da_lipids_long[2, ]    pos_L30   0.1786575219 12.723538  1.796451016 0.07996986 0.7212712 -4.146046  0.7212712    0.7212712 0.07996986       CE             13.081490           12.427120           12.719612           12.316849           12.901817           12.747831           12.564049           12.692282           12.621581           12.534380           12.082663           12.920843           13.007332           12.855677           12.582942           12.929058           12.883856           12.810720           12.354103           12.484125           13.206714           12.907350           12.951123           12.781407
+  + expected$da_lipids_long[2, ]  pos_L30   0.1786575219 12.185113  1.735714526 0.08722745 0.7676015
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@metabolite_data$LCMS_Pos$WT_1_1[19:31] vs expected@metabolite_data$LCMS_Pos$WT_1_1[19:31]
+    10182.0512290273327
+    6501.7292680175588
+    8409.3560169560060
+  - 61398.0101114220161
+  + 61398.0101114220233
+    30134.7811826025682
+    45281.3747453715332
+    83923.6342341161071
+    4552.7223749052537
+    5278.1871134603443
+  - 363226.3843284789473
+  + 363226.3843284790055
+    8652.8430063848518
+    6769.9927216237911
+    12543.2360247010056
+  
+  actual@metabolite_data$LCMS_Pos$WT_1_1[37:43] vs expected@metabolite_data$LCMS_Pos$WT_1_1[37:43]
+    72136.9081983713404
+    9527.2386386366052
+    8564.3959140433126
+  - 17634.9699232457460
+  + 17634.9699232457497
+    63855.5284086934116
+    65701.3427351516730
+    60784.8180750256724
+  
+  actual@metabolite_data$LCMS_Pos$WT_1_2[5:11] vs expected@metabolite_data$LCMS_Pos$WT_1_2[5:11]
+    806086.8233035363955
+    50520.2353399886561
+    482006.5455118090613
+  - 11859.7244613313615
+  + 11859.7244613313633
+    837779.3444741391577
+    14811.1004724100858
+    25907.2217134769890
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[4:10] vs expected@metabolite_data$LCMS_Pos$WT_2_1[4:10]
+    58593.96732301283919
+    912522.20282290840987
+    63026.75744827718881
+  - 700418.08699729631189
+  + 700418.08699729642831
+    16303.74153498959822
+    661061.39411136705894
+    21103.30785737659971
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[11:17] vs expected@metabolite_data$LCMS_Pos$WT_2_1[11:17]
+    36146.95930948390742
+    608609.70695918065030
+    285700.87367668602383
+  - 5677.19358397859833
+  + 5677.19358397859924
+    537763.54685195337515
+    12720.32766561923199
+    8745.72897872580143
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[33:39] vs expected@metabolite_data$LCMS_Pos$WT_2_1[33:39]
+    70142.52685954296612
+    242906.08585781769943
+    450306.86297668796033
+  - 483864.84824101085542
+  + 483864.84824101091363
+    78451.91225464065792
+    18435.58638484003313
+    13967.83803468214319
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[43:46] vs expected@metabolite_data$LCMS_Pos$WT_2_1[43:46]
+    68309.05007574571937
+    64878.09505413012812
+    28684.78369748856130
+  - 420250.85219837777549
+  + 420250.85219837783370
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_2[1:9] vs expected@metabolite_data$LCMS_Pos$WT_2_2[1:9]
+    81953.4848027687549
+    1012793.8811339034000
+  - 50066.3646920074461
+  + 50066.3646920074389
+    44131.9628269151362
+    1222620.2267937662546
+  - 73472.2247682622547
+  + 73472.2247682622401
+    431382.6640065848478
+    11965.0322013129517
+    848013.5799194310093
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_2[20:29] vs expected@metabolite_data$LCMS_Pos$WT_2_2[20:29]
+    7498.2215821120253
+    11802.4390628840738
+    10824
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@metabolite_data$LCMS_Pos$WT_1_1[19:31] vs expected@metabolite_data$LCMS_Pos$WT_1_1[19:31]
+    10182.0512290273327
+    6501.7292680175588
+    8409.3560169560060
+  - 61398.0101114220161
+  + 61398.0101114220233
+    30134.7811826025682
+    45281.3747453715332
+    83923.6342341161071
+    4552.7223749052537
+    5278.1871134603443
+  - 363226.3843284789473
+  + 363226.3843284790055
+    8652.8430063848518
+    6769.9927216237911
+    12543.2360247010056
+  
+  actual@metabolite_data$LCMS_Pos$WT_1_1[37:43] vs expected@metabolite_data$LCMS_Pos$WT_1_1[37:43]
+    72136.9081983713404
+    9527.2386386366052
+    8564.3959140433126
+  - 17634.9699232457460
+  + 17634.9699232457497
+    63855.5284086934116
+    65701.3427351516730
+    60784.8180750256724
+  
+  actual@metabolite_data$LCMS_Pos$WT_1_2[5:11] vs expected@metabolite_data$LCMS_Pos$WT_1_2[5:11]
+    806086.8233035363955
+    50520.2353399886561
+    482006.5455118090613
+  - 11859.7244613313615
+  + 11859.7244613313633
+    837779.3444741391577
+    14811.1004724100858
+    25907.2217134769890
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[4:10] vs expected@metabolite_data$LCMS_Pos$WT_2_1[4:10]
+    58593.96732301283919
+    912522.20282290840987
+    63026.75744827718881
+  - 700418.08699729631189
+  + 700418.08699729642831
+    16303.74153498959822
+    661061.39411136705894
+    21103.30785737659971
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[11:17] vs expected@metabolite_data$LCMS_Pos$WT_2_1[11:17]
+    36146.95930948390742
+    608609.70695918065030
+    285700.87367668602383
+  - 5677.19358397859833
+  + 5677.19358397859924
+    537763.54685195337515
+    12720.32766561923199
+    8745.72897872580143
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[33:39] vs expected@metabolite_data$LCMS_Pos$WT_2_1[33:39]
+    70142.52685954296612
+    242906.08585781769943
+    450306.86297668796033
+  - 483864.84824101085542
+  + 483864.84824101091363
+    78451.91225464065792
+    18435.58638484003313
+    13967.83803468214319
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[43:46] vs expected@metabolite_data$LCMS_Pos$WT_2_1[43:46]
+    68309.05007574571937
+    64878.09505413012812
+    28684.78369748856130
+  - 420250.85219837777549
+  + 420250.85219837783370
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_2[1:9] vs expected@metabolite_data$LCMS_Pos$WT_2_2[1:9]
+    81953.4848027687549
+    1012793.8811339034000
+  - 50066.3646920074461
+  + 50066.3646920074389
+    44131.9628269151362
+    1222620.2267937662546
+  - 73472.2247682622547
+  + 73472.2247682622401
+    431382.6640065848478
+    11965.0322013129517
+    848013.5799194310093
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_2[20:29] vs expected@metabolite_data$LCMS_Pos$WT_2_2[20:29]
+    7498.2215821120253
+    11802.4390628840738
+    10824
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@metabolite_data$LCMS_Pos$WT_1_1[23:35] vs expected@metabolite_data$LCMS_Pos$WT_1_1[23:35]
+    10182.0512290273327
+    6501.7292680175588
+    8409.3560169560060
+  - 61398.0101114220161
+  + 61398.0101114220233
+    30134.7811826025682
+    45281.3747453715332
+    83923.6342341161071
+    4552.7223749052537
+    5278.1871134603443
+  - 363226.3843284789473
+  + 363226.3843284790055
+    8652.8430063848518
+    6769.9927216237911
+    12543.2360247010056
+  
+  actual@metabolite_data$LCMS_Pos$WT_1_1[41:44] vs expected@metabolite_data$LCMS_Pos$WT_1_1[41:44]
+    72136.9081983713404
+    9527.2386386366052
+    8564.3959140433126
+  - 17634.9699232457460
+  + 17634.9699232457497
+  
+  actual@metabolite_data$LCMS_Pos$WT_1_2[9:15] vs expected@metabolite_data$LCMS_Pos$WT_1_2[9:15]
+    806086.8233035363955
+    50520.2353399886561
+    482006.5455118090613
+  - 11859.7244613313615
+  + 11859.7244613313633
+    837779.3444741391577
+    14811.1004724100858
+    25907.2217134769890
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[8:14] vs expected@metabolite_data$LCMS_Pos$WT_2_1[8:14]
+    58593.96732301283919
+    912522.20282290840987
+    63026.75744827718881
+  - 700418.08699729631189
+  + 700418.08699729642831
+    16303.74153498959822
+    661061.39411136705894
+    21103.30785737659971
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[15:21] vs expected@metabolite_data$LCMS_Pos$WT_2_1[15:21]
+    36146.95930948390742
+    608609.70695918065030
+    285700.87367668602383
+  - 5677.19358397859833
+  + 5677.19358397859924
+    537763.54685195337515
+    12720.32766561923199
+    8745.72897872580143
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[37:43] vs expected@metabolite_data$LCMS_Pos$WT_2_1[37:43]
+    70142.52685954296612
+    242906.08585781769943
+    450306.86297668796033
+  - 483864.84824101085542
+  + 483864.84824101091363
+    78451.91225464065792
+    18435.58638484003313
+    13967.83803468214319
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_2[4:13] vs expected@metabolite_data$LCMS_Pos$WT_2_2[4:13]
+    66787.5021694526076
+    81953.4848027687549
+    1012793.8811339034000
+  - 50066.3646920074461
+  + 50066.3646920074389
+    44131.9628269151362
+    1222620.2267937662546
+  - 73472.2247682622547
+  + 73472.2247682622401
+    431382.6640065848478
+    11965.0322013129517
+    848013.5799194310093
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_2[24:33] vs expected@metabolite_data$LCMS_Pos$WT_2_2[24:33]
+    7498.2215821120253
+    11802.4390628840738
+    108244.3742878705671
+  - 46258.8188629813303
+  + 46258.8188629813158
+    71932.8114953947515
+    94612.4319083504961
+  - 8132.3837578511530
+  + 8132.3837578511511
+    14051.3340842430516
+    693842.6162196325604
+    9708.6884349929896
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_2[3
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@metabolite_data$LCMS_Pos$WT_1_1[23:35] vs expected@metabolite_data$LCMS_Pos$WT_1_1[23:35]
+    10182.0512290273327
+    6501.7292680175588
+    8409.3560169560060
+  - 61398.0101114220161
+  + 61398.0101114220233
+    30134.7811826025682
+    45281.3747453715332
+    83923.6342341161071
+    4552.7223749052537
+    5278.1871134603443
+  - 363226.3843284789473
+  + 363226.3843284790055
+    8652.8430063848518
+    6769.9927216237911
+    12543.2360247010056
+  
+  actual@metabolite_data$LCMS_Pos$WT_1_1[41:44] vs expected@metabolite_data$LCMS_Pos$WT_1_1[41:44]
+    72136.9081983713404
+    9527.2386386366052
+    8564.3959140433126
+  - 17634.9699232457460
+  + 17634.9699232457497
+  
+  actual@metabolite_data$LCMS_Pos$WT_1_2[9:15] vs expected@metabolite_data$LCMS_Pos$WT_1_2[9:15]
+    806086.8233035363955
+    50520.2353399886561
+    482006.5455118090613
+  - 11859.7244613313615
+  + 11859.7244613313633
+    837779.3444741391577
+    14811.1004724100858
+    25907.2217134769890
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[8:14] vs expected@metabolite_data$LCMS_Pos$WT_2_1[8:14]
+    58593.96732301283919
+    912522.20282290840987
+    63026.75744827718881
+  - 700418.08699729631189
+  + 700418.08699729642831
+    16303.74153498959822
+    661061.39411136705894
+    21103.30785737659971
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[15:21] vs expected@metabolite_data$LCMS_Pos$WT_2_1[15:21]
+    36146.95930948390742
+    608609.70695918065030
+    285700.87367668602383
+  - 5677.19358397859833
+  + 5677.19358397859924
+    537763.54685195337515
+    12720.32766561923199
+    8745.72897872580143
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[37:43] vs expected@metabolite_data$LCMS_Pos$WT_2_1[37:43]
+    70142.52685954296612
+    242906.08585781769943
+    450306.86297668796033
+  - 483864.84824101085542
+  + 483864.84824101091363
+    78451.91225464065792
+    18435.58638484003313
+    13967.83803468214319
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_2[4:13] vs expected@metabolite_data$LCMS_Pos$WT_2_2[4:13]
+    66787.5021694526076
+    81953.4848027687549
+    1012793.8811339034000
+  - 50066.3646920074461
+  + 50066.3646920074389
+    44131.9628269151362
+    1222620.2267937662546
+  - 73472.2247682622547
+  + 73472.2247682622401
+    431382.6640065848478
+    11965.0322013129517
+    848013.5799194310093
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_2[24:33] vs expected@metabolite_data$LCMS_Pos$WT_2_2[24:33]
+    7498.2215821120253
+    11802.4390628840738
+    108244.3742878705671
+  - 46258.8188629813303
+  + 46258.8188629813158
+    71932.8114953947515
+    94612.4319083504961
+  - 8132.3837578511530
+  + 8132.3837578511511
+    14051.3340842430516
+    693842.6162196325604
+    9708.6884349929896
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_2[3
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@metabolite_data$LCMS_Pos$WT_1_1[23:35] vs expected@metabolite_data$LCMS_Pos$WT_1_1[23:35]
+    10182.0512290273327
+    6501.7292680175588
+    8409.3560169560060
+  - 61398.0101114220161
+  + 61398.0101114220233
+    30134.7811826025682
+    45281.3747453715332
+    83923.6342341161071
+    4552.7223749052537
+    5278.1871134603443
+  - 363226.3843284789473
+  + 363226.3843284790055
+    8652.8430063848518
+    6769.9927216237911
+    12543.2360247010056
+  
+  actual@metabolite_data$LCMS_Pos$WT_1_1[41:44] vs expected@metabolite_data$LCMS_Pos$WT_1_1[41:44]
+    72136.9081983713404
+    9527.2386386366052
+    8564.3959140433126
+  - 17634.9699232457460
+  + 17634.9699232457497
+  
+  actual@metabolite_data$LCMS_Pos$WT_1_2[9:15] vs expected@metabolite_data$LCMS_Pos$WT_1_2[9:15]
+    806086.8233035363955
+    50520.2353399886561
+    482006.5455118090613
+  - 11859.7244613313615
+  + 11859.7244613313633
+    837779.3444741391577
+    14811.1004724100858
+    25907.2217134769890
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[8:14] vs expected@metabolite_data$LCMS_Pos$WT_2_1[8:14]
+    58593.96732301283919
+    912522.20282290840987
+    63026.75744827718881
+  - 700418.08699729631189
+  + 700418.08699729642831
+    16303.74153498959822
+    661061.39411136705894
+    21103.30785737659971
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[15:21] vs expected@metabolite_data$LCMS_Pos$WT_2_1[15:21]
+    36146.95930948390742
+    608609.70695918065030
+    285700.87367668602383
+  - 5677.19358397859833
+  + 5677.19358397859924
+    537763.54685195337515
+    12720.32766561923199
+    8745.72897872580143
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_1[37:43] vs expected@metabolite_data$LCMS_Pos$WT_2_1[37:43]
+    70142.52685954296612
+    242906.08585781769943
+    450306.86297668796033
+  - 483864.84824101085542
+  + 483864.84824101091363
+    78451.91225464065792
+    18435.58638484003313
+    13967.83803468214319
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_2[4:13] vs expected@metabolite_data$LCMS_Pos$WT_2_2[4:13]
+    66787.5021694526076
+    81953.4848027687549
+    1012793.8811339034000
+  - 50066.3646920074461
+  + 50066.3646920074389
+    44131.9628269151362
+    1222620.2267937662546
+  - 73472.2247682622547
+  + 73472.2247682622401
+    431382.6640065848478
+    11965.0322013129517
+    848013.5799194310093
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_2[24:33] vs expected@metabolite_data$LCMS_Pos$WT_2_2[24:33]
+    7498.2215821120253
+    11802.4390628840738
+    108244.3742878705671
+  - 46258.8188629813303
+  + 46258.8188629813158
+    71932.8114953947515
+    94612.4319083504961
+  - 8132.3837578511530
+  + 8132.3837578511511
+    14051.3340842430516
+    693842.6162196325604
+    9708.6884349929896
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_2[3
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@metabolite_data$LCMS_Pos$WT_1_2[9:15] vs expected@metabolite_data$LCMS_Pos$WT_1_2[9:15]
+    19.6205775034408347
+    15.6246022957352064
+    18.8786962055129237
+  - 13.5339045129451154
+  + 13.5339045129451172
+    19.6762125113479449
+    13.8544886201935160
+    14.6611223748747825
+  
+  actual@metabolite_data$LCMS_Pos$WT_2_2[27:33] vs expected@metabolite_data$LCMS_Pos$WT_2_2[27:33]
+    15.4974719964532941
+    16.1343824285287312
+    16.5297573915705769
+  - 12.9896399709168193
+  + 12.9896399709168175
+    13.7785221606780546
+    19.4042510082377291
+    13.2452092877728642
+  
+  actual@metabolite_data$LCMS_Pos$WT_3_2[3:9] vs expected@metabolite_data$LCMS_Pos$WT_3_2[3:9]
+    16.0047180003618905
+    16.0808010212125616
+    15.8157368841330932
+  - 19.4598510143832293
+  + 19.4598510143832257
+    15.1768834376135526
+    15.3604864316970193
+    18.7391648857654509
+  
+  actual@metabolite_data$LCMS_Pos$WT_3_2[20:26] vs expected@metabolite_data$LCMS_Pos$WT_3_2[20:26]
+    12.5376264257668595
+    12.5100678465566233
+    15.5865655388692357
+  - 13.2357490955336008
+  + 13.2357490955336026
+    12.2610237183381212
+    12.9414961651471714
+    16.3737227682179061
+  
+  actual@metabolite_data$LCMS_Pos$WT_3_2[34:40] vs expected@metabolite_data$LCMS_Pos$WT_3_2[34:40]
+    12.2945179219801179
+    12.7824046046552322
+    16.9527560851235073
+  - 15.7345553242383041
+  + 15.7345553242383058
+    16.8357069395155001
+    17.8404271658524323
+    18.6147698666980830
+  
+  actual@metabolite_data$LCMS_Pos$WT_5_1[15:21] vs expected@metabolite_data$LCMS_Pos$WT_5_1[15:21]
+    14.8170251588476258
+    18.7429385166803328
+    17.5743498671155969
+  - 12.6997045486945197
+  + 12.6997045486945215
+    18.7651418419120581
+    13.5067395172372180
+    12.5707289754846787
+  
+  actual@metabolite_data$LCMS_Pos$WT_5_1[28:34] vs expected@metabolite_data$LCMS_Pos$WT_5_1[28:34]
+    16.1522473982868853
+    16.7015536736347414
+    12.1415349797106025
+  - 13.5695253114162622
+  + 13.5695253114162639
+    19.4116805675242148
+    13.5661108438030720
+    12.9274940150286248
+  
+  actual@metabolite_data$LCMS_Pos$WT_5_1[38:44] vs expected@metabolite_data$LCMS_Pos$WT_5_1[38:44]
+    17.9655279674284429
+    18.8948290274198207
+    18.8364240070831599
+  - 16.4585670577710630
+  + 16.4585670577710665
+    14.0373004770191656
+    14.2018481056525658
+    14.5296298050920960
+  
+  actual@metabolite_data$LCMS_Pos$KO_1_1[28:34] vs expected@metabolite_data$LCMS_Pos$KO_1_1[28:34]
+    16.1714217545025356
+    16.8180216418630444
+    12.2517748270177655
+  - 13.4890128792217006
+  + 13.4890128792217023
+    19.1395085475723050
+    13.3854638674627271
+    13.0046413905669009
+  
+  actual@metabolite_data$LCMS_Pos$KO_2_1[8:23] vs expected@metabolite
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@metabolite_data$LCMS_Pos$WT_1_1[9:44] vs expected@metabolite_data$LCMS_Pos$WT_1_1[9:44]
+    19.8020346346748504
+    16.3348687602701155
+    18.8577398710127291
+  - 13.5081464192832481
+  + 13.5081464192832463
+    19.6822029095671240
+  - 13.7795598980308309
+  + 13.7795598980308327
+  - 14.9738081499957367
+  + 14.9738081499957385
+  - 19.0158120692670707
+  + 19.0158120692670671
+    17.1065764830671867
+  - 12.3669003925920222
+  + 12.3669003925920258
+    18.7242305123658639
+  - 12.7293571996669357
+  + 12.7293571996669339
+  - 12.7272713721590467
+  + 12.7272713721590485
+    15.7562576126506926
+    13.6503986820626544
+    13.0411320146631144
+    13.4041804532338293
+  - 16.2219058329480141
+  + 16.2219058329480177
+  - 15.2010478564621003
+  + 15.2010478564621021
+  - 15.7704030429248174
+  + 15.7704030429248192
+    16.6729546191293423
+  - 12.5542293085686421
+  + 12.5542293085686438
+  - 12.7246538950703254
+  + 12.7246538950703272
+    18.8387492584485052
+    13.4349971188126602
+  - 13.1126551801910587
+  + 13.1126551801910569
+    13.9639428040030520
+    17.2706555902872232
+  - 16.3679826175561871
+  + 16.3679826175561836
+    17.5960166873505131
+    18.3765142129749997
+    18.4166099163708559
+    16.4506876586662898
+  - 13.5584993754152059
+  + 13.5584993754152077
+    13.4140972023158582
+  - 14.4371222928294340
+  + 14.4371222928294358
+  
+  actual@metabolite_data$LCMS_Pos$WT_1_2[5:19] vs expected@metabolite_data$LCMS_Pos$WT_1_2[5:19]
+    16.3816097587809857
+    19.5929953628442952
+    15.2777819193576931
+  - 15.1981654323026820
+  + 15.1981654323026838
+    19.7522165287514397
+    15.7952884214023612
+    19.0177400363214240
+  - 13.5886105640881336
+  + 13.5886105640881354
+    19.8090855508947676
+  - 13.9367179111442976
+  + 13.9367179111442994
+    14.7825233294923741
+  - 18.4388348919598783
+  + 18.4388348919598819
+    17.3287437777531217
+    12.3816261585785821
+    19.2316925280040429
+  
+  actual@metabolite_data$LCMS_Pos$WT_1_2[21:44] vs expected@metabolite_data$LCMS_Pos$WT_1_2[21:44]
+    12.7717824324919675
+    16.1575609160062896
+    13.8651451301778295
+  - 13.1945318169447372
+  + 13.1945318169447390
+    13.1951530946447928
+    16.6148115174609323
+    15.2597590632548528
+    16.0283687844973493
+  - 16.8478133176075602
+  + 16.8478133176075637
+  - 12.6298405744611308
+  + 12.6298405744611326
+    13.1920275638324753
+    18.5918435176173702
+    13.9197649955499827
+    12.4557697578017095
+    13.5255071786107273
+  - 17.3762613575798142
+  + 17.3762613575798106
+  - 15.9348679705188268
+  + 15.9348679705188285
+  - 17.3663261142840888
+  + 17.3663261142840852
+  - 18.5535132032298051
+  + 18.5535132032298087
+    18.8234249426161071
+    16.5934782446998526
+    13.8591975342412344
+    13.518
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@metabolite_data$LCMS_Pos vs expected@metabolite_data$LCMS_Pos
+                                              WT_1_1   WT_1_2   WT_2_1   WT_2_2   WT_3_1   WT_3_2   WT_4_1   WT_4_2   WT_5_1   WT_5_2   WT_6_1   WT_6_2   KO_1_1   KO_1_2   KO_2_1   KO_2_2   KO_3_1   KO_3_2   KO_4_1   KO_4_2   KO_5_1   KO_5_2   KO_6_1   KO_6_2
+  - actual@metabolite_data$LCMS_Pos[1, ]    16.19884 16.03797 15.95093 15.92024 15.99669 16.24180 16.01648 15.60007 15.81005 16.13198 16.19325 16.03033 15.93390 16.04291 15.93143 16.05266 16.02029 15.95149 16.28881 16.14199 15.96812 15.79940 15.94026 15.94436
+  + expected@metabolite_data$LCMS_Pos[1, ]  15.03719 14.87632 14.78928 14.75859 14.83505 15.08016 14.85483 14.43842 14.64840 14.97033 15.03160 14.86868 14.77225 14.88127 14.76978 14.89101 14.85864 14.78985 15.12716 14.98035 14.80647 14.63775 14.77861 14.78271
+  - actual@metabolite_data$LCMS_Pos[2, ]    16.20550 16.01704 15.78843 15.94484 15.96013 15.94742 15.84895 15.75637 15.88532 16.09909 16.11308 16.10394 15.90029 16.11065 15.86421 16.03611 15.95977 16.05695 16.31080 16.09044 15.85451 15.90261 16.09973 15.91188
+  + expected@metabolite_data$LCMS_Pos[2, ]  14.43344 14.24498 14.01637 14.17278 14.18807 14.17536 14.07689 13.98431 14.11326 14.32704 14.34102 14.33189 14.12823 14.33860 14.09215 14.26405 14.18771 14.28489 14.53874 14.31839 14.08246 14.13055 14.32768 14.13982
+  - actual@metabolite_data$LCMS_Pos[3, ]    16.09434 16.17939 15.87747 15.97257 15.96394 16.16434 16.02210 15.97514 15.90973 16.16756 16.01867 16.00619 15.99994 16.15371 15.92430 16.04188 15.99063 15.95725 16.19857 16.19138 15.99924 15.63450 15.98072 16.11032
+  + expected@metabolite_data$LCMS_Pos[3, ]  14.37149 14.45653 14.15462 14.24971 14.24108 14.44148 14.29925 14.25229 14.18687 14.44470 14.29581 14.28333 14.27708 14.43085 14.20144 14.31902 14.26777 14.23440 14.47572 14.46853 14.27639 13.91165 14.25786 14.38747
+  - actual@metabolite_data$LCMS_Pos[4, ]    16.20019 15.93492 15.79385 15.95906 16.06525 16.14832 16.00799 15.80082 15.95428 16.02962 16.07713 16.14888 16.06761 16.05005 15.99777 15.98113 16.01722 15.87138 16.20043 15.83993 15.90437 15.89704 15.99228 15.99507
+  + expected@metabolite_data$LCMS_Pos[4, ]  13.55726 13.29199 13.15092 13.31614 13.42233 13.50539 13.36506 13.15790 13.31136 13.38670 13.43420 13.50595 13.42469 13.40712 13.35484 13.33820 13.37430 13.22846 13.55750 13.19701 13.26144 13.25411 13.34936 13.35214
+  - actual@metabolite_data$LCMS_Pos[5, ]    16.38051 16.49125 16.31301 16.23315 16.29936 16.37712 16.31116 16.01093 16.63346 15.84345 16.17561 16.69324 16.11072 16.91964 16.00733 16.34847 16.38381 16.43900 16.41434 16.75967 16.55230 16.12073 16.34468 16.48339
+  + expected@metabolite_data$LCMS_Pos[
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$states[[state]]` to be identical to `frozen[[omic]]$states[[state]]`.
+  Differences:
+  actual@metabolite_data$LCMS_Pos vs expected@metabolite_data$LCMS_Pos
+                                              WT_1_1   WT_1_2   WT_2_1   WT_2_2   WT_3_1   WT_3_2   WT_4_1   WT_4_2   WT_5_1   WT_5_2   WT_6_1   WT_6_2   KO_1_1   KO_1_2   KO_2_1   KO_2_2   KO_3_1   KO_3_2   KO_4_1   KO_4_2   KO_5_1   KO_5_2   KO_6_1   KO_6_2
+  - actual@metabolite_data$LCMS_Pos[1, ]    16.19884 16.03797 15.95093 15.92024 15.99669 16.24180 16.01648 15.60007 15.81005 16.13198 16.19325 16.03033 15.93390 16.04291 15.93143 16.05266 16.02029 15.95149 16.28881 16.14199 15.96812 15.79940 15.94026 15.94436
+  + expected@metabolite_data$LCMS_Pos[1, ]  15.03719 14.87632 14.78928 14.75859 14.83505 15.08016 14.85483 14.43842 14.64840 14.97033 15.03160 14.86868 14.77225 14.88127 14.76978 14.89101 14.85864 14.78985 15.12716 14.98035 14.80647 14.63775 14.77861 14.78271
+  - actual@metabolite_data$LCMS_Pos[2, ]    16.20550 16.01704 15.78843 15.94484 15.96013 15.94742 15.84895 15.75637 15.88532 16.09909 16.11308 16.10394 15.90029 16.11065 15.86421 16.03611 15.95977 16.05695 16.31080 16.09044 15.85451 15.90261 16.09973 15.91188
+  + expected@metabolite_data$LCMS_Pos[2, ]  14.43344 14.24498 14.01637 14.17278 14.18807 14.17536 14.07689 13.98431 14.11326 14.32704 14.34102 14.33189 14.12823 14.33860 14.09215 14.26405 14.18771 14.28489 14.53874 14.31839 14.08246 14.13055 14.32768 14.13982
+  - actual@metabolite_data$LCMS_Pos[3, ]    16.09434 16.17939 15.87747 15.97257 15.96394 16.16434 16.02210 15.97514 15.90973 16.16756 16.01867 16.00619 15.99994 16.15371 15.92430 16.04188 15.99063 15.95725 16.19857 16.19138 15.99924 15.63450 15.98072 16.11032
+  + expected@metabolite_data$LCMS_Pos[3, ]  14.37149 14.45653 14.15462 14.24971 14.24108 14.44148 14.29925 14.25229 14.18687 14.44470 14.29581 14.28333 14.27708 14.43085 14.20144 14.31902 14.26777 14.23440 14.47572 14.46853 14.27639 13.91165 14.25786 14.38747
+  - actual@metabolite_data$LCMS_Pos[4, ]    16.20019 15.93492 15.79385 15.95906 16.06525 16.14832 16.00799 15.80082 15.95428 16.02962 16.07713 16.14888 16.06761 16.05005 15.99777 15.98113 16.01722 15.87138 16.20043 15.83993 15.90437 15.89704 15.99228 15.99507
+  + expected@metabolite_data$LCMS_Pos[4, ]  13.55726 13.29199 13.15092 13.31614 13.42233 13.50539 13.36506 13.15790 13.31136 13.38670 13.43420 13.50595 13.42469 13.40712 13.35484 13.33820 13.37430 13.22846 13.55750 13.19701 13.26144 13.25411 13.34936 13.35214
+  - actual@metabolite_data$LCMS_Pos[5, ]    16.38051 16.49125 16.31301 16.23315 16.29936 16.37712 16.31116 16.01093 16.63346 15.84345 16.17561 16.69324 16.11072 16.91964 16.00733 16.34847 16.38381 16.43900 16.41434 16.75967 16.55230 16.12073 16.34468 16.48339
+  + expected@metabolite_data$LCMS_Pos[
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$correlations` to be identical to `frozen[[omic]]$correlations`.
+  Differences:
+  actual$LCMS_Pos vs expected$LCMS_Pos
+                             pearson_correlation
+  - actual$LCMS_Pos[1, ]               0.9896394
+  + expected$LCMS_Pos[1, ]             0.9940490
+  - actual$LCMS_Pos[2, ]               0.9828113
+  + expected$LCMS_Pos[2, ]             0.9902811
+  - actual$LCMS_Pos[3, ]               0.9828420
+  + expected$LCMS_Pos[3, ]             0.9898231
+  - actual$LCMS_Pos[4, ]               0.9901574
+  + expected$LCMS_Pos[4, ]             0.9943541
+  - actual$LCMS_Pos[5, ]               0.9903166
+  + expected$LCMS_Pos[5, ]             0.9943048
+  - actual$LCMS_Pos[6, ]               0.9857631
+  + expected$LCMS_Pos[6, ]             0.9915199
+  - actual$LCMS_Pos[7, ]               0.9890728
+  + expected$LCMS_Pos[7, ]             0.9943298
+  - actual$LCMS_Pos[8, ]               0.9881651
+  + expected$LCMS_Pos[8, ]             0.9932941
+  - actual$LCMS_Pos[9, ]               0.9905134
+  + expected$LCMS_Pos[9, ]             0.9939092
+  - actual$LCMS_Pos[10, ]              0.9892299
+  + expected$LCMS_Pos[10, ]            0.9938415
+  - actual$LCMS_Pos[11, ]              0.9878970
+  + expected$LCMS_Pos[11, ]            0.9929633
+  - actual$LCMS_Pos[12, ]              0.9921422
+  + expected$LCMS_Pos[12, ]            0.9953084
+  - actual$LCMS_Pos[13, ]              0.9861065
+  + expected$LCMS_Pos[13, ]            0.9916455
+  - actual$LCMS_Pos[14, ]              0.9913420
+  + expected$LCMS_Pos[14, ]            0.9948109
+  - actual$LCMS_Pos[15, ]              0.9902608
+  + expected$LCMS_Pos[15, ]            0.9943748
+  - actual$LCMS_Pos[16, ]              0.9881252
+  + expected$LCMS_Pos[16, ]            0.9932958
+  - actual$LCMS_Pos[17, ]              0.9870242
+  + expected$LCMS_Pos[17, ]            0.9927266
+  - actual$LCMS_Pos[18, ]              0.9772392
+  + expected$LCMS_Pos[18, ]            0.9873326
+  - actual$LCMS_Pos[19, ]              0.9862809
+  + expected$LCMS_Pos[19, ]            0.9923099
+  - actual$LCMS_Pos[20, ]              0.9825283
+  + expected$LCMS_Pos[20, ]            0.9908104
+  - actual$LCMS_Pos[21, ]              0.9850448
+  + expected$LCMS_Pos[21, ]            0.9914948
+  - actual$LCMS_Pos[22, ]              0.9894397
+  + expected$LCMS_Pos[22, ]            0.9939291
+  - actual$LCMS_Pos[23, ]              0.9922353
+  + expected$LCMS_Pos[23, ]            0.9954703
+  - actual$LCMS_Pos[24, ]              0.9837382
+  + expected$LCMS_Pos[24, ]            0.9904842
+  - actual$LCMS_Pos[25, ]              0.9912820
+  + expected$LCMS_Pos[25, ]            0.9949001
+  - actual$LCMS_Pos[26, ]              0.9857551
+  + expected$LCMS_Pos[26, ]            0.9919388
+  - actual$LCMS_Pos[27, ]              0.9894866
+  + expected$LCMS_Pos[27, ]   
+file: test-workflow-omics-declarations.R
+test: KIT-073: the omics declarations and their journeys equal the frozen dump of the two files the core replaced
+kind: failure
+message:
+  Expected `current[[omic]]$da$results[products]` to be identical to `frozen[[omic]]$da$results[products]`.
+  Differences:
+  actual$da_metabolites_long vs expected$da_metabolites_long
+                                       metabolite_id         logFC   AveExpr            t    P.Value adj.P.Val         B fdr_qvalue fdr_value_bh raw_pvalue metabolite_name intensity.WT_1_1.WT intensity.WT_1_2.WT intensity.WT_2_1.WT intensity.WT_2_2.WT intensity.WT_3_1.WT intensity.WT_3_2.WT intensity.WT_4_1.WT intensity.WT_4_2.WT intensity.WT_5_1.WT intensity.WT_5_2.WT intensity.WT_6_1.WT intensity.WT_6_2.WT intensity.KO_1_1.KO intensity.KO_1_2.KO intensity.KO_2_1.KO intensity.KO_2_2.KO intensity.KO_3_1.KO intensity.KO_3_2.KO intensity.KO_4_1.KO intensity.KO_4_2.KO intensity.KO_5_1.KO intensity.KO_5_2.KO intensity.KO_6_1.KO intensity.KO_6_2.KO
+  - actual$da_metabolites_long[1, ]         pos_M09   0.1536620873 19.598547  1.784246468 0.08196263 0.7212712 -4.156595  0.7212712    0.7212712 0.08196263            SM             19.618847           19.750844           18.898998           19.496522           19.809308           19.484070           19.573804           19.377434           19.614394           19.440029           19.691979           19.504358           19.631596           19.467824           19.865100           19.757677           19.604032           19.463181           19.830499           19.566391           19.701350           19.658103           20.000794           19.557984
+  + expected$da_metabolites_long[1, ]       pos_M31  -0.1501259825 14.606685 -1.763226428 0.08243783 0.7676015 -4.172213  0.7676015    0.7676015 0.08243783            PC             15.014635           14.571559           14.506054           14.769705           14.442171           14.316371           14.956083           14.714760           14.576652           14.501265           15.082109           14.729609           14.701649           14.803682           14.697835           14.164393           14.370023           14.529707           14.566826           14.425009           14.386363           14.964786           14.306255           14.462931
+  - actual$da_metabolites_long[2, ]         pos_M30   0.1786575219 12.723538  1.796451016 0.07996986 0.7212712 -4.146046  0.7212712    0.7212712 0.07996986            CE             13.081490           12.427120           12.719612           12.316849           12.901817           12.747831           12.564049           12.692282           12.621581           12.534380           12.082663           12.920843           13.007332           12.855677           12.582942           12.929058           12.883856           12.810720           12.354103           12.484125           13.206714           12.907350           12.951123           12.781407
+  + expected$da_metabolites_lo
