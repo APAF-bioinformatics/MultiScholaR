@@ -343,3 +343,7 @@ running_total_after_batch_1	counted batch 1	-	lifecycle spend 64.43 + batch 1 ac
 46036533705	k188-s-deciding-m168-r2-51	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 93); running total at ceilings 2150.98	-	10.0 ceiling	in progress
 46036541720	k188-s-reported-l64-10	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 110); running total at ceilings 2162.65	-	11.67 ceiling	in progress
 46036537829	k188-s-deciding-m168-r2-52	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 93); running total at ceilings 2172.65	-	10.0 ceiling	in progress
+46024647156	k188-s-deciding-m168-r2-40	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 93)	94.2	6.94 (indicative)	exit 0; ok
+46024651237	k188-s-deciding-m168-r2-41	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 93)	89.3	6.62 (indicative)	exit 0; ok
+46040083489	k188-s-deciding-m168-r2-53	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 93); running total at ceilings 2182.65	-	10.0 ceiling	in progress
+46040086859	k188-s-reported-l64-11	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 110); running total at ceilings 2194.32	-	11.67 ceiling	in progress
