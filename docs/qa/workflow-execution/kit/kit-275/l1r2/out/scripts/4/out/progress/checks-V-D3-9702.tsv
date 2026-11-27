@@ -1,0 +1,39 @@
+check	cell	rep	condition	value	threshold	pass	note
+L1_status	D3	9702	V0 NO	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9702	V0 NO e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9702	V0 NO e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9702	V0 LM2	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9702	V0 LM2 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9702	V0 LM2 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9702	V0 GK2	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9702	V0 GK2 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9702	V0 GK2 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9702	V0 LA	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9702	V0 LA e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9702	V0 LA e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9702	V0 GA	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9702	V0 GA e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9702	V0 GA e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9702	V1a NO	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9702	V1a NO e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9702	V1a NO e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9702	V1a LM2	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9702	V1a LM2 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9702	V1a LM2 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9702	V1a GK2	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9702	V1a GK2 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9702	V1a GK2 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9702	V1a LA	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9702	V1a LA e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9702	V1a LA e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9702	V1a GA	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9702	V1a GA e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9702	V1a GA e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9702	VD LM1	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9702	VD LM1 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9702	VD LM1 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D3	9702	VD GK1	ok	ok or a stated result	TRUE	NA NA
+E5	D3	9702	VD GK1 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D3	9702	VD GK1 e5_x	NA	fail list equals the filter's removed set	TRUE	
+E1	D3	9702	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D3	9702	V mask: VD is V0's masked values without a	NA	exact	TRUE	

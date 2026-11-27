@@ -1,0 +1,16 @@
+check	cell	rep	condition	value	threshold	pass	note
+L1_status	D6	9701	V1p NO	ok	ok or a stated result	TRUE	NA NA
+E5	D6	9701	V1p NO e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D6	9701	V1p NO e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D6	9701	V1p LM2	ok	ok or a stated result	TRUE	NA NA
+E5	D6	9701	V1p LM2 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D6	9701	V1p LM2 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D6	9701	V1p GK2	ok	ok or a stated result	TRUE	NA NA
+E5	D6	9701	V1p GK2 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D6	9701	V1p GK2 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D6	9701	V1p LA	ok	ok or a stated result	TRUE	NA NA
+E5	D6	9701	V1p LA e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D6	9701	V1p LA e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D6	9701	V1p GA	ok	ok or a stated result	TRUE	NA NA
+E5	D6	9701	V1p GA e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D6	9701	V1p GA e5_x	NA	fail list equals the filter's removed set	TRUE	

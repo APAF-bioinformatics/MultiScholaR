@@ -1,0 +1,4 @@
+K275 l1r2: 92 units, 4 workers, lifecycle TRUE, smoke FALSE
+K275 l1r2: blind scorer exit 0
+K275 l1r2: 13 checks, 0 failed
+K275 l1r2 finished: 92 units (0 with an error), wall 123.0 min

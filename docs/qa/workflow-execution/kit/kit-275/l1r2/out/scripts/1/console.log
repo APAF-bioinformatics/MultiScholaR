@@ -1,0 +1,12 @@
+parse: sim-k275.R parses
+parse: score-k275.R parses
+parse: fixture-k275.R parses
+parse: crosscheck-k275.R parses
+parse: run-selftest.R parses
+parse: all scripts parse
+Warning message:
+In system2("Rscript", shQuote(file.path(kit, "crosscheck-k275.R")),  :
+  running command ''Rscript' '/home/runner/work/MultiScholaR/MultiScholaR/pkg/docs/qa/workflow-execution/kit/kit-275/crosscheck-k275.R' 2>&1' had status 1
+Error in is.call(e) && identical(e[[1L]], as.name("<-")) && as.character(e[[2L]]) %in%  : 
+  'length = 3' in coercion to 'logical(1)'
+Execution halted

@@ -1,0 +1,34 @@
+item	value	pass
+parse	853 rows, 79 columns, 92 row files	TRUE
+coverage GA D3	28 journeys, 28 completed	TRUE
+coverage GA D4	32 journeys, 32 completed	TRUE
+coverage GA D6	28 journeys, 28 completed	TRUE
+coverage GK D3	57 journeys, 56 completed	TRUE
+coverage GK D4	60 journeys, 60 completed	TRUE
+coverage GK D6	68 journeys, 68 completed	TRUE
+coverage GSC D3	12 journeys, 12 completed	TRUE
+coverage GSC D4	12 journeys, 12 completed	TRUE
+coverage GSC D6	12 journeys, 12 completed	TRUE
+coverage LA D3	28 journeys, 28 completed	TRUE
+coverage LA D4	32 journeys, 32 completed	TRUE
+coverage LA D6	28 journeys, 28 completed	TRUE
+coverage LG D3	16 journeys, 16 completed	TRUE
+coverage LG D4	16 journeys, 16 completed	TRUE
+coverage LG D6	16 journeys, 16 completed	TRUE
+coverage LM D3	64 journeys, 63 completed	TRUE
+coverage LM D4	68 journeys, 68 completed	TRUE
+coverage LM D6	76 journeys, 76 completed	TRUE
+coverage LX D3	8 journeys, 8 completed	TRUE
+coverage LX D4	8 journeys, 8 completed	TRUE
+coverage LX D6	8 journeys, 8 completed	TRUE
+coverage NO D3	40 journeys, 40 completed	TRUE
+coverage NO D4	44 journeys, 44 completed	TRUE
+coverage NO D6	44 journeys, 44 completed	TRUE
+coverage PEG2 D3	8 journeys, 8 completed	TRUE
+coverage PEG2 D4	8 journeys, 8 completed	TRUE
+coverage PEG2 D6	8 journeys, 8 completed	TRUE
+coverage PEL2 D3	8 journeys, 8 completed	TRUE
+coverage PEL2 D4	8 journeys, 8 completed	TRUE
+coverage PEL2 D6	8 journeys, 8 completed	TRUE
+E8	15 compared, 15 equal, max deviation 0	TRUE
+instrument_stop	0 row(s) with status instrument or a guard class	TRUE

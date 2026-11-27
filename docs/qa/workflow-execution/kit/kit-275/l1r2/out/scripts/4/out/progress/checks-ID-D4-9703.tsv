@@ -1,0 +1,16 @@
+check	cell	rep	condition	value	threshold	pass	note
+L1_status	D4M	9703	V1a NO	ok	ok or a stated result	TRUE	NA NA
+E5	D4M	9703	V1a NO e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D4M	9703	V1a NO e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D4M	9703	V1a LM2	ok	ok or a stated result	TRUE	NA NA
+E5	D4M	9703	V1a LM2 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D4M	9703	V1a LM2 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D4M	9703	V1a GK2	ok	ok or a stated result	TRUE	NA NA
+E5	D4M	9703	V1a GK2 e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D4M	9703	V1a GK2 e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D4M	9703	V1a LA	ok	ok or a stated result	TRUE	NA NA
+E5	D4M	9703	V1a LA e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D4M	9703	V1a LA e5_x	NA	fail list equals the filter's removed set	TRUE	
+L1_status	D4M	9703	V1a GA	ok	ok or a stated result	TRUE	NA NA
+E5	D4M	9703	V1a GA e5_y	NA	fail list equals the filter's removed set	TRUE	
+E5	D4M	9703	V1a GA e5_x	NA	fail list equals the filter's removed set	TRUE	
