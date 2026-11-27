@@ -1,0 +1,59 @@
+{
+  "requested_by": "KIT-262 M3 scoring, once, on the union of j1 to j7 (m3-counted-declaration.md): scorer self-test first, then full scoring with the plan TSV, M2's verdict, supersede list none; blind until this run",
+  "label": "KIT-262 M3 scoring fc727c85",
+  "package_commit": "fc727c856410410930400b40c64ef104bd968af2",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/score-m3-k262.R",
+      "args": [
+        "selftest",
+        "k262-score/s1",
+        "docs/qa/workflow-execution/kit/kit-262/e5hand-m3-expected.tsv"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k262-score/s1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/score-m3-k262.R",
+      "args": [
+        "full",
+        "k262-score/s2",
+        "docs/qa/workflow-execution/kit/kit-262/m3-plan.tsv",
+        "docs/qa/workflow-execution/kit/kit-262/results/m2-verdict.tsv",
+        "docs/qa/workflow-execution/kit/kit-262/j1",
+        "docs/qa/workflow-execution/kit/kit-262/j2",
+        "docs/qa/workflow-execution/kit/kit-262/j3a",
+        "docs/qa/workflow-execution/kit/kit-262/j3b",
+        "docs/qa/workflow-execution/kit/kit-262/j4a",
+        "docs/qa/workflow-execution/kit/kit-262/j4b",
+        "docs/qa/workflow-execution/kit/kit-262/j5",
+        "docs/qa/workflow-execution/kit/kit-262/j6",
+        "docs/qa/workflow-execution/kit/kit-262/j7"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k262-score/s2",
+      "out_pattern": "\\.(tsv|txt|md)$",
+      "timeout_minutes": 90
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
