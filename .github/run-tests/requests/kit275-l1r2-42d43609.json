@@ -1,0 +1,82 @@
+{
+  "requested_by": "KIT-275 r2.1 L1-r2 (blind lifecycle, r 9701-9703, tier V included) plus the G1 re-run; declarations/l1r2-declaration.md on kit-275; 218 job-min; audit verdict SEND after S-1/S-2 (applied)",
+  "label": "KIT-275 L1-r2 + G1 42d43609",
+  "package_commit": "42d4360947d3553fc4b309445afce4a49d849c50",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/selftest/run-selftest.R",
+      "args": [],
+      "env": {
+        "K275_SELFTEST_OUT": "k275-l1r2-selftest"
+      },
+      "out": "k275-l1r2-selftest",
+      "out_pattern": "\\.(tsv|txt|json)$",
+      "timeout_minutes": 15
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/fixture-k275.R",
+      "args": [
+        "D3,D4,D6",
+        "1",
+        "20",
+        "k275-g1"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k275-g1",
+      "out_pattern": "\\.(tsv|txt|json)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/score-k275.R",
+      "args": [
+        "--g1",
+        "k275-g1/g1.tsv",
+        "k275-g1"
+      ],
+      "env": {},
+      "out": "k275-g1",
+      "out_pattern": "\\.(tsv|txt|json)$",
+      "timeout_minutes": 5
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/sim-k275.R",
+      "args": [
+        "all",
+        "D3,D4,D6",
+        "9701",
+        "9703",
+        "k275-l1r2"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K275_LIFECYCLE": "1",
+        "K275_FAULT": "1",
+        "K275_JOB": "l1r2",
+        "K275_DECLARATION": "docs/qa/workflow-execution/kit/kit-275/declarations/l1r2-declaration.md",
+        "K275_TIER_V_BOUND": "bfbcb34dfc888637d879e89029a9ee86505b476a",
+        "K275_REQUIRED_MARKERS": "normalisation_fallback,itsd_outcome,ruv_fallback"
+      },
+      "out": "k275-l1r2",
+      "out_pattern": "\\.(tsv|txt|json)$",
+      "timeout_minutes": 168
+    }
+  ],
+  "fetch_refs": [
+    "kit-188-ruv-default-calibration"
+  ],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
