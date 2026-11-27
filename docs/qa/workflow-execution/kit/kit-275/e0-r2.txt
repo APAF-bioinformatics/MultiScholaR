@@ -1,0 +1,375 @@
+====================================================================================================
+sim-k275.R: 31 hunks against 577a6f7b (r1's audited version)
+hunk old 295-295 new 295-295  [5.3): the planting of one anomalous sample (two for V2) in assay LCMS_]
+  -     # K275-plant (section 5.3 of the ticket): the planting of one anomalous sample (two for V2) in assay LCMS_Pos, after every draw of
+  +     # K275-plant (section 5.3 of the ticket; K275-r2: 5.3): the planting of one anomalous sample (two for V2) in assay LCMS_Pos, after every draw of
+hunk old 298-298 new 298-298  [5.3]
+  -     if (!is.null(anomaly)) {   # anomaly = list(form = "g" | "p" | "s" | "t", samples = c(n_runs) or c(n_runs, per))
+  +     if (!is.null(anomaly)) {   # r2.1: anomaly = list(kind = "replace" | "add", c = <number>, s = <number>, scope = "all" | "spared" | "tenth", samples = c(n_runs) or c(n_runs, per))   # K275-r2: 5.3
+hunk old 303-303 new 303-303  [5.3]
+  -         cm <- if (identical(anomaly$form, "p")) 0.5 else 0
+  +         cm <- anomaly$c   # r2.1: kind "replace" (V1w c = 0, V1p c = 0.5: r1's "g" and "p", unchanged) or kind "add" (V1a s = 4: c unused)   # K275-r2: 5.3
+hunk old 308-309 new 308-309  [5.3]
+  -             d_feat <- (p$level + cm * (mu[rf] - p$level) + sqrt(1 - cm^2) * p$sd * z_feat[[s]][rf]) - mu[rf]
+  -             if (identical(anomaly$form, "t")) d_feat[!(seq_along(rf) %in% order(u_feat[rf])[seq_len(round(0.1 * length(rf)))])] <- 0
+  +             d_feat <- if (identical(anomaly$kind, "add")) anomaly$s * z_feat[[s]][rf] else (p$level + cm * (mu[rf] - p$level) + sqrt(1 - cm^2) * p$sd * z_feat[[s]][rf]) - mu[rf]   # K275-r2: 5.3
+  +             if (identical(anomaly$scope, "tenth")) d_feat[!(seq_along(rf) %in% order(u_feat[rf])[seq_len(round(0.1 * length(rf)))])] <- 0   # K275-r2: 5.3
+hunk old 311-311 new 311-311  [5.3]
+  -             d_lbl <- if (!anomaly$form %in% c("s", "t")) (p$level + cm * (mu_lbl[rl] - p$level) + sqrt(1 - cm^2) * p$sd * z_lbl[[s]][rl]) - mu_lbl[rl] else numeric(length(rl))
+  +             d_lbl <- if (!identical(anomaly$scope, "all")) numeric(length(rl)) else if (identical(anomaly$kind, "add")) anomaly$s * z_lbl[[s]][rl] else (p$level + cm * (mu_lbl[rl] - p$level) + sqrt(1 - cm^2) * p$sd * z_lbl[[s]][rl]) - mu_lbl[rl]   # K275-r2: 5.3
+hunk old 923-923 new 923-931  [4, 8.1 (V1a is the deciding anomaly; r1's V1g is V1w); C-3): the package tree against the bound commit, outside the ticket's ; C-3, 13 (the staging commit that binds every tier; the declaration nam]
+  - VERSIONS <- c("V0", "V1g", "V1p", "V1s", "V1t", "V2", "VD")
+  + BOUND_COMMIT <- Sys.getenv("K275_BOUND_COMMIT", "bfbcb34dfc888637d879e89029a9ee86505b476a")   # K275-r2: C-3, 13 (the staging commit that binds every tier; the declaration names it)
+  + #' K275-r2 (C-3): the package tree against the bound commit, outside the ticket's folder, with git's exit status (0 and an empty diff = the tree equals the bound commit's).
+  + treeVsBound <- function() {
+  +     out <- tryCatch(suppressWarnings(system2("git", c("diff", "--stat", BOUND_COMMIT, "HEAD", "--", ".", shQuote(":(exclude)docs/qa/workflow-execution/kit/kit-275")),
+  +         stdout = TRUE, stderr = FALSE)), error = function(e) structure(character(), status = 127L))
+  +     status <- attr(out, "status")
+  +     list(git_status = if (is.null(status)) 0L else as.integer(status), diff_stat = paste(out, collapse = " | "))
+  + }
+  + VERSIONS <- c("V0", "V1a", "V1w", "V1p", "V1s", "V1t", "V2", "VD")   # K275-r2: 4, 8.1 (V1a is the deciding anomaly; r1's V1g is V1w)
+hunk old 925-925 new 933-933  [4, 8.1 label ------------------------------]
+  - # ---- tier plans (section 4): version, arm; LX is added in tier D from GK2 (V1g) and GK1 (VD) ------------------------------
+  + # ---- tier plans (section 4): version, arm; LX is added in tier D from GK2 (V1a) and GK1 (VD)   # K275-r2: 4, 8.1 label ------------------------------
+hunk old 928-930 new 936-938  [4 (tier D: V1w's NO journey, the reported arm of R2.4: 17 rows per dat; 8.1 label]
+  -     D = rbind(planOf("V0", c("NO", "LM2", "GK2", "LA", "GA")), planOf("V1g", c("NO", "LM2", "GK2", "LA", "GA")),
+  -         planOf("VD", c("LM1", "GK1", "LA", "GA"))),
+  -     K = rbind(planOf("V0", c("LM1", "LM3", "GK1", "GK3", "LM2@20", "LG2")), planOf("V1g", c("LM1", "LM3", "GK1", "GK3", "LM2@20", "LG2")),
+  +     D = rbind(planOf("V0", c("NO", "LM2", "GK2", "LA", "GA")), planOf("V1a", c("NO", "LM2", "GK2", "LA", "GA")),
+  +         planOf("VD", c("LM1", "GK1", "LA", "GA")), planOf("V1w", "NO")),   # K275-r2: 4 (tier D: V1w's NO journey, the reported arm of R2.4: 17 rows per data set)
+  +     K = rbind(planOf("V0", c("LM1", "LM3", "GK1", "GK3", "LM2@20", "LG2")), planOf("V1a", c("LM1", "LM3", "GK1", "GK3", "LM2@20", "LG2")),   # K275-r2: 8.1 label
+hunk old 933-934 new 941-942  [8.1 label]
+  -     S = rbind(planOf("V0", "GSC"), planOf("V1g", "GSC"), planOf("V1s", c("GSC", "GK2"))),
+  -     V = rbind(planOf("V0", c("NO", "LM2", "GK2", "LA", "GA")), planOf("V1g", c("NO", "LM2", "GK2", "LA", "GA")),
+  +     S = rbind(planOf("V0", "GSC"), planOf("V1a", "GSC"), planOf("V1s", c("GSC", "GK2"))),   # K275-r2: 8.1 label
+  +     V = rbind(planOf("V0", c("NO", "LM2", "GK2", "LA", "GA")), planOf("V1a", c("NO", "LM2", "GK2", "LA", "GA")),   # K275-r2: 8.1 label
+hunk old 939-939 new 947-947  [8.1 label]
+  -     ID = planOf("V1g", c("NO", "LM2", "GK2", "LA", "GA")))
+  +     ID = planOf("V1a", c("NO", "LM2", "GK2", "LA", "GA")))   # K275-r2: 8.1 label
+hunk old 1000-999 new 1008-1017  [5.3, section 4): the anomaly list of a version. V1a: the additive devi]
+  + #' K275-r2 (5.3, section 4): the anomaly list of a version. V1a: the additive deviation s = 4, all rows (the deciding anomaly); V1w: r1's wholly replaced
+  + #' profile (kind "replace", c = 0; the reported arm); V1p: c = 0.5; V1s: V1a's deviation with the labelled controls left unplanted; V1t: V1a's deviation on a
+  + #' random tenth of Y's features; V2: V1a in two samples. V1b (s = 6) is not a counted version (the pilot accepted V1a). All five names are always present
+  + #' (the generator reads them with `$`, which matches by prefix when a name is absent).
+  + anomalyOf <- function(version, n_runs, per) {
+  +     list0 <- function(kind, c, s, scope, samples) list(kind = kind, c = c, s = s, scope = scope, samples = samples)
+  +     switch(version, V0 = NULL, V1a = list0("add", NA_real_, 4, "all", n_runs), V1w = list0("replace", 0, NA_real_, "all", n_runs),
+  +         V1p = list0("replace", 0.5, NA_real_, "all", n_runs), V1s = list0("add", NA_real_, 4, "spared", n_runs), V1t = list0("add", NA_real_, 4, "tenth", n_runs),
+  +         V2 = list0("add", NA_real_, 4, "all", c(n_runs, per)), stop(sprintf("K275: unknown version %s", version)))
+  + }
+hunk old 1008-1010 new 1026-1026  [5.3 (the versions' anomaly lists in one place)]
+  -     anomaly <- switch(version, V0 = NULL, V1g = list(form = "g", samples = n_runs), V1p = list(form = "p", samples = n_runs),
+  -         V1s = list(form = "s", samples = n_runs), V1t = list(form = "t", samples = n_runs),
+  -         V2 = list(form = "g", samples = c(n_runs, per)), stop(sprintf("K275: unknown version %s", version)))
+  +     anomaly <- anomalyOf(version, n_runs, per)   # K275-r2: 5.3 (the versions' anomaly lists in one place)
+hunk old 1019-1020 new 1035-1036  [5.3]
+  -     one <- function(form, samples) {
+  -         deltas <- generate(cellname, "N1", r, list(form = form, samples = samples))$planted_delta
+  +     one <- function(version) {   # K275-r2: 5.3
+  +         deltas <- generate(cellname, "N1", r, anomalyOf(version, n_runs, per))$planted_delta
+hunk old 1026-1026 new 1042-1042  [5.3 (the key "g" is the DECIDING version's share, now V1a: the columns]
+  -     list(g = one("g", n_runs), p = one("p", n_runs), s = one("s", n_runs), t = one("t", n_runs), two = one("g", c(n_runs, per)))
+  +     list(g = one("V1a"), p = one("V1p"), s = one("V1s"), t = one("V1t"), two = one("V2"))   # K275-r2: 5.3 (the key "g" is the DECIDING version's share, now V1a: the columns dot_g and den_g keep their names)
+hunk old 1107-1107 new 1123-1123  [R2.4, 8.1 (the fixed genuine sample's best correlation, printed beside]
+  -     "cy_pre_a", "cy_post_a", "cx_pre_a", "cx_post_a", "qa_pre", "qa_post",
+  +     "cy_pre_a", "cy_post_a", "cx_pre_a", "cx_post_a", "qa_pre", "qa_post", "cy_genuine",   # K275-r2: R2.4, 8.1 (the fixed genuine sample's best correlation, printed beside PC1)
+hunk old 1160-1159 new 1176-1177  [R2.4, 8.1; R2.4, 8.1 (as the pilot's `cy_genuine`: the first run of group B, a ge]
+  +     g_run <- sprintf("R%03d", ctx$per + 1L)   # K275-r2: R2.4, 8.1 (as the pilot's `cy_genuine`: the first run of group B, a genuine sample of a's group)
+  +     row[["cy_genuine"]] <- if (g_run %in% sim$runs) cy_pre[[g_run]] else NA_real_   # K275-r2: R2.4, 8.1
+hunk old 1194-1195 new 1212-1213  [C-2, K2-07 (V1a is the deciding version and reads the "g" share); C-2, K2-07 (V1w has no RUV journey: cy is NULL, so NA)]
+  -     delta <- ctx$shares[[switch(version, V2 = "two", V1p = "p", V1s = "s", V1t = "t", "g")]][["delta"]]
+  -     row[["kappa_c"]] <- if (is.null(cy) || !version %in% c("V1g", "V1p", "V1s", "V1t", "V2")) NA_real_ else kappaControls(delta, cy[["controls"]])
+  +     delta <- ctx$shares[[switch(version, V2 = "two", V1a = "g", V1w = "g", V1p = "p", V1s = "s", V1t = "t", "g")]][["delta"]]   # K275-r2: C-2, K2-07 (V1a is the deciding version and reads the "g" share)
+  +     row[["kappa_c"]] <- if (is.null(cy) || !version %in% c("V1a", "V1w", "V1p", "V1s", "V1t", "V2")) NA_real_ else kappaControls(delta, cy[["controls"]])   # K275-r2: C-2, K2-07 (V1w has no RUV journey: cy is NULL, so NA)
+hunk old 1225-1225 new 1243-1243  [8.1 label.]
+  - #' LX (4): the legacy test (the DA kernel pair, `~ 0 + group`) on the corrected matrix of a declared journey (GK2 on V1g, GK1 on VD).
+  + #' LX (4): the legacy test (the DA kernel pair, `~ 0 + group`) on the corrected matrix of a declared journey (GK2 on V1a, GK1 on VD)   # K275-r2: 8.1 label.
+hunk old 1337-1337 new 1355-1355  [8.1 label]
+  -     for (version in c("V0", "V1g")) {
+  +     for (version in c("V0", "V1a")) {   # K275-r2: 8.1 label
+hunk old 1364-1363 new 1382-1412  [E1): the feature levels mu and the labelled controls' levels mu_lbl of; E1): the planting stream's draws for sample 1, redrawn with the seed r]
+  + #' K275-r2 (E1): the planting stream's draws for sample 1, redrawn with the seed rule and draw order of ticket 5.3 (feature rows, then labelled rows, of the
+  + #' `LCMS_Pos` assay, in generator order); the session's random-number state is restored.
+  + plantingZ <- function(cellname, r) {
+  +     p <- CELLS[[cellname]]
+  +     n_feat <- p$per_assay * length(p$assays)
+  +     n_lbl <- if (identical(p$omic, "prot")) 0L else 5L * length(p$assays)
+  +     old <- if (exists(".Random.seed", envir = globalenv())) get(".Random.seed", envir = globalenv()) else NULL
+  +     set.seed(276000000 + 100000 * p$idx + r, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")
+  +     z_feat <- list(stats::rnorm(n_feat), stats::rnorm(n_feat)); z_lbl <- list(stats::rnorm(n_lbl), stats::rnorm(n_lbl))
+  +     u_feat <- stats::runif(n_feat)
+  +     if (!is.null(old)) assign(".Random.seed", old, envir = globalenv()) else rm(".Random.seed", envir = globalenv())
+  +     feat_assay <- rep(p$assays, each = p$per_assay)
+  +     lbl_assay <- rep(p$assays, each = 5L)[seq_len(n_lbl)]
+  +     list(feat = z_feat[[1L]][which(feat_assay == Y_ASSAY)], lbl = z_lbl[[1L]][which(lbl_assay == Y_ASSAY)])
+  + }
+  + #' K275-r2 (E1): the feature levels mu and the labelled controls' levels mu_lbl of `generate()` (its first draws, in its order: the levels, the residual-variance
+  + #' chi-squares, the labelled levels), redrawn with the generator's seed rule, for the check of V1w's formula (c = 0); the session's random-number state is restored.
+  + generatorLevels <- function(cellname, r) {
+  +     p <- CELLS[[cellname]]
+  +     n_feat <- p$per_assay * length(p$assays)
+  +     n_lbl <- if (identical(p$omic, "prot")) 0L else 5L * length(p$assays)
+  +     old <- if (exists(".Random.seed", envir = globalenv())) get(".Random.seed", envir = globalenv()) else NULL
+  +     set.seed(275000000 + 100000 * p$idx + 10000 * match("N1", SCENARIOS) + r, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")
+  +     mu <- stats::rnorm(n_feat, p$level, p$sd)
+  +     chi <- 10 / stats::rchisq(n_feat, 10)
+  +     mu_lbl <- stats::rnorm(n_lbl, p$level, p$sd)
+  +     if (!is.null(old)) assign(".Random.seed", old, envir = globalenv()) else rm(".Random.seed", envir = globalenv())
+  +     feat_assay <- rep(p$assays, each = p$per_assay)
+  +     lbl_assay <- rep(p$assays, each = 5L)[seq_len(n_lbl)]
+  +     list(mu_feat = mu[which(feat_assay == Y_ASSAY)], mu_lbl = mu_lbl[which(lbl_assay == Y_ASSAY)])
+  + }
+hunk old 1368-1368 new 1417-1418  [8.1 label; 8.3 E1 (V1w's line)]
+  -     v1 <- getV("V1g")
+  +     v1 <- getV("V1a")   # K275-r2: 8.1 label
+  +     vw <- getV("V1w")   # K275-r2: 8.3 E1 (V1w's line)
+hunk old 1373-1373 new 1423-1423  [5.3]
+  -         identical(generate(cellname, "N1", ctx$r, list(form = "g", samples = n_runs)), generate(cellname, "N1", ctx$r, list(form = "g", samples = n_runs)))
+  +         identical(generate(cellname, "N1", ctx$r, anomalyOf("V1a", n_runs, ctx$per)), generate(cellname, "N1", ctx$r, anomalyOf("V1a", n_runs, ctx$per)))   # K275-r2: 5.3
+hunk old 1381-1382 new 1431-1447  [8.1 label; 8.3 E1; 8.3 E1, C-1: ONLY the exact identities are E1 (and so F4): V1a's devia; C-1]
+  -     addCheck("E1", cellname, ctx$r, "V1g equals V0 except the planted entries", dev, "exactly 0", isTRUE(dev == 0) &&
+  -         identical(v0$sim$oracle, v1$sim$oracle) && any(y1 != y0))
+  +     addCheck("E1", cellname, ctx$r, "V1a equals V0 except the planted entries", dev, "exactly 0", isTRUE(dev == 0) &&
+  +         identical(v0$sim$oracle, v1$sim$oracle) && any(y1 != y0))   # K275-r2: 8.1 label
+  +     # K275-r2: 8.3 E1, C-1: ONLY the exact identities are E1 (and so F4): V1a's deviation is 4 z_j (z from the planting stream, redrawn by plantingZ) to 1e-12 on every
+  +     # planted feature and labelled-control row of Y; V1w's is r1's formula with c = 0. The mean and SD readings are reported checks outside E1 and F4.
+  +     z <- plantingZ(cellname, ctx$r)
+  +     zz <- c(z[["feat"]], z[["lbl"]])
+  +     dev_a <- (y1 - y0)[planted_rows, match(a_run, v1$sim$runs)]
+  +     addCheck("E1", cellname, ctx$r, "V1a's deviation equals 4 z on the planted rows", max(abs(dev_a - 4 * zz)), "at most 1e-12", length(dev_a) == length(zz) && max(abs(dev_a - 4 * zz)) <= 1e-12)   # K275-r2: 8.3 E1
+  +     lv <- generatorLevels(cellname, ctx$r)
+  +     p <- CELLS[[cellname]]
+  +     dev_w <- (vw$sim$y - y0)[planted_rows, match(a_run, vw$sim$runs)]
+  +     want_w <- (p$level + p$sd * zz) - c(lv[["mu_feat"]], lv[["mu_lbl"]])
+  +     addCheck("E1", cellname, ctx$r, "V1w's deviation equals r1's formula with c = 0", max(abs(dev_w - want_w)), "at most 1e-12", length(dev_w) == length(want_w) && max(abs(dev_w - want_w)) <= 1e-12 &&
+  +         all(((vw$sim$y - y0)[!planted_cell]) == 0))   # K275-r2: 8.3 E1
+  +     addCheck("R1_dev_mean", cellname, ctx$r, "V1a", mean(dev_a), "within 4 SE of 0 (reported, not E1, not F4)", abs(mean(dev_a)) <= 4 * 4 / sqrt(length(dev_a)))   # K275-r2: C-1
+  +     addCheck("R1_dev_sd", cellname, ctx$r, "V1a", stats::sd(dev_a), "within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)",
+  +         abs(stats::sd(dev_a) / 4 - 1) <= 4 / sqrt(2 * (length(dev_a) - 1)))   # K275-r2: C-1
+hunk old 1388-1389 new 1453-1454  [8.1 label]
+  -     addCheck("E1", cellname, ctx$r, "V1t is V1g on its 25 features and 0 elsewhere", length(t_nz), "25 features; equal to V1g", length(t_nz) == 25L &&
+  -         identical(t_delta[t_nz], g[t_nz]) && all(t_delta[setdiff(names(t_delta), t_nz)] == 0))
+  +     addCheck("E1", cellname, ctx$r, "V1t is V1a on its 25 features and 0 elsewhere", length(t_nz), "25 features; equal to V1a", length(t_nz) == 25L &&
+  +         identical(t_delta[t_nz], g[t_nz]) && all(t_delta[setdiff(names(t_delta), t_nz)] == 0))   # K275-r2: 8.1 label
+hunk old 1391-1392 new 1456-1457  [8.1 label]
+  -     addCheck("E1", cellname, ctx$r, "V1s is V1g on the features and 0 on the labelled controls", NA, "exact", identical(s_delta[!lab], g[!lab]) &&
+  -         all(s_delta[lab] == 0))
+  +     addCheck("E1", cellname, ctx$r, "V1s is V1a on the features and 0 on the labelled controls", NA, "exact", identical(s_delta[!lab], g[!lab]) &&
+  +         all(s_delta[lab] == 0))   # K275-r2: 8.1 label
+hunk old 1396-1396 new 1461-1461  [8.1 label]
+  -     n1 <- journeys[["V1g NO"]]
+  +     n1 <- journeys[["V1a NO"]]   # K275-r2: 8.1 label
+hunk old 1407-1408 new 1472-1473  [8.1 label]
+  -         addCheck("E2", cellname, ctx$r, "NO: the DA of X is identical across V0 and V1g", NA, "exact", !is.null(n0[["da"]]) && !is.null(n1[["da"]]) &&
+  -             identical(key(n0), key(n1)))
+  +         addCheck("E2", cellname, ctx$r, "NO: the DA of X is identical across V0 and V1a", NA, "exact", !is.null(n0[["da"]]) && !is.null(n1[["da"]]) &&
+  +             identical(key(n0), key(n1)))   # K275-r2: 8.1 label
+hunk old 1445-1446 new 1510-1511  [8.1 label]
+  -             # LX: the legacy test on the declared design's corrected matrix, on V1g (from GK2) and on VD (from GK1)
+  -             for (pair in list(c("V1g", "GK2"), c("VD", "GK1"))) {
+  +             # LX: the legacy test on the declared design's corrected matrix, on V1a (from GK2) and on VD (from GK1)   # K275-r2: 8.1 label
+  +             for (pair in list(c("V1a", "GK2"), c("VD", "GK1"))) {   # K275-r2: 8.1 label
+hunk old 1457-1457 new 1522-1522  [8.1 label]
+  -         v1 <- getV("V1g")
+  +         v1 <- getV("V1a")   # K275-r2: 8.1 label
+hunk old 1463-1463 new 1528-1528  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 1596-1595 new 1661-1661  [C-3 (git's exit status beside the diff: an empty string is not a faile]
+  +             bound_commit = BOUND_COMMIT, package_tree_vs_bound = treeVsBound(),   # K275-r2: C-3 (git's exit status beside the diff: an empty string is not a failed git)
+sim-k275.R: 1 label-only hunks, 30 other hunks
+====================================================================================================
+score-k275.R: 34 hunks against 577a6f7b (r1's audited version)
+hunk old 63-62 new 63-63  [7.1 (VAL-401 (2)): the one-sided upper limit at 0.01/3 below this is F]
+  + PC1_FLOOR <- 0.80   # K275-r2: 7.1 (VAL-401 (2)): the one-sided upper limit at 0.01/3 below this is F1
+hunk old 65-64 new 66-66  [5.3 (the counted r2 data sets are r = 2001 to 2200 / 2001 to 2100 / 20]
+  + R_BASE <- as.integer(Sys.getenv("K275_SCORE_BASE", "2000"))   # K275-r2: 5.3 (the counted r2 data sets are r = 2001 to 2200 / 2001 to 2100 / 2001 to 2020; the cells index them 1 to R)
+hunk old 127-127 new 129-130  [5.3; 5.3 (data set index 1 to R from here on)]
+  -     if (any(!is.finite(rows[["r"]]) | rows[["r"]] < 1 | !is.finite(lim) | rows[["r"]] > lim)) stop("K275 scoring stops: a row outside its tier's declared data sets (RANGE-1)")
+  +     if (any(!is.finite(rows[["r"]]) | rows[["r"]] < R_BASE + 1 | !is.finite(lim) | rows[["r"]] > R_BASE + lim)) stop("K275 scoring stops: a row outside its tier's declared data sets (RANGE-1)")   # K275-r2: 5.3
+  +     rows[["r"]] <- rows[["r"]] - R_BASE   # K275-r2: 5.3 (data set index 1 to R from here on)
+hunk old 130-130 new 133-134  [4 (tier D: V1w's NO journey is the 17th row)]
+  -     EXPECT_ROWS <- c(D = 16L, K = 17L, F = 5L, S = 4L, V = 12L, M = 7L, T = 6L, E = 6L, ID = 5L)
+  +     EXPECT_ROWS <- c(D = 17L,   # K275-r2: 4 (tier D: V1w's NO journey is the 17th row)
+  +          K = 17L, F = 5L, S = 4L, V = 12L, M = 7L, T = 6L, E = 6L, ID = 5L)
+hunk old 152-152 new 156-156  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 307-307 new 311-311  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 309-311 new 313-318  [7.1, R2.4, K2-07]
+  -         lo <- cpLower(sum(x), length(x), 0.01 / 3)
+  -         ctl[[length(ctl) + 1L]] <- data.frame(design = design, id = "PC1", n_valid = length(x), estimate = if (length(x)) mean(x) else NA_real_, lo = lo,
+  -             hi = cpUpper(sum(x), length(x), 0.01 / 3), label = if (covered(length(x), R) && gt(lo, 0.90)) "passes" else "FAILS", stringsAsFactors = FALSE)
+  +         up <- cpUpper(sum(x), length(x), 0.01 / 3)
+  +         gv <- vec("D", design, "V1a", "NO", "cy_genuine", R)
+  +         gv <- gv[is.finite(gv)]
+  +         ctl[[length(ctl) + 1L]] <- data.frame(design = design, id = "PC1", n_valid = length(x), estimate = if (length(x)) mean(x) else NA_real_, lo = cpLower(sum(x), length(x), 0.01 / 3),
+  +             hi = up, label = if (!covered(length(x), R)) "not determined (coverage)" else if (ge(up, PC1_FLOOR)) "passes" else "FAILS",
+  +             genuine_below_05 = sprintf("%d of %d", sum(gv < 0.5), length(gv)), stringsAsFactors = FALSE)   # K275-r2: 7.1, R2.4, K2-07
+hunk old 316-316 new 323-323  [R2.4]
+  -             hi = up, label = if (covered(length(x), R) && le(up, M_ABS)) "passes" else "FAILS", stringsAsFactors = FALSE)
+  +             hi = up, label = if (covered(length(x), R) && le(up, M_ABS)) "passes" else "FAILS", genuine_below_05 = "", stringsAsFactors = FALSE)   # K275-r2: R2.4
+hunk old 320-320 new 327-327  [R2.4]
+  -     cat(sprintf("K275 controls: %s\n", paste(sprintf("%s %s %s", ctl$id, ctl$design, ctl$label), collapse = "; ")))
+  +     cat(sprintf("K275 controls: %s\n", paste(sprintf("%s %s %s%s", ctl$id, ctl$design, ctl$label, ifelse(nzchar(ctl$genuine_below_05), sprintf(" (genuine below 0.5: %s)", ctl$genuine_below_05), "")), collapse = "; ")))   # K275-r2: R2.4
+hunk old 323-323 new 330-330  [R2.4, 8.1 (V1w: the reported arm, read only by its own cells: no label]
+  - combos <- unique(rows[rows[["version"]] %in% c("V0", "V1g", "V1p", "V1s", "V1t", "V2", "VD"), c("tier", "design", "version", "arm")])
+  + combos <- unique(rows[rows[["version"]] %in% c("V0", "V1a", "V1w", "V1p", "V1s", "V1t", "V2", "VD"), c("tier", "design", "version", "arm")])   # K275-r2: R2.4, 8.1 (V1w: the reported arm, read only by its own cells: no label, no pass or fail)
+hunk old 355-355 new 362-362  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 406-406 new 413-413  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 432-432 new 439-439  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 434-435 new 441-442  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 440-441 new 447-449  [7.1, R2.4, K2-07. PC1: P_pre(0.5) of V1a (arm NO) at ONE floor: F1 fir]
+  -     # PC1: P_pre(0.5) of V1g (arm NO), lower limit above 0.90, one-sided 0.01/3
+  -     x <- vec("D", design, "V1g", "NO", "fa_pre_05", R)
+  +     # K275-r2: 7.1, R2.4, K2-07. PC1: P_pre(0.5) of V1a (arm NO) at ONE floor: F1 fires when fewer than 144 of 200 data sets have the planted sample failed, i.e. when the one-sided
+  +     # upper Clopper-Pearson limit at 0.01/3 is below 0.80; the fixed genuine sample's count below 0.5 is printed beside it (R2.4). No V1a row: "not determined (coverage)", never a pass or fail.
+  +     x <- vec("D", design, "V1a", "NO", "fa_pre_05", R)
+hunk old 443-446 new 451-456  [7.1, R2.4]
+  -     lo <- cpLower(sum(x), length(x), 0.01 / 3)
+  -     pass <- covered(length(x), R) && gt(lo, 0.90)
+  -     emit("control", "PC1", "D", design, "V1g", "NO", "P_pre(0.5) lower limit above 0.90", length(x), R, if (length(x)) mean(x) else NA_real_, lo, cpUpper(sum(x), length(x), 0.01 / 3),
+  -         0.01 / 3, "one", label = if (pass) "passes" else "FAILS")
+  +     up <- cpUpper(sum(x), length(x), 0.01 / 3)
+  +     gv <- vec("D", design, "V1a", "NO", "cy_genuine", R)
+  +     gv <- gv[is.finite(gv)]
+  +     pass <- if (covered(length(x), R)) ge(up, PC1_FLOOR) else NA
+  +     emit("control", "PC1", "D", design, "V1a", "NO", "P_pre(0.5) upper limit at least 0.80 (fewer than 144 of 200: F1)", length(x), R, if (length(x)) mean(x) else NA_real_, cpLower(sum(x), length(x), 0.01 / 3), up,
+  +         0.01 / 3, "one", label = if (is.na(pass)) "not determined (coverage)" else if (pass) "passes" else "FAILS", note = sprintf("genuine sample (cy_genuine) below 0.5 in %d of %d data sets", sum(gv < 0.5), length(gv)))   # K275-r2: 7.1, R2.4
+hunk old 456-456 new 466-466  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 458-458 new 468-468  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 463-463 new 473-473  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 466-466 new 476-476  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 470-470 new 480-480  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 475-475 new 485-485  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 484-484 new 494-494  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 488-488 new 498-498  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 493-493 new 503-503  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 497-497 new 507-507  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 501-501 new 511-511  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 507-507 new 517-517  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 513-513 new 523-523  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 517-517 new 527-527  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 519-519 new 529-529  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 521-522 new 531-532  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 563-563 new 573-575  [7.1; K2-07 (no V1a row: not determined, never a pass or fail)]
+  - f1 <- !all(unlist(lab[grepl("^PC1", names(lab))]))
+  + pc1 <- unlist(lab[grepl("^PC1", names(lab))])
+  + f1 <- any(pc1 %in% FALSE)   # K275-r2: 7.1
+  + pc1_nd <- any(is.na(pc1)) || length(pc1) < length(DESIGNS)   # K275-r2: K2-07 (no V1a row: not determined, never a pass or fail)
+hunk old 573-573 new 585-585  [K2-07 (PC1 not determined: no V1a row)]
+  - outcome <- if (f1) "Stop (F1)" else if (f2) "Stop (F2)" else if (f3) "Stop (F3)" else if (f4) "Stop (F4)" else if (all(lm2) && all(gk2)) "R1" else
+  + outcome <- if (f1) "Stop (F1)" else if (pc1_nd) "Stop (PC1 not determined (coverage))" else if (f2) "Stop (F2)" else if (f3) "Stop (F3)" else if (f4) "Stop (F4)" else if (all(lm2) && all(gk2)) "R1" else   # K275-r2: K2-07 (PC1 not determined: no V1a row)
+score-k275.R: 22 label-only hunks, 12 other hunks
+====================================================================================================
+selftest/make-selftest.py: 45 hunks against 577a6f7b (r1's audited version)
+hunk old 65-64 new 65-66  [7.1; R2.4 (the fixed genuine sample below 0.5 in this many of the 200 V1a N]
+  + GENUINE_BELOW = {"D3": 150, "D4": 14, "D6": 0}   # K275-r2: R2.4 (the fixed genuine sample below 0.5 in this many of the 200 V1a NO rows of a design)
+  + PC1_FLOOR = 0.80   # K275-r2: 7.1
+hunk old 78-78 new 80-83  [R2.4 (the 17th row)]
+  -             rows.append(blank(version="V1g", arm="NO", fa_pre_05=0 if r <= nonfail else 1, fa_post_05=1, any_call_y=0, null_p05_y=0.05, se2_mod_y=1.0, dot_g=0.0, **common))
+  +             gb = GENUINE_BELOW[design]
+  +             rows.append(blank(version="V1a", arm="NO", fa_pre_05=0 if r <= nonfail else 1, fa_post_05=1, any_call_y=0, null_p05_y=0.05, se2_mod_y=1.0, dot_g=0.0,
+  +                               cy_genuine=0.40 if r <= gb else 0.80, **common))
+  +             rows.append(blank(version="V1w", arm="NO", fa_pre_05=1 if r <= 50 else 0, cy_pre_a=0.44, cy_genuine=0.80, any_call_y=0, null_p05_y=0.05, se2_mod_y=1.0, dot_g=0.0, **common))   # K275-r2: R2.4 (the 17th row)
+hunk old 85-85 new 90-90  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 91-91 new 96-96  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 104-104 new 109-110  [5.3 (the counted r2 data sets are r = 2001 to 2200; the scorer indexes]
+  - EXPECT_ROWS = {"D": 16, "K": 17, "F": 5, "S": 4, "V": 12, "M": 7, "T": 6, "E": 6, "ID": 5}
+  + R_BASE = 2000   # K275-r2: 5.3 (the counted r2 data sets are r = 2001 to 2200; the scorer indexes them 1 to R)
+  + EXPECT_ROWS = {"D": 17, "K": 17, "F": 5, "S": 4, "V": 12, "M": 7, "T": 6, "E": 6, "ID": 5}
+hunk old 116-115 new 122-125  [5.3]
+  + def shifted(row):   # K275-r2: 5.3
+  +     out = dict(row)
+  +     if out["r"] not in ("NA", ""): out["r"] = str(int(float(out["r"])) + R_BASE)
+  +     return out
+hunk old 118-117 new 128-128  [5.3]
+  +     rows = [shifted(r_) for r_ in rows]   # K275-r2: 5.3
+hunk old 140-140 new 151-151  [7.1 (F1: the one-sided upper limit at 0.01/3 below 0.80, i.e. fewer th]
+  -         ok = lo > 0.90 + TOL
+  +         ok = hi >= PC1_FLOOR - TOL   # K275-r2: 7.1 (F1: the one-sided upper limit at 0.01/3 below 0.80, i.e. fewer than 144 of 200)
+hunk old 142-143 new 153-159  [R2.4; R2.4 (V1w is reported, no label)]
+  -         E(f"cell|PC1|D|{design}|V1g|NO|label", "str", "passes" if ok else "FAILS")
+  -         E(f"cell|PC1|D|{design}|V1g|NO|lo", "num", lo)
+  +         E(f"cell|PC1|D|{design}|V1a|NO|label", "str", "passes" if ok else "FAILS")
+  +         E(f"cell|PC1|D|{design}|V1a|NO|lo", "num", lo)
+  +         E(f"cell|PC1|D|{design}|V1a|NO|hi", "num", hi)
+  +         E(f"cell|PC1|D|{design}|V1a|NO|note", "str", "genuine sample (cy_genuine) below 0.5 in %d of 200 data sets" % GENUINE_BELOW[design])   # K275-r2: R2.4
+  +         E(f"cell|P_pre|D|{design}|V1w|NO|estimate", "num", 0.25)   # K275-r2: R2.4 (V1w is reported, no label)
+  +         E(f"cell|P_pre|D|{design}|V1w|NO|n_valid", "num", 200)
+  +         E(f"cell|q_cy_pre_a|D|{design}|V1w|NO|estimate", "num", 0.44)
+hunk old 158-161 new 174-177  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 168-171 new 184-187  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 173-174 new 189-190  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 176-176 new 192-192  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 178-178 new 194-194  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 181-184 new 197-200  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 218-219 new 234-235  [7.1 (143 of 200: upper limit 0.7975, F1); 7.1 (144 of 200 failed: upper limit 0.8019, passes)]
+  - case("pc1_192", pc1_nonfail={"D3": 8})
+  - case("pc1_191", pc1_nonfail={"D3": 9})
+  + case("pc1_144", pc1_nonfail={"D3": 56})   # K275-r2: 7.1 (144 of 200 failed: upper limit 0.8019, passes)
+  + case("pc1_143", pc1_nonfail={"D3": 57})   # K275-r2: 7.1 (143 of 200: upper limit 0.7975, F1)
+hunk old 286-286 new 302-302  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 362-362 new 378-378  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 367-373 new 383-389  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 376-380 new 392-396  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 382-382 new 398-398  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 386-386 new 402-402  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 394-394 new 410-410  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 398-399 new 414-415  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 405-405 new 421-421  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 409-409 new 425-425  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 427-427 new 443-443  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 441-441 new 457-457  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 460-460 new 476-476  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 462-464 new 478-480  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 470-470 new 486-486  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 474-474 new 490-490  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 478-478 new 494-494  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 489-493 new 505-509  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 505-505 new 521-521  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 507-507 new 523-523  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 513-514 new 529-530  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 528-528 new 544-544  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 534-534 new 550-550  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 537-537 new 553-553  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 540-546 new 556-562  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 549-549 new 565-565  [7.1 (143 of 200 failed: F1)]
+  - for name, spec in (("controls_ok", {}), ("controls_f1", {"pc1_nonfail": {"D3": 9}})):
+  + for name, spec in (("controls_ok", {}), ("controls_f1", {"pc1_nonfail": {"D3": 57}})):   # K275-r2: 7.1 (143 of 200 failed: F1)
+hunk old 557-556 new 573-592  [K2-07, 8.1): a V1w NO row and NO V1a row gives "not determined (covera]
+  + 
+  + # ---- K275-r2 (K2-07, 8.1): a V1w NO row and NO V1a row gives "not determined (coverage)" for PC1 and never a pass or fail; V1w is read only by its own reported cell ---------
+  + rows = [r_ for r_ in d_rows({}) if r_["version"] != "V1a"]
+  + E = new_case("v1w_only", rows)
+  + E("decision|outcome", "str", "Stop (PC1 not determined (coverage))")
+  + for d_, _n in DESIGNS:
+  +     E(f"cell|PC1|D|{d_}|V1a|NO|label", "str", "not determined (coverage)")
+  +     E(f"cell|PC1|D|{d_}|V1a|NO|n_valid", "num", 0)
+  +     E(f"cell|P_pre|D|{d_}|V1w|NO|estimate", "num", 0.25)
+  +     E(f"cell|P_pre|D|{d_}|V1w|NO|n_valid", "num", 200)
+  +     E(f"cell|A|D|{d_}|V1a|LM2|label", "str", "not determined (coverage)")
+  + name = "controls_v1w_only"
+  + folder = os.path.join(OUT, "cases", name)
+  + os.makedirs(os.path.join(folder, "rows"), exist_ok=True)
+  + write_rows(os.path.join(folder, "rows", "d.tsv.gz"), rows)
+  + index.append((name, "controls", "K275_CONTROLS_ONLY=1;K275_SCORE_R=200,100,20;K275_BOOT_B=200"))
+  + expected += [(name, f"exit|{name}", "exit", "1", ""), (name, f"stdout|{name}", "substr", "PC1 D3 not determined (coverage)", ""), (name, f"stdout|{name}", "nosubstr", "FAILS", ""),
+  +              (name, "present|controls-judged.tsv", "present", "", "")]
+  + # the genuine sample's counts beside PC1 (R2.4): printed with the labels of the controls-only read
+  + expected += [("controls_ok", "stdout|controls_ok", "substr", "PC1 D3 passes (genuine below 0.5: %d of 200)" % GENUINE_BELOW["D3"], "")]
+hunk old 572-572 new 608-608  [8.1 label check (K2-07): V1g -> V1a]
+hunk old 575-576 new 611-612  [8.1 label check (K2-07): V1g -> V1a]
+selftest/make-selftest.py: 35 label-only hunks, 10 other hunks
+====================================================================================================
+selftest/run-selftest.R: 2 hunks against 577a6f7b (r1's audited version)
+hunk old 14-14 new 14-14  [audit Q1 (b)]
+  - scripts <- file.path(kit, c("sim-k275.R", "score-k275.R", "fixture-k275.R"))
+  + scripts <- file.path(kit, c("sim-k275.R", "score-k275.R", "fixture-k275.R", "crosscheck-k275.R"))   # K275-r2: audit Q1 (b)
+hunk old 28-27 new 28-31  [audit Q1 (b)): the cross-implementation identity check: the counted V1]
+  + # K275-r2 (audit Q1 (b)): the cross-implementation identity check: the counted V1a equals the pilot's, exactly, at r = 9601 in each design (a mismatch stops)
+  + cross <- system2("Rscript", shQuote(file.path(kit, "crosscheck-k275.R")), stdout = TRUE, stderr = TRUE)
+  + cat(cross, sep = "\n")
+  + if (!is.null(attr(cross, "status")) && attr(cross, "status") != 0L) quit(save = "no", status = 1L)
+selftest/run-selftest.R: 0 label-only hunks, 2 other hunks
+fixture-k275.R: unchanged against r1
+e0-diff.py: unchanged against r1
+selftest/check-selftest.py: unchanged against r1
+crosscheck-k275.R: new file, 34 lines [audit Q1 (b), the cross-implementation identity check (the pilot's control IS the counted control)]
+e0-r2: 0 untagged or unexpected hunk(s)
