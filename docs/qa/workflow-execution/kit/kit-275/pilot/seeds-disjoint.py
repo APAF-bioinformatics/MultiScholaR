@@ -47,5 +47,7 @@ assert not (set(range(9601, 9651)) & set(range(1, 201)) | set(range(9601, 9651))
             | set(range(9601, 9651)) & set(range(2001, 2201)) | set(range(9601, 9651)) & {9701, 9702, 9703}), "r ranges overlap"
 report("pilot (r 9601 to 9650; c = 1, 2, 3; s = 2; generator and planting)", pilot, pool(earlier, counted, l1r2))
 report("L1-r2 (r 9701 to 9703; all cells and scenarios)", l1r2, pool(earlier, counted, seeds_of(range(9601, 9651), label="pilot (all cells)")))
+report("counted r2 ranges (r 2001 to 2200 for tier D, 2001 to 2100 for tiers K, F, S, V, M, T, E, 2001 to 2020 for tier ID; all cells and scenarios, the conservative superset 2001 to 2200)", counted,
+       pool(earlier, seeds_of(range(9601, 9651), label="pilot (all cells)"), seeds_of(range(9701, 9704), label="L1-r2 (all cells)")))
 print("earlier steps: %d seeds; counted r2 ranges: %d seeds" % (len(earlier), len(counted)))
 sys.exit(1 if bad else 0)
