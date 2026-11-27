@@ -102,3 +102,4 @@ running_total_after_batch_1	counted batch 1	-	lifecycle spend 64.43 + batch 1 ac
 45924814235	k188-rh-las-fix	e42a41282600d3d6df2dc69ac37961a84dfe0aba	NON-counted rehearsal of the las fix (4 scripts; lifecycle line)	-	5.60 ceiling	in progress; lifecycle line 64.43 + 5.60 = 70.03, not in the running total at ceilings
 45923890611	k188-s-deciding-l64-24	-	INFRASTRUCTURE failure before any script ran: the setup step's download of RUVIIIC from github.com returned 504 Gateway Timeout; no unit started, no result; rerun once (same request, same inputs; instrument-defect rerun rule, no result)	-	-	rerun requested
 45923899082	k188-s-deciding-l64-27	-	INFRASTRUCTURE failure before any script ran (setup step, no unit started); rerun once (same request, same inputs)	-	-	rerun requested
+45907308556	k188-s-deciding-l64-12	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 146)	172.7	12.18 (indicative)	exit 0; ok
