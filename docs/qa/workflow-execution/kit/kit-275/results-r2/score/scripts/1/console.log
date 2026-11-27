@@ -1,0 +1,6 @@
+Warning messages:
+1: In transform(est - z * se) : NaNs produced
+2: In transform(est - z * se) : NaNs produced
+3: In transform(est - z * se) : NaNs produced
+4: In transform(est - z * se) : NaNs produced
+K275 scoring: 26000 rows, 7266 cells, outcome R1
