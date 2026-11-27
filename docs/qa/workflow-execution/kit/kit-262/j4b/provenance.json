@@ -1,0 +1,29 @@
+{
+  "ticket": "KIT-262 M3",
+  "commit": "4cd31d501cf396da854d2809b8275822f54bf8cd",
+  "scripts": {
+    "m3-k262.R": "9b42742695ca5b09f4ea4366d749f69d6f7f07e65349d28229ae2013d481da66",
+    "rules-k262.R": "9547d350211350615a4d6f6e8f992be2307bc753e24790dfdb6cd5a1578d9d0a",
+    "score-m3-k262.R": "89b10c7e704fc3083ecbb5020423dca811c8baf7834d06001c7ac953c257ab82",
+    "reestimate-m3-k262.R": "b6d18e54c08d85480d984b40357c6256acafc4e2373b5af51fbabd2e1972e94d"
+  },
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "packages": {
+    "MultiScholaR": "0.9.0",
+    "limma": "3.68.4",
+    "RUVIIIC": "1.0.19",
+    "ruv": "0.9.7.1",
+    "qvalue": "2.44.0",
+    "preprocessCore": null
+  },
+  "cells": "E-w",
+  "units_planned": 200,
+  "main_units": 200,
+  "stress_floor_order": "after",
+  "seed_rule": "eight cells 190000000 + 10000 x idx + r (VAL-235's); stress 262200000 + 10000 x idx + r (idx 9, 10)",
+  "lifecycle": false,
+  "stage1": false,
+  "continuation": false,
+  "finished": true,
+  "time_utc": "2026-11-27 00:38:25 UTC"
+}
