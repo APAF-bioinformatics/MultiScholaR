@@ -192,3 +192,13 @@ After the first batch (timings against plan); at each report point (2,640.74 and
 **Section 6 (completeness), amended.** The provenance `script_sha256` must equal b569d1c6... for a job of any type but `las`, and 64e8e314... for a `las` job; any other pairing stops. (The scorer reads rows only and needs no change.)
 
 **Invocations.** In `counted-jobs.tsv` the `invocation` of each of the 23 `las` rows (L12 3, M12 2, L64 9, M168 9) names `docs/qa/workflow-execution/kit/kit-188/sim-k188-las.R`; arguments, environment (`K188_JOBS=las`, `K188_JOB`, `OMP_NUM_THREADS=1`), data sets, plans and timeouts are unchanged. The failed `k188-s-las-l64-01` (run 45875346789, 12 instrument unit rows, no result) is re-sent under its own name as an instrument repair booked against the `las` block's reserve (VAL-54); the `las` jobs join the rolling under their existing plans.
+
+---
+
+## Addendum 2026-11-27 (LF-3): the `las` requests carry package commit e42a41282
+
+**Why.** The re-send of `k188-s-las-l64-01` (run 45936473956) exited 2 after 0 seconds: "cannot open file 'docs/qa/workflow-execution/kit/kit-188/sim-k188-las.R'". The run-tests scripts run from the request's `package_commit` checkout, and 5e4fc682 predates the copy. An instrument defect with no unit started (VAL-54), correction 1 for that request. The two failed `las-l64-01` runs, 45875346789 (partial-match guard stop, 12 instrument unit rows) and 45936473956 (file not found, no unit), stay on record as instrument runs with no result.
+
+**What changes.** The 23 `las` requests carry `package_commit` **e42a41282600d3d6df2dc69ac37961a84dfe0aba**; every other counted job stays on 5e4fc68236c43d36e2d421e245875f76720f20c1. **The two commits differ only under `docs/qa/workflow-execution/kit/kit-188`: `git diff --stat 5e4fc682 e42a41282` shows no path outside that folder (the whole tree, tests included, not only R, src, inst, DESCRIPTION and NAMESPACE).** `sim-k188.R` is identical at both (SHA-256 b569d1c6...); `sim-k188-las.R` at e42a41282 has SHA-256 64e8e3149cdbbd938f3ec1ef1fb2c161be8ab60f0654db27c28385c1acf4aef3.
+
+**Section 6, the pairing, amended:** a job's provenance must show (job type, `script_sha256`, package commit) as `las` = 64e8e314... at e42a4128; every other job = b569d1c6... at 5e4fc682; any other triple stops.
