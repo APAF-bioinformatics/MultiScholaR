@@ -444,7 +444,7 @@ pairedRatio <- function(tier, design, arm, column, R, transform = identity, alph
 for (design in DESIGNS) {
     R <- declaredR("D")
     idx <- indexOf(design, "D", R)
-    # PC1 (r2.1, 7.1): P_pre(0.5) of V1a (arm NO) at ONE floor: F1 fires when fewer than 144 of 200 data sets have the planted sample failed, i.e. when the one-sided
+    # K275-r2: 7.1, R2.4, K2-07. PC1: P_pre(0.5) of V1a (arm NO) at ONE floor: F1 fires when fewer than 144 of 200 data sets have the planted sample failed, i.e. when the one-sided
     # upper Clopper-Pearson limit at 0.01/3 is below 0.80; the fixed genuine sample's count below 0.5 is printed beside it (R2.4). No V1a row: "not determined (coverage)", never a pass or fail.
     x <- vec("D", design, "V1a", "NO", "fa_pre_05", R)
     x <- x[is.finite(x)]
@@ -582,7 +582,7 @@ cellA <- function(design, arm) lab[[paste("A", design, arm)]]
 lm2 <- vapply(DESIGNS, function(d) identical(cellA(d, "LM2"), "absorbed"), logical(1L))
 gk2 <- vapply(DESIGNS, function(d) identical(cellA(d, "GK2"), "absorbed"), logical(1L))
 acts <- vapply(DESIGNS, function(d) identical(cellA(d, "LM2"), "acts") && identical(cellA(d, "GK2"), "acts"), logical(1L))
-outcome <- if (f1) "Stop (F1)" else if (pc1_nd) "Stop (PC1 not determined (coverage))" else if (f2) "Stop (F2)" else if (f3) "Stop (F3)" else if (f4) "Stop (F4)" else if (all(lm2) && all(gk2)) "R1" else
+outcome <- if (f1) "Stop (F1)" else if (pc1_nd) "Stop (PC1 not determined (coverage))" else if (f2) "Stop (F2)" else if (f3) "Stop (F3)" else if (f4) "Stop (F4)" else if (all(lm2) && all(gk2)) "R1" else   # K275-r2: K2-07 (PC1 not determined: no V1a row)
     if (all(gk2) && !all(lm2)) "R2" else if (all(lm2) && !all(gk2)) "R3" else if (all(acts)) "R4" else "R5"
 decision <- data.frame(item = "outcome", value = outcome, stringsAsFactors = FALSE)
 decision <- rbind(decision, data.frame(item = "interrupted data sets", value = if (exists("interrupted") && length(interrupted)) paste(sort(interrupted), collapse = "; ") else "none", stringsAsFactors = FALSE))

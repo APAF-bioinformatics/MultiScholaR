@@ -292,7 +292,7 @@ generate <- function(cellname, scenario, r, anomaly = NULL) { # K275-sig
 
     feat_ids <- if (identical(omic, "prot")) sprintf("P%05d", seq_len(n_feat)) else sprintf("F%04d", seq_len(n_feat))
     lbl_ids <- if (n_lbl > 0L) sprintf(if (identical(omic, "lipid")) "LBL_%03d" else "CTL_%03d", seq_len(n_lbl)) else character()
-    # K275-plant (section 5.3 of the ticket, r2.1): the planting of one anomalous sample (two for V2) in assay LCMS_Pos, after every draw of
+    # K275-plant (section 5.3 of the ticket; K275-r2: 5.3): the planting of one anomalous sample (two for V2) in assay LCMS_Pos, after every draw of
     # generate(); its own stream, the session's random-number state restored, so no draw of any version differs from V0 except the planted entries
     planted_delta <- NULL
     if (!is.null(anomaly)) {   # r2.1: anomaly = list(kind = "replace" | "add", c = <number>, s = <number>, scope = "all" | "spared" | "tenth", samples = c(n_runs) or c(n_runs, per))   # K275-r2: 5.3

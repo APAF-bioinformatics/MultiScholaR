@@ -125,7 +125,7 @@ def shifted(row):   # K275-r2: 5.3
     return out
 def write_rows(path, rows, gz=True, pad=True):
     if pad: rows = complete(rows)
-    rows = [shifted(r_) for r_ in rows]
+    rows = [shifted(r_) for r_ in rows]   # K275-r2: 5.3
     opener = gzip.open if gz else open
     with opener(path, "wt", newline="") as f:
         w = csv.writer(f, delimiter="\t", lineterminator="\n")
