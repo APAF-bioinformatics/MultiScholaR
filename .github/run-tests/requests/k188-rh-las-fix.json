@@ -1,0 +1,93 @@
+{
+  "requested_by": "KIT-188 non-counted rehearsal of the las fix (declaration-las-fix.md section 4; coordinator word 2026-11-27; ceiling 5.60 core-hours, lifecycle line)",
+  "label": "KIT-188 rehearsal k188-rh-las-fix",
+  "package_commit": "e42a41282600d3d6df2dc69ac37961a84dfe0aba",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188-las.R",
+      "args": [
+        "L",
+        "M12",
+        "401",
+        "401",
+        "k188-rh-las-m12"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_JOBS": "las",
+        "K188_JOB": "k188-rh-las-m12"
+      },
+      "out": "k188-rh-las-m12",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188-las.R",
+      "args": [
+        "L",
+        "L12",
+        "401",
+        "401",
+        "k188-rh-las-l12"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_JOBS": "las",
+        "K188_JOB": "k188-rh-las-l12"
+      },
+      "out": "k188-rh-las-l12",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 30
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188-las.R",
+      "args": [
+        "L",
+        "M12",
+        "401",
+        "401",
+        "k188-rh-lp-fixed"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_JOBS": "lp",
+        "K188_JOB": "k188-rh-lp-fixed"
+      },
+      "out": "k188-rh-lp-fixed",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 12
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "M12",
+        "401",
+        "401",
+        "k188-rh-lp-orig"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_JOBS": "lp",
+        "K188_JOB": "k188-rh-lp-orig"
+      },
+      "out": "k188-rh-lp-orig",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 12
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

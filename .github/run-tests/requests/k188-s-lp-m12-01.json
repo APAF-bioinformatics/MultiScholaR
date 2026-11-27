@@ -1,0 +1,39 @@
+{
+  "requested_by": "KIT-188 counted run, probe job k188-s-lp-m12-01 (declaration-counted.md; coordinator ruling 2026-11-27 item 2; data sets 1-100; ceiling 13.0 core-hours)",
+  "label": "KIT-188 counted k188-s-lp-m12-01",
+  "package_commit": "5e4fc68236c43d36e2d421e245875f76720f20c1",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "M12",
+        "1",
+        "100",
+        "k188-s-lp-m12-01"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_JOBS": "lp",
+        "K188_JOB": "k188-s-lp-m12-01"
+      },
+      "out": "k188-s-lp-m12-01",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 185
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
