@@ -327,7 +327,7 @@ if (nzchar(Sys.getenv("K275_CONTROLS_ONLY"))) {
     cat(sprintf("K275 controls: %s\n", paste(sprintf("%s %s %s%s", ctl$id, ctl$design, ctl$label, ifelse(nzchar(ctl$genuine_below_05), sprintf(" (genuine below 0.5: %s)", ctl$genuine_below_05), "")), collapse = "; ")))   # K275-r2: R2.4
     quit(save = "no", status = if (all(ctl$label == "passes")) 0L else 1L)   # F1 or F2: stop, the owner is told
 }
-combos <- unique(rows[rows[["version"]] %in% c("V0", "V1a", "V1w", "V1p", "V1s", "V1t", "V2", "VD")   # K275-r2: R2.4, 8.1 (V1w: the reported arm, read only by its own cells: no label, no pass or fail), c("tier", "design", "version", "arm")])
+combos <- unique(rows[rows[["version"]] %in% c("V0", "V1a", "V1w", "V1p", "V1s", "V1t", "V2", "VD"), c("tier", "design", "version", "arm")])   # K275-r2: R2.4, 8.1 (V1w: the reported arm, read only by its own cells: no label, no pass or fail)
 for (i in seq_len(nrow(combos))) {
     tier <- combos[["tier"]][[i]]
     design <- combos[["design"]][[i]]
