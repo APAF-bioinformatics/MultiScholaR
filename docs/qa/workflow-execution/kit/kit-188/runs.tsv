@@ -219,3 +219,13 @@ running_total_after_batch_1	counted batch 1	-	lifecycle spend 64.43 + batch 1 ac
 45974510617	k188-s-deciding-l64-46	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 1414.96	-	15.33 ceiling	in progress
 45974523458	k188-s-las-l64-09	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 140); running total at ceilings 1429.63	-	14.67 ceiling	in progress
 45974517411	k188-s-deciding-m168-r2-20	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 93); running total at ceilings 1439.63	-	10.0 ceiling	in progress
+45962695491	k188-s-deciding-l64-41	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 146)	104.6	7.64 (indicative)	exit 0; ok
+45962702127	k188-s-deciding-m168-r2-15	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 93)	83.8	6.26 (indicative)	exit 0; ok
+45967185123	k188-s-deciding-m168-r2-16	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 93)	53.1	4.21 (indicative)	exit 0; ok
+45967188585	k188-s-deciding-m168-r2-17	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 93)	65.4	5.03 (indicative)	exit 0; ok
+45967199812	k188-s-las-l64-07	5e4fc68236c43d36e2d421e245875f76720f20c1	counted result (plan 140)	68.5	5.23 (indicative)	exit 0; ok
+45978464024	k188-s-deciding-l64-47	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 1454.96	-	15.33 ceiling	in progress
+45978477320	k188-s-las-m168-01	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 137); running total at ceilings 1469.63	-	14.67 ceiling	in progress
+45978472718	k188-s-deciding-m168-r2-21	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 93); running total at ceilings 1479.63	-	10.0 ceiling	in progress
+45978468498	k188-s-deciding-l64-48	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 146); running total at ceilings 1494.96	-	15.33 ceiling	in progress
+45978481660	k188-s-las-m168-02	5e4fc68236c43d36e2d421e245875f76720f20c1	counted rolling send (plan 137); running total at ceilings 1509.63	-	14.67 ceiling	in progress
