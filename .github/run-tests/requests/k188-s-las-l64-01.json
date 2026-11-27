@@ -1,5 +1,5 @@
 {
-  "requested_by": "KIT-188 counted run, batch 1, job k188-s-las-l64-01 (declaration-counted.md; data sets 1-12; ceiling 14.67 core-hours)",
+  "requested_by": "KIT-188 counted run, rolling, job k188-s-las-l64-01 (declaration-counted.md; coordinator ruling R1; data sets 1-12; ceiling 14.67 core-hours)",
   "label": "KIT-188 counted k188-s-las-l64-01",
   "package_commit": "5e4fc68236c43d36e2d421e245875f76720f20c1",
   "base_commit": "none",
@@ -15,7 +15,7 @@
   "check": false,
   "scripts": [
     {
-      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188-las.R",
       "args": [
         "L",
         "L64",
