@@ -11,7 +11,7 @@ kit <- dirname(here)
 work <- Sys.getenv("K275_SELFTEST_OUT", "k275-selftest")
 dir.create(work, recursive = TRUE, showWarnings = FALSE)
 work <- normalizePath(work)
-scripts <- file.path(kit, c("sim-k275.R", "score-k275.R", "fixture-k275.R"))
+scripts <- file.path(kit, c("sim-k275.R", "score-k275.R", "fixture-k275.R", "crosscheck-k275.R"))   # K275-r2: audit Q1 (b)
 parsed <- vapply(c(scripts, file.path(here, "run-selftest.R")), function(f) {
     ok <- tryCatch({
         parse(file = f)
@@ -25,6 +25,10 @@ parsed <- vapply(c(scripts, file.path(here, "run-selftest.R")), function(f) {
 }, logical(1L))
 if (!all(parsed)) quit(save = "no", status = 1L)
 cat("parse: all scripts parse\n")
+# K275-r2 (audit Q1 (b)): the cross-implementation identity check: the counted V1a equals the pilot's, exactly, at r = 9601 in each design (a mismatch stops)
+cross <- system2("Rscript", shQuote(file.path(kit, "crosscheck-k275.R")), stdout = TRUE, stderr = TRUE)
+cat(cross, sep = "\n")
+if (!is.null(attr(cross, "status")) && attr(cross, "status") != 0L) quit(save = "no", status = 1L)
 # E0 (local and git only): the generator copy against 0866982f lists exactly the marked changes
 e0 <- system2("python3", c("-I", shQuote(file.path(kit, "e0-diff.py"))), stdout = TRUE, stderr = TRUE)
 cat(e0, sep = "\n")
