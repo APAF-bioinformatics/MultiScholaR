@@ -1,0 +1,33 @@
+{
+  "requested_by": "KIT-275 L1-r2 self-test step re-sent once (VAL-54 instrument defect in crosscheck-k275.R; declarations/l1r2-selftest-resend.md on kit-275; 25 job-min); G1 and L1-r2 stand",
+  "label": "KIT-275 L1-r2 selftest re-send 0cb164ae",
+  "package_commit": "0cb164ae6d6c2a25954af7f7aa1f1f343bdb2f41",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/selftest/run-selftest.R",
+      "args": [],
+      "env": {
+        "K275_SELFTEST_OUT": "k275-l1r2st"
+      },
+      "out": "k275-l1r2st",
+      "out_pattern": "\\.(tsv|txt|json)$",
+      "timeout_minutes": 15
+    }
+  ],
+  "fetch_refs": [
+    "kit-188-ruv-default-calibration"
+  ],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
