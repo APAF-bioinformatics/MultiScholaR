@@ -162,3 +162,21 @@ Once, on complete data only (every job of S finished or continued, D compared). 
 ## 10. Hand-back points
 
 After the first batch (timings against plan); at each report point (2,640.74 and 3,500); and after the last job's completeness, **before scoring**. A stop at any instrument ending, any script-hash difference, or any change needed in a script is handed back, not repaired.
+
+---
+
+## Addendum 2026-11-27 (VAL-403): the re-planned rows of the four slow types
+
+**Authority.** The owner raised the counted ceiling of Part L to **5,406.76 core-hours** (ledger VAL-403 on `origin/v0.9-staging`); report points 2,640.74, 3,500 and 4,498. Coordinator release of the re-plan, 2026-11-27. Binding, scripts, seeds, cells, arms, estimands and rules are unchanged (section 1); the package commit of the new requests is 5e4fc68236c43d36e2d421e245875f76720f20c1 as before.
+
+**What changes.** `counted-jobs-r2.tsv` replaces the **unsent** rows of four job types in `counted-jobs.tsv`: deciding L12, deciding M12, deciding M168 and reported M168 (each block's data sets 1 to R are still run exactly once, with the same seeds: the finished jobs `k188-s-deciding-l12-01` (1-20), `k188-s-deciding-m12-01` (1-27), `k188-s-deciding-m168-01` (1-8, of which 9-12 did not finish) and `k188-s-reported-m168-01` (1-4) keep their rows; the new rows cover deciding L12 21-400, deciding M12 28-400, deciding M168 13-400 and reported M168 5-100; the old unsent rows of those four types are void). Request names carry `-r2-`; invocation, environment and output rules are those of section 2 (`sim-k188.R`, `OMP_NUM_THREADS=1`, `K188_JOBS=<type>`, `K188_JOB=<request name>`, no `K188_LIFECYCLE`, no `K188_SMOKE`); timeout 1.5 x plan rounded up to 5, cap 260.
+
+**Measured unit times the plans rest on** (mean `unit_seconds` per data set in batch 1's many-unit jobs; four units on four cores): deciding L12 2,763 s (46.05 min; 20 units); deciding M12 1,782 s (29.70 min; 27 units); deciding M168 5,577 s (92.95 min; units 1 to 8 of the timed-out job, 5,019 to 6,072 s); reported M168 8,498 s (141.63 min; 4 units). Rule of section 2 (jobs of at most 170 planned minutes, 4 units at a time, plan = rounds x unit minutes): deciding L12 3 rounds (12 sets per job, plan 139, timeout 210), the last job 8 sets (2 rounds, plan 93, timeout 140); deciding M12 5 rounds (20 sets, plan 149, timeout 225), the last job 13 sets (4 rounds, plan 119, timeout 180); deciding M168 1 round (4 sets, plan 93, timeout 140; 97 jobs); reported M168 1 round (4 sets, plan 142, timeout 215; 24 jobs). 172 jobs in all (L12 32, M12 19, M168 97, reported M168 24).
+
+**The continuation** `k188-s-deciding-m168-01c` (data sets 9 to 12 of the timed-out job; plan 93, timeout 140, ceiling 10.00) is the declared continuation of section 5 (same hashes, only the unfinished data sets, finished data sets never re-run), booked against the deciding block's reserve as a VAL-54 instrument run; it is not a block job and not in the 172.
+
+**Totals.** At ceilings: **5,406.76 core-hours** for Part L (blocks recomputed from the re-planned rows with a 25 % reserve; D at 7.67, SC at 3.67). Expected 2,945.60 by exact arithmetic over the plans (the coordinator's figure 2,945.59; the 0.01 is rounding; the sum of the two-decimal expected column reads 2,945.68); the ceiling figure, which is the gate, agrees exactly.
+
+**The auditor's two cautions (LP-3), in substance.** (1) The re-plan rests on ONE measured job per type: a second job may show another many-unit time. (2) Identical jobs vary about twofold between runners (deciding L64 jobs of the same shape took 73 to 153 minutes), so a plan can be met by one runner and missed by the next. Four unmeasured job types (lp L12, lp M12, lp M168, BA M168, reported M12 per the probe jobs) may need re-pricing as well; a timeout in any job is handled by the continuation rule (finished units are kept), not by a change of the plan or rule.
+
+**Sending.** The re-planned jobs and the continuation join the rolling at the coordinator's limit (17 in flight), mixed with the on-plan types: at each roll the free slots are filled alternately from the slow types (deciding M168 first) and the on-plan types; the report points and stop conditions are unchanged.
