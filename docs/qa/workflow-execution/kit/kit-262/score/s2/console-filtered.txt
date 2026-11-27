@@ -1,0 +1,14 @@
+supersede list: none
+   cell   n label excluded error_p error_c1 missing
+1   N-r 100    NW        0       0        0       0
+2   N-s 100    NW        0       0        0       0
+3   E-r 200    NW        0       0        0       0
+4   E-s 200    NW        0       0        0       0
+5   E-p 300    NW        0       0        0       0
+6   E-g 200    NW        0       0        0       0
+7   N-w 250    NW        0       0        0       0
+8   E-w 200    NW        0       0        0       0
+9   S-N 250    NW        0       0        0       0
+10  S-E 200    NW        0       0        0       0
+outcome: K1
+C1 NW in all deciding cells and gain shown in M2: to adopt C1 in a later implementation ticket
