@@ -358,7 +358,7 @@ hunk old 572-572 new 608-608  [8.1 label check (K2-07): V1g -> V1a]
 hunk old 575-576 new 611-612  [8.1 label check (K2-07): V1g -> V1a]
 selftest/make-selftest.py: 35 label-only hunks, 10 other hunks
 ====================================================================================================
-selftest/run-selftest.R: 2 hunks against 577a6f7b (r1's audited version)
+selftest/run-selftest.R: 3 hunks against 577a6f7b (r1's audited version)
 hunk old 14-14 new 14-14  [audit Q1 (b)]
   - scripts <- file.path(kit, c("sim-k275.R", "score-k275.R", "fixture-k275.R"))
   + scripts <- file.path(kit, c("sim-k275.R", "score-k275.R", "fixture-k275.R", "crosscheck-k275.R"))   # K275-r2: audit Q1 (b)
@@ -367,7 +367,14 @@ hunk old 28-27 new 28-31  [audit Q1 (b)): the cross-implementation identity chec
   + cross <- system2("Rscript", shQuote(file.path(kit, "crosscheck-k275.R")), stdout = TRUE, stderr = TRUE)
   + cat(cross, sep = "\n")
   + if (!is.null(attr(cross, "status")) && attr(cross, "status") != 0L) quit(save = "no", status = 1L)
-selftest/run-selftest.R: 0 label-only hunks, 2 other hunks
+hunk old 32-31 new 36-41  [K2-03, audit Q1): every changed script's hunk against r1's audited ver]
+  + # K275-r2 (K2-03, audit Q1): every changed script's hunk against r1's audited versions is tagged (0 untagged), and the seeds of the pilot, L1-r2 and the counted ranges are disjoint
+  + for (tool in c("e0-r2.py", file.path("pilot", "seeds-disjoint.py"))) {
+  +     out <- system2("python3", c("-I", shQuote(file.path(kit, tool))), stdout = TRUE, stderr = TRUE)
+  +     cat(tail(out, 6L), sep = "\n")
+  +     if (!is.null(attr(out, "status")) && attr(out, "status") != 0L) quit(save = "no", status = 1L)
+  + }
+selftest/run-selftest.R: 0 label-only hunks, 3 other hunks
 fixture-k275.R: unchanged against r1
 e0-diff.py: unchanged against r1
 selftest/check-selftest.py: unchanged against r1

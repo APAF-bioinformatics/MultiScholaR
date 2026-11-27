@@ -33,6 +33,12 @@ if (!is.null(attr(cross, "status")) && attr(cross, "status") != 0L) quit(save = 
 e0 <- system2("python3", c("-I", shQuote(file.path(kit, "e0-diff.py"))), stdout = TRUE, stderr = TRUE)
 cat(e0, sep = "\n")
 if (!is.null(attr(e0, "status")) && attr(e0, "status") != 0L) quit(save = "no", status = 1L)
+# K275-r2 (K2-03, audit Q1): every changed script's hunk against r1's audited versions is tagged (0 untagged), and the seeds of the pilot, L1-r2 and the counted ranges are disjoint
+for (tool in c("e0-r2.py", file.path("pilot", "seeds-disjoint.py"))) {
+    out <- system2("python3", c("-I", shQuote(file.path(kit, tool))), stdout = TRUE, stderr = TRUE)
+    cat(tail(out, 6L), sep = "\n")
+    if (!is.null(attr(out, "status")) && attr(out, "status") != 0L) quit(save = "no", status = 1L)
+}
 made <- system2("python3", c("-I", shQuote(file.path(here, "make-selftest.py")), shQuote(work)), stdout = TRUE, stderr = TRUE)
 cat(made, sep = "\n")
 index <- utils::read.delim(file.path(work, "index.tsv"), stringsAsFactors = FALSE, colClasses = "character", na.strings = character())
