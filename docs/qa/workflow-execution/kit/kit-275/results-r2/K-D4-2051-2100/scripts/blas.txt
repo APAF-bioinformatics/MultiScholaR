@@ -1,0 +1,1 @@
+BLAS /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0 LAPACK /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0 3.10.0 
