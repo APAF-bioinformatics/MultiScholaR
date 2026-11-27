@@ -1,0 +1,8 @@
+check	cell	rep	condition	value	threshold	pass	note
+P1_plant	D3	9616	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9616	V1a	0.160167730862443	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9616	V1a	4.41885952223646	within 10 % of s (reported, not gating)	FALSE	
+P3_mean	D3	9616	V1b	0.240251596293664	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9616	V1b	6.62828928335469	within 10 % of s (reported, not gating)	FALSE	
+D2_status	D3	9616	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9616	V1b	ok	ok	TRUE	stopped_before_da

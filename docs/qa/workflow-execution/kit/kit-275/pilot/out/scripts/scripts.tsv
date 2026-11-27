@@ -1,0 +1,4 @@
+index	path	exit	seconds	status
+1	docs/qa/workflow-execution/kit/kit-275/pilot/selftest/run-pilot-selftest.R	0	2	ok
+2	docs/qa/workflow-execution/kit/kit-275/pilot/pilot-k275.R	0	1769	ok
+3	docs/qa/workflow-execution/kit/kit-275/pilot/score-pilot.R	0	1	ok

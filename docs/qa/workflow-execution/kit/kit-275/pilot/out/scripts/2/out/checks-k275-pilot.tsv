@@ -1,0 +1,1052 @@
+check	cell	rep	condition	value	threshold	pass	note
+E3	lipid	0	defaults	NA	equal to 5.2	TRUE	differ: ; markers off their current token: ; markers absent: ; correlation_exclusion within_assay: TRUE | auto_min=1; auto_max=20; metric=max_difference; penalty=0.5; adaptive=TRUE; correlation=0.5; method=cyclicloess; offset=0; itsd=median; ruv_mode=automatic; manual_pct=5; manual_k=2; percentile=1
+P1_plant	D3	9601	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9601	V1a	-0.263230033217299	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9601	V1a	3.84508426503051	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9601	V1b	-0.394845049825949	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9601	V1b	5.76762639754576	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9601	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9601	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9602	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9602	V1a	-0.0695957026251965	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9602	V1a	3.82901782813148	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9602	V1b	-0.104393553937795	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9602	V1b	5.74352674219722	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9602	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9602	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9603	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9603	V1a	0.212834483969685	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9603	V1a	4.0065209180821	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9603	V1b	0.319251725954527	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9603	V1b	6.00978137712315	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9603	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9603	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9604	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9604	V1a	0.201054819929081	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9604	V1a	4.10779246262056	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9604	V1b	0.301582229893622	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9604	V1b	6.16168869393084	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9604	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9604	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9605	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9605	V1a	-0.00799344383035846	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9605	V1a	3.92405282444029	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9605	V1b	-0.0119901657455377	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9605	V1b	5.88607923666043	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9605	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9605	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9606	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9606	V1a	0.0280809693789047	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9606	V1a	3.82330529433395	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9606	V1b	0.0421214540683571	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9606	V1b	5.73495794150092	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9606	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9606	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9607	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9607	V1a	-0.21404531679188	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9607	V1a	4.22087560711791	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9607	V1b	-0.32106797518782	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9607	V1b	6.33131341067686	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9607	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9607	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9608	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9608	V1a	0.0718240088034551	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9608	V1a	4.14990026811247	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9608	V1b	0.107736013205183	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9608	V1b	6.22485040216871	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9608	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9608	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9609	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9609	V1a	0.428229908896561	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9609	V1a	4.06373088847781	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9609	V1b	0.642344863344841	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9609	V1b	6.09559633271672	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9609	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9609	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9610	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9610	V1a	-0.129177823852895	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9610	V1a	4.17878857988317	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9610	V1b	-0.193766735779342	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9610	V1b	6.26818286982476	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9610	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9610	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9611	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9611	V1a	0.0389272647439484	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9611	V1a	3.99236544515786	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9611	V1b	0.0583908971159226	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9611	V1b	5.98854816773679	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9611	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9611	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9612	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9612	V1a	0.21208035148345	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9612	V1a	3.93768112783138	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9612	V1b	0.318120527225175	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9612	V1b	5.90652169174707	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9612	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9612	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9613	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9613	V1a	0.113548291329061	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9613	V1a	4.11759272328851	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9613	V1b	0.170322436993592	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9613	V1b	6.17638908493276	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9613	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9613	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9614	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9614	V1a	-0.201338760908461	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9614	V1a	3.90162154254079	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9614	V1b	-0.302008141362691	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9614	V1b	5.85243231381119	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9614	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9614	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9615	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9615	V1a	0.0457523475860994	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9615	V1a	4.43790501766286	within 10 % of s (reported, not gating)	FALSE	
+P3_mean	D3	9615	V1b	0.0686285213791489	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9615	V1b	6.65685752649429	within 10 % of s (reported, not gating)	FALSE	
+D2_status	D3	9615	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9615	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9616	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9616	V1a	0.160167730862443	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9616	V1a	4.41885952223646	within 10 % of s (reported, not gating)	FALSE	
+P3_mean	D3	9616	V1b	0.240251596293664	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9616	V1b	6.62828928335469	within 10 % of s (reported, not gating)	FALSE	
+D2_status	D3	9616	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9616	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9617	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9617	V1a	-0.0431310309280312	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9617	V1a	4.03379678220534	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9617	V1b	-0.0646965463920469	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9617	V1b	6.05069517330801	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9617	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9617	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9618	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9618	V1a	0.221342064128347	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9618	V1a	3.61473074460385	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9618	V1b	0.33201309619252	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9618	V1b	5.42209611690577	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9618	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9618	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9619	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9619	V1a	0.18138714446464	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9619	V1a	3.80117323524892	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9619	V1b	0.272080716696961	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9619	V1b	5.70175985287338	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9619	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9619	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9620	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9620	V1a	-0.206359889843215	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9620	V1a	4.04153009137822	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9620	V1b	-0.309539834764822	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9620	V1b	6.06229513706733	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9620	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9620	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9621	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9621	V1a	0.14260679192527	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9621	V1a	3.81428422244395	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9621	V1b	0.213910187887905	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9621	V1b	5.72142633366592	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9621	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9621	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9622	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9622	V1a	-0.0158964465583663	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9622	V1a	4.06733952848653	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9622	V1b	-0.0238446698375495	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9622	V1b	6.10100929272979	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9622	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9622	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9623	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9623	V1a	0.0243850563062626	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9623	V1a	4.09781077954892	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9623	V1b	0.0365775844593942	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9623	V1b	6.14671616932337	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9623	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9623	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9624	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9624	V1a	-0.400575605481155	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9624	V1a	4.18570089467825	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9624	V1b	-0.600863408221732	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9624	V1b	6.27855134201738	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9624	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9624	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9625	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9625	V1a	0.0676757183371598	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9625	V1a	4.41836768423104	within 10 % of s (reported, not gating)	FALSE	
+P3_mean	D3	9625	V1b	0.10151357750574	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9625	V1b	6.62755152634656	within 10 % of s (reported, not gating)	FALSE	
+D2_status	D3	9625	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9625	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9626	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9626	V1a	-0.125977059245583	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9626	V1a	4.25179638108655	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9626	V1b	-0.188965588868375	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9626	V1b	6.37769457162982	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9626	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9626	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9627	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9627	V1a	0.0555438070666821	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9627	V1a	4.17525764437079	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9627	V1b	0.0833157106000232	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9627	V1b	6.26288646655618	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9627	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9627	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9628	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9628	V1a	0.261599949758181	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9628	V1a	4.07059679563801	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9628	V1b	0.392399924637271	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9628	V1b	6.10589519345702	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9628	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9628	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9629	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9629	V1a	-0.090020895651642	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9629	V1a	4.08797553383094	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9629	V1b	-0.135031343477463	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9629	V1b	6.13196330074641	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9629	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9629	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9630	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9630	V1a	-0.249165835628517	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9630	V1a	4.02357081058215	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9630	V1b	-0.373748753442775	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9630	V1b	6.03535621587322	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9630	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9630	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9631	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9631	V1a	-0.13953206472334	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9631	V1a	3.87347085319573	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9631	V1b	-0.20929809708501	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9631	V1b	5.8102062797936	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9631	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9631	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9632	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9632	V1a	0.0459493023652585	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9632	V1a	4.12586720418688	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9632	V1b	0.0689239535478878	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9632	V1b	6.18880080628032	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9632	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9632	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9633	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9633	V1a	-0.319028617404717	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9633	V1a	3.92506175890581	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9633	V1b	-0.478542926107076	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9633	V1b	5.88759263835872	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9633	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9633	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9634	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9634	V1a	0.221357663002269	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9634	V1a	4.14064572699662	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9634	V1b	0.332036494503403	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9634	V1b	6.21096859049493	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9634	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9634	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9635	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9635	V1a	0.502336436229055	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9635	V1a	4.16067004131756	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9635	V1b	0.753504654343582	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9635	V1b	6.24100506197633	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9635	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9635	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9636	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9636	V1a	-0.218619927004434	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9636	V1a	3.49700940588963	within 10 % of s (reported, not gating)	FALSE	
+P3_mean	D3	9636	V1b	-0.32792989050665	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9636	V1b	5.24551410883444	within 10 % of s (reported, not gating)	FALSE	
+D2_status	D3	9636	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9636	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9637	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9637	V1a	-0.00104771597042463	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9637	V1a	3.85801596460033	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9637	V1b	-0.00157157395563678	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9637	V1b	5.7870239469005	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9637	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9637	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9638	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9638	V1a	0.588777873822439	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9638	V1a	3.74492324144304	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9638	V1b	0.883166810733659	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9638	V1b	5.61738486216456	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9638	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9638	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9639	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9639	V1a	-0.144593690054909	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9639	V1a	4.11492252655613	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9639	V1b	-0.216890535082364	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9639	V1b	6.1723837898342	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9639	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9639	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9640	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9640	V1a	-0.179702015229758	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9640	V1a	3.82602430705575	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9640	V1b	-0.269553022844637	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9640	V1b	5.73903646058363	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9640	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9640	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9641	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9641	V1a	0.162104731102294	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9641	V1a	3.83433453937327	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9641	V1b	0.243157096653441	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9641	V1b	5.75150180905991	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9641	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9641	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9642	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9642	V1a	-0.0845004438789653	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9642	V1a	3.89056928821252	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9642	V1b	-0.126750665818448	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9642	V1b	5.83585393231878	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9642	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9642	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9643	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9643	V1a	-0.0744317952083001	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9643	V1a	4.150057855713	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9643	V1b	-0.11164769281245	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9643	V1b	6.22508678356949	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9643	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9643	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9644	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9644	V1a	0.0190712837891968	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9644	V1a	3.95926581204082	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9644	V1b	0.0286069256837951	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9644	V1b	5.93889871806124	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9644	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9644	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9645	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9645	V1a	-0.115756327241813	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9645	V1a	4.13255259418714	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9645	V1b	-0.17363449086272	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9645	V1b	6.19882889128071	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9645	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9645	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9646	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9646	V1a	-0.127564733286415	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9646	V1a	4.08045428103152	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9646	V1b	-0.191347099929622	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9646	V1b	6.12068142154728	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9646	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9646	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9647	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9647	V1a	0.504724659633575	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9647	V1a	4.01041612627594	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9647	V1b	0.757086989450362	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9647	V1b	6.01562418941391	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9647	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9647	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9648	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9648	V1a	-0.00680714397294513	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9648	V1a	3.92815872874999	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9648	V1b	-0.0102107159594177	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9648	V1b	5.89223809312498	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9648	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9648	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9649	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9649	V1a	0.117524960329905	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9649	V1a	3.91392028680232	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9649	V1b	0.176287440494858	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9649	V1b	5.87088043020348	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9649	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9649	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D3	9650	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D3	9650	V1a	-0.202179125705073	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9650	V1a	4.18533087226944	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D3	9650	V1b	-0.303268688557609	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D3	9650	V1b	6.27799630840417	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D3	9650	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D3	9650	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9601	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9601	V1a	-0.0164485973341772	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9601	V1a	3.68683157856033	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9601	V1b	-0.0246728960012659	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9601	V1b	5.5302473678405	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9601	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9601	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9602	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9602	V1a	0.0786825500105814	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9602	V1a	4.15158493309781	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9602	V1b	0.118023825015872	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9602	V1b	6.22737739964671	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9602	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9602	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9603	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9603	V1a	0.095178096247612	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9603	V1a	4.22736915756915	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9603	V1b	0.142767144371418	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9603	V1b	6.34105373635372	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9603	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9603	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9604	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9604	V1a	0.336343319527121	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9604	V1a	4.08603834839504	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9604	V1b	0.504514979290682	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9604	V1b	6.12905752259257	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9604	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9604	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9605	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9605	V1a	0.21994232904575	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9605	V1a	3.95202635510626	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9605	V1b	0.329913493568625	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9605	V1b	5.92803953265939	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9605	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9605	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9606	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9606	V1a	-0.232697821546817	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9606	V1a	3.55868143761257	within 10 % of s (reported, not gating)	FALSE	
+P3_mean	D4	9606	V1b	-0.349046732320226	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9606	V1b	5.33802215641886	within 10 % of s (reported, not gating)	FALSE	
+D2_status	D4	9606	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9606	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9607	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9607	V1a	0.016224200852556	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9607	V1a	4.09489622357082	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9607	V1b	0.0243363012788336	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9607	V1b	6.14234433535623	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9607	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9607	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9608	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9608	V1a	0.0517961625265487	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9608	V1a	3.69211225528744	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9608	V1b	0.0776942437898231	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9608	V1b	5.53816838293115	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9608	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9608	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9609	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9609	V1a	0.0816880306439918	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9609	V1a	3.82795035952297	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9609	V1b	0.122532045965988	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9609	V1b	5.74192553928445	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9609	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9609	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9610	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9610	V1a	-0.0182992836376333	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9610	V1a	4.09334493245415	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9610	V1b	-0.0274489254564501	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9610	V1b	6.14001739868122	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9610	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9610	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9611	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9611	V1a	-0.345600723013222	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9611	V1a	4.0648593597354	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9611	V1b	-0.518401084519833	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9611	V1b	6.0972890396031	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9611	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9611	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9612	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9612	V1a	-0.0319738216347355	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9612	V1a	3.83109106227196	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9612	V1b	-0.0479607324521032	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9612	V1b	5.74663659340793	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9612	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9612	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9613	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9613	V1a	0.0417587305995729	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9613	V1a	4.2394364216448	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9613	V1b	0.0626380958993595	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9613	V1b	6.3591546324672	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9613	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9613	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9614	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9614	V1a	0.212034258068338	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9614	V1a	4.24181777274299	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9614	V1b	0.318051387102507	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9614	V1b	6.36272665911449	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9614	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9614	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9615	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9615	V1a	-0.211933596354352	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9615	V1a	3.94504563439445	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9615	V1b	-0.317900394531528	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9615	V1b	5.91756845159167	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9615	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9615	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9616	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9616	V1a	0.223690324252605	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9616	V1a	3.93484327439762	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9616	V1b	0.335535486378907	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9616	V1b	5.90226491159642	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9616	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9616	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9617	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9617	V1a	-0.00193662854453165	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9617	V1a	4.16622278917817	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9617	V1b	-0.00290494281679744	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9617	V1b	6.24933418376726	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9617	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9617	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9618	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9618	V1a	-0.212689953939856	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9618	V1a	3.97142496548219	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9618	V1b	-0.319034930909785	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9618	V1b	5.95713744822329	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9618	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9618	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9619	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9619	V1a	-0.0598904065684456	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9619	V1a	4.09816842224483	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9619	V1b	-0.0898356098526683	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9619	V1b	6.14725263336724	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9619	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9619	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9620	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9620	V1a	0.423983481921323	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9620	V1a	3.86612388673905	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9620	V1b	0.635975222881984	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9620	V1b	5.79918583010858	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9620	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9620	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9621	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9621	V1a	0.229611658714875	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9621	V1a	3.79235944991868	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9621	V1b	0.344417488072312	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9621	V1b	5.68853917487801	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9621	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9621	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9622	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9622	V1a	-0.32788003116541	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9622	V1a	3.55455616618453	within 10 % of s (reported, not gating)	FALSE	
+P3_mean	D4	9622	V1b	-0.491820046748115	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9622	V1b	5.3318342492768	within 10 % of s (reported, not gating)	FALSE	
+D2_status	D4	9622	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9622	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9623	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9623	V1a	-0.367846965891332	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9623	V1a	3.62756509512545	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9623	V1b	-0.551770448836998	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9623	V1b	5.44134764268818	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9623	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9623	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9624	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9624	V1a	-0.515587539205003	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9624	V1a	4.00964713805535	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9624	V1b	-0.773381308807505	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9624	V1b	6.01447070708302	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9624	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9624	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9625	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9625	V1a	-0.0802054739582803	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9625	V1a	4.4345919872154	within 10 % of s (reported, not gating)	FALSE	
+P3_mean	D4	9625	V1b	-0.120308210937421	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9625	V1b	6.6518879808231	within 10 % of s (reported, not gating)	FALSE	
+D2_status	D4	9625	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9625	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9626	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9626	V1a	-0.0561073753983797	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9626	V1a	3.85679998156963	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9626	V1b	-0.0841610630975696	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9626	V1b	5.78519997235445	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9626	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9626	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9627	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9627	V1a	-0.164252624696764	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9627	V1a	4.03423365420272	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9627	V1b	-0.246378937045147	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9627	V1b	6.05135048130408	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9627	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9627	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9628	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9628	V1a	-0.0266883957286267	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9628	V1a	3.87757934903043	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9628	V1b	-0.0400325935929402	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9628	V1b	5.81636902354565	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9628	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9628	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9629	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9629	V1a	0.0281829324784283	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9629	V1a	3.95611410213654	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9629	V1b	0.0422743987176423	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9629	V1b	5.93417115320481	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9629	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9629	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9630	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9630	V1a	-0.20262606373049	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9630	V1a	3.8557763009239	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9630	V1b	-0.303939095595735	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9630	V1b	5.78366445138584	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9630	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9630	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9631	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9631	V1a	0.387347367936337	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9631	V1a	3.69453997627834	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9631	V1b	0.581021051904506	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9631	V1b	5.54180996441751	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9631	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9631	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9632	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9632	V1a	-0.0853884354082305	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9632	V1a	4.46157914364903	within 10 % of s (reported, not gating)	FALSE	
+P3_mean	D4	9632	V1b	-0.128082653112346	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9632	V1b	6.69236871547354	within 10 % of s (reported, not gating)	FALSE	
+D2_status	D4	9632	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9632	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9633	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9633	V1a	0.289015343701689	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9633	V1a	4.01784627000554	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9633	V1b	0.433523015552533	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9633	V1b	6.02676940500831	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9633	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9633	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9634	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9634	V1a	-0.41397981695146	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9634	V1a	3.98639542063966	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9634	V1b	-0.620969725427189	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9634	V1b	5.97959313095949	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9634	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9634	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9635	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9635	V1a	0.184772348790782	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9635	V1a	4.24430046471235	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9635	V1b	0.277158523186172	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9635	V1b	6.36645069706852	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9635	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9635	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9636	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9636	V1a	-0.211062590436928	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9636	V1a	4.22932174949728	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9636	V1b	-0.316593885655391	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9636	V1b	6.34398262424593	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9636	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9636	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9637	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9637	V1a	0.0877263301379329	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9637	V1a	3.82863432964371	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9637	V1b	0.131589495206899	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9637	V1b	5.74295149446556	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9637	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9637	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9638	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9638	V1a	0.500429182559705	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9638	V1a	4.00391961953679	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9638	V1b	0.750643773839558	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9638	V1b	6.00587942930518	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9638	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9638	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9639	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9639	V1a	0.0989887476385261	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9639	V1a	3.99379923917808	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9639	V1b	0.148483121457789	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9639	V1b	5.99069885876713	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9639	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9639	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9640	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9640	V1a	-0.144590324865441	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9640	V1a	3.91101240336642	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9640	V1b	-0.216885487298161	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9640	V1b	5.86651860504964	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9640	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9640	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9641	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9641	V1a	-0.133317155534788	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9641	V1a	3.68102546536227	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9641	V1b	-0.199975733302182	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9641	V1b	5.52153819804341	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9641	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9641	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9642	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9642	V1a	-0.0670103339277614	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9642	V1a	4.0599232152003	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9642	V1b	-0.100515500891642	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9642	V1b	6.08988482280045	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9642	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9642	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9643	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9643	V1a	-0.118633541999759	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9643	V1a	4.08352031200012	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9643	V1b	-0.177950312999638	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9643	V1b	6.12528046800018	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9643	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9643	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9644	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9644	V1a	-0.0614876682407138	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9644	V1a	4.37286523594878	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9644	V1b	-0.0922315023610709	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9644	V1b	6.55929785392317	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9644	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9644	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9645	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9645	V1a	-0.331043024203985	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9645	V1a	3.76620377884695	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9645	V1b	-0.496564536305978	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9645	V1b	5.64930566827042	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9645	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9645	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9646	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9646	V1a	0.0662242457633962	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9646	V1a	4.00776155925588	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9646	V1b	0.0993363686450944	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9646	V1b	6.01164233888383	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9646	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9646	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9647	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9647	V1a	0.094822385986115	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9647	V1a	3.88808578198049	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9647	V1b	0.142233578979172	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9647	V1b	5.83212867297074	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9647	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9647	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9648	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9648	V1a	-0.202558000824198	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9648	V1a	3.72551273097714	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9648	V1b	-0.303837001236297	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9648	V1b	5.58826909646571	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9648	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9648	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9649	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9649	V1a	0.0595517317035744	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9649	V1a	4.10327457172567	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9649	V1b	0.0893275975553615	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9649	V1b	6.1549118575885	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9649	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9649	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D4	9650	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D4	9650	V1a	-0.145741448119726	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9650	V1a	4.24076814033577	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D4	9650	V1b	-0.218612172179589	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D4	9650	V1b	6.36115221050365	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D4	9650	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D4	9650	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9601	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9601	V1a	-0.211453299880448	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9601	V1a	4.04007446462606	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9601	V1b	-0.317179949820672	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9601	V1b	6.06011169693909	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9601	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9601	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9602	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9602	V1a	-0.212428336927675	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9602	V1a	4.21687678532297	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9602	V1b	-0.318642505391513	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9602	V1b	6.32531517798446	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9602	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9602	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9603	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9603	V1a	0.402442156492462	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9603	V1a	4.08087031680397	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9603	V1b	0.603663234738693	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9603	V1b	6.12130547520596	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9603	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9603	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9604	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9604	V1a	0.231279270875462	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9604	V1a	3.80921046822075	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9604	V1b	0.346918906313193	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9604	V1b	5.71381570233113	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9604	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9604	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9605	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9605	V1a	0.126702887147729	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9605	V1a	3.95492393047756	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9605	V1b	0.190054330721593	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9605	V1b	5.93238589571634	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9605	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9605	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9606	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9606	V1a	0.129219803322629	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9606	V1a	3.87388413081297	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9606	V1b	0.193829704983944	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9606	V1b	5.81082619621945	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9606	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9606	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9607	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9607	V1a	-0.0984940224725651	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9607	V1a	4.09040812750878	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9607	V1b	-0.147741033708848	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9607	V1b	6.13561219126317	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9607	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9607	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9608	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9608	V1a	0.111295291218046	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9608	V1a	4.04742755218994	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9608	V1b	0.166942936827069	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9608	V1b	6.07114132828491	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9608	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9608	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9609	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9609	V1a	0.190218160418259	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9609	V1a	4.05796592102171	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9609	V1b	0.285327240627388	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9609	V1b	6.08694888153257	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9609	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9609	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9610	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9610	V1a	0.109724524252872	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9610	V1a	3.98668625281029	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9610	V1b	0.164586786379308	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9610	V1b	5.98002937921544	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9610	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9610	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9611	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9611	V1a	-0.30244277150012	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9611	V1a	4.37534167540797	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9611	V1b	-0.45366415725018	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9611	V1b	6.56301251311195	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9611	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9611	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9612	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9612	V1a	-0.12630273642367	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9612	V1a	4.11363458613256	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9612	V1b	-0.189454104635505	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9612	V1b	6.17045187919883	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9612	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9612	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9613	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9613	V1a	0.0810414137487745	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9613	V1a	3.9169741598468	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9613	V1b	0.121562120623162	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9613	V1b	5.8754612397702	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9613	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9613	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9614	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9614	V1a	-0.199216196134018	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9614	V1a	4.54622665580331	within 10 % of s (reported, not gating)	FALSE	
+P3_mean	D6	9614	V1b	-0.298824294201027	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9614	V1b	6.81933998370497	within 10 % of s (reported, not gating)	FALSE	
+D2_status	D6	9614	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9614	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9615	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9615	V1a	-0.323174064484266	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9615	V1a	3.98932574307471	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9615	V1b	-0.484761096726399	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9615	V1b	5.98398861461206	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9615	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9615	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9616	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9616	V1a	0.339763444037411	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9616	V1a	4.01001372667681	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9616	V1b	0.509645166056117	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9616	V1b	6.01502059001521	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9616	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9616	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9617	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9617	V1a	0.545621734429303	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9617	V1a	4.12686796790111	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9617	V1b	0.818432601643954	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9617	V1b	6.19030195185166	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9617	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9617	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9618	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9618	V1a	0.0985434925644817	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9618	V1a	3.85547533844477	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9618	V1b	0.147815238846723	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9618	V1b	5.78321300766716	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9618	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9618	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9619	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9619	V1a	-0.0490523985833682	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9619	V1a	3.6582276450517	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9619	V1b	-0.0735785978750522	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9619	V1b	5.48734146757755	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9619	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9619	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9620	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9620	V1a	-0.00565223702426204	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9620	V1a	3.98597152020936	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9620	V1b	-0.008478355536393	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9620	V1b	5.97895728031404	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9620	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9620	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9621	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9621	V1a	0.0805600945838946	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9621	V1a	4.04305990402249	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9621	V1b	0.120840141875842	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9621	V1b	6.06458985603374	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9621	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9621	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9622	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9622	V1a	-0.178628548221258	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9622	V1a	3.95437622594906	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9622	V1b	-0.267942822331887	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9622	V1b	5.93156433892359	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9622	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9622	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9623	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9623	V1a	-0.301890782134201	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9623	V1a	3.9204454220058	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9623	V1b	-0.452836173201302	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9623	V1b	5.8806681330087	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9623	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9623	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9624	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9624	V1a	0.510378086096069	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9624	V1a	3.90439407469498	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9624	V1b	0.765567129144104	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9624	V1b	5.85659111204247	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9624	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9624	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9625	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9625	V1a	0.383842316191883	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9625	V1a	4.04684755939612	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9625	V1b	0.575763474287824	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9625	V1b	6.07027133909419	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9625	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9625	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9626	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9626	V1a	-0.15234091258315	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9626	V1a	3.66790765419437	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9626	V1b	-0.228511368874726	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9626	V1b	5.50186148129155	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9626	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9626	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9627	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9627	V1a	0.0380192389117942	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9627	V1a	3.82744918664417	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9627	V1b	0.0570288583676913	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9627	V1b	5.74117377996626	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9627	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9627	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9628	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9628	V1a	0.151384263951606	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9628	V1a	4.13824984763472	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9628	V1b	0.227076395927409	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9628	V1b	6.20737477145208	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9628	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9628	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9629	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9629	V1a	-0.116936695335199	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9629	V1a	4.0276247760974	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9629	V1b	-0.175405043002798	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9629	V1b	6.04143716414611	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9629	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9629	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9630	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9630	V1a	0.280665116210402	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9630	V1a	4.07481943138465	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9630	V1b	0.420997674315602	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9630	V1b	6.11222914707697	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9630	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9630	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9631	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9631	V1a	0.0383185821433002	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9631	V1a	4.16806841706552	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9631	V1b	0.0574778732149502	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9631	V1b	6.25210262559827	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9631	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9631	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9632	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9632	V1a	-0.0350811593994078	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9632	V1a	4.00844474509599	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9632	V1b	-0.0526217390991121	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9632	V1b	6.01266711764399	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9632	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9632	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9633	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9633	V1a	0.136743613990747	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9633	V1a	4.20252996193076	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9633	V1b	0.20511542098612	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9633	V1b	6.30379494289614	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9633	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9633	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9634	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9634	V1a	0.157824994933585	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9634	V1a	4.16601840589281	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9634	V1b	0.236737492400378	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9634	V1b	6.24902760883921	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9634	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9634	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9635	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9635	V1a	-0.0578415000467242	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9635	V1a	3.87633086294107	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9635	V1b	-0.0867622500700863	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9635	V1b	5.81449629441161	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9635	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9635	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9636	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9636	V1a	0.466946765764801	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9636	V1a	4.12337587115093	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9636	V1b	0.700420148647201	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9636	V1b	6.18506380672639	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9636	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9636	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9637	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9637	V1a	0.25703639013565	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9637	V1a	4.21816560523867	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9637	V1b	0.385554585203476	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9637	V1b	6.327248407858	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9637	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9637	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9638	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9638	V1a	0.274443029816881	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9638	V1a	3.6828760243122	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9638	V1b	0.411664544725322	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9638	V1b	5.5243140364683	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9638	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9638	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9639	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9639	V1a	-0.383116324074373	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9639	V1a	3.75656131394741	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9639	V1b	-0.57467448611156	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9639	V1b	5.63484197092112	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9639	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9639	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9640	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9640	V1a	0.0582568066506308	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9640	V1a	4.06845559467196	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9640	V1b	0.0873852099759461	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9640	V1b	6.10268339200795	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9640	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9640	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9641	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9641	V1a	0.230739699411696	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9641	V1a	4.03428918592419	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9641	V1b	0.346109549117544	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9641	V1b	6.05143377888629	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9641	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9641	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9642	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9642	V1a	-0.0754770112525769	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9642	V1a	3.87070919256238	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9642	V1b	-0.113215516878865	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9642	V1b	5.80606378884356	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9642	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9642	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9643	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9643	V1a	0.0828824518401782	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9643	V1a	3.96071833212359	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9643	V1b	0.124323677760267	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9643	V1b	5.94107749818538	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9643	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9643	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9644	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9644	V1a	-0.166978027107475	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9644	V1a	3.87122726201409	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9644	V1b	-0.250467040661212	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9644	V1b	5.80684089302113	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9644	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9644	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9645	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9645	V1a	-0.0753470029002673	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9645	V1a	3.98977450673277	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9645	V1b	-0.113020504350401	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9645	V1b	5.98466176009916	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9645	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9645	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9646	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9646	V1a	0.115162646304708	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9646	V1a	4.04522061095397	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9646	V1b	0.172743969457062	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9646	V1b	6.06783091643095	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9646	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9646	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9647	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9647	V1a	0.413960484618526	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9647	V1a	4.1142260816565	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9647	V1b	0.620940726927789	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9647	V1b	6.17133912248475	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9647	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9647	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9648	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9648	V1a	0.182967283924871	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9648	V1a	4.25416817027353	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9648	V1b	0.274450925887307	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9648	V1b	6.38125225541029	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9648	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9648	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9649	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9649	V1a	0.137002330455433	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9649	V1a	4.17094242016282	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9649	V1b	0.20550349568315	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9649	V1b	6.25641363024423	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9649	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9649	V1b	ok	ok	TRUE	stopped_before_da
+P1_plant	D6	9650	V1a and V1b against V0	NA	4 z and 6 z on the planted sample's Y rows to 1e-12, 0 elsewhere; V1b = 1.5 V1a	TRUE	
+P3_mean	D6	9650	V1a	-0.44477772178051	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9650	V1a	3.99700337088394	within 10 % of s (reported, not gating)	TRUE	
+P3_mean	D6	9650	V1b	-0.667166582670765	within 4 SE of 0 (reported, not gating)	TRUE	
+P3_sd	D6	9650	V1b	5.9955050563259	within 10 % of s (reported, not gating)	TRUE	
+D2_status	D6	9650	V1a	ok	ok	TRUE	stopped_before_da
+D2_status	D6	9650	V1b	ok	ok	TRUE	stopped_before_da

@@ -1,0 +1,4 @@
+item	value
+rule_V1a	V1a: D3 50/50, D4 50/50, D6 50/50 -> accepted iff all >= 45: accepted
+rule_V1b	V1b: D3 50/50, D4 50/50, D6 50/50 -> accepted iff all >= 45: accepted
+outcome	V1a accepted

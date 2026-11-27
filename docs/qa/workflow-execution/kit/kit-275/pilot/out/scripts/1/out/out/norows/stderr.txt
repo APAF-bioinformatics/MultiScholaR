@@ -1,0 +1,2 @@
+Error: score-pilot: no rows in /home/runner/work/MultiScholaR/MultiScholaR/pkg/k275-pilot-selftest/cases/norows/rows
+Execution halted

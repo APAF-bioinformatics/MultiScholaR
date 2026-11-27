@@ -1,0 +1,22 @@
+case	item	value
+a-accepted	rule_V1a	V1a: D3 50/50, D4 47/50, D6 45/50 -> accepted iff all >= 45: accepted
+a-accepted	rule_V1b	V1b: D3 30/50, D4 20/50, D6 5/50 -> accepted iff all >= 45: rejected
+a-accepted	outcome	V1a accepted
+b-fallback	rule_V1a	V1a: D3 50/50, D4 50/50, D6 44/50 -> accepted iff all >= 45: rejected
+b-fallback	rule_V1b	V1b: D3 50/50, D4 47/50, D6 45/50 -> accepted iff all >= 45: accepted
+b-fallback	outcome	V1b accepted (V1a rejected)
+c-neither	rule_V1a	V1a: D3 50/50, D4 50/50, D6 44/50 -> accepted iff all >= 45: rejected
+c-neither	rule_V1b	V1b: D3 30/50, D4 20/50, D6 5/50 -> accepted iff all >= 45: rejected
+c-neither	outcome	neither accepted: back to the owner (R2.3 (3)); no other candidate, no further pilot
+d-incomplete-a	rule_V1a	V1a: D3 50/50, D4 40/40, D6 50/50 -> accepted iff all >= 45: incomplete (a cell has fewer than 50 valid journeys: an instrument defect, not a rejection)
+d-incomplete-a	rule_V1b	V1b: D3 50/50, D4 47/50, D6 45/50 -> accepted iff all >= 45: accepted
+d-incomplete-a	outcome	no decision: V1a incomplete (instrument defect; re-send once under VAL-54)
+e-incomplete-b	rule_V1a	V1a: D3 50/50, D4 50/50, D6 44/50 -> accepted iff all >= 45: rejected
+e-incomplete-b	rule_V1b	V1b: D3 50/50, D4 50/50, D6 49/49 -> accepted iff all >= 45: incomplete (a cell has fewer than 50 valid journeys: an instrument defect, not a rejection)
+e-incomplete-b	outcome	no decision: V1b incomplete (instrument defect; re-send once under VAL-54)
+f-accepted-b-incomplete	rule_V1a	V1a: D3 50/50, D4 47/50, D6 45/50 -> accepted iff all >= 45: accepted
+f-accepted-b-incomplete	rule_V1b	V1b: D3 50/50, D4 50/50, D6 0/0 -> accepted iff all >= 45: incomplete (a cell has fewer than 50 valid journeys: an instrument defect, not a rejection)
+f-accepted-b-incomplete	outcome	V1a accepted
+g-boundary	rule_V1a	V1a: D3 46/50, D4 45/50, D6 45/50 -> accepted iff all >= 45: accepted
+g-boundary	rule_V1b	V1b: D3 30/50, D4 20/50, D6 5/50 -> accepted iff all >= 45: rejected
+g-boundary	outcome	V1a accepted

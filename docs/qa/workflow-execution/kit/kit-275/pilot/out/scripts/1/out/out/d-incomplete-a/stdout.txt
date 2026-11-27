@@ -1,0 +1,10 @@
+score-pilot: 300 rows from 1 file(s); 0 unit rows; planted sample below 0.5 (valid data sets, two-sided 95% Clopper-Pearson):
+  V1a D3 valid 50 of 50  below 0.5: 50 (1.000000; 0.928878 to 1.000000)  planted min/h1/med/h3/max 0.300000 0.324000 0.349000 0.374000 0.398000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  genuine below 0.5: 0 of 50  not ok 0
+  V1a D4 valid 40 of 50  below 0.5: 40 (1.000000; 0.911903 to 1.000000)  planted min/h1/med/h3/max 0.300000 0.319000 0.339000 0.359000 0.378000  genuine 0.700000 0.757500 0.817500 0.882500 0.945000  genuine below 0.5: 0 of 40  not ok 10
+  V1a D6 valid 50 of 50  below 0.5: 50 (1.000000; 0.928878 to 1.000000)  planted min/h1/med/h3/max 0.300000 0.324000 0.349000 0.374000 0.398000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  genuine below 0.5: 0 of 50  not ok 0
+  V1b D3 valid 50 of 50  below 0.5: 50 (1.000000; 0.928878 to 1.000000)  planted min/h1/med/h3/max 0.300000 0.324000 0.349000 0.374000 0.398000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  genuine below 0.5: 0 of 50  not ok 0
+  V1b D4 valid 50 of 50  below 0.5: 47 (0.940000; 0.834518 to 0.987451)  planted min/h1/med/h3/max 0.300000 0.324000 0.349000 0.374000 0.698000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  genuine below 0.5: 0 of 50  not ok 0
+  V1b D6 valid 50 of 50  below 0.5: 45 (0.900000; 0.781865 to 0.966725)  planted min/h1/med/h3/max 0.300000 0.324000 0.349000 0.374000 0.698000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  genuine below 0.5: 0 of 50  not ok 0
+V1a: D3 50/50, D4 40/40, D6 50/50 -> accepted iff all >= 45: incomplete (a cell has fewer than 50 valid journeys: an instrument defect, not a rejection)
+V1b: D3 50/50, D4 47/50, D6 45/50 -> accepted iff all >= 45: accepted
+outcome (R2.3): no decision: V1a incomplete (instrument defect; re-send once under VAL-54)

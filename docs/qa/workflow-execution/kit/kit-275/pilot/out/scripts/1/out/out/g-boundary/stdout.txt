@@ -1,0 +1,10 @@
+score-pilot: 300 rows from 1 file(s); 0 unit rows; planted sample below 0.5 (valid data sets, two-sided 95% Clopper-Pearson):
+  V1a D3 valid 50 of 50  below 0.5: 46 (0.920000; 0.807657 to 0.977772)  planted min/h1/med/h3/max 0.302000 0.326000 0.351000 0.376000 0.698000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  genuine below 0.5: 0 of 50  not ok 0
+  V1a D4 valid 50 of 50  below 0.5: 45 (0.900000; 0.781865 to 0.966725)  planted min/h1/med/h3/max 0.300000 0.326000 0.351000 0.376000 0.698000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  genuine below 0.5: 0 of 50  not ok 0
+  V1a D6 valid 50 of 50  below 0.5: 45 (0.900000; 0.781865 to 0.966725)  planted min/h1/med/h3/max 0.300000 0.326000 0.351000 0.376000 0.698000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  genuine below 0.5: 0 of 50  not ok 0
+  V1b D3 valid 50 of 50  below 0.5: 30 (0.600000; 0.451794 to 0.735922)  planted min/h1/med/h3/max 0.300000 0.324000 0.349000 0.674000 0.698000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  genuine below 0.5: 0 of 50  not ok 0
+  V1b D4 valid 50 of 50  below 0.5: 20 (0.400000; 0.264078 to 0.548206)  planted min/h1/med/h3/max 0.300000 0.324000 0.649000 0.674000 0.698000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  genuine below 0.5: 0 of 50  not ok 0
+  V1b D6 valid 50 of 50  below 0.5:  5 (0.100000; 0.033275 to 0.218135)  planted min/h1/med/h3/max 0.300000 0.624000 0.649000 0.674000 0.698000  genuine 0.700000 0.760000 0.822500 0.885000 0.945000  genuine below 0.5: 0 of 50  not ok 0
+V1a: D3 46/50, D4 45/50, D6 45/50 -> accepted iff all >= 45: accepted
+V1b: D3 30/50, D4 20/50, D6 5/50 -> accepted iff all >= 45: rejected
+outcome (R2.3): V1a accepted

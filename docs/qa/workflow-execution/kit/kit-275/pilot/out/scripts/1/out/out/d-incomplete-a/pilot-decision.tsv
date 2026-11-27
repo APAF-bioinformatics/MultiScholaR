@@ -1,0 +1,4 @@
+item	value
+rule_V1a	V1a: D3 50/50, D4 40/40, D6 50/50 -> accepted iff all >= 45: incomplete (a cell has fewer than 50 valid journeys: an instrument defect, not a rejection)
+rule_V1b	V1b: D3 50/50, D4 47/50, D6 45/50 -> accepted iff all >= 45: accepted
+outcome	no decision: V1a incomplete (instrument defect; re-send once under VAL-54)

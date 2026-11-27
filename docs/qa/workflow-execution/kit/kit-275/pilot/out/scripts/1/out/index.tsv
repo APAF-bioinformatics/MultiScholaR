@@ -1,0 +1,9 @@
+case	exit
+a-accepted	0
+b-fallback	0
+c-neither	0
+d-incomplete-a	0
+e-incomplete-b	0
+f-accepted-b-incomplete	0
+g-boundary	0
+norows	1
