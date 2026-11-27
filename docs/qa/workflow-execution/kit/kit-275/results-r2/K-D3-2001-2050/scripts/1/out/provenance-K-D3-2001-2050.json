@@ -1,0 +1,48 @@
+{
+  "job": "K-D3-2001-2050",
+  "tiers": "K",
+  "designs": "D3",
+  "data_sets": [2001, 2050],
+  "lifecycle": false,
+  "smoke": false,
+  "fault": false,
+  "workers": 4,
+  "units": 50,
+  "final": true,
+  "commit": "0c236901e2b94d2e9ae30a19015d8fdc54890542",
+  "bound_commit": "bfbcb34dfc888637d879e89029a9ee86505b476a",
+  "package_tree_vs_bound": {
+    "git_status": 0,
+    "diff_stat": ""
+  },
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "omp_threads": "1",
+  "runner_image": "ubuntu22 20261116.365.1",
+  "processor": "AMD EPYC 7763 64-Core Processor",
+  "cores": 4,
+  "seed_rule": "set.seed(275000000 + 100000 c + 10000 s + r, kind = 'Mersenne-Twister', normal.kind = 'Inversion', sample.kind = 'Rejection'); planting 276000000 + 100000 c + r; bootstrap 277000000 + 100 c + t",
+  "key_packages": {
+    "MultiScholaR": "0.9.0",
+    "RUVIIIC": "1.0.19",
+    "ruv": "0.9.7.1",
+    "limma": "3.68.4",
+    "qvalue": "2.44.0",
+    "duckdb": "1.5.5",
+    "dplyr": "1.2.1"
+  },
+  "script_sha256": "d972252dee0bb81ae85042be1bdc1b9615450968ba909da549e5ef6ebbf2d24f",
+  "scorer_sha256": "ee99cbb40e5c621dbc6be6a79188268ac6d05885c3826a86f22df92a40669dc9",
+  "declaration_file": "docs/qa/workflow-execution/kit/kit-275/declaration-r2.md",
+  "declaration_sha256": "4bd96ed9a9fdeabcfcba06cb3255c6a398c589d49cb93500ac94eb6fbaf79411",
+  "started": "2026-11-27T08:35:29+0000",
+  "finished": "2026-11-27T10:27:59+0000",
+  "tables_sha256": {
+    "checks-K-D3-2001-2050-start.tsv": "337a47eb681c21ec2e1bc9a390cfa0f21760b868fea1f2c80bbfd44c7f6edd36",
+    "checks-K-D3-2001-2050.tsv": "337a47eb681c21ec2e1bc9a390cfa0f21760b868fea1f2c80bbfd44c7f6edd36",
+    "provenance-K-D3-2001-2050.json": "37dfb8f3ce96653bd7dec7819026dcc97565595bf827ce3b415a6815671b56db",
+    "rows/K-D3-2001-2050.tsv.gz": "802921e361ee04c17551d1e1f3509a0721fb186766b5142630457718e28dd2c1",
+    "timing-units-K-D3-2001-2050.tsv": "5c36968cf562aa5c0deb1a33c83dac877ded39c3feb865aae83386696a4e443b"
+  }
+}
