@@ -60,8 +60,10 @@ PER <- c(D3 = 3, D4 = 4, D6 = 6)
 CIDX <- c(D3 = 1L, D4 = 2L, D6 = 3L)
 TIER_T <- c(D = 1L, K = 2L, F = 3L, S = 4L, V = 5L, M = 6L, T = 7L, E = 8L)  # the bootstrap stream t of each tier (5.3); ID has none (E8 only); G1 uses 10 (R-4)
 THETAS <- c("05", "07", "09", "095")
+PC1_FLOOR <- 0.80   # K275-r2: 7.1 (VAL-401 (2)): the one-sided upper limit at 0.01/3 below this is F1
 R_SET <- as.integer(strsplit(Sys.getenv("K275_SCORE_R", "200,100,20"), ",", fixed = TRUE)[[1L]])
 BOOT_B <- as.integer(Sys.getenv("K275_BOOT_B", "10000"))
+R_BASE <- as.integer(Sys.getenv("K275_SCORE_BASE", "2000"))   # K275-r2: 5.3 (the counted r2 data sets are r = 2001 to 2200 / 2001 to 2100 / 2001 to 2020; the cells index them 1 to R)
 declaredR <- function(tier) if (identical(tier, "D")) R_SET[[1L]] else if (identical(tier, "ID")) R_SET[[3L]] else R_SET[[2L]]
 le <- function(a, b) is.finite(a) && is.finite(b) && a <= b + TOL
 gt <- function(a, b) is.finite(a) && is.finite(b) && a > b + TOL
@@ -124,10 +126,12 @@ if (!blind && length(checks_files0)) {
 rows <- rows[!rows[["arm"]] %in% "unit", , drop = FALSE]
 if (!blind) {
     lim <- vapply(rows[["tier"]], function(t) if (t %in% c("D", "K", "F", "S", "V", "M", "T", "E", "ID")) declaredR(t) else NA_real_, numeric(1L))
-    if (any(!is.finite(rows[["r"]]) | rows[["r"]] < 1 | !is.finite(lim) | rows[["r"]] > lim)) stop("K275 scoring stops: a row outside its tier's declared data sets (RANGE-1)")
+    if (any(!is.finite(rows[["r"]]) | rows[["r"]] < R_BASE + 1 | !is.finite(lim) | rows[["r"]] > R_BASE + lim)) stop("K275 scoring stops: a row outside its tier's declared data sets (RANGE-1)")   # K275-r2: 5.3
+    rows[["r"]] <- rows[["r"]] - R_BASE   # K275-r2: 5.3 (data set index 1 to R from here on)
     # the continuation rule: a data set is complete when its source holds all its rows; an incomplete one (an interrupted data set) is dropped whole and listed;
     # a data set complete in two sources is a double run and stops scoring
-    EXPECT_ROWS <- c(D = 16L, K = 17L, F = 5L, S = 4L, V = 12L, M = 7L, T = 6L, E = 6L, ID = 5L)
+    EXPECT_ROWS <- c(D = 17L,   # K275-r2: 4 (tier D: V1w's NO journey is the 17th row)
+         K = 17L, F = 5L, S = 4L, V = 12L, M = 7L, T = 6L, E = 6L, ID = 5L)
     group <- paste(rows[["tier"]], rows[["design"]], rows[["r"]], rows[["source"]], sep = "|")
     counts <- table(group)
     need <- EXPECT_ROWS[sub("\\|.*$", "", names(counts))]
@@ -149,7 +153,7 @@ armClassOf <- function(arm) {
     sub("^(LM|LG|GK)[0-9].*$", "\\1", sub("^(NO|LA|GA|GSC)$", "\\1", arm))
 }
 e8Compare <- function(rows) {
-    a <- rows[rows[["tier"]] %in% "D" & rows[["design"]] %in% "D4" & rows[["version"]] %in% "V1g" & rows[["arm"]] %in% c("NO", "LM2", "GK2", "LA", "GA"), , drop = FALSE]
+    a <- rows[rows[["tier"]] %in% "D" & rows[["design"]] %in% "D4" & rows[["version"]] %in% "V1a" & rows[["arm"]] %in% c("NO", "LM2", "GK2", "LA", "GA"), , drop = FALSE]
     b <- rows[rows[["tier"]] %in% "ID", , drop = FALSE]
     skip <- c("tier", "cell", "omic", "seconds", "warnings", "smoke", "class", "step", "source")
     key <- function(x) paste(x[["r"]], x[["version"]], x[["arm"]])
@@ -304,23 +308,26 @@ if (nzchar(Sys.getenv("K275_CONTROLS_ONLY"))) {
     ctl <- list()
     for (design in DESIGNS) {
         R <- declaredR("D")
-        x <- vec("D", design, "V1g", "NO", "fa_pre_05", R)
+        x <- vec("D", design, "V1a", "NO", "fa_pre_05", R)
         x <- x[is.finite(x)]
-        lo <- cpLower(sum(x), length(x), 0.01 / 3)
-        ctl[[length(ctl) + 1L]] <- data.frame(design = design, id = "PC1", n_valid = length(x), estimate = if (length(x)) mean(x) else NA_real_, lo = lo,
-            hi = cpUpper(sum(x), length(x), 0.01 / 3), label = if (covered(length(x), R) && gt(lo, 0.90)) "passes" else "FAILS", stringsAsFactors = FALSE)
+        up <- cpUpper(sum(x), length(x), 0.01 / 3)
+        gv <- vec("D", design, "V1a", "NO", "cy_genuine", R)
+        gv <- gv[is.finite(gv)]
+        ctl[[length(ctl) + 1L]] <- data.frame(design = design, id = "PC1", n_valid = length(x), estimate = if (length(x)) mean(x) else NA_real_, lo = cpLower(sum(x), length(x), 0.01 / 3),
+            hi = up, label = if (!covered(length(x), R)) "not determined (coverage)" else if (ge(up, PC1_FLOOR)) "passes" else "FAILS",
+            genuine_below_05 = sprintf("%d of %d", sum(gv < 0.5), length(gv)), stringsAsFactors = FALSE)   # K275-r2: 7.1, R2.4, K2-07
         x <- vec("D", design, "V0", "GK2", "fa_post_05", R)
         x <- x[is.finite(x)]
         up <- cpUpper(sum(x), length(x), 0.01 / 3)
         ctl[[length(ctl) + 1L]] <- data.frame(design = design, id = "NC1", n_valid = length(x), estimate = if (length(x)) mean(x) else NA_real_, lo = cpLower(sum(x), length(x), 0.01 / 3),
-            hi = up, label = if (covered(length(x), R) && le(up, M_ABS)) "passes" else "FAILS", stringsAsFactors = FALSE)
+            hi = up, label = if (covered(length(x), R) && le(up, M_ABS)) "passes" else "FAILS", genuine_below_05 = "", stringsAsFactors = FALSE)   # K275-r2: R2.4
     }
     ctl <- do.call(rbind, ctl)
     utils::write.table(ctl, file.path(out_dir, "controls-judged.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
-    cat(sprintf("K275 controls: %s\n", paste(sprintf("%s %s %s", ctl$id, ctl$design, ctl$label), collapse = "; ")))
+    cat(sprintf("K275 controls: %s\n", paste(sprintf("%s %s %s%s", ctl$id, ctl$design, ctl$label, ifelse(nzchar(ctl$genuine_below_05), sprintf(" (genuine below 0.5: %s)", ctl$genuine_below_05), "")), collapse = "; ")))   # K275-r2: R2.4
     quit(save = "no", status = if (all(ctl$label == "passes")) 0L else 1L)   # F1 or F2: stop, the owner is told
 }
-combos <- unique(rows[rows[["version"]] %in% c("V0", "V1g", "V1p", "V1s", "V1t", "V2", "VD"), c("tier", "design", "version", "arm")])
+combos <- unique(rows[rows[["version"]] %in% c("V0", "V1a", "V1w", "V1p", "V1s", "V1t", "V2", "VD")   # K275-r2: R2.4, 8.1 (V1w: the reported arm, read only by its own cells: no label, no pass or fail), c("tier", "design", "version", "arm")])
 for (i in seq_len(nrow(combos))) {
     tier <- combos[["tier"]][[i]]
     design <- combos[["design"]][[i]]
@@ -352,7 +359,7 @@ for (i in seq_len(nrow(combos))) {
     # H2 and H3 (tier E): the share of data sets in which a is excluded, and the shares of the emulation's results after an exclusion
     if (identical(tier, "E")) {
         a_ex <- sub[["pe_a_excluded"]][sub[["valid"]] & sub[["pe_a_excluded"]] %in% c("TRUE", "FALSE")]
-        if (length(a_ex) && identical(version, "V1g")) emit("reported", "H2", tier, design, version, arm, "share of data sets in which a is excluded", length(a_ex), R, mean(a_ex == "TRUE"),
+        if (length(a_ex) && identical(version, "V1a")) emit("reported", "H2", tier, design, version, arm, "share of data sets in which a is excluded", length(a_ex), R, mean(a_ex == "TRUE"),
             cpLower(sum(a_ex == "TRUE"), length(a_ex), 0.025), cpUpper(sum(a_ex == "TRUE"), length(a_ex), 0.025), 0.95, "two", note = "exact Clopper-Pearson")
         if (arm %in% c("PEL2", "PEG2") && nrow(sub)) for (st_name in c("refused_after_exclusion", "dropped", "uncorrected", "no_da")) emit("reported", paste0("H3_", st_name), tier, design, version, arm,
             sprintf("share of journeys with status %s", st_name), nrow(sub), R, mean(sub[["status"]] == st_name), cpLower(sum(sub[["status"]] == st_name), nrow(sub), 0.025),
@@ -403,7 +410,7 @@ for (i in seq_len(nrow(combos))) {
             st <- ratioStat(ifelse(same, un_v, NA_real_), ifelse(same, un_r, NA_real_), idx, 0.025, sqrt)
             if (st$n > 0) emit("reported", "rho_unmod", tier, design, version, arm, sprintf("rho_unmod against VD %s (%s)", ref$arm, ref$tier), st$n, R, st$est, st$lo, st$hi, 0.95, "two", jk_lo = st$jk_lo, jk_hi = st$jk_hi,
                 note = sprintf("%d pairs dropped for a differing tested set", dropped))
-            share <- c(V1g = "g", V1s = "g", V1p = "p", V1t = "t", V2 = "two")[[version]]
+            share <- c(V1a = "g", V1s = "g", V1p = "p", V1t = "t", V2 = "two")[[version]]
             dot_v <- vec(tier, design, version, arm, paste0("dot_", share), R)
             dot_r <- refVec(tier, design, arm, paste0("dot_", share), R)$values
             den <- vec(tier, design, version, arm, paste0("den_", share), R, need_valid = FALSE)
@@ -429,21 +436,24 @@ emitMissing <- function(family, id, tier, design, version, arm, estimand, R, lev
 pairedRatio <- function(tier, design, arm, column, R, transform = identity, alpha) {
     ref <- refVec(tier, design, arm, column, R)
     if (is.null(ref)) return(NULL)
-    same <- sigVec(tier, design, "V1g", arm, R) == ref$sig
+    same <- sigVec(tier, design, "V1a", arm, R) == ref$sig
     same[is.na(same)] <- FALSE
-    st <- ratioStat(ifelse(same, vec(tier, design, "V1g", arm, column, R), NA_real_), ifelse(same, ref$values, NA_real_), indexOf(design, tier, R), alpha, transform)
-    c(st, list(ref = ref, dropped = sum(!same & is.finite(vec(tier, design, "V1g", arm, column, R)))))
+    st <- ratioStat(ifelse(same, vec(tier, design, "V1a", arm, column, R), NA_real_), ifelse(same, ref$values, NA_real_), indexOf(design, tier, R), alpha, transform)
+    c(st, list(ref = ref, dropped = sum(!same & is.finite(vec(tier, design, "V1a", arm, column, R)))))
 }
 for (design in DESIGNS) {
     R <- declaredR("D")
     idx <- indexOf(design, "D", R)
-    # PC1: P_pre(0.5) of V1g (arm NO), lower limit above 0.90, one-sided 0.01/3
-    x <- vec("D", design, "V1g", "NO", "fa_pre_05", R)
+    # PC1 (r2.1, 7.1): P_pre(0.5) of V1a (arm NO) at ONE floor: F1 fires when fewer than 144 of 200 data sets have the planted sample failed, i.e. when the one-sided
+    # upper Clopper-Pearson limit at 0.01/3 is below 0.80; the fixed genuine sample's count below 0.5 is printed beside it (R2.4). No V1a row: "not determined (coverage)", never a pass or fail.
+    x <- vec("D", design, "V1a", "NO", "fa_pre_05", R)
     x <- x[is.finite(x)]
-    lo <- cpLower(sum(x), length(x), 0.01 / 3)
-    pass <- covered(length(x), R) && gt(lo, 0.90)
-    emit("control", "PC1", "D", design, "V1g", "NO", "P_pre(0.5) lower limit above 0.90", length(x), R, if (length(x)) mean(x) else NA_real_, lo, cpUpper(sum(x), length(x), 0.01 / 3),
-        0.01 / 3, "one", label = if (pass) "passes" else "FAILS")
+    up <- cpUpper(sum(x), length(x), 0.01 / 3)
+    gv <- vec("D", design, "V1a", "NO", "cy_genuine", R)
+    gv <- gv[is.finite(gv)]
+    pass <- if (covered(length(x), R)) ge(up, PC1_FLOOR) else NA
+    emit("control", "PC1", "D", design, "V1a", "NO", "P_pre(0.5) upper limit at least 0.80 (fewer than 144 of 200: F1)", length(x), R, if (length(x)) mean(x) else NA_real_, cpLower(sum(x), length(x), 0.01 / 3), up,
+        0.01 / 3, "one", label = if (is.na(pass)) "not determined (coverage)" else if (pass) "passes" else "FAILS", note = sprintf("genuine sample (cy_genuine) below 0.5 in %d of %d data sets", sum(gv < 0.5), length(gv)))   # K275-r2: 7.1, R2.4
     lab[[paste("PC1", design)]] <- pass
     # NC1: P(fail(0.5)) of a in V0 on GK2, upper limit at most M_abs
     x <- vec("D", design, "V0", "GK2", "fa_post_05", R)
@@ -453,26 +463,26 @@ for (design in DESIGNS) {
     emit("control", "NC1", "D", design, "V0", "GK2", "P(fail(0.5)) of the genuine sample after RUV, upper limit at most 0.05", length(x), R, if (length(x)) mean(x) else NA_real_,
         cpLower(sum(x), length(x), 0.01 / 3), up, 0.01 / 3, "one", label = if (pass) "passes" else "FAILS")
     lab[[paste("NC1", design)]] <- pass
-    # family A: P_post(0.5), V1g, absorbed / acts / mixed at 0.025/12
+    # family A: P_post(0.5), V1a, absorbed / acts / mixed at 0.025/12
     for (arm in c("LM2", "GK2", "LA", "GA")) {
-        x <- vec("D", design, "V1g", arm, "fa_post_05", R)
+        x <- vec("D", design, "V1a", arm, "fa_post_05", R)
         x <- x[is.finite(x)]
         up <- cpUpper(sum(x), length(x), 0.025 / 12)
         lw <- cpLower(sum(x), length(x), 0.025 / 12)
         label <- labelA(lw, up, length(x), R)
-        emit("labelled", "A", "D", design, "V1g", arm, "P_post(0.5)", length(x), R, if (length(x)) mean(x) else NA_real_, lw, up, 0.025 / 12, "one", label = label)
+        emit("labelled", "A", "D", design, "V1a", arm, "P_post(0.5)", length(x), R, if (length(x)) mean(x) else NA_real_, lw, up, 0.025 / 12, "one", label = label)
         lab[[paste("A", design, arm)]] <- label
     }
-    # family B: rho_mod, V1g against VD at k - 1 (LM2 against LM1, GK2 against GK1), 0.025/6
+    # family B: rho_mod, V1a against VD at k - 1 (LM2 against LM1, GK2 against GK1), 0.025/6
     for (arm in c("LM2", "GK2")) {
         st <- pairedRatio("D", design, arm, "se2_mod_y", R, sqrt, 0.025 / 6)
         if (is.null(st)) {
-            emitMissing("labelled", "B", "D", design, "V1g", arm, "rho_mod against VD", R, 0.025 / 6, "one")
+            emitMissing("labelled", "B", "D", design, "V1a", arm, "rho_mod against VD", R, 0.025 / 6, "one")
             lab[[paste("B", design, arm)]] <- "not determined (coverage)"
             next
         }
         label <- labelB(st$lo, st$hi, st$n, R)
-        emit("labelled", "B", "D", design, "V1g", arm, sprintf("rho_mod against VD %s", st$ref$arm), st$n, R, st$est, st$lo, st$hi, 0.025 / 6, "one", label = label,
+        emit("labelled", "B", "D", design, "V1a", arm, sprintf("rho_mod against VD %s", st$ref$arm), st$n, R, st$est, st$lo, st$hi, 0.025 / 6, "one", label = label,
             jk_lo = st$jk_lo, jk_hi = st$jk_hi, label_jk = labelB(st$jk_lo, st$jk_hi, st$n, R),
             note = sprintf("%d pairs dropped for a differing tested set", st$dropped))
         lab[[paste("B", design, arm)]] <- label
@@ -481,45 +491,45 @@ for (design in DESIGNS) {
     derived <- sqrt((2 * PER[[design]] - 3) / (2 * PER[[design]] - 1))
     st <- pairedRatio("D", design, "LX", "se2_unmod_y", R, sqrt, 0.05 / 3 / 2)
     if (is.null(st)) {
-        emitMissing("labelled", "B'", "D", design, "V1g", "LX", "rho_unmod of LX against the derived value", R, 0.05 / 3, "two")
+        emitMissing("labelled", "B'", "D", design, "V1a", "LX", "rho_unmod of LX against the derived value", R, 0.05 / 3, "two")
         lab[[paste("B'", design)]] <- "not determined (coverage)"
     } else {
         label <- labelBp(st$lo, st$hi, st$n, R, derived, st$est)
-        emit("labelled", "B'", "D", design, "V1g", "LX", sprintf("rho_unmod of LX against the derived %s", format(round(derived, 4))), st$n, R, st$est, st$lo, st$hi, 0.05 / 3, "two",
+        emit("labelled", "B'", "D", design, "V1a", "LX", sprintf("rho_unmod of LX against the derived %s", format(round(derived, 4))), st$n, R, st$est, st$lo, st$hi, 0.05 / 3, "two",
             label = label, jk_lo = st$jk_lo, jk_hi = st$jk_hi, label_jk = labelBp(st$jk_lo, st$jk_hi, st$n, R, derived, st$est),
             note = sprintf("%d pairs dropped for a differing tested set", st$dropped))
         lab[[paste("B'", design)]] <- label
     }
-    # C and C': the paired rise of the any call and of the per-feature null rate, V1g against V0, 0.025/12, both readings
+    # C and C': the paired rise of the any call and of the per-feature null rate, V1a against V0, 0.025/12, both readings
     for (arm in c("LM2", "GK2")) for (kind in c("C", "C'")) {
         column <- if (identical(kind, "C")) "any_call_y" else "null_p05_y"
         margin <- if (identical(kind, "C")) M_ANY else M_ALPHA
-        d <- vec("D", design, "V1g", arm, column, R) - vec("D", design, "V0", arm, column, R)
+        d <- vec("D", design, "V1a", arm, column, R) - vec("D", design, "V0", arm, column, R)
         st <- ratioStat(d, ifelse(is.finite(d), 1, NA_real_), idx, 0.025 / 12)
         ref <- refVec("D", design, arm, column, R)
         label <- labelC(st$lo, st$hi, st$n, R, margin)
-        emit("labelled", kind, "D", design, "V1g", arm, sprintf("%s: V1g minus V0, paired", column), st$n, R, st$est, st$lo, st$hi, 0.025 / 12, "one",
+        emit("labelled", kind, "D", design, "V1a", arm, sprintf("%s: V1a minus V0, paired", column), st$n, R, st$est, st$lo, st$hi, 0.025 / 12, "one",
             label = label, jk_lo = st$jk_lo, jk_hi = st$jk_hi, label_jk = labelC(st$jk_lo, st$jk_hi, st$n, R, margin),
             note = sprintf("any rise shown: %s; V0 rate %s; VD rate %s", shownC(st$lo, st$n, R), format(mean(vec("D", design, "V0", arm, column, R), na.rm = TRUE)),
                 if (is.null(ref)) NA else format(mean(ref$values, na.rm = TRUE))))
         lab[[paste(kind, design, arm)]] <- label
     }
-    # pi, the imprint retained (V1g; LM2, GK2, LG2, LX), two-sided 95 %
+    # pi, the imprint retained (V1a; LM2, GK2, LG2, LX), two-sided 95 %
     for (arm in c("LM2", "GK2", "LG2", "LX")) {
         tier <- if (identical(arm, "LG2")) "K" else "D"
         Rt <- declaredR(tier)
         ref <- refVec(tier, design, arm, "dot_g", Rt)
         if (is.null(ref)) {
-            emitMissing("labelled", "pi", tier, design, "V1g", arm, "pi, the imprint retained (A7)", Rt, 0.05, "two")
+            emitMissing("labelled", "pi", tier, design, "V1a", arm, "pi, the imprint retained (A7)", Rt, 0.05, "two")
             lab[[paste("pi", design, arm)]] <- "not determined (coverage)"
             next
         }
-        same <- sigVec(tier, design, "V1g", arm, Rt) == ref$sig
+        same <- sigVec(tier, design, "V1a", arm, Rt) == ref$sig
         same[is.na(same)] <- FALSE
-        st <- ratioStat(ifelse(same, vec(tier, design, "V1g", arm, "dot_g", Rt) - ref$values, NA_real_), ifelse(same, vec(tier, design, "V1g", arm, "den_g", Rt, FALSE), NA_real_),
+        st <- ratioStat(ifelse(same, vec(tier, design, "V1a", arm, "dot_g", Rt) - ref$values, NA_real_), ifelse(same, vec(tier, design, "V1a", arm, "den_g", Rt, FALSE), NA_real_),
             indexOf(design, tier, Rt), 0.025)
-        emit("labelled", "pi", tier, design, "V1g", arm, "pi, the imprint retained (A7)", st$n, Rt, st$est, st$lo, st$hi, 0.05, "two", label = labelPi(st$lo, st$hi, st$n, Rt),
-            jk_lo = st$jk_lo, jk_hi = st$jk_hi, label_jk = labelPi(st$jk_lo, st$jk_hi, st$n, Rt), note = sprintf("%d pairs dropped for a differing tested set", sum(!same & is.finite(vec(tier, design, "V1g", arm, "dot_g", Rt)))))
+        emit("labelled", "pi", tier, design, "V1a", arm, "pi, the imprint retained (A7)", st$n, Rt, st$est, st$lo, st$hi, 0.05, "two", label = labelPi(st$lo, st$hi, st$n, Rt),
+            jk_lo = st$jk_lo, jk_hi = st$jk_hi, label_jk = labelPi(st$jk_lo, st$jk_hi, st$n, Rt), note = sprintf("%d pairs dropped for a differing tested set", sum(!same & is.finite(vec(tier, design, "V1a", arm, "dot_g", Rt)))))
         lab[[paste("pi", design, arm)]] <- labelPi(st$lo, st$hi, st$n, Rt)
     }
 }
@@ -560,7 +570,9 @@ crossNO <- function() {
 }
 cross <- crossNO()
 e12_bad <- if (is.null(checks)) 0L else sum(checks[["check"]] %in% "E12" & !isTrue(checks[["pass"]]))   # reported, not a stop
-f1 <- !all(unlist(lab[grepl("^PC1", names(lab))]))
+pc1 <- unlist(lab[grepl("^PC1", names(lab))])
+f1 <- any(pc1 %in% FALSE)   # K275-r2: 7.1
+pc1_nd <- any(is.na(pc1)) || length(pc1) < length(DESIGNS)   # K275-r2: K2-07 (no V1a row: not determined, never a pass or fail)
 f2 <- !all(unlist(lab[grepl("^NC1", names(lab))]))
 f3 <- !all(unlist(lab[grepl("^(PC2|NC2)", names(lab))]))
 f4 <- e5_bad > 0L || idcheck_bad > 0L || cross[["bad"]] > 0L
@@ -570,7 +582,7 @@ cellA <- function(design, arm) lab[[paste("A", design, arm)]]
 lm2 <- vapply(DESIGNS, function(d) identical(cellA(d, "LM2"), "absorbed"), logical(1L))
 gk2 <- vapply(DESIGNS, function(d) identical(cellA(d, "GK2"), "absorbed"), logical(1L))
 acts <- vapply(DESIGNS, function(d) identical(cellA(d, "LM2"), "acts") && identical(cellA(d, "GK2"), "acts"), logical(1L))
-outcome <- if (f1) "Stop (F1)" else if (f2) "Stop (F2)" else if (f3) "Stop (F3)" else if (f4) "Stop (F4)" else if (all(lm2) && all(gk2)) "R1" else
+outcome <- if (f1) "Stop (F1)" else if (pc1_nd) "Stop (PC1 not determined (coverage))" else if (f2) "Stop (F2)" else if (f3) "Stop (F3)" else if (f4) "Stop (F4)" else if (all(lm2) && all(gk2)) "R1" else
     if (all(gk2) && !all(lm2)) "R2" else if (all(lm2) && !all(gk2)) "R3" else if (all(acts)) "R4" else "R5"
 decision <- data.frame(item = "outcome", value = outcome, stringsAsFactors = FALSE)
 decision <- rbind(decision, data.frame(item = "interrupted data sets", value = if (exists("interrupted") && length(interrupted)) paste(sort(interrupted), collapse = "; ") else "none", stringsAsFactors = FALSE))
