@@ -1,0 +1,1 @@
+K275 scoring: 10200 rows, 291 cells, outcome Stop (F1)

@@ -1,0 +1,57 @@
+item	value
+outcome	R4
+interrupted data sets	none
+A D3 GA	absorbed
+A D3 GK2	acts
+A D3 LA	absorbed
+A D3 LM2	acts
+A D4 GA	absorbed
+A D4 GK2	acts
+A D4 LA	absorbed
+A D4 LM2	acts
+A D6 GA	absorbed
+A D6 GK2	acts
+A D6 LA	absorbed
+A D6 LM2	acts
+B D3 GK2	not understated
+B D3 LM2	understated
+B D4 GK2	not understated
+B D4 LM2	understated
+B D6 GK2	not understated
+B D6 LM2	understated
+B' D3	as derived
+B' D4	as derived
+B' D6	as derived
+C D3 GK2	not raised
+C D3 LM2	raised (material)
+C D4 GK2	not raised
+C D4 LM2	raised (material)
+C D6 GK2	not raised
+C D6 LM2	raised (material)
+C' D3 GK2	not raised
+C' D3 LM2	raised (material)
+C' D4 GK2	not raised
+C' D4 LM2	raised (material)
+C' D6 GK2	not raised
+C' D6 LM2	raised (material)
+pi D3 GK2	imprint removed
+pi D3 LG2	not determined (coverage)
+pi D3 LM2	imprint retained
+pi D3 LX	imprint removed
+pi D4 GK2	imprint removed
+pi D4 LG2	not determined (coverage)
+pi D4 LM2	imprint retained
+pi D4 LX	imprint removed
+pi D6 GK2	imprint removed
+pi D6 LG2	not determined (coverage)
+pi D6 LM2	imprint retained
+pi D6 LX	imprint removed
+F1	FALSE
+F2	FALSE
+F3	FALSE
+F4	FALSE
+E5 failing rows	0
+E1/E2 failing checks	0
+E12 failing checks	0
+E8	0 compared, 0 equal, max deviation 0
+crossNO	0 compared, 0 differ

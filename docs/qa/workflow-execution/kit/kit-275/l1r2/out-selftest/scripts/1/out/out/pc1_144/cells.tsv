@@ -1,0 +1,292 @@
+family	id	tier	design	version	arm	estimand	n_valid	R	estimate	lo	hi	level	sided	label	jk_lo	jk_hi	label_jk	note
+reported	P_pre	D	D3	V1a	NO	P_pre(0.5)	200	200	0.72	0.652311262795392	0.781038844329968	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	P_post	D	D3	V1a	NO	P_post(0.5)	200	200	1	0.981724659644864	1	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D3	V1a	NO	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D3	V1a	NO	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_pre	D	D3	V1w	NO	P_pre(0.5)	200	200	0.25	0.191607169622587	0.315962833329869	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	cy_pre_a	D	D3	V1w	NO	mean cy_pre_a	200	200	0.44	0.44	0.44	0.95	two	NA	0.44	0.44	NA	
+reported	any_call_y	D	D3	V1w	NO	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D3	V1w	NO	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	q_cy_pre_a	D	D3	V1w	NO	quantiles 0.05, 0.5, 0.95 of cy_pre_a	200	200	0.44	0.44	0.44	NA	descriptive	NA	NA	NA	NA	estimate = median; lo, hi = the 5th and 95th percentiles
+reported	P_post	D	D3	V1a	LM2	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D3	V1a	LM2	mean any_call_y	200	200	1	1	1	0.95	two	NA	1	1	NA	
+reported	null_p05_y	D	D3	V1a	LM2	mean null_p05_y	200	200	0.3	0.3	0.3	0.95	two	NA	0.3	0.3	NA	
+reported	delta_any_call_y_V0	D	D3	V1a	LM2	any_call_y: this version minus V0 (paired)	200	200	1	1	1	0.95	two	NA	NA	NA	NA	V0's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_V0	D	D3	V1a	LM2	null_p05_y: this version minus V0 (paired)	200	200	0.25	0.25	0.25	0.95	two	NA	NA	NA	NA	V0's own rate 0.05; 0 data sets unpaired
+reported	rho_mod	D	D3	V1a	LM2	rho_mod against VD LM1 (D)	200	200	0.9	0.9	0.9	0.95	two	NA	0.9	0.9	NA	0 pairs dropped for a differing tested set
+reported	pi	D	D3	V1a	LM2	pi, the imprint retained, against VD LM1 (D)	200	200	1	1	1	0.95	two	imprint retained	1	1	NA	0 pairs dropped for a differing tested set
+reported	delta_any_call_y_VD	D	D3	V1a	LM2	any_call_y: this version minus VD LM1 (paired)	200	200	1	1	1	0.95	two	NA	NA	NA	NA	VD's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_VD	D	D3	V1a	LM2	null_p05_y: this version minus VD LM1 (paired)	200	200	0.25	0.25	0.25	0.95	two	NA	NA	NA	NA	VD's own rate 0.05; 0 data sets unpaired
+reported	P_post	D	D3	V0	LM2	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D3	V0	LM2	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D3	V0	LM2	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D3	VD	LM1	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D3	VD	LM1	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D3	VD	LM1	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D3	V1a	GK2	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D3	V1a	GK2	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D3	V1a	GK2	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	delta_any_call_y_V0	D	D3	V1a	GK2	any_call_y: this version minus V0 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	V0's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_V0	D	D3	V1a	GK2	null_p05_y: this version minus V0 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	V0's own rate 0.05; 0 data sets unpaired
+reported	rho_mod	D	D3	V1a	GK2	rho_mod against VD GK1 (D)	200	200	1	1	1	0.95	two	NA	1	1	NA	0 pairs dropped for a differing tested set
+reported	pi	D	D3	V1a	GK2	pi, the imprint retained, against VD GK1 (D)	200	200	0	0	0	0.95	two	imprint removed	0	0	NA	0 pairs dropped for a differing tested set
+reported	delta_any_call_y_VD	D	D3	V1a	GK2	any_call_y: this version minus VD GK1 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_VD	D	D3	V1a	GK2	null_p05_y: this version minus VD GK1 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0.05; 0 data sets unpaired
+reported	P_post	D	D3	V0	GK2	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D3	V0	GK2	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D3	V0	GK2	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D3	VD	GK1	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D3	VD	GK1	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D3	VD	GK1	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D3	V1a	LA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D3	V1a	LA	mean any_call_y	200	200	1	1	1	0.95	two	NA	1	1	NA	
+reported	null_p05_y	D	D3	V1a	LA	mean null_p05_y	200	200	0.3	0.3	0.3	0.95	two	NA	0.3	0.3	NA	
+reported	delta_any_call_y_V0	D	D3	V1a	LA	any_call_y: this version minus V0 (paired)	200	200	1	1	1	0.95	two	NA	NA	NA	NA	V0's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_V0	D	D3	V1a	LA	null_p05_y: this version minus V0 (paired)	200	200	0.25	0.25	0.25	0.95	two	NA	NA	NA	NA	V0's own rate 0.05; 0 data sets unpaired
+reported	rho_mod	D	D3	V1a	LA	rho_mod against VD LA (D)	200	200	0.9	0.9	0.9	0.95	two	NA	0.9	0.9	NA	0 pairs dropped for a differing tested set
+reported	pi	D	D3	V1a	LA	pi, the imprint retained, against VD LA (D)	200	200	1	1	1	0.95	two	imprint retained	1	1	NA	0 pairs dropped for a differing tested set
+reported	delta_any_call_y_VD	D	D3	V1a	LA	any_call_y: this version minus VD LA (paired)	200	200	1	1	1	0.95	two	NA	NA	NA	NA	VD's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_VD	D	D3	V1a	LA	null_p05_y: this version minus VD LA (paired)	200	200	0.25	0.25	0.25	0.95	two	NA	NA	NA	NA	VD's own rate 0.05; 0 data sets unpaired
+reported	P_post	D	D3	V0	LA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D3	V0	LA	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D3	V0	LA	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D3	VD	LA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D3	VD	LA	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D3	VD	LA	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D3	V1a	GA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D3	V1a	GA	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D3	V1a	GA	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	delta_any_call_y_V0	D	D3	V1a	GA	any_call_y: this version minus V0 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	V0's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_V0	D	D3	V1a	GA	null_p05_y: this version minus V0 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	V0's own rate 0.05; 0 data sets unpaired
+reported	rho_mod	D	D3	V1a	GA	rho_mod against VD GA (D)	200	200	1	1	1	0.95	two	NA	1	1	NA	0 pairs dropped for a differing tested set
+reported	pi	D	D3	V1a	GA	pi, the imprint retained, against VD GA (D)	200	200	0	0	0	0.95	two	imprint removed	0	0	NA	0 pairs dropped for a differing tested set
+reported	delta_any_call_y_VD	D	D3	V1a	GA	any_call_y: this version minus VD GA (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_VD	D	D3	V1a	GA	null_p05_y: this version minus VD GA (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0.05; 0 data sets unpaired
+reported	P_post	D	D3	V0	GA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D3	V0	GA	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D3	V0	GA	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D3	VD	GA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D3	VD	GA	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D3	VD	GA	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	any_call_y	D	D3	V1a	LX	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D3	V1a	LX	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	rho_mod	D	D3	V1a	LX	rho_mod against VD LX (D)	200	200	1	1	1	0.95	two	NA	1	1	NA	0 pairs dropped for a differing tested set
+reported	rho_unmod	D	D3	V1a	LX	rho_unmod against VD LX (D)	200	200	0.774596669241483	0.774596669241483	0.774596669241483	0.95	two	NA	0.774596669241483	0.774596669241483	NA	0 pairs dropped for a differing tested set
+reported	pi	D	D3	V1a	LX	pi, the imprint retained, against VD LX (D)	200	200	0.05	0.05	0.05	0.95	two	imprint removed	0.05	0.05	NA	0 pairs dropped for a differing tested set
+reported	delta_any_call_y_VD	D	D3	V1a	LX	any_call_y: this version minus VD LX (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_VD	D	D3	V1a	LX	null_p05_y: this version minus VD LX (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0.05; 0 data sets unpaired
+reported	any_call_y	D	D3	VD	LX	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D3	VD	LX	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_pre	D	D4	V1a	NO	P_pre(0.5)	200	200	1	0.981724659644864	1	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	P_post	D	D4	V1a	NO	P_post(0.5)	200	200	1	0.981724659644864	1	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D4	V1a	NO	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D4	V1a	NO	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_pre	D	D4	V1w	NO	P_pre(0.5)	200	200	0.25	0.191607169622587	0.315962833329869	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	cy_pre_a	D	D4	V1w	NO	mean cy_pre_a	200	200	0.44	0.44	0.44	0.95	two	NA	0.44	0.44	NA	
+reported	any_call_y	D	D4	V1w	NO	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D4	V1w	NO	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	q_cy_pre_a	D	D4	V1w	NO	quantiles 0.05, 0.5, 0.95 of cy_pre_a	200	200	0.44	0.44	0.44	NA	descriptive	NA	NA	NA	NA	estimate = median; lo, hi = the 5th and 95th percentiles
+reported	P_post	D	D4	V1a	LM2	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D4	V1a	LM2	mean any_call_y	200	200	1	1	1	0.95	two	NA	1	1	NA	
+reported	null_p05_y	D	D4	V1a	LM2	mean null_p05_y	200	200	0.3	0.3	0.3	0.95	two	NA	0.3	0.3	NA	
+reported	delta_any_call_y_V0	D	D4	V1a	LM2	any_call_y: this version minus V0 (paired)	200	200	1	1	1	0.95	two	NA	NA	NA	NA	V0's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_V0	D	D4	V1a	LM2	null_p05_y: this version minus V0 (paired)	200	200	0.25	0.25	0.25	0.95	two	NA	NA	NA	NA	V0's own rate 0.05; 0 data sets unpaired
+reported	rho_mod	D	D4	V1a	LM2	rho_mod against VD LM1 (D)	200	200	0.9	0.9	0.9	0.95	two	NA	0.9	0.9	NA	0 pairs dropped for a differing tested set
+reported	pi	D	D4	V1a	LM2	pi, the imprint retained, against VD LM1 (D)	200	200	1	1	1	0.95	two	imprint retained	1	1	NA	0 pairs dropped for a differing tested set
+reported	delta_any_call_y_VD	D	D4	V1a	LM2	any_call_y: this version minus VD LM1 (paired)	200	200	1	1	1	0.95	two	NA	NA	NA	NA	VD's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_VD	D	D4	V1a	LM2	null_p05_y: this version minus VD LM1 (paired)	200	200	0.25	0.25	0.25	0.95	two	NA	NA	NA	NA	VD's own rate 0.05; 0 data sets unpaired
+reported	P_post	D	D4	V0	LM2	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D4	V0	LM2	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D4	V0	LM2	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D4	VD	LM1	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D4	VD	LM1	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D4	VD	LM1	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D4	V1a	GK2	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D4	V1a	GK2	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D4	V1a	GK2	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	delta_any_call_y_V0	D	D4	V1a	GK2	any_call_y: this version minus V0 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	V0's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_V0	D	D4	V1a	GK2	null_p05_y: this version minus V0 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	V0's own rate 0.05; 0 data sets unpaired
+reported	rho_mod	D	D4	V1a	GK2	rho_mod against VD GK1 (D)	200	200	1	1	1	0.95	two	NA	1	1	NA	0 pairs dropped for a differing tested set
+reported	pi	D	D4	V1a	GK2	pi, the imprint retained, against VD GK1 (D)	200	200	0	0	0	0.95	two	imprint removed	0	0	NA	0 pairs dropped for a differing tested set
+reported	delta_any_call_y_VD	D	D4	V1a	GK2	any_call_y: this version minus VD GK1 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_VD	D	D4	V1a	GK2	null_p05_y: this version minus VD GK1 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0.05; 0 data sets unpaired
+reported	P_post	D	D4	V0	GK2	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D4	V0	GK2	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D4	V0	GK2	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D4	VD	GK1	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D4	VD	GK1	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D4	VD	GK1	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D4	V1a	LA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D4	V1a	LA	mean any_call_y	200	200	1	1	1	0.95	two	NA	1	1	NA	
+reported	null_p05_y	D	D4	V1a	LA	mean null_p05_y	200	200	0.3	0.3	0.3	0.95	two	NA	0.3	0.3	NA	
+reported	delta_any_call_y_V0	D	D4	V1a	LA	any_call_y: this version minus V0 (paired)	200	200	1	1	1	0.95	two	NA	NA	NA	NA	V0's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_V0	D	D4	V1a	LA	null_p05_y: this version minus V0 (paired)	200	200	0.25	0.25	0.25	0.95	two	NA	NA	NA	NA	V0's own rate 0.05; 0 data sets unpaired
+reported	rho_mod	D	D4	V1a	LA	rho_mod against VD LA (D)	200	200	0.9	0.9	0.9	0.95	two	NA	0.9	0.9	NA	0 pairs dropped for a differing tested set
+reported	pi	D	D4	V1a	LA	pi, the imprint retained, against VD LA (D)	200	200	1	1	1	0.95	two	imprint retained	1	1	NA	0 pairs dropped for a differing tested set
+reported	delta_any_call_y_VD	D	D4	V1a	LA	any_call_y: this version minus VD LA (paired)	200	200	1	1	1	0.95	two	NA	NA	NA	NA	VD's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_VD	D	D4	V1a	LA	null_p05_y: this version minus VD LA (paired)	200	200	0.25	0.25	0.25	0.95	two	NA	NA	NA	NA	VD's own rate 0.05; 0 data sets unpaired
+reported	P_post	D	D4	V0	LA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D4	V0	LA	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D4	V0	LA	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D4	VD	LA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D4	VD	LA	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D4	VD	LA	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D4	V1a	GA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D4	V1a	GA	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D4	V1a	GA	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	delta_any_call_y_V0	D	D4	V1a	GA	any_call_y: this version minus V0 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	V0's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_V0	D	D4	V1a	GA	null_p05_y: this version minus V0 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	V0's own rate 0.05; 0 data sets unpaired
+reported	rho_mod	D	D4	V1a	GA	rho_mod against VD GA (D)	200	200	1	1	1	0.95	two	NA	1	1	NA	0 pairs dropped for a differing tested set
+reported	pi	D	D4	V1a	GA	pi, the imprint retained, against VD GA (D)	200	200	0	0	0	0.95	two	imprint removed	0	0	NA	0 pairs dropped for a differing tested set
+reported	delta_any_call_y_VD	D	D4	V1a	GA	any_call_y: this version minus VD GA (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_VD	D	D4	V1a	GA	null_p05_y: this version minus VD GA (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0.05; 0 data sets unpaired
+reported	P_post	D	D4	V0	GA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D4	V0	GA	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D4	V0	GA	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D4	VD	GA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D4	VD	GA	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D4	VD	GA	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	any_call_y	D	D4	V1a	LX	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D4	V1a	LX	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	rho_mod	D	D4	V1a	LX	rho_mod against VD LX (D)	200	200	1	1	1	0.95	two	NA	1	1	NA	0 pairs dropped for a differing tested set
+reported	rho_unmod	D	D4	V1a	LX	rho_unmod against VD LX (D)	200	200	0.845154254728517	0.845154254728517	0.845154254728517	0.95	two	NA	0.845154254728517	0.845154254728517	NA	0 pairs dropped for a differing tested set
+reported	pi	D	D4	V1a	LX	pi, the imprint retained, against VD LX (D)	200	200	0.05	0.05	0.05	0.95	two	imprint removed	0.05	0.05	NA	0 pairs dropped for a differing tested set
+reported	delta_any_call_y_VD	D	D4	V1a	LX	any_call_y: this version minus VD LX (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_VD	D	D4	V1a	LX	null_p05_y: this version minus VD LX (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0.05; 0 data sets unpaired
+reported	any_call_y	D	D4	VD	LX	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D4	VD	LX	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_pre	D	D6	V1a	NO	P_pre(0.5)	200	200	1	0.981724659644864	1	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	P_post	D	D6	V1a	NO	P_post(0.5)	200	200	1	0.981724659644864	1	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D6	V1a	NO	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D6	V1a	NO	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_pre	D	D6	V1w	NO	P_pre(0.5)	200	200	0.25	0.191607169622587	0.315962833329869	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	cy_pre_a	D	D6	V1w	NO	mean cy_pre_a	200	200	0.44	0.44	0.44	0.95	two	NA	0.44	0.44	NA	
+reported	any_call_y	D	D6	V1w	NO	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D6	V1w	NO	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	q_cy_pre_a	D	D6	V1w	NO	quantiles 0.05, 0.5, 0.95 of cy_pre_a	200	200	0.44	0.44	0.44	NA	descriptive	NA	NA	NA	NA	estimate = median; lo, hi = the 5th and 95th percentiles
+reported	P_post	D	D6	V1a	LM2	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D6	V1a	LM2	mean any_call_y	200	200	1	1	1	0.95	two	NA	1	1	NA	
+reported	null_p05_y	D	D6	V1a	LM2	mean null_p05_y	200	200	0.3	0.3	0.3	0.95	two	NA	0.3	0.3	NA	
+reported	delta_any_call_y_V0	D	D6	V1a	LM2	any_call_y: this version minus V0 (paired)	200	200	1	1	1	0.95	two	NA	NA	NA	NA	V0's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_V0	D	D6	V1a	LM2	null_p05_y: this version minus V0 (paired)	200	200	0.25	0.25	0.25	0.95	two	NA	NA	NA	NA	V0's own rate 0.05; 0 data sets unpaired
+reported	rho_mod	D	D6	V1a	LM2	rho_mod against VD LM1 (D)	200	200	0.9	0.9	0.9	0.95	two	NA	0.9	0.9	NA	0 pairs dropped for a differing tested set
+reported	pi	D	D6	V1a	LM2	pi, the imprint retained, against VD LM1 (D)	200	200	1	1	1	0.95	two	imprint retained	1	1	NA	0 pairs dropped for a differing tested set
+reported	delta_any_call_y_VD	D	D6	V1a	LM2	any_call_y: this version minus VD LM1 (paired)	200	200	1	1	1	0.95	two	NA	NA	NA	NA	VD's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_VD	D	D6	V1a	LM2	null_p05_y: this version minus VD LM1 (paired)	200	200	0.25	0.25	0.25	0.95	two	NA	NA	NA	NA	VD's own rate 0.05; 0 data sets unpaired
+reported	P_post	D	D6	V0	LM2	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D6	V0	LM2	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D6	V0	LM2	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D6	VD	LM1	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D6	VD	LM1	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D6	VD	LM1	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D6	V1a	GK2	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D6	V1a	GK2	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D6	V1a	GK2	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	delta_any_call_y_V0	D	D6	V1a	GK2	any_call_y: this version minus V0 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	V0's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_V0	D	D6	V1a	GK2	null_p05_y: this version minus V0 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	V0's own rate 0.05; 0 data sets unpaired
+reported	rho_mod	D	D6	V1a	GK2	rho_mod against VD GK1 (D)	200	200	1	1	1	0.95	two	NA	1	1	NA	0 pairs dropped for a differing tested set
+reported	pi	D	D6	V1a	GK2	pi, the imprint retained, against VD GK1 (D)	200	200	0	0	0	0.95	two	imprint removed	0	0	NA	0 pairs dropped for a differing tested set
+reported	delta_any_call_y_VD	D	D6	V1a	GK2	any_call_y: this version minus VD GK1 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_VD	D	D6	V1a	GK2	null_p05_y: this version minus VD GK1 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0.05; 0 data sets unpaired
+reported	P_post	D	D6	V0	GK2	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D6	V0	GK2	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D6	V0	GK2	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D6	VD	GK1	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D6	VD	GK1	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D6	VD	GK1	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D6	V1a	LA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D6	V1a	LA	mean any_call_y	200	200	1	1	1	0.95	two	NA	1	1	NA	
+reported	null_p05_y	D	D6	V1a	LA	mean null_p05_y	200	200	0.3	0.3	0.3	0.95	two	NA	0.3	0.3	NA	
+reported	delta_any_call_y_V0	D	D6	V1a	LA	any_call_y: this version minus V0 (paired)	200	200	1	1	1	0.95	two	NA	NA	NA	NA	V0's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_V0	D	D6	V1a	LA	null_p05_y: this version minus V0 (paired)	200	200	0.25	0.25	0.25	0.95	two	NA	NA	NA	NA	V0's own rate 0.05; 0 data sets unpaired
+reported	rho_mod	D	D6	V1a	LA	rho_mod against VD LA (D)	200	200	0.9	0.9	0.9	0.95	two	NA	0.9	0.9	NA	0 pairs dropped for a differing tested set
+reported	pi	D	D6	V1a	LA	pi, the imprint retained, against VD LA (D)	200	200	1	1	1	0.95	two	imprint retained	1	1	NA	0 pairs dropped for a differing tested set
+reported	delta_any_call_y_VD	D	D6	V1a	LA	any_call_y: this version minus VD LA (paired)	200	200	1	1	1	0.95	two	NA	NA	NA	NA	VD's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_VD	D	D6	V1a	LA	null_p05_y: this version minus VD LA (paired)	200	200	0.25	0.25	0.25	0.95	two	NA	NA	NA	NA	VD's own rate 0.05; 0 data sets unpaired
+reported	P_post	D	D6	V0	LA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D6	V0	LA	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D6	V0	LA	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D6	VD	LA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D6	VD	LA	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D6	VD	LA	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D6	V1a	GA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D6	V1a	GA	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D6	V1a	GA	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	delta_any_call_y_V0	D	D6	V1a	GA	any_call_y: this version minus V0 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	V0's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_V0	D	D6	V1a	GA	null_p05_y: this version minus V0 (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	V0's own rate 0.05; 0 data sets unpaired
+reported	rho_mod	D	D6	V1a	GA	rho_mod against VD GA (D)	200	200	1	1	1	0.95	two	NA	1	1	NA	0 pairs dropped for a differing tested set
+reported	pi	D	D6	V1a	GA	pi, the imprint retained, against VD GA (D)	200	200	0	0	0	0.95	two	imprint removed	0	0	NA	0 pairs dropped for a differing tested set
+reported	delta_any_call_y_VD	D	D6	V1a	GA	any_call_y: this version minus VD GA (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_VD	D	D6	V1a	GA	null_p05_y: this version minus VD GA (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0.05; 0 data sets unpaired
+reported	P_post	D	D6	V0	GA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D6	V0	GA	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D6	V0	GA	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	P_post	D	D6	VD	GA	P_post(0.5)	200	200	0	0	0.0182753403551362	0.95	two	NA	NA	NA	NA	exact Clopper-Pearson
+reported	any_call_y	D	D6	VD	GA	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D6	VD	GA	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	any_call_y	D	D6	V1a	LX	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D6	V1a	LX	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+reported	rho_mod	D	D6	V1a	LX	rho_mod against VD LX (D)	200	200	1	1	1	0.95	two	NA	1	1	NA	0 pairs dropped for a differing tested set
+reported	rho_unmod	D	D6	V1a	LX	rho_unmod against VD LX (D)	200	200	0.904534033733291	0.904534033733291	0.904534033733291	0.95	two	NA	0.904534033733291	0.904534033733291	NA	0 pairs dropped for a differing tested set
+reported	pi	D	D6	V1a	LX	pi, the imprint retained, against VD LX (D)	200	200	0.05	0.05	0.05	0.95	two	imprint removed	0.05	0.05	NA	0 pairs dropped for a differing tested set
+reported	delta_any_call_y_VD	D	D6	V1a	LX	any_call_y: this version minus VD LX (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0; 0 data sets unpaired
+reported	delta_null_p05_y_VD	D	D6	V1a	LX	null_p05_y: this version minus VD LX (paired)	200	200	0	0	0	0.95	two	NA	NA	NA	NA	VD's own rate 0.05; 0 data sets unpaired
+reported	any_call_y	D	D6	VD	LX	mean any_call_y	200	200	0	0	0	0.95	two	NA	0	0	NA	
+reported	null_p05_y	D	D6	VD	LX	mean null_p05_y	200	200	0.05	0.05	0.05	0.95	two	NA	0.05	0.05	NA	
+control	PC1	D	D3	V1a	NO	P_pre(0.5) upper limit at least 0.80 (fewer than 144 of 200: F1)	200	200	0.72	0.626299837999445	0.801871520750971	0.00333333333333333	one	passes	NA	NA	NA	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets
+control	NC1	D	D3	V0	GK2	P(fail(0.5)) of the genuine sample after RUV, upper limit at most 0.05	200	200	0	0	0.0281160866590302	0.00333333333333333	one	passes	NA	NA	NA	
+labelled	A	D	D3	V1a	LM2	P_post(0.5)	200	200	0	0	0.0303973499364875	0.00208333333333333	one	absorbed	NA	NA	NA	
+labelled	A	D	D3	V1a	GK2	P_post(0.5)	200	200	0	0	0.0303973499364875	0.00208333333333333	one	absorbed	NA	NA	NA	
+labelled	A	D	D3	V1a	LA	P_post(0.5)	200	200	0	0	0.0303973499364875	0.00208333333333333	one	absorbed	NA	NA	NA	
+labelled	A	D	D3	V1a	GA	P_post(0.5)	200	200	0	0	0.0303973499364875	0.00208333333333333	one	absorbed	NA	NA	NA	
+labelled	B	D	D3	V1a	LM2	rho_mod against VD LM1	200	200	0.9	0.9	0.9	0.00416666666666667	one	understated	0.9	0.9	understated	0 pairs dropped for a differing tested set
+labelled	B	D	D3	V1a	GK2	rho_mod against VD GK1	200	200	1	1	1	0.00416666666666667	one	not understated	1	1	not understated	0 pairs dropped for a differing tested set
+labelled	B'	D	D3	V1a	LX	rho_unmod of LX against the derived 0.7746	200	200	0.774596669241483	0.774596669241483	0.774596669241483	0.0166666666666667	two	as derived	0.774596669241483	0.774596669241483	as derived	0 pairs dropped for a differing tested set
+labelled	C	D	D3	V1a	LM2	any_call_y: V1a minus V0, paired	200	200	1	1	1	0.00208333333333333	one	raised (material)	1	1	raised (material)	any rise shown: TRUE; V0 rate 0; VD rate 0
+labelled	C'	D	D3	V1a	LM2	null_p05_y: V1a minus V0, paired	200	200	0.25	0.25	0.25	0.00208333333333333	one	raised (material)	0.25	0.25	raised (material)	any rise shown: TRUE; V0 rate 0.05; VD rate 0.05
+labelled	C	D	D3	V1a	GK2	any_call_y: V1a minus V0, paired	200	200	0	0	0	0.00208333333333333	one	not raised	0	0	not raised	any rise shown: FALSE; V0 rate 0; VD rate 0
+labelled	C'	D	D3	V1a	GK2	null_p05_y: V1a minus V0, paired	200	200	0	0	0	0.00208333333333333	one	not raised	0	0	not raised	any rise shown: FALSE; V0 rate 0.05; VD rate 0.05
+labelled	pi	D	D3	V1a	LM2	pi, the imprint retained (A7)	200	200	1	1	1	0.05	two	imprint retained	1	1	imprint retained	0 pairs dropped for a differing tested set
+labelled	pi	D	D3	V1a	GK2	pi, the imprint retained (A7)	200	200	0	0	0	0.05	two	imprint removed	0	0	imprint removed	0 pairs dropped for a differing tested set
+labelled	pi	K	D3	V1a	LG2	pi, the imprint retained (A7)	0	100	NA	NA	NA	0.05	two	not determined (coverage)	NA	NA	NA	
+labelled	pi	D	D3	V1a	LX	pi, the imprint retained (A7)	200	200	0.05	0.05	0.05	0.05	two	imprint removed	0.05	0.05	imprint removed	0 pairs dropped for a differing tested set
+control	PC1	D	D4	V1a	NO	P_pre(0.5) upper limit at least 0.80 (fewer than 144 of 200: F1)	200	200	1	0.97188391334097	1	0.00333333333333333	one	passes	NA	NA	NA	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets
+control	NC1	D	D4	V0	GK2	P(fail(0.5)) of the genuine sample after RUV, upper limit at most 0.05	200	200	0	0	0.0281160866590302	0.00333333333333333	one	passes	NA	NA	NA	
+labelled	A	D	D4	V1a	LM2	P_post(0.5)	200	200	0	0	0.0303973499364875	0.00208333333333333	one	absorbed	NA	NA	NA	
+labelled	A	D	D4	V1a	GK2	P_post(0.5)	200	200	0	0	0.0303973499364875	0.00208333333333333	one	absorbed	NA	NA	NA	
+labelled	A	D	D4	V1a	LA	P_post(0.5)	200	200	0	0	0.0303973499364875	0.00208333333333333	one	absorbed	NA	NA	NA	
+labelled	A	D	D4	V1a	GA	P_post(0.5)	200	200	0	0	0.0303973499364875	0.00208333333333333	one	absorbed	NA	NA	NA	
+labelled	B	D	D4	V1a	LM2	rho_mod against VD LM1	200	200	0.9	0.9	0.9	0.00416666666666667	one	understated	0.9	0.9	understated	0 pairs dropped for a differing tested set
+labelled	B	D	D4	V1a	GK2	rho_mod against VD GK1	200	200	1	1	1	0.00416666666666667	one	not understated	1	1	not understated	0 pairs dropped for a differing tested set
+labelled	B'	D	D4	V1a	LX	rho_unmod of LX against the derived 0.8452	200	200	0.845154254728517	0.845154254728517	0.845154254728517	0.0166666666666667	two	as derived	0.845154254728517	0.845154254728517	as derived	0 pairs dropped for a differing tested set
+labelled	C	D	D4	V1a	LM2	any_call_y: V1a minus V0, paired	200	200	1	1	1	0.00208333333333333	one	raised (material)	1	1	raised (material)	any rise shown: TRUE; V0 rate 0; VD rate 0
+labelled	C'	D	D4	V1a	LM2	null_p05_y: V1a minus V0, paired	200	200	0.25	0.25	0.25	0.00208333333333333	one	raised (material)	0.25	0.25	raised (material)	any rise shown: TRUE; V0 rate 0.05; VD rate 0.05
+labelled	C	D	D4	V1a	GK2	any_call_y: V1a minus V0, paired	200	200	0	0	0	0.00208333333333333	one	not raised	0	0	not raised	any rise shown: FALSE; V0 rate 0; VD rate 0
+labelled	C'	D	D4	V1a	GK2	null_p05_y: V1a minus V0, paired	200	200	0	0	0	0.00208333333333333	one	not raised	0	0	not raised	any rise shown: FALSE; V0 rate 0.05; VD rate 0.05
+labelled	pi	D	D4	V1a	LM2	pi, the imprint retained (A7)	200	200	1	1	1	0.05	two	imprint retained	1	1	imprint retained	0 pairs dropped for a differing tested set
+labelled	pi	D	D4	V1a	GK2	pi, the imprint retained (A7)	200	200	0	0	0	0.05	two	imprint removed	0	0	imprint removed	0 pairs dropped for a differing tested set
+labelled	pi	K	D4	V1a	LG2	pi, the imprint retained (A7)	0	100	NA	NA	NA	0.05	two	not determined (coverage)	NA	NA	NA	
+labelled	pi	D	D4	V1a	LX	pi, the imprint retained (A7)	200	200	0.05	0.05	0.05	0.05	two	imprint removed	0.05	0.05	imprint removed	0 pairs dropped for a differing tested set
+control	PC1	D	D6	V1a	NO	P_pre(0.5) upper limit at least 0.80 (fewer than 144 of 200: F1)	200	200	1	0.97188391334097	1	0.00333333333333333	one	passes	NA	NA	NA	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets
+control	NC1	D	D6	V0	GK2	P(fail(0.5)) of the genuine sample after RUV, upper limit at most 0.05	200	200	0	0	0.0281160866590302	0.00333333333333333	one	passes	NA	NA	NA	
+labelled	A	D	D6	V1a	LM2	P_post(0.5)	200	200	0	0	0.0303973499364875	0.00208333333333333	one	absorbed	NA	NA	NA	
+labelled	A	D	D6	V1a	GK2	P_post(0.5)	200	200	0	0	0.0303973499364875	0.00208333333333333	one	absorbed	NA	NA	NA	
+labelled	A	D	D6	V1a	LA	P_post(0.5)	200	200	0	0	0.0303973499364875	0.00208333333333333	one	absorbed	NA	NA	NA	
+labelled	A	D	D6	V1a	GA	P_post(0.5)	200	200	0	0	0.0303973499364875	0.00208333333333333	one	absorbed	NA	NA	NA	
+labelled	B	D	D6	V1a	LM2	rho_mod against VD LM1	200	200	0.9	0.9	0.9	0.00416666666666667	one	understated	0.9	0.9	understated	0 pairs dropped for a differing tested set
+labelled	B	D	D6	V1a	GK2	rho_mod against VD GK1	200	200	1	1	1	0.00416666666666667	one	not understated	1	1	not understated	0 pairs dropped for a differing tested set
+labelled	B'	D	D6	V1a	LX	rho_unmod of LX against the derived 0.9045	200	200	0.904534033733291	0.904534033733291	0.904534033733291	0.0166666666666667	two	as derived	0.904534033733291	0.904534033733291	as derived	0 pairs dropped for a differing tested set
+labelled	C	D	D6	V1a	LM2	any_call_y: V1a minus V0, paired	200	200	1	1	1	0.00208333333333333	one	raised (material)	1	1	raised (material)	any rise shown: TRUE; V0 rate 0; VD rate 0
+labelled	C'	D	D6	V1a	LM2	null_p05_y: V1a minus V0, paired	200	200	0.25	0.25	0.25	0.00208333333333333	one	raised (material)	0.25	0.25	raised (material)	any rise shown: TRUE; V0 rate 0.05; VD rate 0.05
+labelled	C	D	D6	V1a	GK2	any_call_y: V1a minus V0, paired	200	200	0	0	0	0.00208333333333333	one	not raised	0	0	not raised	any rise shown: FALSE; V0 rate 0; VD rate 0
+labelled	C'	D	D6	V1a	GK2	null_p05_y: V1a minus V0, paired	200	200	0	0	0	0.00208333333333333	one	not raised	0	0	not raised	any rise shown: FALSE; V0 rate 0.05; VD rate 0.05
+labelled	pi	D	D6	V1a	LM2	pi, the imprint retained (A7)	200	200	1	1	1	0.05	two	imprint retained	1	1	imprint retained	0 pairs dropped for a differing tested set
+labelled	pi	D	D6	V1a	GK2	pi, the imprint retained (A7)	200	200	0	0	0	0.05	two	imprint removed	0	0	imprint removed	0 pairs dropped for a differing tested set
+labelled	pi	K	D6	V1a	LG2	pi, the imprint retained (A7)	0	100	NA	NA	NA	0.05	two	not determined (coverage)	NA	NA	NA	
+labelled	pi	D	D6	V1a	LX	pi, the imprint retained (A7)	200	200	0.05	0.05	0.05	0.05	two	imprint removed	0.05	0.05	imprint removed	0 pairs dropped for a differing tested set
+control	PC2	G1	D3	NA	NA	rho_unmod within 0.03 of 0.7746	20	20	0.774596669241483	0.774596669241483	0.774596669241483	0.00333333333333333	two	passes	NA	NA	NA	
+control	NC2	G1	D3	NA	NA	rho_unmod within 0.03 of 1	20	20	1	1	1	0.00333333333333333	two	passes	NA	NA	NA	
+control	PC2	G1	D4	NA	NA	rho_unmod within 0.03 of 0.8452	20	20	0.845154254728517	0.845154254728517	0.845154254728517	0.00333333333333333	two	passes	NA	NA	NA	
+control	NC2	G1	D4	NA	NA	rho_unmod within 0.03 of 1	20	20	1	1	1	0.00333333333333333	two	passes	NA	NA	NA	
+control	PC2	G1	D6	NA	NA	rho_unmod within 0.03 of 0.9045	20	20	0.904534033733291	0.904534033733291	0.904534033733291	0.00333333333333333	two	passes	NA	NA	NA	
+control	NC2	G1	D6	NA	NA	rho_unmod within 0.03 of 1	20	20	1	1	1	0.00333333333333333	two	passes	NA	NA	NA	

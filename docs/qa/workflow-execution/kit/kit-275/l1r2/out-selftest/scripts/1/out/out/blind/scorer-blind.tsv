@@ -1,0 +1,21 @@
+item	value	pass
+parse	22 rows, 79 columns, 1 row files	TRUE
+coverage FILL10 D4	1 journeys, 1 completed	TRUE
+coverage FILL11 D4	1 journeys, 1 completed	TRUE
+coverage FILL12 D4	1 journeys, 1 completed	TRUE
+coverage FILL13 D4	1 journeys, 1 completed	TRUE
+coverage FILL14 D4	1 journeys, 1 completed	TRUE
+coverage FILL15 D4	1 journeys, 1 completed	TRUE
+coverage FILL16 D4	1 journeys, 1 completed	TRUE
+coverage FILL5 D4	1 journeys, 1 completed	TRUE
+coverage FILL6 D4	1 journeys, 1 completed	TRUE
+coverage FILL7 D4	1 journeys, 1 completed	TRUE
+coverage FILL8 D4	1 journeys, 1 completed	TRUE
+coverage FILL9 D4	1 journeys, 1 completed	TRUE
+coverage GA D4	2 journeys, 2 completed	TRUE
+coverage GK D4	2 journeys, 2 completed	TRUE
+coverage LA D4	2 journeys, 2 completed	TRUE
+coverage LM D4	2 journeys, 2 completed	TRUE
+coverage NO D4	2 journeys, 2 completed	TRUE
+E8	5 compared, 4 equal, max deviation 1e-08	FALSE
+instrument_stop	0 row(s) with status instrument or a guard class	TRUE

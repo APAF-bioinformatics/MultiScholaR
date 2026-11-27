@@ -1,0 +1,2 @@
+Error: K275 scoring stops: a journey row appears twice
+Execution halted

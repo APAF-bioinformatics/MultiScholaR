@@ -1,0 +1,1 @@
+K275 controls: PC1 D3 not determined (coverage) (genuine below 0.5: 0 of 0); NC1 D3 passes; PC1 D4 not determined (coverage) (genuine below 0.5: 0 of 0); NC1 D4 passes; PC1 D6 not determined (coverage) (genuine below 0.5: 0 of 0); NC1 D6 passes

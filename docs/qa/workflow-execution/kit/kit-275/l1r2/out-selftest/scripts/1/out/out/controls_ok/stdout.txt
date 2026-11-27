@@ -1,0 +1,1 @@
+K275 controls: PC1 D3 passes (genuine below 0.5: 150 of 200); NC1 D3 passes; PC1 D4 passes (genuine below 0.5: 14 of 200); NC1 D4 passes; PC1 D6 passes (genuine below 0.5: 0 of 200); NC1 D6 passes

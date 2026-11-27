@@ -1,0 +1,2 @@
+Error: K275 scoring stops: a unit left no journey rows (a unit row of status crashed): the job did not complete
+Execution halted

@@ -1,0 +1,1 @@
+K275 scoring: 10200 rows, 150 cells, outcome Stop (PC1 not determined (coverage))

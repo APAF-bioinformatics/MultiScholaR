@@ -1,0 +1,3 @@
+K275_SCORE_R = 200,100,20
+K275_BOOT_B = 200
+rows = 10200 from 2 files

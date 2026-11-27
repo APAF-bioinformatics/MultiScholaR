@@ -1,0 +1,2 @@
+Error: K275 scoring stops: the rows carry the smoke flag; a smoke row set is refused for an outcome line
+Execution halted

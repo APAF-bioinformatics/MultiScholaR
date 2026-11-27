@@ -1,0 +1,3520 @@
+case	key	kind	expected	tolerance
+r1	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+r1	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+r1	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+r1	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+r1	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+r1	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+r1	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+r1	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+r1	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+r1	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+r1	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+r1	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+r1	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+r1	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+r1	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+r1	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+r1	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+r1	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+r1	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+r1	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+r1	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+r1	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+r1	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+r1	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+r1	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+r1	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+r1	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+r1	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+r1	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+r1	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+r1	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+r1	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+r1	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+r1	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+r1	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+r1	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+r1	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+r1	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+r1	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+r1	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+r1	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+r1	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+r1	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+r1	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+r1	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+r1	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+r1	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+r1	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+r1	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+r1	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+r1	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+r1	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+r1	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+r1	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+r1	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+r1	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+r1	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+r1	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+r1	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+r1	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+r1	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+r1	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+r1	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+r1	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+r1	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+r1	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+r1	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+r1	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+r1	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+r1	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+r1	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+r1	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+r1	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+r1	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+r1	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+r1	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+r1	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+r1	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+r1	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+r1	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+r1	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+r1	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+r1	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+r1	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+r1	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+r1	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+r1	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+r1	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+r1	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+r1	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+r1	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+r1	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+r1	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+r1	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+r1	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+r1	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+r1	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+r1	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+r1	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+r1	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+r1	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+r1	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+r1	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+r1	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+r1	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+r1	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+r1	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+r1	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+r1	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+r1	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+r1	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+r1	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+r1	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+r1	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+r1	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+r1	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+r1	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+r1	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+r1	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+r1	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+r1	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+r1	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+r1	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+r1	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+r1	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+r1	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+r1	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+r1	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+r1	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+r1	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+r1	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+r1	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+r1	decision|outcome	str	R1	1e-8
+r1	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+r1	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+r1	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+r2	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+r2	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+r2	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+r2	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+r2	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+r2	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+r2	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+r2	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+r2	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+r2	cell|A|D|D3|V1a|LM2|label	str	acts	1e-8
+r2	cell|A|D|D3|V1a|LM2|lo	num	0.5475381652733826	1e-8
+r2	cell|A|D|D3|V1a|LM2|hi	num	0.7435708233448928	1e-8
+r2	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+r2	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+r2	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+r2	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+r2	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+r2	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+r2	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+r2	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+r2	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+r2	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+r2	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+r2	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+r2	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+r2	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+r2	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+r2	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+r2	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+r2	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+r2	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+r2	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+r2	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+r2	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+r2	cell|A|D|D4|V1a|LM2|label	str	mixed	1e-8
+r2	cell|A|D|D4|V1a|LM2|lo	num	0.3974243755021426	1e-8
+r2	cell|A|D|D4|V1a|LM2|hi	num	0.6025756244978571	1e-8
+r2	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+r2	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+r2	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+r2	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+r2	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+r2	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+r2	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+r2	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+r2	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+r2	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+r2	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+r2	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+r2	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+r2	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+r2	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+r2	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+r2	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+r2	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+r2	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+r2	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+r2	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+r2	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+r2	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+r2	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+r2	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+r2	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+r2	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+r2	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+r2	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+r2	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+r2	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+r2	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+r2	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+r2	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+r2	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+r2	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+r2	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+r2	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+r2	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+r2	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+r2	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+r2	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+r2	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+r2	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+r2	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+r2	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+r2	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+r2	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+r2	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+r2	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+r2	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+r2	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+r2	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+r2	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+r2	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+r2	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+r2	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+r2	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+r2	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+r2	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+r2	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+r2	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+r2	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+r2	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+r2	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+r2	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+r2	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+r2	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+r2	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+r2	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+r2	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+r2	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+r2	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+r2	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+r2	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+r2	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+r2	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+r2	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+r2	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+r2	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+r2	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+r2	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+r2	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+r2	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+r2	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+r2	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+r2	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+r2	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+r2	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+r2	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+r2	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+r2	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+r2	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+r2	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+r2	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+r2	decision|outcome	str	R2	1e-8
+r2	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+r2	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+r2	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+r3	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+r3	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+r3	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+r3	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+r3	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+r3	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+r3	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+r3	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+r3	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+r3	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+r3	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+r3	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+r3	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+r3	cell|A|D|D3|V1a|GK2|label	str	mixed	1e-8
+r3	cell|A|D|D3|V1a|GK2|lo	num	0.0003306788879979261	1e-8
+r3	cell|A|D|D3|V1a|GK2|hi	num	0.05066370383734159	1e-8
+r3	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+r3	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+r3	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+r3	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+r3	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+r3	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+r3	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+r3	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+r3	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+r3	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+r3	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+r3	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+r3	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+r3	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+r3	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+r3	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+r3	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+r3	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+r3	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+r3	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+r3	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+r3	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+r3	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+r3	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+r3	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+r3	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+r3	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+r3	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+r3	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+r3	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+r3	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+r3	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+r3	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+r3	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+r3	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+r3	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+r3	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+r3	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+r3	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+r3	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+r3	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+r3	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+r3	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+r3	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+r3	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+r3	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+r3	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+r3	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+r3	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+r3	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+r3	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+r3	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+r3	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+r3	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+r3	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+r3	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+r3	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+r3	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+r3	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+r3	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+r3	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+r3	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+r3	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+r3	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+r3	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+r3	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+r3	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+r3	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+r3	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+r3	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+r3	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+r3	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+r3	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+r3	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+r3	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+r3	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+r3	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+r3	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+r3	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+r3	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+r3	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+r3	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+r3	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+r3	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+r3	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+r3	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+r3	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+r3	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+r3	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+r3	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+r3	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+r3	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+r3	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+r3	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+r3	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+r3	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+r3	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+r3	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+r3	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+r3	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+r3	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+r3	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+r3	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+r3	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+r3	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+r3	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+r3	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+r3	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+r3	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+r3	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+r3	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+r3	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+r3	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+r3	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+r3	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+r3	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+r3	decision|outcome	str	R3	1e-8
+r3	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+r3	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+r3	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+r4	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+r4	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+r4	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+r4	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+r4	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+r4	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+r4	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+r4	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+r4	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+r4	cell|A|D|D3|V1a|LM2|label	str	acts	1e-8
+r4	cell|A|D|D3|V1a|LM2|lo	num	0.9696026500635124	1e-8
+r4	cell|A|D|D3|V1a|LM2|hi	num	1.0	1e-8
+r4	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+r4	cell|A|D|D3|V1a|GK2|label	str	acts	1e-8
+r4	cell|A|D|D3|V1a|GK2|lo	num	0.9696026500635124	1e-8
+r4	cell|A|D|D3|V1a|GK2|hi	num	1.0	1e-8
+r4	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+r4	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+r4	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+r4	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+r4	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+r4	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+r4	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+r4	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+r4	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+r4	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+r4	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+r4	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+r4	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+r4	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+r4	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+r4	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+r4	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+r4	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+r4	cell|A|D|D4|V1a|LM2|label	str	acts	1e-8
+r4	cell|A|D|D4|V1a|LM2|lo	num	0.9696026500635124	1e-8
+r4	cell|A|D|D4|V1a|LM2|hi	num	1.0	1e-8
+r4	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+r4	cell|A|D|D4|V1a|GK2|label	str	acts	1e-8
+r4	cell|A|D|D4|V1a|GK2|lo	num	0.9696026500635124	1e-8
+r4	cell|A|D|D4|V1a|GK2|hi	num	1.0	1e-8
+r4	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+r4	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+r4	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+r4	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+r4	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+r4	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+r4	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+r4	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+r4	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+r4	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+r4	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+r4	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+r4	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+r4	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+r4	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+r4	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+r4	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+r4	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+r4	cell|A|D|D6|V1a|LM2|label	str	acts	1e-8
+r4	cell|A|D|D6|V1a|LM2|lo	num	0.9696026500635124	1e-8
+r4	cell|A|D|D6|V1a|LM2|hi	num	1.0	1e-8
+r4	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+r4	cell|A|D|D6|V1a|GK2|label	str	acts	1e-8
+r4	cell|A|D|D6|V1a|GK2|lo	num	0.9696026500635124	1e-8
+r4	cell|A|D|D6|V1a|GK2|hi	num	1.0	1e-8
+r4	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+r4	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+r4	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+r4	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+r4	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+r4	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+r4	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+r4	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+r4	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+r4	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+r4	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+r4	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+r4	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+r4	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+r4	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+r4	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+r4	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+r4	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+r4	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+r4	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+r4	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+r4	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+r4	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+r4	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+r4	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+r4	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+r4	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+r4	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+r4	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+r4	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+r4	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+r4	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+r4	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+r4	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+r4	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+r4	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+r4	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+r4	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+r4	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+r4	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+r4	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+r4	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+r4	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+r4	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+r4	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+r4	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+r4	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+r4	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+r4	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+r4	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+r4	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+r4	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+r4	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+r4	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+r4	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+r4	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+r4	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+r4	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+r4	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+r4	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+r4	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+r4	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+r4	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+r4	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+r4	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+r4	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+r4	decision|outcome	str	R4	1e-8
+r4	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+r4	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+r4	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+r5	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+r5	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+r5	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+r5	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+r5	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+r5	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+r5	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+r5	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+r5	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+r5	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+r5	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+r5	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+r5	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+r5	cell|A|D|D3|V1a|GK2|label	str	acts	1e-8
+r5	cell|A|D|D3|V1a|GK2|lo	num	0.9696026500635124	1e-8
+r5	cell|A|D|D3|V1a|GK2|hi	num	1.0	1e-8
+r5	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+r5	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+r5	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+r5	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+r5	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+r5	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+r5	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+r5	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+r5	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+r5	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+r5	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+r5	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+r5	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+r5	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+r5	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+r5	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+r5	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+r5	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+r5	cell|A|D|D4|V1a|LM2|label	str	mixed	1e-8
+r5	cell|A|D|D4|V1a|LM2|lo	num	0.3974243755021426	1e-8
+r5	cell|A|D|D4|V1a|LM2|hi	num	0.6025756244978571	1e-8
+r5	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+r5	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+r5	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+r5	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+r5	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+r5	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+r5	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+r5	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+r5	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+r5	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+r5	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+r5	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+r5	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+r5	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+r5	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+r5	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+r5	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+r5	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+r5	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+r5	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+r5	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+r5	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+r5	cell|A|D|D6|V1a|LM2|label	str	acts	1e-8
+r5	cell|A|D|D6|V1a|LM2|lo	num	0.9696026500635124	1e-8
+r5	cell|A|D|D6|V1a|LM2|hi	num	1.0	1e-8
+r5	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+r5	cell|A|D|D6|V1a|GK2|label	str	mixed	1e-8
+r5	cell|A|D|D6|V1a|GK2|lo	num	0.3974243755021426	1e-8
+r5	cell|A|D|D6|V1a|GK2|hi	num	0.6025756244978571	1e-8
+r5	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+r5	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+r5	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+r5	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+r5	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+r5	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+r5	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+r5	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+r5	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+r5	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+r5	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+r5	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+r5	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+r5	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+r5	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+r5	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+r5	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+r5	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+r5	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+r5	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+r5	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+r5	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+r5	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+r5	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+r5	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+r5	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+r5	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+r5	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+r5	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+r5	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+r5	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+r5	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+r5	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+r5	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+r5	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+r5	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+r5	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+r5	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+r5	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+r5	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+r5	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+r5	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+r5	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+r5	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+r5	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+r5	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+r5	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+r5	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+r5	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+r5	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+r5	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+r5	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+r5	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+r5	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+r5	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+r5	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+r5	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+r5	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+r5	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+r5	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+r5	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+r5	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+r5	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+r5	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+r5	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+r5	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+r5	decision|outcome	str	R5	1e-8
+r5	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+r5	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+r5	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+a_bounds	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+a_bounds	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+a_bounds	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+a_bounds	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+a_bounds	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+a_bounds	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+a_bounds	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+a_bounds	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+a_bounds	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+a_bounds	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+a_bounds	cell|A|D|D3|V1a|LM2|lo	num	1.0427478088603781e-05	1e-8
+a_bounds	cell|A|D|D3|V1a|LM2|hi	num	0.041309578137978364	1e-8
+a_bounds	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+a_bounds	cell|A|D|D3|V1a|GK2|label	str	mixed	1e-8
+a_bounds	cell|A|D|D3|V1a|GK2|lo	num	0.49646327696097325	1e-8
+a_bounds	cell|A|D|D3|V1a|GK2|hi	num	0.6976141136143534	1e-8
+a_bounds	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+a_bounds	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+a_bounds	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+a_bounds	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+a_bounds	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+a_bounds	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+a_bounds	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+a_bounds	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+a_bounds	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+a_bounds	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+a_bounds	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+a_bounds	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+a_bounds	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+a_bounds	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+a_bounds	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+a_bounds	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+a_bounds	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+a_bounds	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+a_bounds	cell|A|D|D4|V1a|LM2|label	str	mixed	1e-8
+a_bounds	cell|A|D|D4|V1a|LM2|lo	num	0.0003306788879979261	1e-8
+a_bounds	cell|A|D|D4|V1a|LM2|hi	num	0.05066370383734159	1e-8
+a_bounds	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+a_bounds	cell|A|D|D4|V1a|GK2|label	str	acts	1e-8
+a_bounds	cell|A|D|D4|V1a|GK2|lo	num	0.5015223438792862	1e-8
+a_bounds	cell|A|D|D4|V1a|GK2|hi	num	0.7022585226847395	1e-8
+a_bounds	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+a_bounds	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+a_bounds	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+a_bounds	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+a_bounds	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+a_bounds	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+a_bounds	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+a_bounds	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+a_bounds	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+a_bounds	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+a_bounds	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+a_bounds	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+a_bounds	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+a_bounds	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+a_bounds	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+a_bounds	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+a_bounds	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+a_bounds	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+a_bounds	cell|A|D|D6|V1a|LM2|label	str	acts	1e-8
+a_bounds	cell|A|D|D6|V1a|LM2|lo	num	0.5475381652733826	1e-8
+a_bounds	cell|A|D|D6|V1a|LM2|hi	num	0.7435708233448928	1e-8
+a_bounds	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+a_bounds	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+a_bounds	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+a_bounds	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+a_bounds	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+a_bounds	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+a_bounds	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+a_bounds	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+a_bounds	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+a_bounds	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+a_bounds	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+a_bounds	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+a_bounds	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+a_bounds	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+a_bounds	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+a_bounds	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+a_bounds	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+a_bounds	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+a_bounds	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+a_bounds	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+a_bounds	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+a_bounds	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+a_bounds	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+a_bounds	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+a_bounds	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+a_bounds	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+a_bounds	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+a_bounds	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+a_bounds	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+a_bounds	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+a_bounds	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+a_bounds	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+a_bounds	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+a_bounds	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+a_bounds	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+a_bounds	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+a_bounds	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+a_bounds	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+a_bounds	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+a_bounds	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+a_bounds	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+a_bounds	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+a_bounds	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+a_bounds	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+a_bounds	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+a_bounds	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+a_bounds	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+a_bounds	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+a_bounds	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+a_bounds	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+a_bounds	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+a_bounds	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+a_bounds	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+a_bounds	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+a_bounds	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+a_bounds	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+a_bounds	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+a_bounds	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+a_bounds	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+a_bounds	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+a_bounds	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+a_bounds	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+a_bounds	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+a_bounds	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+a_bounds	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+a_bounds	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+a_bounds	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+a_bounds	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+a_bounds	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+a_bounds	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+a_bounds	decision|outcome	str	R5	1e-8
+a_bounds	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+a_bounds	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+a_bounds	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+nc1_2	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+nc1_2	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+nc1_2	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+nc1_2	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+nc1_2	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+nc1_2	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+nc1_2	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+nc1_2	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+nc1_2	cell|NC1|D|D3|V0|GK2|hi	num	0.04792724981762336	1e-8
+nc1_2	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+nc1_2	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+nc1_2	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+nc1_2	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+nc1_2	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+nc1_2	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+nc1_2	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+nc1_2	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+nc1_2	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+nc1_2	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+nc1_2	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+nc1_2	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+nc1_2	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+nc1_2	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+nc1_2	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+nc1_2	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+nc1_2	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+nc1_2	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+nc1_2	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+nc1_2	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+nc1_2	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+nc1_2	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+nc1_2	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+nc1_2	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+nc1_2	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+nc1_2	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+nc1_2	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+nc1_2	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+nc1_2	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+nc1_2	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+nc1_2	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+nc1_2	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+nc1_2	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+nc1_2	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+nc1_2	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+nc1_2	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+nc1_2	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+nc1_2	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+nc1_2	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+nc1_2	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+nc1_2	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+nc1_2	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+nc1_2	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+nc1_2	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+nc1_2	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+nc1_2	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+nc1_2	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+nc1_2	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+nc1_2	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+nc1_2	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+nc1_2	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+nc1_2	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+nc1_2	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+nc1_2	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+nc1_2	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+nc1_2	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+nc1_2	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+nc1_2	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+nc1_2	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+nc1_2	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+nc1_2	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+nc1_2	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+nc1_2	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+nc1_2	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+nc1_2	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+nc1_2	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+nc1_2	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+nc1_2	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+nc1_2	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+nc1_2	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+nc1_2	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+nc1_2	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+nc1_2	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+nc1_2	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+nc1_2	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+nc1_2	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+nc1_2	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+nc1_2	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+nc1_2	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+nc1_2	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+nc1_2	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+nc1_2	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+nc1_2	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+nc1_2	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+nc1_2	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+nc1_2	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+nc1_2	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+nc1_2	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+nc1_2	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+nc1_2	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+nc1_2	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+nc1_2	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+nc1_2	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+nc1_2	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+nc1_2	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+nc1_2	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+nc1_2	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+nc1_2	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+nc1_2	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+nc1_2	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+nc1_2	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+nc1_2	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+nc1_2	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+nc1_2	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+nc1_2	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+nc1_2	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+nc1_2	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+nc1_2	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+nc1_2	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+nc1_2	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+nc1_2	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+nc1_2	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+nc1_2	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+nc1_2	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+nc1_2	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+nc1_2	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+nc1_2	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+nc1_2	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+nc1_2	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+nc1_2	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+nc1_2	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+nc1_2	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+nc1_2	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+nc1_2	decision|outcome	str	R1	1e-8
+nc1_2	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+nc1_2	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+nc1_2	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+nc1_3	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+nc1_3	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+nc1_3	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+nc1_3	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+nc1_3	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+nc1_3	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+nc1_3	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+nc1_3	cell|NC1|D|D3|V0|GK2|label	str	FAILS	1e-8
+nc1_3	cell|NC1|D|D3|V0|GK2|hi	num	0.056348606485694674	1e-8
+nc1_3	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+nc1_3	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+nc1_3	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+nc1_3	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+nc1_3	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+nc1_3	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+nc1_3	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+nc1_3	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+nc1_3	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+nc1_3	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+nc1_3	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+nc1_3	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+nc1_3	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+nc1_3	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+nc1_3	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+nc1_3	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+nc1_3	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+nc1_3	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+nc1_3	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+nc1_3	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+nc1_3	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+nc1_3	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+nc1_3	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+nc1_3	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+nc1_3	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+nc1_3	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+nc1_3	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+nc1_3	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+nc1_3	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+nc1_3	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+nc1_3	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+nc1_3	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+nc1_3	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+nc1_3	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+nc1_3	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+nc1_3	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+nc1_3	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+nc1_3	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+nc1_3	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+nc1_3	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+nc1_3	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+nc1_3	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+nc1_3	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+nc1_3	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+nc1_3	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+nc1_3	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+nc1_3	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+nc1_3	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+nc1_3	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+nc1_3	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+nc1_3	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+nc1_3	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+nc1_3	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+nc1_3	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+nc1_3	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+nc1_3	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+nc1_3	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+nc1_3	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+nc1_3	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+nc1_3	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+nc1_3	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+nc1_3	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+nc1_3	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+nc1_3	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+nc1_3	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+nc1_3	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+nc1_3	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+nc1_3	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+nc1_3	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+nc1_3	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+nc1_3	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+nc1_3	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+nc1_3	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+nc1_3	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+nc1_3	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+nc1_3	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+nc1_3	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+nc1_3	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+nc1_3	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+nc1_3	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+nc1_3	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+nc1_3	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+nc1_3	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+nc1_3	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+nc1_3	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+nc1_3	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+nc1_3	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+nc1_3	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+nc1_3	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+nc1_3	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+nc1_3	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+nc1_3	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+nc1_3	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+nc1_3	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+nc1_3	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+nc1_3	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+nc1_3	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+nc1_3	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+nc1_3	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+nc1_3	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+nc1_3	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+nc1_3	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+nc1_3	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+nc1_3	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+nc1_3	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+nc1_3	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+nc1_3	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+nc1_3	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+nc1_3	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+nc1_3	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+nc1_3	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+nc1_3	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+nc1_3	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+nc1_3	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+nc1_3	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+nc1_3	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+nc1_3	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+nc1_3	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+nc1_3	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+nc1_3	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+nc1_3	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+nc1_3	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+nc1_3	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+nc1_3	decision|outcome	str	Stop (F2)	1e-8
+nc1_3	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+nc1_3	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+nc1_3	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+pc1_144	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+pc1_144	cell|PC1|D|D3|V1a|NO|lo	num	0.6262998379994451	1e-8
+pc1_144	cell|PC1|D|D3|V1a|NO|hi	num	0.8018715207509706	1e-8
+pc1_144	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+pc1_144	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+pc1_144	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+pc1_144	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+pc1_144	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+pc1_144	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+pc1_144	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+pc1_144	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+pc1_144	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+pc1_144	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+pc1_144	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+pc1_144	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+pc1_144	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+pc1_144	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+pc1_144	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+pc1_144	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+pc1_144	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+pc1_144	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+pc1_144	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+pc1_144	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+pc1_144	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+pc1_144	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+pc1_144	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+pc1_144	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+pc1_144	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+pc1_144	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+pc1_144	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+pc1_144	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+pc1_144	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+pc1_144	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+pc1_144	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+pc1_144	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+pc1_144	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+pc1_144	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+pc1_144	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+pc1_144	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+pc1_144	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+pc1_144	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+pc1_144	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+pc1_144	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+pc1_144	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+pc1_144	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+pc1_144	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+pc1_144	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+pc1_144	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+pc1_144	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+pc1_144	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+pc1_144	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+pc1_144	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+pc1_144	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+pc1_144	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+pc1_144	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+pc1_144	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+pc1_144	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+pc1_144	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+pc1_144	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+pc1_144	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+pc1_144	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+pc1_144	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+pc1_144	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+pc1_144	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+pc1_144	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+pc1_144	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+pc1_144	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+pc1_144	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+pc1_144	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+pc1_144	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+pc1_144	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+pc1_144	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+pc1_144	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+pc1_144	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+pc1_144	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+pc1_144	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+pc1_144	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+pc1_144	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+pc1_144	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+pc1_144	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+pc1_144	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+pc1_144	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+pc1_144	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+pc1_144	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+pc1_144	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+pc1_144	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+pc1_144	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+pc1_144	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+pc1_144	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+pc1_144	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+pc1_144	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+pc1_144	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+pc1_144	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+pc1_144	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+pc1_144	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+pc1_144	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+pc1_144	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+pc1_144	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+pc1_144	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+pc1_144	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+pc1_144	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+pc1_144	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+pc1_144	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+pc1_144	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+pc1_144	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+pc1_144	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+pc1_144	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+pc1_144	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+pc1_144	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+pc1_144	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+pc1_144	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+pc1_144	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+pc1_144	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+pc1_144	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+pc1_144	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+pc1_144	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+pc1_144	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+pc1_144	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+pc1_144	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+pc1_144	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+pc1_144	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+pc1_144	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+pc1_144	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+pc1_144	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+pc1_144	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+pc1_144	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+pc1_144	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+pc1_144	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+pc1_144	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+pc1_144	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+pc1_144	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+pc1_144	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+pc1_144	decision|outcome	str	R1	1e-8
+pc1_144	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+pc1_144	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+pc1_144	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+pc1_143	cell|PC1|D|D3|V1a|NO|label	str	FAILS	1e-8
+pc1_143	cell|PC1|D|D3|V1a|NO|lo	num	0.6209820194459619	1e-8
+pc1_143	cell|PC1|D|D3|V1a|NO|hi	num	0.7974602712667502	1e-8
+pc1_143	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+pc1_143	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+pc1_143	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+pc1_143	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+pc1_143	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+pc1_143	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+pc1_143	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+pc1_143	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+pc1_143	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+pc1_143	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+pc1_143	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+pc1_143	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+pc1_143	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+pc1_143	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+pc1_143	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+pc1_143	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+pc1_143	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+pc1_143	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+pc1_143	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+pc1_143	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+pc1_143	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+pc1_143	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+pc1_143	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+pc1_143	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+pc1_143	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+pc1_143	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+pc1_143	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+pc1_143	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+pc1_143	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+pc1_143	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+pc1_143	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+pc1_143	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+pc1_143	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+pc1_143	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+pc1_143	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+pc1_143	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+pc1_143	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+pc1_143	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+pc1_143	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+pc1_143	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+pc1_143	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+pc1_143	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+pc1_143	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+pc1_143	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+pc1_143	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+pc1_143	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+pc1_143	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+pc1_143	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+pc1_143	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+pc1_143	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+pc1_143	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+pc1_143	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+pc1_143	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+pc1_143	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+pc1_143	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+pc1_143	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+pc1_143	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+pc1_143	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+pc1_143	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+pc1_143	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+pc1_143	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+pc1_143	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+pc1_143	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+pc1_143	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+pc1_143	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+pc1_143	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+pc1_143	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+pc1_143	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+pc1_143	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+pc1_143	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+pc1_143	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+pc1_143	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+pc1_143	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+pc1_143	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+pc1_143	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+pc1_143	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+pc1_143	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+pc1_143	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+pc1_143	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+pc1_143	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+pc1_143	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+pc1_143	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+pc1_143	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+pc1_143	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+pc1_143	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+pc1_143	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+pc1_143	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+pc1_143	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+pc1_143	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+pc1_143	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+pc1_143	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+pc1_143	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+pc1_143	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+pc1_143	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+pc1_143	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+pc1_143	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+pc1_143	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+pc1_143	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+pc1_143	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+pc1_143	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+pc1_143	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+pc1_143	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+pc1_143	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+pc1_143	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+pc1_143	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+pc1_143	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+pc1_143	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+pc1_143	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+pc1_143	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+pc1_143	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+pc1_143	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+pc1_143	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+pc1_143	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+pc1_143	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+pc1_143	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+pc1_143	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+pc1_143	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+pc1_143	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+pc1_143	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+pc1_143	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+pc1_143	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+pc1_143	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+pc1_143	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+pc1_143	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+pc1_143	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+pc1_143	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+pc1_143	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+pc1_143	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+pc1_143	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+pc1_143	decision|outcome	str	Stop (F1)	1e-8
+pc1_143	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+pc1_143	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+pc1_143	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+g1_bad	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+g1_bad	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+g1_bad	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+g1_bad	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+g1_bad	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+g1_bad	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+g1_bad	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+g1_bad	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+g1_bad	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+g1_bad	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+g1_bad	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+g1_bad	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+g1_bad	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+g1_bad	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+g1_bad	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+g1_bad	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+g1_bad	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+g1_bad	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+g1_bad	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+g1_bad	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+g1_bad	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+g1_bad	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+g1_bad	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+g1_bad	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+g1_bad	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+g1_bad	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+g1_bad	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+g1_bad	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+g1_bad	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+g1_bad	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+g1_bad	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+g1_bad	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+g1_bad	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+g1_bad	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+g1_bad	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+g1_bad	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+g1_bad	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+g1_bad	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+g1_bad	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+g1_bad	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+g1_bad	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+g1_bad	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+g1_bad	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+g1_bad	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+g1_bad	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+g1_bad	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+g1_bad	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+g1_bad	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+g1_bad	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+g1_bad	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+g1_bad	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+g1_bad	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+g1_bad	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+g1_bad	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+g1_bad	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+g1_bad	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+g1_bad	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+g1_bad	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+g1_bad	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+g1_bad	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+g1_bad	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+g1_bad	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+g1_bad	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+g1_bad	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+g1_bad	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+g1_bad	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+g1_bad	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+g1_bad	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+g1_bad	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+g1_bad	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+g1_bad	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+g1_bad	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+g1_bad	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+g1_bad	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+g1_bad	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+g1_bad	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+g1_bad	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+g1_bad	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+g1_bad	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+g1_bad	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+g1_bad	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+g1_bad	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+g1_bad	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+g1_bad	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+g1_bad	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+g1_bad	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+g1_bad	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+g1_bad	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+g1_bad	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+g1_bad	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+g1_bad	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+g1_bad	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+g1_bad	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+g1_bad	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+g1_bad	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+g1_bad	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+g1_bad	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+g1_bad	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+g1_bad	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+g1_bad	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+g1_bad	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+g1_bad	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+g1_bad	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+g1_bad	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+g1_bad	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+g1_bad	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+g1_bad	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+g1_bad	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+g1_bad	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+g1_bad	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+g1_bad	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+g1_bad	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+g1_bad	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+g1_bad	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+g1_bad	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+g1_bad	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+g1_bad	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+g1_bad	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+g1_bad	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+g1_bad	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+g1_bad	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+g1_bad	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+g1_bad	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+g1_bad	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+g1_bad	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+g1_bad	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+g1_bad	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+g1_bad	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+g1_bad	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+g1_bad	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+g1_bad	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+g1_bad	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+g1_bad	decision|outcome	str	Stop (F3)	1e-8
+g1_bad	cell|PC2|G1|D3|NA|NA|label	str	FAILS	1e-8
+g1_bad	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+g1_bad	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+e5_false	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+e5_false	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+e5_false	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+e5_false	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+e5_false	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+e5_false	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+e5_false	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+e5_false	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+e5_false	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+e5_false	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+e5_false	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+e5_false	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+e5_false	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+e5_false	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+e5_false	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+e5_false	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+e5_false	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+e5_false	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+e5_false	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+e5_false	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+e5_false	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+e5_false	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+e5_false	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+e5_false	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+e5_false	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+e5_false	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+e5_false	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+e5_false	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+e5_false	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+e5_false	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+e5_false	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+e5_false	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+e5_false	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+e5_false	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+e5_false	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+e5_false	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+e5_false	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+e5_false	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+e5_false	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+e5_false	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+e5_false	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+e5_false	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+e5_false	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+e5_false	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+e5_false	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+e5_false	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+e5_false	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+e5_false	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+e5_false	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+e5_false	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+e5_false	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+e5_false	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+e5_false	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+e5_false	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+e5_false	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+e5_false	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+e5_false	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+e5_false	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+e5_false	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+e5_false	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+e5_false	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+e5_false	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+e5_false	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+e5_false	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+e5_false	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+e5_false	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+e5_false	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+e5_false	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+e5_false	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+e5_false	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+e5_false	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+e5_false	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+e5_false	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+e5_false	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+e5_false	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+e5_false	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+e5_false	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+e5_false	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+e5_false	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+e5_false	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+e5_false	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+e5_false	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+e5_false	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+e5_false	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+e5_false	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+e5_false	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+e5_false	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+e5_false	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+e5_false	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+e5_false	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+e5_false	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+e5_false	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+e5_false	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+e5_false	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+e5_false	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+e5_false	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+e5_false	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+e5_false	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+e5_false	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+e5_false	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+e5_false	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+e5_false	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+e5_false	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+e5_false	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+e5_false	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+e5_false	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+e5_false	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+e5_false	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+e5_false	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+e5_false	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+e5_false	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+e5_false	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+e5_false	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+e5_false	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+e5_false	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+e5_false	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+e5_false	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+e5_false	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+e5_false	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+e5_false	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+e5_false	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+e5_false	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+e5_false	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+e5_false	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+e5_false	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+e5_false	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+e5_false	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+e5_false	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+e5_false	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+e5_false	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+e5_false	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+e5_false	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+e5_false	decision|outcome	str	Stop (F4)	1e-8
+e5_false	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+e5_false	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+e5_false	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+coverage	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+coverage	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+coverage	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+coverage	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+coverage	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+coverage	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+coverage	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+coverage	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+coverage	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+coverage	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+coverage	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+coverage	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+coverage	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+coverage	cell|A|D|D3|V1a|GK2|label	str	not determined (coverage)	1e-8
+coverage	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+coverage	cell|A|D|D3|V1a|GK2|hi	num	0.0356648596705294	1e-8
+coverage	cell|A|D|D3|V1a|GK2|n_valid	num	170	1e-8
+coverage	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+coverage	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+coverage	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+coverage	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+coverage	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+coverage	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+coverage	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+coverage	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+coverage	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+coverage	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+coverage	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+coverage	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+coverage	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+coverage	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+coverage	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+coverage	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+coverage	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+coverage	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+coverage	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+coverage	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+coverage	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+coverage	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+coverage	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+coverage	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+coverage	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+coverage	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+coverage	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+coverage	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+coverage	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+coverage	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+coverage	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+coverage	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+coverage	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+coverage	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+coverage	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+coverage	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+coverage	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+coverage	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+coverage	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+coverage	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+coverage	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+coverage	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+coverage	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+coverage	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+coverage	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+coverage	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+coverage	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+coverage	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+coverage	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+coverage	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+coverage	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+coverage	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+coverage	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+coverage	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+coverage	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+coverage	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+coverage	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+coverage	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+coverage	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+coverage	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+coverage	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+coverage	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+coverage	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+coverage	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+coverage	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+coverage	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+coverage	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+coverage	cell|pi|D|D3|V1a|GK2|label	str	not determined (coverage)	1e-8
+coverage	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+coverage	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+coverage	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+coverage	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+coverage	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+coverage	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+coverage	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+coverage	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+coverage	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+coverage	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+coverage	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+coverage	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+coverage	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+coverage	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+coverage	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+coverage	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+coverage	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+coverage	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+coverage	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+coverage	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+coverage	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+coverage	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+coverage	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+coverage	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+coverage	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+coverage	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+coverage	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+coverage	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+coverage	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+coverage	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+coverage	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+coverage	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+coverage	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+coverage	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+coverage	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+coverage	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+coverage	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+coverage	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+coverage	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+coverage	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+coverage	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+coverage	decision|outcome	str	R3	1e-8
+coverage	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+coverage	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+coverage	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+bp_off	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+bp_off	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+bp_off	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+bp_off	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+bp_off	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+bp_off	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+bp_off	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+bp_off	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+bp_off	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+bp_off	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+bp_off	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+bp_off	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+bp_off	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+bp_off	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+bp_off	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+bp_off	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+bp_off	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+bp_off	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+bp_off	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+bp_off	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+bp_off	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+bp_off	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+bp_off	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+bp_off	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+bp_off	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+bp_off	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+bp_off	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+bp_off	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+bp_off	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+bp_off	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+bp_off	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+bp_off	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+bp_off	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+bp_off	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+bp_off	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+bp_off	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+bp_off	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+bp_off	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+bp_off	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+bp_off	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+bp_off	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+bp_off	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+bp_off	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+bp_off	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+bp_off	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+bp_off	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+bp_off	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+bp_off	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+bp_off	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+bp_off	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+bp_off	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+bp_off	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+bp_off	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+bp_off	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+bp_off	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+bp_off	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+bp_off	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+bp_off	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+bp_off	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+bp_off	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+bp_off	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+bp_off	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+bp_off	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+bp_off	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+bp_off	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+bp_off	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+bp_off	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+bp_off	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+bp_off	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+bp_off	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+bp_off	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+bp_off	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+bp_off	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+bp_off	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+bp_off	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+bp_off	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+bp_off	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+bp_off	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+bp_off	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+bp_off	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+bp_off	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+bp_off	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+bp_off	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+bp_off	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+bp_off	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+bp_off	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+bp_off	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+bp_off	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+bp_off	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+bp_off	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+bp_off	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+bp_off	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+bp_off	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+bp_off	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+bp_off	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+bp_off	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+bp_off	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+bp_off	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+bp_off	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+bp_off	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+bp_off	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+bp_off	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+bp_off	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+bp_off	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+bp_off	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+bp_off	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+bp_off	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+bp_off	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+bp_off	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+bp_off	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+bp_off	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+bp_off	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+bp_off	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+bp_off	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+bp_off	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+bp_off	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+bp_off	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+bp_off	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+bp_off	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+bp_off	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+bp_off	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+bp_off	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+bp_off	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+bp_off	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+bp_off	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+bp_off	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+bp_off	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+bp_off	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+bp_off	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+bp_off	cell|B'|D|D6|V1a|LX|estimate	num	0.8	1e-8
+bp_off	cell|B'|D|D6|V1a|LX|label	str	differs from derived (0.8)	1e-8
+bp_off	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+bp_off	decision|outcome	str	R1	1e-8
+bp_off	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+bp_off	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+bp_off	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+tf	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+tf	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+tf	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+tf	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+tf	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+tf	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+tf	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+tf	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+tf	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+tf	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+tf	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+tf	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+tf	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+tf	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+tf	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+tf	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+tf	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+tf	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+tf	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+tf	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+tf	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+tf	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+tf	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+tf	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+tf	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+tf	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+tf	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+tf	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+tf	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+tf	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+tf	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+tf	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+tf	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+tf	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+tf	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+tf	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+tf	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+tf	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+tf	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+tf	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+tf	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+tf	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+tf	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+tf	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+tf	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+tf	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+tf	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+tf	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+tf	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+tf	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+tf	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+tf	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+tf	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+tf	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+tf	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+tf	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+tf	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+tf	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+tf	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+tf	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+tf	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+tf	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+tf	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+tf	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+tf	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+tf	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+tf	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+tf	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+tf	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+tf	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+tf	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+tf	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+tf	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+tf	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+tf	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+tf	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+tf	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+tf	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+tf	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+tf	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+tf	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+tf	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+tf	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+tf	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+tf	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+tf	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+tf	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+tf	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+tf	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+tf	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+tf	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+tf	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+tf	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+tf	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+tf	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+tf	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+tf	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+tf	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+tf	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+tf	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+tf	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+tf	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+tf	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+tf	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+tf	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+tf	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+tf	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+tf	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+tf	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+tf	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+tf	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+tf	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+tf	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+tf	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+tf	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+tf	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+tf	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+tf	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+tf	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+tf	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+tf	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+tf	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+tf	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+tf	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+tf	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+tf	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+tf	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+tf	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+tf	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+tf	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+tf	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+tf	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+tf	decision|outcome	str	R1	1e-8
+tf	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+tf	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+tf	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+tf	cell|P_post|T|D3|V1t|NO|n_valid	num	10	1e-8
+tf	cell|P_post|T|D3|V1t|NO|estimate	num	0.2	1e-8
+tf	cell|P_post|T|D3|V1t|NO|lo	num	0.025210726326833355	1e-8
+tf	cell|P_post|T|D3|V1t|NO|hi	num	0.5560954623076415	1e-8
+tf	cell|q_cy_post_a|T|D3|V1t|NO|estimate	num	0.5	1e-8
+tf	cell|P_post|F|D3|V1p|NO|n_valid	num	10	1e-8
+tf	cell|P_post|F|D3|V1p|NO|estimate	num	0.2	1e-8
+tf	cell|P_post|F|D3|V1p|NO|lo	num	0.025210726326833355	1e-8
+tf	cell|P_post|F|D3|V1p|NO|hi	num	0.5560954623076415	1e-8
+tf	cell|q_cy_post_a|F|D3|V1p|NO|estimate	num	0.5	1e-8
+smoke	exit|smoke	exit	nonzero	
+smoke	stderr|smoke	substr	smoke flag	
+g1_missing	exit|g1_missing	exit	nonzero	
+g1_missing	stderr|g1_missing	substr	K275_G1	
+blind	scorer|parse|pass	str	TRUE	
+blind	scorer|coverage NO D4|value	str	2 journeys, 2 completed	
+blind	scorer|coverage GA D4|pass	str	TRUE	
+blind	scorer|E8|value	str	5 compared, 4 equal, max deviation 1e-08	
+blind	scorer|E8|pass	str	FALSE	
+labels	labels|A1|label	str	absorbed	
+labels	labels|A2|label	str	mixed	
+labels	labels|A3|label	str	mixed	
+labels	labels|A4|label	str	acts	
+labels	labels|A5|label	str	not determined (coverage)	
+labels	labels|A6|label	str	absorbed	
+labels	labels|B1|label	str	not determined	
+labels	labels|B2|label	str	understated	
+labels	labels|B3|label	str	not understated	
+labels	labels|B4|label	str	not determined	
+labels	labels|B5|label	str	not determined (coverage)	
+labels	labels|P1|label	str	as derived	
+labels	labels|P2|label	str	differs from derived (0.9145)	
+labels	labels|C1|label	str	not determined	
+labels	labels|C1|shown	str	TRUE	
+labels	labels|C2|label	str	raised (material)	
+labels	labels|C2|shown	str	TRUE	
+labels	labels|C3|label	str	not raised	
+labels	labels|C3|shown	str	FALSE	
+labels	labels|C4|label	str	not raised	
+labels	labels|C4|shown	str	TRUE	
+labels	labels|C5|label	str	not determined	
+labels	labels|C5|shown	str	FALSE	
+labels	labels|C6|label	str	not determined	
+labels	labels|C6|shown	str	TRUE	
+labels	labels|C7|label	str	not raised	
+labels	labels|C7|shown	str	FALSE	
+labels	labels|I1|label	str	not determined	
+labels	labels|I2|label	str	imprint retained	
+labels	labels|I3|label	str	not determined	
+labels	labels|I4|label	str	imprint removed	
+unlabelled	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+unlabelled	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+unlabelled	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+unlabelled	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+unlabelled	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+unlabelled	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+unlabelled	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+unlabelled	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+unlabelled	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+unlabelled	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+unlabelled	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+unlabelled	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+unlabelled	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+unlabelled	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+unlabelled	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+unlabelled	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+unlabelled	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+unlabelled	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+unlabelled	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+unlabelled	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+unlabelled	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+unlabelled	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+unlabelled	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+unlabelled	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+unlabelled	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+unlabelled	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+unlabelled	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+unlabelled	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+unlabelled	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+unlabelled	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+unlabelled	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+unlabelled	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+unlabelled	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+unlabelled	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+unlabelled	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+unlabelled	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+unlabelled	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+unlabelled	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+unlabelled	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+unlabelled	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+unlabelled	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+unlabelled	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+unlabelled	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+unlabelled	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+unlabelled	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+unlabelled	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+unlabelled	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+unlabelled	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+unlabelled	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+unlabelled	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+unlabelled	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+unlabelled	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+unlabelled	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+unlabelled	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+unlabelled	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+unlabelled	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+unlabelled	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+unlabelled	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+unlabelled	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+unlabelled	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+unlabelled	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+unlabelled	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+unlabelled	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+unlabelled	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+unlabelled	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+unlabelled	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+unlabelled	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+unlabelled	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+unlabelled	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+unlabelled	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+unlabelled	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+unlabelled	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+unlabelled	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+unlabelled	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+unlabelled	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+unlabelled	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+unlabelled	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+unlabelled	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+unlabelled	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+unlabelled	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+unlabelled	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+unlabelled	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+unlabelled	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+unlabelled	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+unlabelled	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+unlabelled	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+unlabelled	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+unlabelled	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+unlabelled	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+unlabelled	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+unlabelled	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+unlabelled	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+unlabelled	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+unlabelled	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+unlabelled	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+unlabelled	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+unlabelled	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+unlabelled	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+unlabelled	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+unlabelled	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+unlabelled	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+unlabelled	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+unlabelled	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+unlabelled	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+unlabelled	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+unlabelled	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+unlabelled	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+unlabelled	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+unlabelled	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+unlabelled	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+unlabelled	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+unlabelled	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+unlabelled	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+unlabelled	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+unlabelled	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+unlabelled	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+unlabelled	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+unlabelled	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+unlabelled	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+unlabelled	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+unlabelled	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+unlabelled	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+unlabelled	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+unlabelled	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+unlabelled	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+unlabelled	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+unlabelled	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+unlabelled	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+unlabelled	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+unlabelled	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+unlabelled	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+unlabelled	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+unlabelled	decision|outcome	str	R1	1e-8
+unlabelled	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+unlabelled	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+unlabelled	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+unlabelled	cell|rho_mod|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+unlabelled	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+unlabelled	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+unlabelled	cell|delta_any_call_y_V0|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+unlabelled	cell|delta_any_call_y_VD|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+unlabelled	cell|rho_mod|E|D3|V1a|PEL2|estimate	num	1.131370849898476	1e-8
+unlabelled	cell|rho_mod|E|D3|V1a|PEL2|estimand	str	rho_mod against VD LM2 (K)	1e-8
+unlabelled	cell|H3_uncorrected|E|D3|V1a|PEL2|estimate	num	0.7	1e-8
+unlabelled	cell|H3_dropped|E|D3|V1a|PEL2|estimate	num	0.2	1e-8
+unlabelled	cell|H3_refused_after_exclusion|E|D3|V1a|PEL2|estimate	num	0.1	1e-8
+unlabelled	cell|H3_refused_after_exclusion|E|D3|V1a|PEL2|hi	num	0.4450161170281953	1e-8
+unlabelled	cell|H2|E|D3|V1a|PEL2|estimate	num	0.5	1e-8
+sigdiff	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+sigdiff	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+sigdiff	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+sigdiff	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+sigdiff	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+sigdiff	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+sigdiff	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+sigdiff	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+sigdiff	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+sigdiff	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+sigdiff	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+sigdiff	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+sigdiff	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+sigdiff	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+sigdiff	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+sigdiff	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+sigdiff	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+sigdiff	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+sigdiff	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+sigdiff	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+sigdiff	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+sigdiff	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+sigdiff	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+sigdiff	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+sigdiff	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+sigdiff	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+sigdiff	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+sigdiff	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+sigdiff	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+sigdiff	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+sigdiff	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+sigdiff	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+sigdiff	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+sigdiff	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+sigdiff	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+sigdiff	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+sigdiff	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+sigdiff	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+sigdiff	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+sigdiff	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+sigdiff	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+sigdiff	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+sigdiff	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+sigdiff	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+sigdiff	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+sigdiff	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+sigdiff	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+sigdiff	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+sigdiff	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+sigdiff	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+sigdiff	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+sigdiff	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+sigdiff	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+sigdiff	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+sigdiff	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+sigdiff	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+sigdiff	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+sigdiff	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+sigdiff	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+sigdiff	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+sigdiff	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+sigdiff	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+sigdiff	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+sigdiff	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+sigdiff	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+sigdiff	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+sigdiff	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+sigdiff	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+sigdiff	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+sigdiff	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+sigdiff	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+sigdiff	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+sigdiff	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+sigdiff	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+sigdiff	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+sigdiff	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+sigdiff	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+sigdiff	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+sigdiff	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+sigdiff	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+sigdiff	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+sigdiff	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+sigdiff	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+sigdiff	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+sigdiff	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+sigdiff	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+sigdiff	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+sigdiff	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+sigdiff	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+sigdiff	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+sigdiff	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+sigdiff	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+sigdiff	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+sigdiff	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+sigdiff	cell|B|D|D3|V1a|LM2|note	str	20 pairs dropped for a differing tested set	1e-8
+sigdiff	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+sigdiff	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+sigdiff	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+sigdiff	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+sigdiff	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+sigdiff	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+sigdiff	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+sigdiff	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+sigdiff	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+sigdiff	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+sigdiff	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+sigdiff	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+sigdiff	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+sigdiff	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+sigdiff	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+sigdiff	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+sigdiff	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+sigdiff	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+sigdiff	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+sigdiff	cell|B|D|D4|V1a|LM2|note	str	0 pairs dropped for a differing tested set	1e-8
+sigdiff	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+sigdiff	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+sigdiff	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+sigdiff	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+sigdiff	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+sigdiff	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+sigdiff	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+sigdiff	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+sigdiff	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+sigdiff	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+sigdiff	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+sigdiff	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+sigdiff	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+sigdiff	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+sigdiff	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+sigdiff	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+sigdiff	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+sigdiff	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+sigdiff	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+sigdiff	cell|B|D|D6|V1a|LM2|note	str	0 pairs dropped for a differing tested set	1e-8
+sigdiff	decision|outcome	str	R1	1e-8
+sigdiff	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+sigdiff	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+sigdiff	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+tierk	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+tierk	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+tierk	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+tierk	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+tierk	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+tierk	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+tierk	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+tierk	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+tierk	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+tierk	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+tierk	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+tierk	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+tierk	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+tierk	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+tierk	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+tierk	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+tierk	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+tierk	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+tierk	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+tierk	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+tierk	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+tierk	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+tierk	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+tierk	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+tierk	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+tierk	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+tierk	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+tierk	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+tierk	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+tierk	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+tierk	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+tierk	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+tierk	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+tierk	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+tierk	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+tierk	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+tierk	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+tierk	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+tierk	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+tierk	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+tierk	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+tierk	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+tierk	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+tierk	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+tierk	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+tierk	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+tierk	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+tierk	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+tierk	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+tierk	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+tierk	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+tierk	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+tierk	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+tierk	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+tierk	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+tierk	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+tierk	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+tierk	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+tierk	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+tierk	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+tierk	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+tierk	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+tierk	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+tierk	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+tierk	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+tierk	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+tierk	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+tierk	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+tierk	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+tierk	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+tierk	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+tierk	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+tierk	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+tierk	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+tierk	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+tierk	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+tierk	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+tierk	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+tierk	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+tierk	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+tierk	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+tierk	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+tierk	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+tierk	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+tierk	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+tierk	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+tierk	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+tierk	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+tierk	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+tierk	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+tierk	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+tierk	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+tierk	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+tierk	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+tierk	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+tierk	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+tierk	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+tierk	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+tierk	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+tierk	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+tierk	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+tierk	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+tierk	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+tierk	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+tierk	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+tierk	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+tierk	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+tierk	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+tierk	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+tierk	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+tierk	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+tierk	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+tierk	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+tierk	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+tierk	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+tierk	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+tierk	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+tierk	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+tierk	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+tierk	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+tierk	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+tierk	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+tierk	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+tierk	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+tierk	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+tierk	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+tierk	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+tierk	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+tierk	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+tierk	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+tierk	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+tierk	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+tierk	decision|outcome	str	R1	1e-8
+tierk	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+tierk	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+tierk	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+tierk	cell|pi|K|D3|V1a|LG2|estimate	num	1.0	1e-8
+tierk	cell|pi|K|D3|V1a|LG2|label	str	imprint retained	1e-8
+e8score	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+e8score	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+e8score	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+e8score	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+e8score	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+e8score	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+e8score	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+e8score	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+e8score	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+e8score	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+e8score	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+e8score	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+e8score	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+e8score	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+e8score	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+e8score	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+e8score	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+e8score	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+e8score	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+e8score	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+e8score	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+e8score	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+e8score	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+e8score	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+e8score	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+e8score	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+e8score	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+e8score	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+e8score	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+e8score	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+e8score	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+e8score	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+e8score	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+e8score	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+e8score	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+e8score	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+e8score	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+e8score	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+e8score	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+e8score	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+e8score	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+e8score	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+e8score	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+e8score	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+e8score	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+e8score	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+e8score	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+e8score	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+e8score	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+e8score	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+e8score	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+e8score	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+e8score	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+e8score	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+e8score	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+e8score	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+e8score	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+e8score	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+e8score	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+e8score	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+e8score	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+e8score	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+e8score	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+e8score	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+e8score	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+e8score	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+e8score	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+e8score	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+e8score	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+e8score	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+e8score	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+e8score	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+e8score	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+e8score	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+e8score	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+e8score	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+e8score	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+e8score	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+e8score	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+e8score	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+e8score	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+e8score	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+e8score	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+e8score	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+e8score	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+e8score	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+e8score	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+e8score	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+e8score	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+e8score	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+e8score	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+e8score	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+e8score	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+e8score	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+e8score	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+e8score	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+e8score	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+e8score	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+e8score	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+e8score	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+e8score	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+e8score	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+e8score	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+e8score	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+e8score	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+e8score	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+e8score	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+e8score	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+e8score	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+e8score	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+e8score	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+e8score	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+e8score	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+e8score	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+e8score	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+e8score	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+e8score	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+e8score	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+e8score	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+e8score	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+e8score	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+e8score	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+e8score	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+e8score	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+e8score	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+e8score	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+e8score	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+e8score	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+e8score	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+e8score	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+e8score	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+e8score	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+e8score	decision|outcome	str	R1	1e-8
+e8score	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+e8score	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+e8score	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+e8score	decision|E8	str	15 compared, 14 equal, max deviation 0.5	1e-8
+crossno_ok	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+crossno_ok	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+crossno_ok	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+crossno_ok	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+crossno_ok	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+crossno_ok	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+crossno_ok	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+crossno_ok	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+crossno_ok	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+crossno_ok	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+crossno_ok	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+crossno_ok	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+crossno_ok	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+crossno_ok	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+crossno_ok	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+crossno_ok	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+crossno_ok	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+crossno_ok	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+crossno_ok	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+crossno_ok	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+crossno_ok	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+crossno_ok	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+crossno_ok	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+crossno_ok	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+crossno_ok	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+crossno_ok	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+crossno_ok	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+crossno_ok	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+crossno_ok	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+crossno_ok	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+crossno_ok	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+crossno_ok	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+crossno_ok	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+crossno_ok	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+crossno_ok	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+crossno_ok	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+crossno_ok	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+crossno_ok	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+crossno_ok	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+crossno_ok	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+crossno_ok	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+crossno_ok	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+crossno_ok	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+crossno_ok	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+crossno_ok	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+crossno_ok	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+crossno_ok	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+crossno_ok	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+crossno_ok	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+crossno_ok	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+crossno_ok	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+crossno_ok	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+crossno_ok	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+crossno_ok	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+crossno_ok	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+crossno_ok	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+crossno_ok	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+crossno_ok	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+crossno_ok	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+crossno_ok	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+crossno_ok	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+crossno_ok	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+crossno_ok	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+crossno_ok	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+crossno_ok	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+crossno_ok	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+crossno_ok	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+crossno_ok	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+crossno_ok	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+crossno_ok	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+crossno_ok	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+crossno_ok	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+crossno_ok	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+crossno_ok	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+crossno_ok	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+crossno_ok	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+crossno_ok	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+crossno_ok	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+crossno_ok	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+crossno_ok	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+crossno_ok	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+crossno_ok	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+crossno_ok	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+crossno_ok	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+crossno_ok	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+crossno_ok	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+crossno_ok	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+crossno_ok	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+crossno_ok	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+crossno_ok	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+crossno_ok	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+crossno_ok	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+crossno_ok	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+crossno_ok	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+crossno_ok	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+crossno_ok	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+crossno_ok	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+crossno_ok	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+crossno_ok	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+crossno_ok	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+crossno_ok	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+crossno_ok	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+crossno_ok	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+crossno_ok	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+crossno_ok	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+crossno_ok	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+crossno_ok	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+crossno_ok	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+crossno_ok	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+crossno_ok	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+crossno_ok	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+crossno_ok	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+crossno_ok	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+crossno_ok	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+crossno_ok	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+crossno_ok	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+crossno_ok	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+crossno_ok	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+crossno_ok	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+crossno_ok	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+crossno_ok	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+crossno_ok	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+crossno_ok	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+crossno_ok	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+crossno_ok	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+crossno_ok	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+crossno_ok	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+crossno_ok	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+crossno_ok	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+crossno_ok	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+crossno_ok	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+crossno_ok	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+crossno_ok	decision|outcome	str	R1	1e-8
+crossno_ok	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+crossno_ok	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+crossno_ok	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+crossno_ok	decision|crossNO	str	5 compared, 0 differ	1e-8
+crossno_bad	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+crossno_bad	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+crossno_bad	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+crossno_bad	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+crossno_bad	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+crossno_bad	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+crossno_bad	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+crossno_bad	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+crossno_bad	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+crossno_bad	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+crossno_bad	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+crossno_bad	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+crossno_bad	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+crossno_bad	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+crossno_bad	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+crossno_bad	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+crossno_bad	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+crossno_bad	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+crossno_bad	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+crossno_bad	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+crossno_bad	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+crossno_bad	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+crossno_bad	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+crossno_bad	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+crossno_bad	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+crossno_bad	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+crossno_bad	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+crossno_bad	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+crossno_bad	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+crossno_bad	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+crossno_bad	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+crossno_bad	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+crossno_bad	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+crossno_bad	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+crossno_bad	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+crossno_bad	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+crossno_bad	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+crossno_bad	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+crossno_bad	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+crossno_bad	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+crossno_bad	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+crossno_bad	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+crossno_bad	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+crossno_bad	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+crossno_bad	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+crossno_bad	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+crossno_bad	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+crossno_bad	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+crossno_bad	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+crossno_bad	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+crossno_bad	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+crossno_bad	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+crossno_bad	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+crossno_bad	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+crossno_bad	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+crossno_bad	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+crossno_bad	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+crossno_bad	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+crossno_bad	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+crossno_bad	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+crossno_bad	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+crossno_bad	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+crossno_bad	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+crossno_bad	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+crossno_bad	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+crossno_bad	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+crossno_bad	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+crossno_bad	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+crossno_bad	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+crossno_bad	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+crossno_bad	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+crossno_bad	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+crossno_bad	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+crossno_bad	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+crossno_bad	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+crossno_bad	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+crossno_bad	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+crossno_bad	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+crossno_bad	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+crossno_bad	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+crossno_bad	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+crossno_bad	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+crossno_bad	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+crossno_bad	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+crossno_bad	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+crossno_bad	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+crossno_bad	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+crossno_bad	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+crossno_bad	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+crossno_bad	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+crossno_bad	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+crossno_bad	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+crossno_bad	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+crossno_bad	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+crossno_bad	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+crossno_bad	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+crossno_bad	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+crossno_bad	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+crossno_bad	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+crossno_bad	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+crossno_bad	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+crossno_bad	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+crossno_bad	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+crossno_bad	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+crossno_bad	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+crossno_bad	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+crossno_bad	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+crossno_bad	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+crossno_bad	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+crossno_bad	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+crossno_bad	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+crossno_bad	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+crossno_bad	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+crossno_bad	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+crossno_bad	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+crossno_bad	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+crossno_bad	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+crossno_bad	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+crossno_bad	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+crossno_bad	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+crossno_bad	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+crossno_bad	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+crossno_bad	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+crossno_bad	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+crossno_bad	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+crossno_bad	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+crossno_bad	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+crossno_bad	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+crossno_bad	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+crossno_bad	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+crossno_bad	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+crossno_bad	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+crossno_bad	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+crossno_bad	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+crossno_bad	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+crossno_bad	decision|outcome	str	Stop (F4)	1e-8
+crossno_bad	decision|crossNO	str	5 compared, 1 differ	1e-8
+statuses	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+statuses	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+statuses	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+statuses	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+statuses	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+statuses	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+statuses	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+statuses	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+statuses	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+statuses	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+statuses	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+statuses	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+statuses	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+statuses	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+statuses	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+statuses	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+statuses	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+statuses	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+statuses	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+statuses	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+statuses	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+statuses	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+statuses	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+statuses	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+statuses	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+statuses	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+statuses	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+statuses	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+statuses	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+statuses	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+statuses	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+statuses	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+statuses	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+statuses	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+statuses	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+statuses	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+statuses	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+statuses	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+statuses	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+statuses	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+statuses	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+statuses	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+statuses	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+statuses	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+statuses	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+statuses	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+statuses	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+statuses	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+statuses	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+statuses	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+statuses	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+statuses	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+statuses	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+statuses	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+statuses	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+statuses	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+statuses	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+statuses	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+statuses	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+statuses	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+statuses	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+statuses	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+statuses	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+statuses	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+statuses	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+statuses	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+statuses	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+statuses	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+statuses	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+statuses	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+statuses	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+statuses	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+statuses	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+statuses	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+statuses	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+statuses	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+statuses	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+statuses	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+statuses	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+statuses	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+statuses	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+statuses	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+statuses	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+statuses	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+statuses	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+statuses	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+statuses	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+statuses	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+statuses	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+statuses	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+statuses	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+statuses	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+statuses	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+statuses	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+statuses	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+statuses	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+statuses	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+statuses	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+statuses	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+statuses	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+statuses	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+statuses	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+statuses	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+statuses	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+statuses	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+statuses	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+statuses	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+statuses	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+statuses	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+statuses	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+statuses	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+statuses	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+statuses	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+statuses	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+statuses	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+statuses	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+statuses	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+statuses	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+statuses	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+statuses	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+statuses	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+statuses	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+statuses	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+statuses	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+statuses	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+statuses	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+statuses	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+statuses	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+statuses	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+statuses	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+statuses	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+statuses	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+statuses	decision|outcome	str	R1	1e-8
+statuses	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+statuses	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+statuses	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+range_stop	exit|range_stop	exit	nonzero	
+range_stop	stderr|range_stop	substr	RANGE-1	
+dup_stop	exit|dup_stop	exit	nonzero	
+dup_stop	stderr|dup_stop	substr	appears twice	
+instrument	exit|instrument	exit	nonzero	
+instrument	stderr|instrument	substr	instrument status	
+guard_class	exit|guard_class	exit	nonzero	
+guard_class	stderr|guard_class	substr	partial-match guard	
+picov	cell|pi|D|D3|V1a|LM2|label	str	not determined (coverage)	1e-8
+picov	cell|pi|D|D4|V1a|LM2|label	str	not determined (coverage)	1e-8
+picov	cell|pi|D|D4|V1a|LM2|n_valid	num	0	1e-8
+e1_fail	decision|outcome	str	Stop (F4)	1e-8
+e12_fail	decision|outcome	str	R1	1e-8
+e12_fail	decision|E12 failing checks	str	1	1e-8
+nondegen	cell|B|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+nondegen	cell|B|D|D3|V1a|LM2|jk_lo	num	0.9520973953555336	1e-8
+nondegen	cell|B|D|D3|V1a|LM2|jk_hi	num	1.0457105477890183	1e-8
+nondegen	cell|B|D|D3|V1a|LM2|lo	between	0.7071067811865476:1.0	1e-8
+nondegen	cell|B|D|D3|V1a|LM2|hi	between	1.0:1.224744871391589	1e-8
+unit_instrument	exit|unit_instrument	exit	nonzero	
+unit_instrument	stderr|unit_instrument	substr	instrument status	
+unit_crashed	exit|unit_crashed	exit	nonzero	
+unit_crashed	stderr|unit_crashed	substr	left no journey rows	
+unit_completed_false	exit|unit_completed_false	exit	nonzero	
+unit_completed_false	stderr|unit_completed_false	substr	did not complete	
+interrupted	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+interrupted	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+interrupted	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+interrupted	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+interrupted	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+interrupted	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+interrupted	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+interrupted	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+interrupted	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+interrupted	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+interrupted	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+interrupted	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+interrupted	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+interrupted	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+interrupted	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+interrupted	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+interrupted	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+interrupted	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+interrupted	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+interrupted	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+interrupted	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+interrupted	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+interrupted	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+interrupted	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+interrupted	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+interrupted	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+interrupted	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+interrupted	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+interrupted	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+interrupted	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+interrupted	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+interrupted	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+interrupted	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+interrupted	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+interrupted	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+interrupted	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+interrupted	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+interrupted	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+interrupted	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+interrupted	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+interrupted	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+interrupted	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+interrupted	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+interrupted	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+interrupted	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+interrupted	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+interrupted	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+interrupted	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+interrupted	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+interrupted	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+interrupted	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+interrupted	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+interrupted	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+interrupted	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+interrupted	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+interrupted	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+interrupted	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+interrupted	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+interrupted	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+interrupted	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+interrupted	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+interrupted	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+interrupted	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+interrupted	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+interrupted	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+interrupted	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+interrupted	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+interrupted	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+interrupted	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+interrupted	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+interrupted	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+interrupted	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+interrupted	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+interrupted	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+interrupted	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+interrupted	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+interrupted	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+interrupted	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+interrupted	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+interrupted	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+interrupted	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+interrupted	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+interrupted	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+interrupted	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+interrupted	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+interrupted	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+interrupted	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+interrupted	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+interrupted	decision|outcome	str	R1	1e-8
+interrupted	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+interrupted	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+interrupted	decision|interrupted data sets	str	D|D3|7|	1e-8
+interrupted	cell|A|D|D3|V1a|LM2|n_valid	num	199	1e-8
+interrupted	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+double_source	exit|double_source	exit	nonzero	
+double_source	stderr|double_source	substr	two sources	
+continuation	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+continuation	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+continuation	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+continuation	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+continuation	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+continuation	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+continuation	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+continuation	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+continuation	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+continuation	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+continuation	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+continuation	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+continuation	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+continuation	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+continuation	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+continuation	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+continuation	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+continuation	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+continuation	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+continuation	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+continuation	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+continuation	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+continuation	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+continuation	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+continuation	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+continuation	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+continuation	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+continuation	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+continuation	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+continuation	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+continuation	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+continuation	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+continuation	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+continuation	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+continuation	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+continuation	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+continuation	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+continuation	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+continuation	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+continuation	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+continuation	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+continuation	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+continuation	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+continuation	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+continuation	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+continuation	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+continuation	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+continuation	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+continuation	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+continuation	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+continuation	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+continuation	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+continuation	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+continuation	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+continuation	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+continuation	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+continuation	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+continuation	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+continuation	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+continuation	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+continuation	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+continuation	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+continuation	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+continuation	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+continuation	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+continuation	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+continuation	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+continuation	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+continuation	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+continuation	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+continuation	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+continuation	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+continuation	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+continuation	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+continuation	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+continuation	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+continuation	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+continuation	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+continuation	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+continuation	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+continuation	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+continuation	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+continuation	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+continuation	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+continuation	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+continuation	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+continuation	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+continuation	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+continuation	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+continuation	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+continuation	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+continuation	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+continuation	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+continuation	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+continuation	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+continuation	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+continuation	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+continuation	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+continuation	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+continuation	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+continuation	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+continuation	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+continuation	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+continuation	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+continuation	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+continuation	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+continuation	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+continuation	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+continuation	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+continuation	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+continuation	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+continuation	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+continuation	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+continuation	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+continuation	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+continuation	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+continuation	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+continuation	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+continuation	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+continuation	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+continuation	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+continuation	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+continuation	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+continuation	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+continuation	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+continuation	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+continuation	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+continuation	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+continuation	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+continuation	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+continuation	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+continuation	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+continuation	decision|outcome	str	R1	1e-8
+continuation	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+continuation	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+continuation	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+continuation	decision|interrupted data sets	str	D|D3|151|j1	1e-8
+continuation	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+tier_v	cell|PC1|D|D3|V1a|NO|label	str	passes	1e-8
+tier_v	cell|PC1|D|D3|V1a|NO|lo	num	0.97188391334097	1e-8
+tier_v	cell|PC1|D|D3|V1a|NO|hi	num	1.0	1e-8
+tier_v	cell|PC1|D|D3|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 150 of 200 data sets	1e-8
+tier_v	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+tier_v	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+tier_v	cell|q_cy_pre_a|D|D3|V1w|NO|estimate	num	0.44	1e-8
+tier_v	cell|NC1|D|D3|V0|GK2|label	str	passes	1e-8
+tier_v	cell|NC1|D|D3|V0|GK2|hi	num	0.02811608665903015	1e-8
+tier_v	cell|A|D|D3|V1a|LM2|label	str	absorbed	1e-8
+tier_v	cell|A|D|D3|V1a|LM2|lo	num	0.0	1e-8
+tier_v	cell|A|D|D3|V1a|LM2|hi	num	0.030397349936487517	1e-8
+tier_v	cell|A|D|D3|V1a|LM2|n_valid	num	200	1e-8
+tier_v	cell|A|D|D3|V1a|GK2|label	str	absorbed	1e-8
+tier_v	cell|A|D|D3|V1a|GK2|lo	num	0.0	1e-8
+tier_v	cell|A|D|D3|V1a|GK2|hi	num	0.030397349936487517	1e-8
+tier_v	cell|A|D|D3|V1a|GK2|n_valid	num	200	1e-8
+tier_v	cell|A|D|D3|V1a|LA|label	str	absorbed	1e-8
+tier_v	cell|A|D|D3|V1a|LA|lo	num	0.0	1e-8
+tier_v	cell|A|D|D3|V1a|LA|hi	num	0.030397349936487517	1e-8
+tier_v	cell|A|D|D3|V1a|LA|n_valid	num	200	1e-8
+tier_v	cell|A|D|D3|V1a|GA|label	str	absorbed	1e-8
+tier_v	cell|A|D|D3|V1a|GA|lo	num	0.0	1e-8
+tier_v	cell|A|D|D3|V1a|GA|hi	num	0.030397349936487517	1e-8
+tier_v	cell|A|D|D3|V1a|GA|n_valid	num	200	1e-8
+tier_v	cell|PC1|D|D4|V1a|NO|label	str	passes	1e-8
+tier_v	cell|PC1|D|D4|V1a|NO|lo	num	0.97188391334097	1e-8
+tier_v	cell|PC1|D|D4|V1a|NO|hi	num	1.0	1e-8
+tier_v	cell|PC1|D|D4|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 14 of 200 data sets	1e-8
+tier_v	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+tier_v	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+tier_v	cell|q_cy_pre_a|D|D4|V1w|NO|estimate	num	0.44	1e-8
+tier_v	cell|NC1|D|D4|V0|GK2|label	str	passes	1e-8
+tier_v	cell|NC1|D|D4|V0|GK2|hi	num	0.02811608665903015	1e-8
+tier_v	cell|A|D|D4|V1a|LM2|label	str	absorbed	1e-8
+tier_v	cell|A|D|D4|V1a|LM2|lo	num	0.0	1e-8
+tier_v	cell|A|D|D4|V1a|LM2|hi	num	0.030397349936487517	1e-8
+tier_v	cell|A|D|D4|V1a|LM2|n_valid	num	200	1e-8
+tier_v	cell|A|D|D4|V1a|GK2|label	str	absorbed	1e-8
+tier_v	cell|A|D|D4|V1a|GK2|lo	num	0.0	1e-8
+tier_v	cell|A|D|D4|V1a|GK2|hi	num	0.030397349936487517	1e-8
+tier_v	cell|A|D|D4|V1a|GK2|n_valid	num	200	1e-8
+tier_v	cell|A|D|D4|V1a|LA|label	str	absorbed	1e-8
+tier_v	cell|A|D|D4|V1a|LA|lo	num	0.0	1e-8
+tier_v	cell|A|D|D4|V1a|LA|hi	num	0.030397349936487517	1e-8
+tier_v	cell|A|D|D4|V1a|LA|n_valid	num	200	1e-8
+tier_v	cell|A|D|D4|V1a|GA|label	str	absorbed	1e-8
+tier_v	cell|A|D|D4|V1a|GA|lo	num	0.0	1e-8
+tier_v	cell|A|D|D4|V1a|GA|hi	num	0.030397349936487517	1e-8
+tier_v	cell|A|D|D4|V1a|GA|n_valid	num	200	1e-8
+tier_v	cell|PC1|D|D6|V1a|NO|label	str	passes	1e-8
+tier_v	cell|PC1|D|D6|V1a|NO|lo	num	0.97188391334097	1e-8
+tier_v	cell|PC1|D|D6|V1a|NO|hi	num	1.0	1e-8
+tier_v	cell|PC1|D|D6|V1a|NO|note	str	genuine sample (cy_genuine) below 0.5 in 0 of 200 data sets	1e-8
+tier_v	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+tier_v	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+tier_v	cell|q_cy_pre_a|D|D6|V1w|NO|estimate	num	0.44	1e-8
+tier_v	cell|NC1|D|D6|V0|GK2|label	str	passes	1e-8
+tier_v	cell|NC1|D|D6|V0|GK2|hi	num	0.02811608665903015	1e-8
+tier_v	cell|A|D|D6|V1a|LM2|label	str	absorbed	1e-8
+tier_v	cell|A|D|D6|V1a|LM2|lo	num	0.0	1e-8
+tier_v	cell|A|D|D6|V1a|LM2|hi	num	0.030397349936487517	1e-8
+tier_v	cell|A|D|D6|V1a|LM2|n_valid	num	200	1e-8
+tier_v	cell|A|D|D6|V1a|GK2|label	str	absorbed	1e-8
+tier_v	cell|A|D|D6|V1a|GK2|lo	num	0.0	1e-8
+tier_v	cell|A|D|D6|V1a|GK2|hi	num	0.030397349936487517	1e-8
+tier_v	cell|A|D|D6|V1a|GK2|n_valid	num	200	1e-8
+tier_v	cell|A|D|D6|V1a|LA|label	str	absorbed	1e-8
+tier_v	cell|A|D|D6|V1a|LA|lo	num	0.0	1e-8
+tier_v	cell|A|D|D6|V1a|LA|hi	num	0.030397349936487517	1e-8
+tier_v	cell|A|D|D6|V1a|LA|n_valid	num	200	1e-8
+tier_v	cell|A|D|D6|V1a|GA|label	str	absorbed	1e-8
+tier_v	cell|A|D|D6|V1a|GA|lo	num	0.0	1e-8
+tier_v	cell|A|D|D6|V1a|GA|hi	num	0.030397349936487517	1e-8
+tier_v	cell|A|D|D6|V1a|GA|n_valid	num	200	1e-8
+tier_v	cell|B|D|D3|V1a|LM2|estimate	num	0.9	1e-8
+tier_v	cell|B|D|D3|V1a|LM2|label	str	understated	1e-8
+tier_v	cell|C|D|D3|V1a|LM2|estimate	num	1	1e-8
+tier_v	cell|C|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+tier_v	cell|C'|D|D3|V1a|LM2|estimate	num	0.25	1e-8
+tier_v	cell|C'|D|D3|V1a|LM2|label	str	raised (material)	1e-8
+tier_v	cell|pi|D|D3|V1a|LM2|estimate	num	1.0	1e-8
+tier_v	cell|pi|D|D3|V1a|LM2|label	str	imprint retained	1e-8
+tier_v	cell|B|D|D3|V1a|GK2|estimate	num	1.0	1e-8
+tier_v	cell|B|D|D3|V1a|GK2|label	str	not understated	1e-8
+tier_v	cell|C|D|D3|V1a|GK2|estimate	num	0	1e-8
+tier_v	cell|C|D|D3|V1a|GK2|label	str	not raised	1e-8
+tier_v	cell|C'|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+tier_v	cell|C'|D|D3|V1a|GK2|label	str	not raised	1e-8
+tier_v	cell|pi|D|D3|V1a|GK2|estimate	num	0.0	1e-8
+tier_v	cell|pi|D|D3|V1a|GK2|label	str	imprint removed	1e-8
+tier_v	cell|B'|D|D3|V1a|LX|estimate	num	0.7745966692414834	1e-8
+tier_v	cell|B'|D|D3|V1a|LX|label	str	as derived	1e-8
+tier_v	cell|pi|D|D3|V1a|LX|label	str	imprint removed	1e-8
+tier_v	cell|B|D|D4|V1a|LM2|estimate	num	0.9	1e-8
+tier_v	cell|B|D|D4|V1a|LM2|label	str	understated	1e-8
+tier_v	cell|C|D|D4|V1a|LM2|estimate	num	1	1e-8
+tier_v	cell|C|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+tier_v	cell|C'|D|D4|V1a|LM2|estimate	num	0.25	1e-8
+tier_v	cell|C'|D|D4|V1a|LM2|label	str	raised (material)	1e-8
+tier_v	cell|pi|D|D4|V1a|LM2|estimate	num	1.0	1e-8
+tier_v	cell|pi|D|D4|V1a|LM2|label	str	imprint retained	1e-8
+tier_v	cell|B|D|D4|V1a|GK2|estimate	num	1.0	1e-8
+tier_v	cell|B|D|D4|V1a|GK2|label	str	not understated	1e-8
+tier_v	cell|C|D|D4|V1a|GK2|estimate	num	0	1e-8
+tier_v	cell|C|D|D4|V1a|GK2|label	str	not raised	1e-8
+tier_v	cell|C'|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+tier_v	cell|C'|D|D4|V1a|GK2|label	str	not raised	1e-8
+tier_v	cell|pi|D|D4|V1a|GK2|estimate	num	0.0	1e-8
+tier_v	cell|pi|D|D4|V1a|GK2|label	str	imprint removed	1e-8
+tier_v	cell|B'|D|D4|V1a|LX|estimate	num	0.8451542547285166	1e-8
+tier_v	cell|B'|D|D4|V1a|LX|label	str	as derived	1e-8
+tier_v	cell|pi|D|D4|V1a|LX|label	str	imprint removed	1e-8
+tier_v	cell|B|D|D6|V1a|LM2|estimate	num	0.9	1e-8
+tier_v	cell|B|D|D6|V1a|LM2|label	str	understated	1e-8
+tier_v	cell|C|D|D6|V1a|LM2|estimate	num	1	1e-8
+tier_v	cell|C|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+tier_v	cell|C'|D|D6|V1a|LM2|estimate	num	0.25	1e-8
+tier_v	cell|C'|D|D6|V1a|LM2|label	str	raised (material)	1e-8
+tier_v	cell|pi|D|D6|V1a|LM2|estimate	num	1.0	1e-8
+tier_v	cell|pi|D|D6|V1a|LM2|label	str	imprint retained	1e-8
+tier_v	cell|B|D|D6|V1a|GK2|estimate	num	1.0	1e-8
+tier_v	cell|B|D|D6|V1a|GK2|label	str	not understated	1e-8
+tier_v	cell|C|D|D6|V1a|GK2|estimate	num	0	1e-8
+tier_v	cell|C|D|D6|V1a|GK2|label	str	not raised	1e-8
+tier_v	cell|C'|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+tier_v	cell|C'|D|D6|V1a|GK2|label	str	not raised	1e-8
+tier_v	cell|pi|D|D6|V1a|GK2|estimate	num	0.0	1e-8
+tier_v	cell|pi|D|D6|V1a|GK2|label	str	imprint removed	1e-8
+tier_v	cell|B'|D|D6|V1a|LX|estimate	num	0.9045340337332909	1e-8
+tier_v	cell|B'|D|D6|V1a|LX|label	str	as derived	1e-8
+tier_v	cell|pi|D|D6|V1a|LX|label	str	imprint removed	1e-8
+tier_v	decision|outcome	str	R1	1e-8
+tier_v	cell|PC2|G1|D3|NA|NA|label	str	passes	1e-8
+tier_v	cell|PC2|G1|D4|NA|NA|label	str	passes	1e-8
+tier_v	cell|PC2|G1|D6|NA|NA|label	str	passes	1e-8
+tier_v	cell|V_ruv_not_applied|V|D3|V1a|LM2|estimate	num	0.5	1e-8
+tier_v	cell|V_ruv_not_applied|V|D3|V1a|LM2|hi	num	0.8129139715526015	1e-8
+tier_v	cell|V_ruv_not_applied_no_usable_controls|V|D3|V1a|LM2|estimate	num	0.3	1e-8
+tier_v	cell|V_ruv_not_applied_no_factor_supported|V|D3|V1a|LM2|estimate	num	0.2	1e-8
+tier_v	cell|V_ruv_not_applied_no_factor_supported|V|D3|V1a|LM2|lo	num	0.025210726326833355	1e-8
+tier_v	cell|V_ruv_not_applied|V|D3|V1a|GK2|estimate	num	0.4	1e-8
+tier_v	cell|V_ruv_not_applied|V|D3|V1a|GK2|lo	num	0.12155225811982712	1e-8
+controls_ok	exit|controls_ok	exit	0	
+controls_ok	stdout|controls_ok	nosubstr	outcome	
+controls_ok	stdout|controls_ok	substr	PC1 D3 passes	
+controls_ok	absent|cells.tsv	absent		
+controls_ok	absent|decision.tsv	absent		
+controls_ok	present|controls-judged.tsv	present		
+controls_f1	exit|controls_f1	exit	1	
+controls_f1	stdout|controls_f1	nosubstr	outcome	
+controls_f1	stdout|controls_f1	substr	PC1 D3 FAILS	
+controls_f1	absent|cells.tsv	absent		
+controls_f1	absent|decision.tsv	absent		
+controls_f1	present|controls-judged.tsv	present		
+v1w_only	decision|outcome	str	Stop (PC1 not determined (coverage))	1e-8
+v1w_only	cell|PC1|D|D3|V1a|NO|label	str	not determined (coverage)	1e-8
+v1w_only	cell|PC1|D|D3|V1a|NO|n_valid	num	0	1e-8
+v1w_only	cell|P_pre|D|D3|V1w|NO|estimate	num	0.25	1e-8
+v1w_only	cell|P_pre|D|D3|V1w|NO|n_valid	num	200	1e-8
+v1w_only	cell|A|D|D3|V1a|LM2|label	str	not determined (coverage)	1e-8
+v1w_only	cell|PC1|D|D4|V1a|NO|label	str	not determined (coverage)	1e-8
+v1w_only	cell|PC1|D|D4|V1a|NO|n_valid	num	0	1e-8
+v1w_only	cell|P_pre|D|D4|V1w|NO|estimate	num	0.25	1e-8
+v1w_only	cell|P_pre|D|D4|V1w|NO|n_valid	num	200	1e-8
+v1w_only	cell|A|D|D4|V1a|LM2|label	str	not determined (coverage)	1e-8
+v1w_only	cell|PC1|D|D6|V1a|NO|label	str	not determined (coverage)	1e-8
+v1w_only	cell|PC1|D|D6|V1a|NO|n_valid	num	0	1e-8
+v1w_only	cell|P_pre|D|D6|V1w|NO|estimate	num	0.25	1e-8
+v1w_only	cell|P_pre|D|D6|V1w|NO|n_valid	num	200	1e-8
+v1w_only	cell|A|D|D6|V1a|LM2|label	str	not determined (coverage)	1e-8
+controls_v1w_only	exit|controls_v1w_only	exit	1	
+controls_v1w_only	stdout|controls_v1w_only	substr	PC1 D3 not determined (coverage)	
+controls_v1w_only	stdout|controls_v1w_only	nosubstr	FAILS	
+controls_v1w_only	present|controls-judged.tsv	present		
+controls_ok	stdout|controls_ok	substr	PC1 D3 passes (genuine below 0.5: 150 of 200)	
+g1_pass	g1|D3|PC2|label	str	passes	
+g1_pass	g1|D3|PC2|estimate	num	0.7745966692414834	1e-8
+g1_pass	g1|D3|NC2|label	str	passes	
+g1_pass	g1|D3|NC2|estimate	num	1.0	1e-8
+g1_pass	g1|D4|PC2|label	str	passes	
+g1_pass	g1|D4|PC2|estimate	num	0.8451542547285166	1e-8
+g1_pass	g1|D4|NC2|label	str	passes	
+g1_pass	g1|D4|NC2|estimate	num	1.0	1e-8
+g1_pass	g1|D6|PC2|label	str	passes	
+g1_pass	g1|D6|PC2|estimate	num	0.9045340337332909	1e-8
+g1_pass	g1|D6|NC2|label	str	passes	
+g1_pass	g1|D6|NC2|estimate	num	1.0	1e-8
+g1_pass	exit|g1_pass	exit	0	
+g1_fail	g1|D3|PC2|label	str	FAILS	
+g1_fail	g1|D3|PC2|estimate	num	1.0	1e-8
+g1_fail	g1|D3|NC2|label	str	passes	
+g1_fail	g1|D3|NC2|estimate	num	1.0	1e-8
+g1_fail	g1|D4|PC2|label	str	passes	
+g1_fail	g1|D4|PC2|estimate	num	0.8451542547285166	1e-8
+g1_fail	g1|D4|NC2|label	str	passes	
+g1_fail	g1|D4|NC2|estimate	num	1.0	1e-8
+g1_fail	g1|D6|PC2|label	str	passes	
+g1_fail	g1|D6|PC2|estimate	num	0.9045340337332909	1e-8
+g1_fail	g1|D6|NC2|label	str	passes	
+g1_fail	g1|D6|NC2|estimate	num	1.0	1e-8
+g1_fail	exit|g1_fail	exit	1	
+pi_nopair	cell|pi|D|D3|V1a|LM2|label	str	not determined (coverage)	1e-8
+pi_nopair	cell|pi|D|D3|V1a|LM2|n_valid	num	0	1e-8

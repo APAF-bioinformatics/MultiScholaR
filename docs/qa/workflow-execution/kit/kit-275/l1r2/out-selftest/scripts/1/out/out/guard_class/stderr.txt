@@ -1,0 +1,2 @@
+Error: K275 scoring stops: an instrument status or a partial-match guard stop in the rows (VAL-54)
+Execution halted

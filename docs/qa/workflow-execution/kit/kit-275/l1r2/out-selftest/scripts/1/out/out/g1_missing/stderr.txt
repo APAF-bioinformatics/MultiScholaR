@@ -1,0 +1,2 @@
+Error: K275 scoring stops: K275_G1 (the G1 table) is not set or not found: an outcome line needs F3 judged
+Execution halted

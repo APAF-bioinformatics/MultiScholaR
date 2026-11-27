@@ -1,0 +1,25 @@
+id	kind	label	shown
+A1	A	absorbed	NA
+A2	A	mixed	NA
+A3	A	mixed	NA
+A4	A	acts	NA
+A5	A	not determined (coverage)	NA
+A6	A	absorbed	NA
+B1	B	not determined	NA
+B2	B	understated	NA
+B3	B	not understated	NA
+B4	B	not determined	NA
+B5	B	not determined (coverage)	NA
+P1	Bp	as derived	NA
+P2	Bp	differs from derived (0.9145)	NA
+C1	C	not determined	TRUE
+C2	C	raised (material)	TRUE
+C3	C	not raised	FALSE
+C4	C	not raised	TRUE
+C5	C	not determined	FALSE
+C6	C	not determined	TRUE
+C7	C	not raised	FALSE
+I1	pi	not determined	NA
+I2	pi	imprint retained	NA
+I3	pi	not determined	NA
+I4	pi	imprint removed	NA

@@ -1,0 +1,7 @@
+design	id	n_valid	estimate	lo	hi	label	genuine_below_05
+D3	PC1	0	NA	NA	NA	not determined (coverage)	0 of 0
+D3	NC1	200	0	0	0.0281160866590302	passes	
+D4	PC1	0	NA	NA	NA	not determined (coverage)	0 of 0
+D4	NC1	200	0	0	0.0281160866590302	passes	
+D6	PC1	0	NA	NA	NA	not determined (coverage)	0 of 0
+D6	NC1	200	0	0	0.0281160866590302	passes	

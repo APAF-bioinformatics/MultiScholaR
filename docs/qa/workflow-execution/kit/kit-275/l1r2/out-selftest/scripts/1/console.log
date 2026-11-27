@@ -1,0 +1,65 @@
+parse: sim-k275.R parses
+parse: score-k275.R parses
+parse: fixture-k275.R parses
+parse: crosscheck-k275.R parses
+parse: run-selftest.R parses
+parse: all scripts parse
+crosscheck D3 r=9601: y identical TRUE; values identical TRUE; planted_delta identical TRUE
+crosscheck D4 r=9601: y identical TRUE; values identical TRUE; planted_delta identical TRUE
+crosscheck D6 r=9601: y identical TRUE; values identical TRUE; planted_delta identical TRUE
+crosscheck: the counted V1a equals the pilot's, exactly, at every design
+replace  old 1-3  new 1-4  K275-*
+replace  old 6-10  new 7-10  header comment
+replace  old 12-40  new 12-44  K275-guard
+replace  old 62-62  new 66-66  K275-cells
+replace  old 64-64  new 68-68  K275-cells
+replace  old 80-80  new 84-93  K275-cells
+replace  old 83-83  new 96-96  K275-REFUSALS
+insert   old 109-None  new 114-114  K275-guard
+replace  old 139-139  new 145-148  K275-markers
+replace  old 164-164  new 173-173  K275-sig
+replace  old 166-166  new 175-175  K275-seed
+replace  old 183-183  new 192-192  K275-noIS
+replace  old 231-231  new 240-240  K275-C
+insert   old 286-None  new 295-316  K275-plant,K275-r2
+replace  old 308-308  new 339-339  K275-ret
+replace  old 315-315  new 346-346  K275-mask
+replace  old 319-319  new 350-350  K275-mask
+replace  old 430-432  new 461-463  K275-E3
+delete   old 438-444  new 469-468  K275-E3
+replace  old 446-453  new 470-477  K275-E3
+replace  old 558-559  new 582-583  K275-prefix
+replace  old 576-576  new 600-600  K275-assaycols
+replace  old 582-582  new 606-606  K275-prefix
+insert   old 588-None  new 612-612  K275-assaycols
+replace  old 591-591  new 616-616  K275-assaycols
+replace  old 632-632  new 657-657  K275-guard
+insert   old 639-None  new 664-668  K275-guard
+replace  old 659-661  new 689-691  K275-prefix
+insert   old 672-None  new 702-704  K275-pairs
+replace  old 677-679  new 710-712  K275-prefix
+replace  old 691-691  new 724-724  K275-W
+insert   old 695-None  new 728-730  K275-pairs
+replace  old 696-696  new 732-732  K275-guard
+insert   old 704-None  new 740-747  K275-pairs
+insert   old 707-None  new 751-754  K275-nogroup
+replace  old 708-708  new 756-756  K275-prefix
+insert   old 735-None  new 783-783  K275-nogroup
+replace  old 752-752  new 801-801  K275-guard
+insert   old 754-None  new 803-803  K275-guard
+replace  old 756-756  new 806-809  K275-guard
+replace  old 797-797  new 850-850  K275-prefix
+E0: 41 hunks, 0 unmarked
+selftest/run-selftest.R: 0 label-only hunks, 3 other hunks
+fixture-k275.R: unchanged against r1
+e0-diff.py: unchanged against r1
+selftest/check-selftest.py: unchanged against r1
+crosscheck-k275.R: new file, 34 lines [audit Q1 (b), the cross-implementation identity check (the pilot's control IS the counted control)]
+e0-r2: 0 untagged or unexpected hunk(s)
+pilot (r 9601 to 9650; c = 1, 2, 3; s = 2; generator and planting): 300 seeds; shared with the earlier, counted and other ranges: 0
+L1-r2 (r 9701 to 9703; all cells and scenarios): 252 seeds; shared with the earlier, counted and other ranges: 0
+counted r2 ranges (r 2001 to 2200 for tier D, 2001 to 2100 for tiers K, F, S, V, M, T, E, 2001 to 2020 for tier ID; all cells and scenarios, the conservative superset 2001 to 2200): 16800 seeds; shared with the earlier, counted and other ranges: 0
+earlier steps: 22520 seeds; counted r2 ranges: 16800 seeds
+make-selftest: 48 cases, 3519 predictions, 77 row columns
+selftest: 48 cases run, scorer exit codes 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 1 1 1 1 0 0 0 0 1 1 1 0 1 0 0 0 1 0 1 0 1 0
+selftest: 3519 predictions, 0 differ
