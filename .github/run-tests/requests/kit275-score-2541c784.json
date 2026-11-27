@@ -1,0 +1,34 @@
+{
+  "requested_by": "KIT-275 counted run: the deciding scoring, once (declaration-r2.md section 4 step 4); all 38 jobs complete; K275_G1 = the re-run G1 table; on the coordinator's word only; 40 job-min",
+  "label": "KIT-275 final scoring 2541c784",
+  "package_commit": "2541c784387561e48b4e02dfe5a47ea5151108a0",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/score-k275.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-275/results-r2",
+        "k275-score"
+      ],
+      "env": {
+        "K275_G1": "docs/qa/workflow-execution/kit/kit-275/l1r2/out/scripts/2/out/g1.tsv"
+      },
+      "out": "k275-score",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 30
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
