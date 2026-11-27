@@ -1,0 +1,102 @@
+check	cell	rep	condition	value	threshold	pass	note
+E3	lipid	0	defaults	NA	equal to 5.2	TRUE	differ: ; markers off their current token: ; markers absent: ; correlation_exclusion within_assay: TRUE | auto_min=1; auto_max=20; metric=max_difference; penalty=0.5; adaptive=TRUE; correlation=0.5; method=cyclicloess; offset=0; itsd=median; ruv_mode=automatic; manual_pct=5; manual_k=2; percentile=1
+E1	D4	2051	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2051	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2052	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2052	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2053	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2053	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2054	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2054	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2055	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2055	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2056	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2056	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2057	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2057	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2058	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2058	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2059	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2059	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2060	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2060	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2061	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2061	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2062	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2062	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2063	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2063	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2064	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2064	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2065	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2065	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2066	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2066	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2067	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2067	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2068	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2068	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2069	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2069	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2070	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2070	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2071	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2071	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2072	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2072	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2073	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2073	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2074	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2074	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2075	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2075	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2076	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2076	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2077	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2077	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2078	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2078	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2079	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2079	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2080	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2080	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2081	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2081	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2082	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2082	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2083	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2083	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2084	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2084	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2085	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2085	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2086	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2086	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2087	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2087	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2088	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2088	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2089	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2089	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2090	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2090	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2091	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2091	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2092	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2092	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2093	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2093	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2094	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2094	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2095	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2095	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2096	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2096	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2097	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2097	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2098	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2098	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2099	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2099	V mask: VD is V0's masked values without a	NA	exact	TRUE	
+E1	D4	2100	V mask: V1a equals V0's except in a's Y column	NA	exact	TRUE	
+E1	D4	2100	V mask: VD is V0's masked values without a	NA	exact	TRUE	
