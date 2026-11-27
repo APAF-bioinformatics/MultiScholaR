@@ -292,23 +292,23 @@ generate <- function(cellname, scenario, r, anomaly = NULL) { # K275-sig
 
     feat_ids <- if (identical(omic, "prot")) sprintf("P%05d", seq_len(n_feat)) else sprintf("F%04d", seq_len(n_feat))
     lbl_ids <- if (n_lbl > 0L) sprintf(if (identical(omic, "lipid")) "LBL_%03d" else "CTL_%03d", seq_len(n_lbl)) else character()
-    # K275-plant (section 5.3 of the ticket): the planting of one anomalous sample (two for V2) in assay LCMS_Pos, after every draw of
+    # K275-plant (section 5.3 of the ticket, r2.1): the planting of one anomalous sample (two for V2) in assay LCMS_Pos, after every draw of
     # generate(); its own stream, the session's random-number state restored, so no draw of any version differs from V0 except the planted entries
     planted_delta <- NULL
-    if (!is.null(anomaly)) {   # anomaly = list(form = "g" | "p" | "s" | "t", samples = c(n_runs) or c(n_runs, per))
+    if (!is.null(anomaly)) {   # r2.1: anomaly = list(kind = "replace" | "add", c = <number>, s = <number>, scope = "all" | "spared" | "tenth", samples = c(n_runs) or c(n_runs, per))   # K275-r2: 5.3
         old <- if (exists(".Random.seed", envir = globalenv())) get(".Random.seed", envir = globalenv()) else NULL
         set.seed(276000000 + 100000 * p$idx + r, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")
         z_feat <- list(stats::rnorm(n_feat), stats::rnorm(n_feat)); z_lbl <- list(stats::rnorm(n_lbl), stats::rnorm(n_lbl))  # drawn in this order, all, always
         u_feat <- stats::runif(n_feat)   # drawn last, all, always: the sparse form's choice of features
-        cm <- if (identical(anomaly$form, "p")) 0.5 else 0
+        cm <- anomaly$c   # r2.1: kind "replace" (V1w c = 0, V1p c = 0.5: r1's "g" and "p", unchanged) or kind "add" (V1a s = 4: c unused)   # K275-r2: 5.3
         planted_delta <- list()
         for (s in seq_along(anomaly$samples)) {
             col <- anomaly$samples[[s]]
             rf <- which(feat_assay == "LCMS_Pos"); rl <- which(lbl_assay == "LCMS_Pos")
-            d_feat <- (p$level + cm * (mu[rf] - p$level) + sqrt(1 - cm^2) * p$sd * z_feat[[s]][rf]) - mu[rf]
-            if (identical(anomaly$form, "t")) d_feat[!(seq_along(rf) %in% order(u_feat[rf])[seq_len(round(0.1 * length(rf)))])] <- 0
+            d_feat <- if (identical(anomaly$kind, "add")) anomaly$s * z_feat[[s]][rf] else (p$level + cm * (mu[rf] - p$level) + sqrt(1 - cm^2) * p$sd * z_feat[[s]][rf]) - mu[rf]   # K275-r2: 5.3
+            if (identical(anomaly$scope, "tenth")) d_feat[!(seq_along(rf) %in% order(u_feat[rf])[seq_len(round(0.1 * length(rf)))])] <- 0   # K275-r2: 5.3
             y_feat[rf, col] <- y_feat[rf, col] + d_feat
-            d_lbl <- if (!anomaly$form %in% c("s", "t")) (p$level + cm * (mu_lbl[rl] - p$level) + sqrt(1 - cm^2) * p$sd * z_lbl[[s]][rl]) - mu_lbl[rl] else numeric(length(rl))
+            d_lbl <- if (!identical(anomaly$scope, "all")) numeric(length(rl)) else if (identical(anomaly$kind, "add")) anomaly$s * z_lbl[[s]][rl] else (p$level + cm * (mu_lbl[rl] - p$level) + sqrt(1 - cm^2) * p$sd * z_lbl[[s]][rl]) - mu_lbl[rl]   # K275-r2: 5.3
             y_lbl[rl, col] <- y_lbl[rl, col] + d_lbl
             planted_delta[[s]] <- c(stats::setNames(d_feat, feat_ids[rf]), stats::setNames(d_lbl, lbl_ids[rl]))
         }
@@ -920,23 +920,31 @@ Y_ASSAY <- "LCMS_Pos"
 X_ASSAY <- "LCMS_Neg"
 THETAS <- c(0.5, 0.7, 0.9, 0.95)
 TAGS <- c("05", "07", "09", "095")
-VERSIONS <- c("V0", "V1g", "V1p", "V1s", "V1t", "V2", "VD")
+BOUND_COMMIT <- Sys.getenv("K275_BOUND_COMMIT", "bfbcb34dfc888637d879e89029a9ee86505b476a")   # K275-r2: C-3, 13 (the staging commit that binds every tier; the declaration names it)
+#' K275-r2 (C-3): the package tree against the bound commit, outside the ticket's folder, with git's exit status (0 and an empty diff = the tree equals the bound commit's).
+treeVsBound <- function() {
+    out <- tryCatch(suppressWarnings(system2("git", c("diff", "--stat", BOUND_COMMIT, "HEAD", "--", ".", shQuote(":(exclude)docs/qa/workflow-execution/kit/kit-275")),
+        stdout = TRUE, stderr = FALSE)), error = function(e) structure(character(), status = 127L))
+    status <- attr(out, "status")
+    list(git_status = if (is.null(status)) 0L else as.integer(status), diff_stat = paste(out, collapse = " | "))
+}
+VERSIONS <- c("V0", "V1a", "V1w", "V1p", "V1s", "V1t", "V2", "VD")   # K275-r2: 4, 8.1 (V1a is the deciding anomaly; r1's V1g is V1w)
 
-# ---- tier plans (section 4): version, arm; LX is added in tier D from GK2 (V1g) and GK1 (VD) ------------------------------
+# ---- tier plans (section 4): version, arm; LX is added in tier D from GK2 (V1a) and GK1 (VD)   # K275-r2: 4, 8.1 label ------------------------------
 planOf <- function(version, arms) data.frame(version = version, arm = arms, stringsAsFactors = FALSE)
 TIER_PLAN <- list(
-    D = rbind(planOf("V0", c("NO", "LM2", "GK2", "LA", "GA")), planOf("V1g", c("NO", "LM2", "GK2", "LA", "GA")),
-        planOf("VD", c("LM1", "GK1", "LA", "GA"))),
-    K = rbind(planOf("V0", c("LM1", "LM3", "GK1", "GK3", "LM2@20", "LG2")), planOf("V1g", c("LM1", "LM3", "GK1", "GK3", "LM2@20", "LG2")),
+    D = rbind(planOf("V0", c("NO", "LM2", "GK2", "LA", "GA")), planOf("V1a", c("NO", "LM2", "GK2", "LA", "GA")),
+        planOf("VD", c("LM1", "GK1", "LA", "GA")), planOf("V1w", "NO")),   # K275-r2: 4 (tier D: V1w's NO journey, the reported arm of R2.4: 17 rows per data set)
+    K = rbind(planOf("V0", c("LM1", "LM3", "GK1", "GK3", "LM2@20", "LG2")), planOf("V1a", c("LM1", "LM3", "GK1", "GK3", "LM2@20", "LG2")),   # K275-r2: 8.1 label
         planOf("VD", c("NO", "LM2", "GK2", "LM1@20", "LG1"))),
     F = planOf("V1p", c("NO", "LM2", "GK2", "LA", "GA")),
-    S = rbind(planOf("V0", "GSC"), planOf("V1g", "GSC"), planOf("V1s", c("GSC", "GK2"))),
-    V = rbind(planOf("V0", c("NO", "LM2", "GK2", "LA", "GA")), planOf("V1g", c("NO", "LM2", "GK2", "LA", "GA")),
+    S = rbind(planOf("V0", "GSC"), planOf("V1a", "GSC"), planOf("V1s", c("GSC", "GK2"))),   # K275-r2: 8.1 label
+    V = rbind(planOf("V0", c("NO", "LM2", "GK2", "LA", "GA")), planOf("V1a", c("NO", "LM2", "GK2", "LA", "GA")),   # K275-r2: 8.1 label
         planOf("VD", c("LM1", "GK1"))),
     M = planOf("V2", c("NO", "LM1", "LM2", "LM3", "GK1", "GK2", "GK3")),
     T = planOf("V1t", c("NO", "LM2", "LG2", "GK2", "LA", "GA")),
     E = NULL,   # the emulation arms are built in runEmulation (two passes)
-    ID = planOf("V1g", c("NO", "LM2", "GK2", "LA", "GA")))
+    ID = planOf("V1a", c("NO", "LM2", "GK2", "LA", "GA")))   # K275-r2: 8.1 label
 TIERS <- c("D", "K", "F", "S", "V", "M", "T", "E", "ID")
 tierDesigns <- function(tier) if (identical(tier, "M")) "D6" else if (identical(tier, "ID")) "D4" else c("D3", "D4", "D6")
 
@@ -997,6 +1005,16 @@ dropSamples <- function(sim, drop_runs) {
     if (!is.null(sim$Z)) sim$Z <- sim$Z[keep, , drop = FALSE]
     sim
 }
+#' K275-r2 (5.3, section 4): the anomaly list of a version. V1a: the additive deviation s = 4, all rows (the deciding anomaly); V1w: r1's wholly replaced
+#' profile (kind "replace", c = 0; the reported arm); V1p: c = 0.5; V1s: V1a's deviation with the labelled controls left unplanted; V1t: V1a's deviation on a
+#' random tenth of Y's features; V2: V1a in two samples. V1b (s = 6) is not a counted version (the pilot accepted V1a). All five names are always present
+#' (the generator reads them with `$`, which matches by prefix when a name is absent).
+anomalyOf <- function(version, n_runs, per) {
+    list0 <- function(kind, c, s, scope, samples) list(kind = kind, c = c, s = s, scope = scope, samples = samples)
+    switch(version, V0 = NULL, V1a = list0("add", NA_real_, 4, "all", n_runs), V1w = list0("replace", 0, NA_real_, "all", n_runs),
+        V1p = list0("replace", 0.5, NA_real_, "all", n_runs), V1s = list0("add", NA_real_, 4, "spared", n_runs), V1t = list0("add", NA_real_, 4, "tenth", n_runs),
+        V2 = list0("add", NA_real_, 4, "all", c(n_runs, per)), stop(sprintf("K275: unknown version %s", version)))
+}
 makeVersion <- function(cellname, r, version, mask = "none", v0 = NULL) {
     per <- CELLS[[cellname]]$per
     n_runs <- CELLS[[cellname]]$groups * per
@@ -1005,9 +1023,7 @@ makeVersion <- function(cellname, r, version, mask = "none", v0 = NULL) {
         sim <- dropSamples(v0[["sim"]], a_run)
         return(list(sim = sim, values = v0[["values"]][, sim$runs, drop = FALSE]))
     }
-    anomaly <- switch(version, V0 = NULL, V1g = list(form = "g", samples = n_runs), V1p = list(form = "p", samples = n_runs),
-        V1s = list(form = "s", samples = n_runs), V1t = list(form = "t", samples = n_runs),
-        V2 = list(form = "g", samples = c(n_runs, per)), stop(sprintf("K275: unknown version %s", version)))
+    anomaly <- anomalyOf(version, n_runs, per)   # K275-r2: 5.3 (the versions' anomaly lists in one place)
     sim <- generate(cellname, "N1", r, anomaly)
     reference <- if (is.null(v0)) sim else v0[["sim"]]
     list(sim = sim, values = maskedLog2(sim, mask, reference$y[reference$feat_ids, , drop = FALSE]))
@@ -1016,14 +1032,14 @@ makeVersion <- function(cellname, r, version, mask = "none", v0 = NULL) {
 plantedShares <- function(cellname, r) {
     per <- CELLS[[cellname]]$per
     n_runs <- CELLS[[cellname]]$groups * per
-    one <- function(form, samples) {
-        deltas <- generate(cellname, "N1", r, list(form = form, samples = samples))$planted_delta
+    one <- function(version) {   # K275-r2: 5.3
+        deltas <- generate(cellname, "N1", r, anomalyOf(version, n_runs, per))$planted_delta
         keep <- grepl("^F", names(deltas[[1L]]))
         x <- deltas[[1L]][keep] / per
         if (length(deltas) > 1L) x <- (deltas[[1L]][keep] - deltas[[2L]][keep]) / per
         list(x = x, delta = if (length(deltas) > 1L) sqrt(deltas[[1L]]^2 + deltas[[2L]]^2) else deltas[[1L]])
     }
-    list(g = one("g", n_runs), p = one("p", n_runs), s = one("s", n_runs), t = one("t", n_runs), two = one("g", c(n_runs, per)))
+    list(g = one("V1a"), p = one("V1p"), s = one("V1s"), t = one("V1t"), two = one("V2"))   # K275-r2: 5.3 (the key "g" is the DECIDING version's share, now V1a: the columns dot_g and den_g keep their names)
 }
 
 # ---- the filter's statistic (2.1, 6.1 A): the best correlation of a sample with any other sample of its group ------------
@@ -1104,7 +1120,7 @@ DONE <- c("ok", "refused_after_exclusion", "dropped", "uncorrected", "no_da")
 ROW_COLUMNS <- c("tier", "design", "cell", "omic", "r", "version", "arm", "smoke", "status", "class", "step", "seconds", "warnings",
     "k_used", "k_found", "k_cap", "pct", "n_controls", "ruv_status_y", "ruv_status_x", "n_runs", "n_runs_final", "ruv_not_applied_reason_y",
     "corr_removed_y", "corr_removed_x", "e5_y", "e5_x",
-    "cy_pre_a", "cy_post_a", "cx_pre_a", "cx_post_a", "qa_pre", "qa_post",
+    "cy_pre_a", "cy_post_a", "cx_pre_a", "cx_post_a", "qa_pre", "qa_post", "cy_genuine",   # K275-r2: R2.4, 8.1 (the fixed genuine sample's best correlation, printed beside PC1)
     paste0("fa_pre_", TAGS), paste0("fa_post_", TAGS), paste0("ff_pre_", TAGS), paste0("ff_post_", TAGS), "ffx_pre_05", "ffx_post_05",
     "pr", "kappa_c",
     "n_tested_y", "tested_sig_y", "any_call_y", "null_p05_y", "se2_mod_y", "n_se_y", "se2_unmod_y", "n_unmod_y", "df_y",
@@ -1157,6 +1173,8 @@ journeyRow <- function(ctx, j, sim, version, arm, ruv, filter_read = TRUE, extra
     row[["cy_post_a"]] <- if (has_a) cy_post[[a_run]] else NA_real_
     row[["cx_pre_a"]] <- if (has_a) cx_pre[[a_run]] else NA_real_
     row[["cx_post_a"]] <- if (has_a) cx_post[[a_run]] else NA_real_
+    g_run <- sprintf("R%03d", ctx$per + 1L)   # K275-r2: R2.4, 8.1 (as the pilot's `cy_genuine`: the first run of group B, a genuine sample of a's group)
+    row[["cy_genuine"]] <- if (g_run %in% sim$runs) cy_pre[[g_run]] else NA_real_   # K275-r2: R2.4, 8.1
     smallest <- function(c_s) if (has_a && all(is.finite(c_s)) && length(others)) as.integer(c_s[[a_run]] < min(c_s[others])) else NA_integer_
     row[["qa_pre"]] <- smallest(cy_pre)
     row[["qa_post"]] <- smallest(cy_post)
@@ -1191,8 +1209,8 @@ journeyRow <- function(ctx, j, sim, version, arm, ruv, filter_read = TRUE, extra
     # PR and kappa_c on the matrix the filter reads
     my <- if (isTRUE(ruv)) j[["m_out"]][[Y_ASSAY]] else j[["m_in"]][[Y_ASSAY]]
     row[["pr"]] <- if (is.null(my)) NA_real_ else pseudoReplicateRatio(my, sim$design, a_run)
-    delta <- ctx$shares[[switch(version, V2 = "two", V1p = "p", V1s = "s", V1t = "t", "g")]][["delta"]]
-    row[["kappa_c"]] <- if (is.null(cy) || !version %in% c("V1g", "V1p", "V1s", "V1t", "V2")) NA_real_ else kappaControls(delta, cy[["controls"]])
+    delta <- ctx$shares[[switch(version, V2 = "two", V1a = "g", V1w = "g", V1p = "p", V1s = "s", V1t = "t", "g")]][["delta"]]   # K275-r2: C-2, K2-07 (V1a is the deciding version and reads the "g" share)
+    row[["kappa_c"]] <- if (is.null(cy) || !version %in% c("V1a", "V1w", "V1p", "V1s", "V1t", "V2")) NA_real_ else kappaControls(delta, cy[["controls"]])   # K275-r2: C-2, K2-07 (V1w has no RUV journey: cy is NULL, so NA)
     # the DA of Y and X
     dy <- daFamily(j, Y_ASSAY)
     if (!is.null(dy) && nrow(dy)) {
@@ -1222,7 +1240,7 @@ journeyRow <- function(ctx, j, sim, version, arm, ruv, filter_read = TRUE, extra
     for (name in names(extra)) row[[name]] <- extra[[name]]
     row
 }
-#' LX (4): the legacy test (the DA kernel pair, `~ 0 + group`) on the corrected matrix of a declared journey (GK2 on V1g, GK1 on VD).
+#' LX (4): the legacy test (the DA kernel pair, `~ 0 + group`) on the corrected matrix of a declared journey (GK2 on V1a, GK1 on VD)   # K275-r2: 8.1 label.
 lxRow <- function(ctx, j, sim, version) {
     m <- j[["m_out"]][[Y_ASSAY]]
     row <- newRow(tier = ctx$tier, design = ctx$design, cell = ctx$cell, omic = ctx$omic, r = ctx$r, version = version, arm = "LX",
@@ -1334,7 +1352,7 @@ runArm <- function(ctx, v, version, arm, lifecycle, write, correlation = TRUE, f
 runEmulation <- function(ctx, getV, lifecycle, write, fault_now) {
     a_run <- sprintf("R%03d", 2L * ctx$per)
     first <- TRUE
-    for (version in c("V0", "V1g")) {
+    for (version in c("V0", "V1a")) {   # K275-r2: 8.1 label
         v <- getV(version)
         one <- runArm(ctx, v, version, "NO", lifecycle, write, fault = fault_now && first)
         first <- FALSE
@@ -1361,16 +1379,48 @@ runEmulation <- function(ctx, getV, lifecycle, write, fault_now) {
     }
 }
 
+#' K275-r2 (E1): the planting stream's draws for sample 1, redrawn with the seed rule and draw order of ticket 5.3 (feature rows, then labelled rows, of the
+#' `LCMS_Pos` assay, in generator order); the session's random-number state is restored.
+plantingZ <- function(cellname, r) {
+    p <- CELLS[[cellname]]
+    n_feat <- p$per_assay * length(p$assays)
+    n_lbl <- if (identical(p$omic, "prot")) 0L else 5L * length(p$assays)
+    old <- if (exists(".Random.seed", envir = globalenv())) get(".Random.seed", envir = globalenv()) else NULL
+    set.seed(276000000 + 100000 * p$idx + r, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")
+    z_feat <- list(stats::rnorm(n_feat), stats::rnorm(n_feat)); z_lbl <- list(stats::rnorm(n_lbl), stats::rnorm(n_lbl))
+    u_feat <- stats::runif(n_feat)
+    if (!is.null(old)) assign(".Random.seed", old, envir = globalenv()) else rm(".Random.seed", envir = globalenv())
+    feat_assay <- rep(p$assays, each = p$per_assay)
+    lbl_assay <- rep(p$assays, each = 5L)[seq_len(n_lbl)]
+    list(feat = z_feat[[1L]][which(feat_assay == Y_ASSAY)], lbl = z_lbl[[1L]][which(lbl_assay == Y_ASSAY)])
+}
+#' K275-r2 (E1): the feature levels mu and the labelled controls' levels mu_lbl of `generate()` (its first draws, in its order: the levels, the residual-variance
+#' chi-squares, the labelled levels), redrawn with the generator's seed rule, for the check of V1w's formula (c = 0); the session's random-number state is restored.
+generatorLevels <- function(cellname, r) {
+    p <- CELLS[[cellname]]
+    n_feat <- p$per_assay * length(p$assays)
+    n_lbl <- if (identical(p$omic, "prot")) 0L else 5L * length(p$assays)
+    old <- if (exists(".Random.seed", envir = globalenv())) get(".Random.seed", envir = globalenv()) else NULL
+    set.seed(275000000 + 100000 * p$idx + 10000 * match("N1", SCENARIOS) + r, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")
+    mu <- stats::rnorm(n_feat, p$level, p$sd)
+    chi <- 10 / stats::rchisq(n_feat, 10)
+    mu_lbl <- stats::rnorm(n_lbl, p$level, p$sd)
+    if (!is.null(old)) assign(".Random.seed", old, envir = globalenv()) else rm(".Random.seed", envir = globalenv())
+    feat_assay <- rep(p$assays, each = p$per_assay)
+    lbl_assay <- rep(p$assays, each = 5L)[seq_len(n_lbl)]
+    list(mu_feat = mu[which(feat_assay == Y_ASSAY)], mu_lbl = mu_lbl[which(lbl_assay == Y_ASSAY)])
+}
 #' The data checks of tier D's unit (E1, E2): determinism and the planting line, the version VD, and the other assay.
 checkVersionsE1 <- function(ctx, getV, journeys) {
     cellname <- ctx$cell
     v0 <- getV("V0")
-    v1 <- getV("V1g")
+    v1 <- getV("V1a")   # K275-r2: 8.1 label
+    vw <- getV("V1w")   # K275-r2: 8.3 E1 (V1w's line)
     vd <- getV("VD")
     n_runs <- CELLS[[cellname]]$groups * ctx$per
     a_run <- sprintf("R%03d", n_runs)
     same_twice <- identical(generate(cellname, "N1", ctx$r), generate(cellname, "N1", ctx$r)) &&
-        identical(generate(cellname, "N1", ctx$r, list(form = "g", samples = n_runs)), generate(cellname, "N1", ctx$r, list(form = "g", samples = n_runs)))
+        identical(generate(cellname, "N1", ctx$r, anomalyOf("V1a", n_runs, ctx$per)), generate(cellname, "N1", ctx$r, anomalyOf("V1a", n_runs, ctx$per)))   # K275-r2: 5.3
     addCheck("E1", cellname, ctx$r, "determinism", NA, "byte-identical", same_twice)
     y0 <- v0$sim$y
     y1 <- v1$sim$y
@@ -1378,22 +1428,37 @@ checkVersionsE1 <- function(ctx, getV, journeys) {
     planted_cell <- matrix(FALSE, nrow(y1), ncol(y1))
     planted_cell[planted_rows, match(a_run, v1$sim$runs)] <- TRUE
     dev <- if (identical(dim(y0), dim(y1))) max(abs((y1 - y0)[!planted_cell])) else NA_real_
-    addCheck("E1", cellname, ctx$r, "V1g equals V0 except the planted entries", dev, "exactly 0", isTRUE(dev == 0) &&
-        identical(v0$sim$oracle, v1$sim$oracle) && any(y1 != y0))
+    addCheck("E1", cellname, ctx$r, "V1a equals V0 except the planted entries", dev, "exactly 0", isTRUE(dev == 0) &&
+        identical(v0$sim$oracle, v1$sim$oracle) && any(y1 != y0))   # K275-r2: 8.1 label
+    # K275-r2: 8.3 E1, C-1: ONLY the exact identities are E1 (and so F4): V1a's deviation is 4 z_j (z from the planting stream, redrawn by plantingZ) to 1e-12 on every
+    # planted feature and labelled-control row of Y; V1w's is r1's formula with c = 0. The mean and SD readings are reported checks outside E1 and F4.
+    z <- plantingZ(cellname, ctx$r)
+    zz <- c(z[["feat"]], z[["lbl"]])
+    dev_a <- (y1 - y0)[planted_rows, match(a_run, v1$sim$runs)]
+    addCheck("E1", cellname, ctx$r, "V1a's deviation equals 4 z on the planted rows", max(abs(dev_a - 4 * zz)), "at most 1e-12", length(dev_a) == length(zz) && max(abs(dev_a - 4 * zz)) <= 1e-12)   # K275-r2: 8.3 E1
+    lv <- generatorLevels(cellname, ctx$r)
+    p <- CELLS[[cellname]]
+    dev_w <- (vw$sim$y - y0)[planted_rows, match(a_run, vw$sim$runs)]
+    want_w <- (p$level + p$sd * zz) - c(lv[["mu_feat"]], lv[["mu_lbl"]])
+    addCheck("E1", cellname, ctx$r, "V1w's deviation equals r1's formula with c = 0", max(abs(dev_w - want_w)), "at most 1e-12", length(dev_w) == length(want_w) && max(abs(dev_w - want_w)) <= 1e-12 &&
+        all(((vw$sim$y - y0)[!planted_cell]) == 0))   # K275-r2: 8.3 E1
+    addCheck("R1_dev_mean", cellname, ctx$r, "V1a", mean(dev_a), "within 4 SE of 0 (reported, not E1, not F4)", abs(mean(dev_a)) <= 4 * 4 / sqrt(length(dev_a)))   # K275-r2: C-1
+    addCheck("R1_dev_sd", cellname, ctx$r, "V1a", stats::sd(dev_a), "within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)",
+        abs(stats::sd(dev_a) / 4 - 1) <= 4 / sqrt(2 * (length(dev_a) - 1)))   # K275-r2: C-1
     xs <- ctx$shares
     g <- xs[["g"]][["delta"]]
     t_delta <- xs[["t"]][["delta"]]
     s_delta <- xs[["s"]][["delta"]]
     t_nz <- names(t_delta)[t_delta != 0]
-    addCheck("E1", cellname, ctx$r, "V1t is V1g on its 25 features and 0 elsewhere", length(t_nz), "25 features; equal to V1g", length(t_nz) == 25L &&
-        identical(t_delta[t_nz], g[t_nz]) && all(t_delta[setdiff(names(t_delta), t_nz)] == 0))
+    addCheck("E1", cellname, ctx$r, "V1t is V1a on its 25 features and 0 elsewhere", length(t_nz), "25 features; equal to V1a", length(t_nz) == 25L &&
+        identical(t_delta[t_nz], g[t_nz]) && all(t_delta[setdiff(names(t_delta), t_nz)] == 0))   # K275-r2: 8.1 label
     lab <- grepl("^(LBL|CTL)_", names(s_delta))
-    addCheck("E1", cellname, ctx$r, "V1s is V1g on the features and 0 on the labelled controls", NA, "exact", identical(s_delta[!lab], g[!lab]) &&
-        all(s_delta[lab] == 0))
+    addCheck("E1", cellname, ctx$r, "V1s is V1a on the features and 0 on the labelled controls", NA, "exact", identical(s_delta[!lab], g[!lab]) &&
+        all(s_delta[lab] == 0))   # K275-r2: 8.1 label
     addCheck("E1", cellname, ctx$r, "VD is V0 without a (exact)", NA, "exact", identical(vd$values, v0$values[, setdiff(colnames(v0$values), a_run), drop = FALSE]) &&
         identical(vd$sim$design, v0$sim$design[v0$sim$design$Run != a_run, , drop = FALSE]))
     n0 <- journeys[["V0 NO"]]
-    n1 <- journeys[["V1g NO"]]
+    n1 <- journeys[["V1a NO"]]   # K275-r2: 8.1 label
     if (!is.null(n0) && !is.null(n1) && !is.null(n0[["m_in"]]) && !is.null(n1[["m_in"]])) {
         addCheck("E1", cellname, ctx$r, "the planted sample's Y values entering the pipeline differ, X's do not", NA, "Y differs, X identical",
             !identical(n0[["m_in"]][[Y_ASSAY]], n1[["m_in"]][[Y_ASSAY]]) && identical(n0[["m_in"]][[X_ASSAY]], n1[["m_in"]][[X_ASSAY]]))
@@ -1404,8 +1469,8 @@ checkVersionsE1 <- function(ctx, getV, journeys) {
             rownames(x) <- NULL
             x
         }
-        addCheck("E2", cellname, ctx$r, "NO: the DA of X is identical across V0 and V1g", NA, "exact", !is.null(n0[["da"]]) && !is.null(n1[["da"]]) &&
-            identical(key(n0), key(n1)))
+        addCheck("E2", cellname, ctx$r, "NO: the DA of X is identical across V0 and V1a", NA, "exact", !is.null(n0[["da"]]) && !is.null(n1[["da"]]) &&
+            identical(key(n0), key(n1)))   # K275-r2: 8.1 label
     }
 }
 
@@ -1442,8 +1507,8 @@ runUnit <- function(tier, design, r, lifecycle, fault_now, e7r, smoke, rows_path
             journeys[[paste(version, arm)]] <- one$j
         }
         if (identical(tier, "D")) {
-            # LX: the legacy test on the declared design's corrected matrix, on V1g (from GK2) and on VD (from GK1)
-            for (pair in list(c("V1g", "GK2"), c("VD", "GK1"))) {
+            # LX: the legacy test on the declared design's corrected matrix, on V1a (from GK2) and on VD (from GK1)   # K275-r2: 8.1 label
+            for (pair in list(c("V1a", "GK2"), c("VD", "GK1"))) {   # K275-r2: 8.1 label
                 j <- journeys[[paste(pair[[1L]], pair[[2L]])]]
                 if (is.null(j)) next
                 lx <- lxRow(ctx, j, getV(pair[[1L]])[["sim"]], pair[[1L]])
@@ -1454,13 +1519,13 @@ runUnit <- function(tier, design, r, lifecycle, fault_now, e7r, smoke, rows_path
         }
     }
     if (identical(tier, "V")) {   # S14: tier V's mask clauses of E1
-        v1 <- getV("V1g")
+        v1 <- getV("V1a")   # K275-r2: 8.1 label
         a_col <- match(sprintf("R%03d", 2L * ctx$per), v0$sim$runs)
         m1 <- maskOf(v1$sim, "vd5", v0$sim$y[v0$sim$feat_ids, , drop = FALSE])
         m0 <- maskOf(v0$sim, "vd5")
         a_cell <- matrix(FALSE, nrow(m1), ncol(m1))
         a_cell[v1$sim$assay_of[rownames(m1)] == Y_ASSAY, a_col] <- TRUE
-        addCheck("E1", cellname, r, "V mask: V1g equals V0's except in a's Y column", NA, "exact", identical(m1[!a_cell], m0[!a_cell]))
+        addCheck("E1", cellname, r, "V mask: V1a equals V0's except in a's Y column", NA, "exact", identical(m1[!a_cell], m0[!a_cell]))
         vd <- getV("VD")
         addCheck("E1", cellname, r, "V mask: VD is V0's masked values without a", NA, "exact", identical(vd$values, v0$values[, setdiff(colnames(v0$values), colnames(v0$values)[a_col]), drop = FALSE]))
     }
@@ -1593,6 +1658,7 @@ runParentMain <- function() {
         list(job = job_name, tiers = tiers, designs = designs, data_sets = c(first_rep, last_rep), lifecycle = lifecycle, smoke = smoke,
             fault = fault, workers = workers, units = nrow(units), final = final,
             commit = tryCatch(system2("git", c("rev-parse", "HEAD"), stdout = TRUE), error = function(e) NA),
+            bound_commit = BOUND_COMMIT, package_tree_vs_bound = treeVsBound(),   # K275-r2: C-3 (git's exit status beside the diff: an empty string is not a failed git)
             r_version = R.version.string, blas = extSoftVersion()[["BLAS"]], lapack = La_library(), omp_threads = Sys.getenv("OMP_NUM_THREADS"),
             runner_image = paste(Sys.getenv("ImageOS"), Sys.getenv("ImageVersion")),
             processor = tryCatch(sub("^model name\\s*:\\s*", "", grep("^model name", readLines("/proc/cpuinfo"), value = TRUE)[[1L]]), error = function(e) NA),
