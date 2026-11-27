@@ -180,3 +180,15 @@ After the first batch (timings against plan); at each report point (2,640.74 and
 **The auditor's two cautions (LP-3), in substance.** (1) The re-plan rests on ONE measured job per type: a second job may show another many-unit time. (2) Identical jobs vary about twofold between runners (deciding L64 jobs of the same shape took 73 to 153 minutes), so a plan can be met by one runner and missed by the next. Four unmeasured job types (lp L12, lp M12, lp M168, BA M168, reported M12 per the probe jobs) may need re-pricing as well; a timeout in any job is handled by the continuation rule (finished units are kept), not by a change of the plan or rule.
 
 **Sending.** The re-planned jobs and the continuation join the rolling at the coordinator's limit (17 in flight), mixed with the on-plan types: at each roll the free slots are filled alternately from the slow types (deciding M168 first) and the on-plan types; the report points and stop conditions are unchanged.
+
+---
+
+## Addendum 2026-11-27 (LF-2): two scripts, hash paired with job type; the 23 `las` invocations
+
+**Authority.** The `las` fix (`declaration-las-fix.md`) and its rehearsal `k188-rh-las-fix` (run 45924814235: every declared prediction met; the lp unit identical under the fixed and the original script; LF-1 equal outside the one lifecycle-dependent column `warning_classes`, see lifecycle.md) were released by the coordinator on the auditor's read.
+
+**Section 1 (binding), amended.** Two simulation scripts are bound: `sim-k188.R` SHA-256 b569d1c69b6b20e4d168ee7884d35e490e613396b8a2e4b847bd2dcbb1aa7a17 for every counted job except the `las` jobs, and `sim-k188-las.R` SHA-256 64e8e3149cdbbd938f3ec1ef1fb2c161be8ab60f0654db27c28385c1acf4aef3 (eight lines of `sim-k188.R` changed: `journeys$LA` and `choices$LA` read as `[["LA"]]`) for the 23 `las` jobs only. The other hashes of section 1 are unchanged.
+
+**Section 6 (completeness), amended.** The provenance `script_sha256` must equal b569d1c6... for a job of any type but `las`, and 64e8e314... for a `las` job; any other pairing stops. (The scorer reads rows only and needs no change.)
+
+**Invocations.** In `counted-jobs.tsv` the `invocation` of each of the 23 `las` rows (L12 3, M12 2, L64 9, M168 9) names `docs/qa/workflow-execution/kit/kit-188/sim-k188-las.R`; arguments, environment (`K188_JOBS=las`, `K188_JOB`, `OMP_NUM_THREADS=1`), data sets, plans and timeouts are unchanged. The failed `k188-s-las-l64-01` (run 45875346789, 12 instrument unit rows, no result) is re-sent under its own name as an instrument repair booked against the `las` block's reserve (VAL-54); the `las` jobs join the rolling under their existing plans.
