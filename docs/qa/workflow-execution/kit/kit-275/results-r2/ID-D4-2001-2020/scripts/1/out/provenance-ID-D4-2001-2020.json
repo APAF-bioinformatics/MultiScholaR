@@ -1,0 +1,48 @@
+{
+  "job": "ID-D4-2001-2020",
+  "tiers": "ID",
+  "designs": "D4",
+  "data_sets": [2001, 2020],
+  "lifecycle": false,
+  "smoke": false,
+  "fault": false,
+  "workers": 4,
+  "units": 20,
+  "final": true,
+  "commit": "0c236901e2b94d2e9ae30a19015d8fdc54890542",
+  "bound_commit": "bfbcb34dfc888637d879e89029a9ee86505b476a",
+  "package_tree_vs_bound": {
+    "git_status": 0,
+    "diff_stat": ""
+  },
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "blas": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0",
+  "lapack": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0",
+  "omp_threads": "1",
+  "runner_image": "ubuntu22 20261122.372.1",
+  "processor": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+  "cores": 4,
+  "seed_rule": "set.seed(275000000 + 100000 c + 10000 s + r, kind = 'Mersenne-Twister', normal.kind = 'Inversion', sample.kind = 'Rejection'); planting 276000000 + 100000 c + r; bootstrap 277000000 + 100 c + t",
+  "key_packages": {
+    "MultiScholaR": "0.9.0",
+    "RUVIIIC": "1.0.19",
+    "ruv": "0.9.7.1",
+    "limma": "3.68.4",
+    "qvalue": "2.44.0",
+    "duckdb": "1.5.5",
+    "dplyr": "1.2.1"
+  },
+  "script_sha256": "d972252dee0bb81ae85042be1bdc1b9615450968ba909da549e5ef6ebbf2d24f",
+  "scorer_sha256": "ee99cbb40e5c621dbc6be6a79188268ac6d05885c3826a86f22df92a40669dc9",
+  "declaration_file": "docs/qa/workflow-execution/kit/kit-275/declaration-r2.md",
+  "declaration_sha256": "4bd96ed9a9fdeabcfcba06cb3255c6a398c589d49cb93500ac94eb6fbaf79411",
+  "started": "2026-11-27T08:35:13+0000",
+  "finished": "2026-11-27T08:48:48+0000",
+  "tables_sha256": {
+    "checks-ID-D4-2001-2020-start.tsv": "69a26e69ce08ed6a931f6dd7a8408a4bfd61e80e44e909806a3b08c8a1c5025e",
+    "checks-ID-D4-2001-2020.tsv": "69a26e69ce08ed6a931f6dd7a8408a4bfd61e80e44e909806a3b08c8a1c5025e",
+    "provenance-ID-D4-2001-2020.json": "a3cb68e7c1b4fdaa581ea8b9d1c5d821f494b76464cf11c501e0a983f9245d80",
+    "rows/ID-D4-2001-2020.tsv.gz": "efd737e6384dc0075b48ef0ecd21d1ce38bb3d5bc7ce74fd88ec0cf40d83fea7",
+    "timing-units-ID-D4-2001-2020.tsv": "13ff27e4085c14530ce4ff66fdad38052ffb5270ec7010a28a0dc23a1d6119c3"
+  }
+}
