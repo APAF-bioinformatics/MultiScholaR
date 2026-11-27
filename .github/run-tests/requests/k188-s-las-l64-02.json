@@ -1,0 +1,39 @@
+{
+  "requested_by": "KIT-188 counted run, rolling, job k188-s-las-l64-02 (declaration-counted.md; coordinator ruling R1; data sets 13-23; ceiling 14.67 core-hours)",
+  "label": "KIT-188 counted k188-s-las-l64-02",
+  "package_commit": "e42a41282600d3d6df2dc69ac37961a84dfe0aba",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188-las.R",
+      "args": [
+        "L",
+        "L64",
+        "13",
+        "23",
+        "k188-s-las-l64-02"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_JOBS": "las",
+        "K188_JOB": "k188-s-las-l64-02"
+      },
+      "out": "k188-s-las-l64-02",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 210
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
