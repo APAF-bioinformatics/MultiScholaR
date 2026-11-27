@@ -1,0 +1,40 @@
+{
+  "requested_by": "KIT-275 counted job K-D4-2001-2050 (declaration-r2.md section 3; ceiling 172 job-min; VAL-402); package tree = bfbcb34d; tier D and the interim read passed",
+  "label": "KIT-275 counted K-D4-2001-2050 0c236901",
+  "package_commit": "0c236901e2b94d2e9ae30a19015d8fdc54890542",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/sim-k275.R",
+      "args": [
+        "K",
+        "D4",
+        "2001",
+        "2050",
+        "k275-K-D4-2001-2050"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K275_WORKERS": "4",
+        "K275_JOB": "K-D4-2001-2050",
+        "K275_DECLARATION": "docs/qa/workflow-execution/kit/kit-275/declaration-r2.md"
+      },
+      "out": "k275-K-D4-2001-2050",
+      "out_pattern": "\\.(tsv|gz|json|txt)$",
+      "timeout_minutes": 162
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}

@@ -1,0 +1,42 @@
+{
+  "requested_by": "KIT-275 counted job V-D6-2051-2100 (declaration-r2.md section 3; ceiling 151 job-min; VAL-402); package tree = bfbcb34d; tier D and the interim read passed",
+  "label": "KIT-275 counted V-D6-2051-2100 0c236901",
+  "package_commit": "0c236901e2b94d2e9ae30a19015d8fdc54890542",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-275/sim-k275.R",
+      "args": [
+        "V",
+        "D6",
+        "2051",
+        "2100",
+        "k275-V-D6-2051-2100"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K275_WORKERS": "4",
+        "K275_JOB": "V-D6-2051-2100",
+        "K275_DECLARATION": "docs/qa/workflow-execution/kit/kit-275/declaration-r2.md",
+        "K275_TIER_V_BOUND": "bfbcb34dfc888637d879e89029a9ee86505b476a",
+        "K275_REQUIRED_MARKERS": "normalisation_fallback,itsd_outcome,ruv_fallback"
+      },
+      "out": "k275-V-D6-2051-2100",
+      "out_pattern": "\\.(tsv|gz|json|txt)$",
+      "timeout_minutes": 141
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
