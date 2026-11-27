@@ -1,0 +1,53 @@
+{
+  "requested_by": "KIT-262 M3 counted job j7 re-run 2 (S-E 1:200; first J7 failed at runner setup, the re-run was refused at plan: requested_by 304 > 300 chars; no unit ran); m3-counted-declaration.md",
+  "label": "KIT-262 M3 counted j7 re-run 2 4cd31d50",
+  "package_commit": "4cd31d501cf396da854d2809b8275822f54bf8cd",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 1,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/score-m3-k262.R",
+      "args": [
+        "selftest",
+        "k262-j7r2/s1",
+        "docs/qa/workflow-execution/kit/kit-262/e5hand-m3-expected.tsv"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "k262-j7r2/s1",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 20
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-262/m3-k262.R",
+      "args": [
+        "k262-j7r2/s2"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K262_M3_GATE": "k262-j7r2/s1/checks.tsv",
+        "K262_M3_CELLS": "S-E",
+        "K262_M3_REPS": "1:200",
+        "K262_M3_E8": "1",
+        "K262_M3_E8_MAX": "5",
+        "K262_M3_WORKERS": "4"
+      },
+      "out": "k262-j7r2/s2",
+      "out_pattern": "\\.(tsv|json|txt)$",
+      "timeout_minutes": 165
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
