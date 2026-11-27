@@ -1,0 +1,11 @@
+request	block	cell	first_set	last_set	timeout_min	plan_min	expected_core_h	ceiling_core_h
+k188-s-reported-m12-r3-01	reported	M12	35	54	225	148	10.53	15.67
+k188-s-reported-m12-r3-02	reported	M12	55	74	225	148	10.53	15.67
+k188-s-reported-m12-r3-03	reported	M12	75	94	225	148	10.53	15.67
+k188-s-reported-m12-r3-04	reported	M12	95	100	90	60	4.67	6.67
+k188-s-lp-m168-r3-01	lp	M168	21	36	225	149	10.6	15.67
+k188-s-lp-m168-r3-02	lp	M168	37	52	225	149	10.6	15.67
+k188-s-lp-m168-r3-03	lp	M168	53	68	225	149	10.6	15.67
+k188-s-lp-m168-r3-04	lp	M168	69	84	225	149	10.6	15.67
+k188-s-lp-m168-r3-05	lp	M168	85	100	225	149	10.6	15.67
+# lp M12 has one job (1-100) and it finished (probe, 179.9 min): nothing remains to re-plan. k188-s-reported-m12-01c (data sets 33-34, plan 30, timeout 45, ceiling 3.67) is a VAL-54 continuation booked on the reported reserve, not a block job.
