@@ -1,0 +1,552 @@
+check	cell	rep	condition	value	threshold	pass	note
+E3	lipid	0	defaults	NA	equal to 5.2	TRUE	differ: ; markers off their current token: ; markers absent: ; correlation_exclusion within_assay: TRUE | auto_min=1; auto_max=20; metric=max_difference; penalty=0.5; adaptive=TRUE; correlation=0.5; method=cyclicloess; offset=0; itsd=median; ruv_mode=automatic; manual_pct=5; manual_k=2; percentile=1
+E1	D6	2151	determinism	NA	byte-identical	TRUE	
+E1	D6	2151	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2151	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2151	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2151	V1a	0.01121122699227	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2151	V1a	4.03528279010338	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2151	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2151	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2151	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2151	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2151	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2152	determinism	NA	byte-identical	TRUE	
+E1	D6	2152	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2152	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2152	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2152	V1a	0.176690254931078	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2152	V1a	4.02690757413768	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2152	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2152	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2152	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2152	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2152	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2153	determinism	NA	byte-identical	TRUE	
+E1	D6	2153	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2153	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2153	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2153	V1a	0.463634767126863	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2153	V1a	4.04673903476769	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2153	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2153	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2153	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2153	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2153	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2154	determinism	NA	byte-identical	TRUE	
+E1	D6	2154	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2154	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2154	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2154	V1a	0.291356880858096	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2154	V1a	3.91227739855703	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2154	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2154	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2154	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2154	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2154	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2155	determinism	NA	byte-identical	TRUE	
+E1	D6	2155	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2155	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2155	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2155	V1a	-0.0885970348918693	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2155	V1a	3.98268856837623	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2155	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2155	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2155	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2155	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2155	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2156	determinism	NA	byte-identical	TRUE	
+E1	D6	2156	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2156	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2156	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2156	V1a	-0.109737874122576	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2156	V1a	3.98571772057451	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2156	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2156	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2156	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2156	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2156	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2157	determinism	NA	byte-identical	TRUE	
+E1	D6	2157	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2157	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2157	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2157	V1a	-0.0973133978544092	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2157	V1a	4.0180733721281	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2157	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2157	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2157	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2157	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2157	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2158	determinism	NA	byte-identical	TRUE	
+E1	D6	2158	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2158	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2158	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2158	V1a	-0.100232758745988	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2158	V1a	3.924437228381	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2158	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2158	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2158	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2158	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2158	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2159	determinism	NA	byte-identical	TRUE	
+E1	D6	2159	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2159	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2159	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2159	V1a	0.0983991415772162	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2159	V1a	4.00219049352193	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2159	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2159	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2159	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2159	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2159	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2160	determinism	NA	byte-identical	TRUE	
+E1	D6	2160	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2160	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2160	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2160	V1a	0.0460816493849054	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2160	V1a	3.89237520030702	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2160	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2160	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2160	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2160	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2160	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2161	determinism	NA	byte-identical	TRUE	
+E1	D6	2161	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2161	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2161	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2161	V1a	-0.211823185198579	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2161	V1a	3.80729335403607	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2161	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2161	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2161	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2161	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2161	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2162	determinism	NA	byte-identical	TRUE	
+E1	D6	2162	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2162	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2162	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2162	V1a	0.164725823283373	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2162	V1a	3.67698080505482	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2162	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2162	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2162	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2162	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2162	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2163	determinism	NA	byte-identical	TRUE	
+E1	D6	2163	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2163	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2163	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2163	V1a	-0.0391423247066316	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2163	V1a	3.6536762333518	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2163	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2163	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2163	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2163	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2163	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2164	determinism	NA	byte-identical	TRUE	
+E1	D6	2164	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2164	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2164	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2164	V1a	0.124735151985425	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2164	V1a	4.0365208957372	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2164	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2164	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2164	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2164	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2164	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2165	determinism	NA	byte-identical	TRUE	
+E1	D6	2165	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2165	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2165	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2165	V1a	0.475966288885838	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2165	V1a	4.32253503819181	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2165	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2165	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2165	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2165	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2165	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2166	determinism	NA	byte-identical	TRUE	
+E1	D6	2166	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2166	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2166	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2166	V1a	0.0104600602299372	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2166	V1a	3.70537809107714	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2166	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2166	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2166	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2166	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2166	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2167	determinism	NA	byte-identical	TRUE	
+E1	D6	2167	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2167	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2167	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2167	V1a	0.0587447554822686	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2167	V1a	3.7959538857412	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2167	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2167	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2167	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2167	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2167	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2168	determinism	NA	byte-identical	TRUE	
+E1	D6	2168	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2168	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2168	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2168	V1a	-0.42888475952018	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2168	V1a	3.86850302737857	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2168	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2168	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2168	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2168	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2168	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2169	determinism	NA	byte-identical	TRUE	
+E1	D6	2169	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2169	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2169	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2169	V1a	0.0109767054927905	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2169	V1a	3.84483725227269	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2169	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2169	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2169	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2169	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2169	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2170	determinism	NA	byte-identical	TRUE	
+E1	D6	2170	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2170	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2170	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2170	V1a	0.164215506345678	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2170	V1a	4.04496153066035	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2170	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2170	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2170	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2170	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2170	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2171	determinism	NA	byte-identical	TRUE	
+E1	D6	2171	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2171	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2171	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2171	V1a	-0.00939459726742293	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2171	V1a	3.87046467999895	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2171	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2171	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2171	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2171	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2171	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2172	determinism	NA	byte-identical	TRUE	
+E1	D6	2172	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2172	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2172	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2172	V1a	-0.184559159756642	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2172	V1a	3.87597750166047	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2172	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2172	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2172	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2172	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2172	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2173	determinism	NA	byte-identical	TRUE	
+E1	D6	2173	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2173	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2173	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2173	V1a	0.405850675626709	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2173	V1a	3.84883341119959	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2173	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2173	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2173	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2173	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2173	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2174	determinism	NA	byte-identical	TRUE	
+E1	D6	2174	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2174	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2174	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2174	V1a	-0.382902434062771	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2174	V1a	3.99494576167408	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2174	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2174	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2174	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2174	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2174	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2175	determinism	NA	byte-identical	TRUE	
+E1	D6	2175	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2175	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2175	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2175	V1a	0.18854589969491	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2175	V1a	3.83051897207246	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2175	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2175	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2175	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2175	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2175	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2176	determinism	NA	byte-identical	TRUE	
+E1	D6	2176	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2176	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2176	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2176	V1a	0.0748701939722345	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2176	V1a	4.23766754824466	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2176	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2176	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2176	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2176	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2176	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2177	determinism	NA	byte-identical	TRUE	
+E1	D6	2177	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2177	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2177	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2177	V1a	0.0565290977071911	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2177	V1a	4.0358245963255	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2177	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2177	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2177	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2177	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2177	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2178	determinism	NA	byte-identical	TRUE	
+E1	D6	2178	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2178	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2178	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2178	V1a	-0.234248121619539	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2178	V1a	4.08598279318141	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2178	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2178	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2178	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2178	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2178	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2179	determinism	NA	byte-identical	TRUE	
+E1	D6	2179	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2179	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2179	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2179	V1a	0.136028286981063	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2179	V1a	4.16569036680889	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2179	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2179	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2179	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2179	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2179	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2180	determinism	NA	byte-identical	TRUE	
+E1	D6	2180	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2180	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2180	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2180	V1a	0.0951813482352211	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2180	V1a	4.2889723016434	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2180	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2180	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2180	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2180	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2180	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2181	determinism	NA	byte-identical	TRUE	
+E1	D6	2181	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2181	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2181	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2181	V1a	-0.268528202122403	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2181	V1a	3.95742295867475	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2181	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2181	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2181	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2181	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2181	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2182	determinism	NA	byte-identical	TRUE	
+E1	D6	2182	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2182	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2182	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2182	V1a	-0.143405016413889	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2182	V1a	4.27917967672143	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2182	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2182	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2182	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2182	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2182	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2183	determinism	NA	byte-identical	TRUE	
+E1	D6	2183	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2183	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2183	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2183	V1a	-0.066810673721084	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2183	V1a	3.98159874190086	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2183	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2183	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2183	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2183	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2183	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2184	determinism	NA	byte-identical	TRUE	
+E1	D6	2184	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2184	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2184	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2184	V1a	-0.096516637432358	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2184	V1a	4.26825110303693	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2184	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2184	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2184	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2184	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2184	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2185	determinism	NA	byte-identical	TRUE	
+E1	D6	2185	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2185	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2185	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2185	V1a	0.142936465984256	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2185	V1a	4.1244657061393	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2185	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2185	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2185	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2185	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2185	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2186	determinism	NA	byte-identical	TRUE	
+E1	D6	2186	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2186	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2186	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2186	V1a	0.084069833087329	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2186	V1a	3.88686535147079	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2186	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2186	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2186	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2186	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2186	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2187	determinism	NA	byte-identical	TRUE	
+E1	D6	2187	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2187	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2187	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2187	V1a	-0.083809170955602	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2187	V1a	4.06298095493285	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2187	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2187	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2187	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2187	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2187	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2188	determinism	NA	byte-identical	TRUE	
+E1	D6	2188	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2188	V1a's deviation equals 4 z on the planted rows	2.66453525910038e-15	at most 1e-12	TRUE	
+E1	D6	2188	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2188	V1a	0.081407273900591	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2188	V1a	4.15300303022389	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2188	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2188	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2188	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2188	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2188	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2189	determinism	NA	byte-identical	TRUE	
+E1	D6	2189	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2189	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2189	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2189	V1a	-0.0922579758765031	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2189	V1a	4.06988277827345	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2189	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2189	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2189	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2189	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2189	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2190	determinism	NA	byte-identical	TRUE	
+E1	D6	2190	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2190	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2190	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2190	V1a	0.101570374221623	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2190	V1a	3.70131766573682	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2190	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2190	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2190	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2190	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2190	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2191	determinism	NA	byte-identical	TRUE	
+E1	D6	2191	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2191	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2191	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2191	V1a	-0.289893503862194	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2191	V1a	3.99663224340421	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2191	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2191	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2191	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2191	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2191	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2192	determinism	NA	byte-identical	TRUE	
+E1	D6	2192	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2192	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2192	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2192	V1a	0.154777957420251	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2192	V1a	4.13095123812196	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2192	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2192	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2192	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2192	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2192	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2193	determinism	NA	byte-identical	TRUE	
+E1	D6	2193	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2193	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2193	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2193	V1a	0.0509844025971637	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2193	V1a	4.11347808264071	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2193	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2193	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2193	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2193	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2193	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2194	determinism	NA	byte-identical	TRUE	
+E1	D6	2194	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2194	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2194	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2194	V1a	0.0237878321509162	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2194	V1a	4.1230866211468	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2194	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2194	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2194	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2194	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2194	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2195	determinism	NA	byte-identical	TRUE	
+E1	D6	2195	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2195	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2195	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2195	V1a	-0.0776816229641781	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2195	V1a	4.32441309798933	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2195	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2195	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2195	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2195	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2195	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2196	determinism	NA	byte-identical	TRUE	
+E1	D6	2196	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2196	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2196	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2196	V1a	-0.362577863664228	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2196	V1a	3.92748677136099	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2196	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2196	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2196	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2196	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2196	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2197	determinism	NA	byte-identical	TRUE	
+E1	D6	2197	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2197	V1a's deviation equals 4 z on the planted rows	2.66453525910038e-15	at most 1e-12	TRUE	
+E1	D6	2197	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2197	V1a	-0.184855589811733	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2197	V1a	3.76640227563482	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2197	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2197	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2197	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2197	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2197	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2198	determinism	NA	byte-identical	TRUE	
+E1	D6	2198	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2198	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2198	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2198	V1a	0.40715550636693	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2198	V1a	3.88687411314963	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2198	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2198	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2198	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2198	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2198	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2199	determinism	NA	byte-identical	TRUE	
+E1	D6	2199	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2199	V1a's deviation equals 4 z on the planted rows	1.77635683940025e-15	at most 1e-12	TRUE	
+E1	D6	2199	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2199	V1a	-0.24581672023687	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2199	V1a	4.24637417000777	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2199	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2199	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2199	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2199	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2199	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
+E1	D6	2200	determinism	NA	byte-identical	TRUE	
+E1	D6	2200	V1a equals V0 except the planted entries	0	exactly 0	TRUE	
+E1	D6	2200	V1a's deviation equals 4 z on the planted rows	3.5527136788005e-15	at most 1e-12	TRUE	
+E1	D6	2200	V1w's deviation equals r1's formula with c = 0	1.77635683940025e-15	at most 1e-12	TRUE	
+R1_dev_mean	D6	2200	V1a	0.0892487143490875	within 4 SE of 0 (reported, not E1, not F4)	TRUE	
+R1_dev_sd	D6	2200	V1a	3.91700570388561	within 4 SE of s = 4 (SE = s / sqrt(2 (n - 1)); reported, not E1, not F4)	TRUE	
+E1	D6	2200	V1t is V1a on its 25 features and 0 elsewhere	25	25 features; equal to V1a	TRUE	
+E1	D6	2200	V1s is V1a on the features and 0 on the labelled controls	NA	exact	TRUE	
+E1	D6	2200	VD is V0 without a (exact)	NA	exact	TRUE	
+E1	D6	2200	the planted sample's Y values entering the pipeline differ, X's do not	NA	Y differs, X identical	TRUE	
+E2	D6	2200	NO: the DA of X is identical across V0 and V1a	NA	exact	TRUE	
