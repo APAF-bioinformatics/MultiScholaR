@@ -1,0 +1,39 @@
+{
+  "requested_by": "KIT-188 counted run, rolling, job k188-s-deciding-m168-r2-59 (declaration-counted.md; coordinator ruling R1; data sets 245-248; ceiling 10.0 core-hours)",
+  "label": "KIT-188 counted k188-s-deciding-m168-r2-59",
+  "package_commit": "5e4fc68236c43d36e2d421e245875f76720f20c1",
+  "base_commit": "none",
+  "tools_ref": "",
+  "tests": [],
+  "shards": 8,
+  "file_timeout_minutes": 45,
+  "file_timeouts": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {},
+  "check": false,
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-188/sim-k188.R",
+      "args": [
+        "L",
+        "M168",
+        "245",
+        "248",
+        "k188-s-deciding-m168-r2-59"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "K188_JOBS": "deciding",
+        "K188_JOB": "k188-s-deciding-m168-r2-59"
+      },
+      "out": "k188-s-deciding-m168-r2-59",
+      "out_pattern": "\\.(tsv|gz|json|txt|md|log)$",
+      "timeout_minutes": 140
+    }
+  ],
+  "fetch_refs": [],
+  "blas": "reference",
+  "os": "ubuntu-22.04"
+}
